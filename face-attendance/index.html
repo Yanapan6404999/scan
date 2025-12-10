@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>ระบบลงเวลาพนักงาน</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap 5 -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- face-api.js -->
+  <script defer src="https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+  <style>
+    body {
+      background: #f5f5f7;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    .app-header {
+      background: white;
+      padding: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+      margin-bottom: 1rem;
+    }
+    .btn-main {
+      min-width: 120px;
+      margin-right: .5rem;
+    }
+    #videoPreview {
+      width: 100%;
+      max-height: 360px;
+      border-radius: 12px;
+      background: #111;
+      object-fit: cover;
+    }
+    #snapshotCanvas {
+      display: none;
+    }
+    .section-title {
+      margin-top: 1rem;
+      margin-bottom: .75rem;
+      font-weight: 600;
+    }
+    .cursor-pointer { cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="container d-flex align-items-center justify-content-between">
+    <div class="fw-bold fs-4 text-primary">ระบบลงเวลาพนักงาน</div>
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-warning btn-main" id="btnManualLog">บันทึกมือ</button>
+      <button class="btn btn-success btn-main" id="btnCheckHistory">ตรวจสอบเวลา</button>
+      <button class="btn btn-dark btn-main" id="btnAdminLogin">เจ้าหน้าที่</button>
+      <a href="#" id="btnResetUrl" class="ms-2">Reset URL</a>
+    </div>
+  </div>
+</div>
+
+<div class="container mb-5">
+
+  <!-- กล่องสแกนใบหน้า -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4 class="section-title">สแกนใบหน้าเพื่อ ลงเวลา</h4>
+      <p class="text-muted">กรุณายืนหน้าตรง ไม่สวมหน้ากากอนามัย</p>
+
+      <div class="mb-3">
+        <video id="videoPreview" autoplay muted playsinline></video>
+        <canvas id="snapshotCanvas"></canvas>
+      </div>
+
+      <div class="row g-2 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">เลือกกล้อง:</label>
+          <select id="cameraSelect" class="form-select">
+            <option>กำลังค้นหากล้อง...</option>
+          </select>
+        </div>
+        <div class="col-md-6 d-flex align-items-end justify-content-end">
+          <button id="btnStartScan" class="btn btn-primary me-2">เริ่มสแกน</button>
+          <button id="btnStopScan" class="btn btn-outline-danger" disabled>หยุดสแกน</button>
+        </div>
+      </div>
+
+      <div class="alert alert-info py-2" id="scanStatus">สถานะ: ยังไม่เริ่มสแกน</div>
+      <div id="scanResult" class="mt-2"></div>
+    </div>
+  </div>
+
+  <!-- Dashboard สั้น ๆ หน้าแรก -->
+  <div class="card">
+    <div class="card-body">
+      <h4 class="section-title">ภาพรวมระบบ (Dashboard)</h4>
+      <div class="row text-center" id="dashboardCards">
+        <div class="col-6 col-md-3 mb-3">
+          <div class="card">
+            <div class="card-body">
+              <div class="text-muted small">พนักงานทั้งหมด</div>
+              <div class="fs-3 fw-bold" id="dashTotal">-</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3 mb-3">
+          <div class="card">
+            <div class="card-body">
+              <div class="text-muted small">เข้างานวันนี้</div>
+              <div class="fs-3 fw-bold text-success" id="dashPresent">-</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3 mb-3">
+          <div class="card">
+            <div class="card-body">
+              <div class="text-muted small">มาสายวันนี้</div>
+              <div class="fs-3 fw-bold text-warning" id="dashLate">-</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3 mb-3">
+          <div class="card">
+            <div class="card-body">
+              <div class="text-muted small">ขาด/ไม่ลงเวลา</div>
+              <div class="fs-3 fw-bold text-danger" id="dashAbsent">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <h6 class="fw-semibold">สัดส่วนตามแผนก</h6>
+        <ul id="branchRatio" class="mb-0"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: ตั้งค่า Google Web App URL -->
+<div class="modal fade" id="modalConnect" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">เชื่อมต่อระบบ</h5>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">วาง Google Web App URL ที่นี่</label>
+        <input type="text" id="inputWebAppUrl" class="form-control"
+               placeholder="https://script.google.com/macros/s/....../exec">
+        <div class="form-text">
+          ใช้ URL จากการ Deploy Apps Script เป็น Web App
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        <button class="btn btn-primary" id="btnSaveWebAppUrl">บันทึก</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Login Admin -->
+<div class="modal fade" id="modalAdminLogin" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">เข้าสู่ระบบ Admin</h5>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">ชื่อผู้ใช้</label>
+          <input type="text" id="adminUser" class="form-control" value="admin">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">รหัสผ่าน</label>
+          <input type="password" id="adminPass" class="form-control">
+          <div class="form-text">ตัวอย่าง (ฝั่งหน้าเว็บ): user: admin, pass: 1234 (คุณเปลี่ยนเองได้)</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        <button class="btn btn-primary" id="btnDoAdminLogin">เข้าสู่ระบบ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: เพิ่ม/แก้ไขพนักงาน (ย่อ) -->
+<div class="modal fade" id="modalEmployee" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">เพิ่ม/แก้ไข พนักงาน</h5>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">รหัสพนักงาน</label>
+            <input type="text" id="empCode" class="form-control">
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">ชื่อ-สกุล</label>
+            <input type="text" id="empName" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">แผนก</label>
+            <select id="empBranch" class="form-select"></select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">ระดับ</label>
+            <select id="empLevel" class="form-select"></select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">อีเมล</label>
+            <input type="email" id="empEmail" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">รูปถ่าย (หน้าตรง)</label>
+            <input type="file" id="empPhotoFile" class="form-control" accept="image/*">
+            <div class="form-text">เลือกรูปจากมือถือ/คอมของพนักงาน</div>
+          </div>
+          <div class="col-md-6">
+            <img id="empPhotoPreview" class="img-fluid rounded border" alt="preview"
+                 style="max-height:200px; object-fit:cover;">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        <button class="btn btn-success" id="btnSaveEmployee">บันทึก</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap bundle (มี Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/**************** GLOBAL STATE ****************/
+const STORAGE_KEY_WEBAPP_URL = 'attend_webapp_url';
+let webAppUrl = '';
+let modalConnect, modalAdminLogin, modalEmployee;
+
+let currentStream = null;
+let videoEl, canvasEl, scanStatusEl, scanResultEl, cameraSelectEl;
+
+let faceModelsLoaded = false;
+let faceMatcher = null;
+let employeesForFace = [];
+
+/**************** INIT ****************/
+document.addEventListener('DOMContentLoaded', async () => {
+  videoEl = document.getElementById('videoPreview');
+  canvasEl = document.getElementById('snapshotCanvas');
+  scanStatusEl = document.getElementById('scanStatus');
+  scanResultEl = document.getElementById('scanResult');
+  cameraSelectEl = document.getElementById('cameraSelect');
+
+  modalConnect = new bootstrap.Modal(document.getElementById('modalConnect'));
+  modalAdminLogin = new bootstrap.Modal(document.getElementById('modalAdminLogin'));
+  modalEmployee = new bootstrap.Modal(document.getElementById('modalEmployee'));
+
+  webAppUrl = localStorage.getItem(STORAGE_KEY_WEBAPP_URL) || '';
+  if (!webAppUrl) {
+    modalConnect.show();
+  } else {
+    refreshDashboard();
+  }
+
+  // โหลด model สำหรับ face-api
+  await loadFaceModels();
+
+  document.getElementById('btnSaveWebAppUrl').addEventListener('click', onSaveWebAppUrl);
+  document.getElementById('btnResetUrl').addEventListener('click', resetUrl);
+  document.getElementById('btnAdminLogin').addEventListener('click', () => modalAdminLogin.show());
+  document.getElementById('btnDoAdminLogin').addEventListener('click', doAdminLogin);
+
+  document.getElementById('btnStartScan').addEventListener('click', startScan);
+  document.getElementById('btnStopScan').addEventListener('click', stopScan);
+
+  document.getElementById('empPhotoFile').addEventListener('change', onEmpPhotoChange);
+  document.getElementById('btnSaveEmployee').addEventListener('click', saveEmployeeFromModal);
+
+  // เมื่อกด logo "บันทึกมือ" / "ตรวจสอบเวลา" ยังไม่ได้ทำ UI เต็ม ใส่ alert ไว้ก่อน
+  document.getElementById('btnManualLog').addEventListener('click', () => {
+    alert('โหมดบันทึกมือ: คุณสามารถทำฟอร์มเพิ่มเองเรียก API logTime ได้เลยครับ');
+  });
+  document.getElementById('btnCheckHistory').addEventListener('click', () => {
+    alert('โหมดตรวจสอบเวลา: สร้างหน้า table แล้วเรียก action getTimeHistory จาก API ได้เลย');
+  });
+
+  // ดึง config แผนก/ระดับ สำหรับ modal employee
+  if (webAppUrl) {
+    loadConfigForEmployeeModal();
+  }
+});
+
+/**************** FACE-API ****************/
+async function loadFaceModels() {
+  try {
+    await Promise.all([
+      faceapi.nets.ssdMobilenetv1.loadFromUri('./models'),
+      faceapi.nets.faceLandmark68Net.loadFromUri('./models'),
+      faceapi.nets.faceRecognitionNet.loadFromUri('./models')
+    ]);
+    faceModelsLoaded = true;
+    console.log('face-api models loaded');
+  } catch (err) {
+    console.error(err);
+    alert('โหลดโมเดลใบหน้าไม่สำเร็จ กรุณาเช็คโฟลเดอร์ /models');
+  }
+}
+
+/**************** WEB APP URL ****************/
+
+function onSaveWebAppUrl() {
+  const url = document.getElementById('inputWebAppUrl').value.trim();
+  if (!url) {
+    alert('กรุณาใส่ URL');
+    return;
+  }
+  webAppUrl = url;
+  localStorage.setItem(STORAGE_KEY_WEBAPP_URL, url);
+  modalConnect.hide();
+  refreshDashboard();
+  loadConfigForEmployeeModal();
+}
+
+function resetUrl(evt) {
+  evt.preventDefault();
+  if (!confirm('ล้างค่า URL และตั้งค่าใหม่?')) return;
+  localStorage.removeItem(STORAGE_KEY_WEBAPP_URL);
+  webAppUrl = '';
+  modalConnect.show();
+}
+
+/**************** API CALL ****************/
+
+async function callApi(action, payload = {}) {
+  if (!webAppUrl) {
+    throw new Error('ยังไม่ได้ตั้งค่า Web App URL');
+  }
+  const body = Object.assign({ action }, payload);
+
+  const res = await fetch(webAppUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  const data = await res.json();
+  if (!data.ok) {
+    throw new Error(data.error || 'API error');
+  }
+  return data;
+}
+
+/**************** DASHBOARD ****************/
+
+async function refreshDashboard() {
+  try {
+    const data = await callApi('getTodayDashboard');
+
+    document.getElementById('dashTotal').textContent   = data.totalEmployees ?? '-';
+    document.getElementById('dashPresent').textContent = data.presentToday ?? '-';
+    document.getElementById('dashLate').textContent    = data.lateToday ?? '-';
+    document.getElementById('dashAbsent').textContent  = data.absentToday ?? '-';
+
+    const ul = document.getElementById('branchRatio');
+    ul.innerHTML = '';
+    const bc = data.branchCounts || {};
+    Object.keys(bc).forEach(name => {
+      const li = document.createElement('li');
+      li.textContent = `${name}: ${bc[name]} คน`;
+      ul.appendChild(li);
+    });
+
+    // โหลดใบหน้าพนักงานเตรียมไว้ทำ FaceMatcher
+    await buildFaceMatcher();
+
+  } catch (err) {
+    console.error(err);
+    alert('โหลด Dashboard ไม่สำเร็จ: ' + err.message);
+  }
+}
+
+/**************** ADMIN LOGIN (ฝั่งหน้าเว็บอย่างง่าย) ****************/
+
+function doAdminLogin() {
+  const user = document.getElementById('adminUser').value.trim();
+  const pass = document.getElementById('adminPass').value.trim();
+
+  // ตัวอย่างง่าย ๆ: เช็คฝั่งหน้าเว็บ (จริง ๆ ควรทำฝั่ง Apps Script แล้วออก token)
+  if (user === 'admin' && pass === '1234') {
+    modalAdminLogin.hide();
+    alert('เข้าสู่ระบบ Admin (ตัวอย่าง) – คุณสามารถสร้างหน้า Admin เพิ่มเองได้ เช่น /admin.html');
+    modalEmployee.show(); // เปิดฟอร์มเพิ่มพนักงานให้ดูเป็นตัวอย่าง
+  } else {
+    alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง (แก้โค้ดได้ตามต้องการ)');
+  }
+}
+
+/**************** CONFIG FOR MODAL EMPLOYEE ****************/
+
+async function loadConfigForEmployeeModal() {
+  try {
+    const cfg = await callApi('getConfig');
+    const branchSel = document.getElementById('empBranch');
+    const levelSel  = document.getElementById('empLevel');
+    branchSel.innerHTML = '';
+    levelSel.innerHTML = '';
+
+    cfg.branches.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b;
+      opt.textContent = b;
+      branchSel.appendChild(opt);
+    });
+    cfg.levels.forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l;
+      opt.textContent = l;
+      levelSel.appendChild(opt);
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+/**************** EMPLOYEE MODAL (SAVE) ****************/
+
+let empPhotoDataUrl = '';
+
+function onEmpPhotoChange(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    empPhotoDataUrl = e.target.result;
+    document.getElementById('empPhotoPreview').src = empPhotoDataUrl;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveEmployeeFromModal() {
+  try {
+    const employee = {
+      code: document.getElementById('empCode').value.trim(),
+      fullName: document.getElementById('empName').value.trim(),
+      branch: document.getElementById('empBranch').value,
+      level: document.getElementById('empLevel').value,
+      email: document.getElementById('empEmail').value.trim(),
+      photoDataUrl: empPhotoDataUrl || undefined
+    };
+    if (!employee.code || !employee.fullName) {
+      alert('กรุณากรอกรหัสและชื่อพนักงาน');
+      return;
+    }
+    await callApi('saveEmployee', { employee });
+    alert('บันทึกพนักงานสำเร็จ');
+    empPhotoDataUrl = '';
+    document.getElementById('empPhotoFile').value = '';
+    document.getElementById('empPhotoPreview').src = '';
+    modalEmployee.hide();
+    await refreshDashboard();
+  } catch (err) {
+    console.error(err);
+    alert('บันทึกพนักงานไม่สำเร็จ: ' + err.message);
+  }
+}
+
+/**************** FACE MATCHER ****************/
+
+async function buildFaceMatcher() {
+  if (!faceModelsLoaded) return;
+
+  try {
+    const res = await callApi('listEmployees');
+    const emps = res.employees || [];
+    employeesForFace = emps;
+    const labeledDescriptors = [];
+
+    for (const emp of emps) {
+      if (!emp.photoUrl) continue;
+      try {
+        const img = await faceapi.fetchImage(emp.photoUrl);
+        const det = await faceapi
+          .detectSingleFace(img)
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+        if (!det) continue;
+        const label = emp.code + '|' + emp.fullName;
+        labeledDescriptors.push(
+          new faceapi.LabeledFaceDescriptors(label, [det.descriptor])
+        );
+      } catch (err) {
+        console.warn('face descriptor failed for', emp.code, err);
+      }
+    }
+
+    if (labeledDescriptors.length === 0) {
+      console.warn('ไม่มีรูปใบหน้าพนักงานที่ใช้ได้');
+      faceMatcher = null;
+      return;
+    }
+
+    faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
+    console.log('FaceMatcher ready with', labeledDescriptors.length, 'employees');
+  } catch (err) {
+    console.error('buildFaceMatcher error:', err);
+  }
+}
+
+/**************** CAMERA & SCAN ****************/
+
+async function enumerateCameras() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+    cameraSelectEl.innerHTML = '<option>ไม่รองรับกล้อง</option>';
+    return;
+  }
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const videos = devices.filter(d => d.kind === 'videoinput');
+
+  cameraSelectEl.innerHTML = '';
+  videos.forEach((d, idx) => {
+    const opt = document.createElement('option');
+    opt.value = d.deviceId;
+    opt.textContent = (d.label || `camera ${idx+1}`) + (idx === 0 ? ' (front?)' : '');
+    cameraSelectEl.appendChild(opt);
+  });
+
+  if (videos.length === 0) {
+    const opt = document.createElement('option');
+    opt.textContent = 'ไม่พบกล้อง';
+    cameraSelectEl.appendChild(opt);
+  }
+}
+
+async function startScan() {
+  try {
+    if (!faceModelsLoaded) {
+      alert('ยังโหลดโมเดลใบหน้าไม่เสร็จ');
+      return;
+    }
+    await enumerateCameras();
+
+    const deviceId = cameraSelectEl.value;
+    const constraints = {
+      video: deviceId ? { deviceId: { exact: deviceId } } : true,
+      audio: false
+    };
+
+    if (currentStream) {
+      currentStream.getTracks().forEach(t => t.stop());
+    }
+
+    currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+    videoEl.srcObject = currentStream;
+
+    document.getElementById('btnStartScan').disabled = true;
+    document.getElementById('btnStopScan').disabled = false;
+
+    scanStatusEl.textContent = 'สถานะ: กำลังสแกน...';
+    scanResultEl.innerHTML = '';
+
+    // เริ่ม loop ตรวจจับทุก ๆ 2 วิ
+    scanLoop();
+
+  } catch (err) {
+    console.error(err);
+    alert('เปิดกล้องไม่สำเร็จ: ' + err.message);
+  }
+}
+
+function stopScan() {
+  if (currentStream) {
+    currentStream.getTracks().forEach(t => t.stop());
+    currentStream = null;
+  }
+  document.getElementById('btnStartScan').disabled = false;
+  document.getElementById('btnStopScan').disabled = true;
+  scanStatusEl.textContent = 'สถานะ: หยุดสแกนแล้ว';
+}
+
+async function scanLoop() {
+  if (!currentStream) return;
+
+  try {
+    // ก๊อบ frame ลง canvas
+    const w = videoEl.videoWidth || 640;
+    const h = videoEl.videoHeight || 480;
+    canvasEl.width = w;
+    canvasEl.height = h;
+    const ctx = canvasEl.getContext('2d');
+    ctx.drawImage(videoEl, 0, 0, w, h);
+
+    const detection = await faceapi
+      .detectSingleFace(canvasEl)
+      .withFaceLandmarks()
+      .withFaceDescriptor();
+
+    if (detection && faceMatcher) {
+      const best = faceMatcher.findBestMatch(detection.descriptor);
+      console.log('best match', best.toString());
+      const distance = best.distance;
+      const label = best.label; // code|name หรือ unknown
+
+      if (label !== 'unknown' && distance < 0.6) {
+        const [code, fullName] = label.split('|');
+        scanStatusEl.textContent = `พบใบหน้า: ${fullName} (${code})  ทำการลงเวลา...`;
+        await logTimeFromFace(code);
+      } else {
+        scanStatusEl.textContent = 'ไม่รู้จักใบหน้า / ยังไม่ลงทะเบียน';
+      }
+    } else {
+      scanStatusEl.textContent = 'ไม่พบใบหน้าในภาพ';
+    }
+
+  } catch (err) {
+    console.error('scanLoop error:', err);
+  }
+
+  setTimeout(() => {
+    if (currentStream) scanLoop();
+  }, 2000);
+}
+
+async function logTimeFromFace(code) {
+  try {
+    const dataUrl = canvasEl.toDataURL('image/jpeg', 0.9);
+
+    // ตัวอย่าง: ถือว่าเป็นการ CHECKIN_NORMAL
+    const payload = {
+      code,
+      variant: 'CHECKIN_NORMAL',
+      place: 'สแกนหน้า (หน้าเคาน์เตอร์)',
+      note: '',
+      photoDataUrl: dataUrl
+    };
+
+    const res = await callApi('logTime', { payload });
+
+    scanResultEl.innerHTML = `
+      <div class="alert alert-success mt-2">
+        ลงเวลาเรียบร้อย<br>
+        รหัส: <b>${code}</b><br>
+        สถานะ: ${res.status || '-'} เวลาเข้า: ${res.timeIn || '-'} เวลาออก: ${res.timeOut || '-'}
+      </div>
+    `;
+    await refreshDashboard();
+  } catch (err) {
+    console.error(err);
+    scanResultEl.innerHTML = `
+      <div class="alert alert-danger mt-2">
+        ลงเวลาไม่สำเร็จ: ${err.message}
+      </div>
+    `;
+  }
+}
+</script>
+
+</body>
+</html>
