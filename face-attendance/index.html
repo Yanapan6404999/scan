@@ -1,644 +1,868 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="utf-8" />
-  <title>ระบบลงเวลาพนักงาน</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <title>ระบบลงเวลาพนักงาน (สแกนใบหน้า)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Tailwind CDN (พอใช้บน GitHub Pages ได้) -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- face-api.js (สำหรับสแกนใบหน้า – ไว้ต่อทีหลังได้) -->
-  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+    .backdrop {
+      background: rgba(0, 0, 0, 0.45);
+    }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
-
+<body class="bg-gray-100 text-gray-800 min-h-screen">
   <!-- Navbar -->
-  <header class="bg-white shadow">
+  <header class="bg-white shadow-sm sticky top-0 z-20">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <h1 class="text-xl md:text-2xl font-semibold text-indigo-700">
-        ระบบลงเวลาพนักงาน
-      </h1>
+      <div class="flex items-center gap-2">
+        <span class="text-lg font-semibold text-indigo-700">
+          ระบบลงเวลาพนักงาน
+        </span>
+        <span class="text-sm text-gray-500">เวอร์ชันสแกนใบหน้า</span>
+      </div>
       <div class="flex gap-2">
-        <button id="btnManual" class="px-3 py-1 rounded bg-amber-400 hover:bg-amber-500 text-white text-sm md:text-base">
-          บันทึกมือ
+        <button
+          id="btn-open-config"
+          class="px-3 py-1.5 text-xs rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+        >
+          ตั้งค่า URL
         </button>
-        <button id="btnDashboard" class="px-3 py-1 rounded bg-emerald-500 hover:bg-emerald-600 text-white text-sm md:text-base">
-          ตรวจสอบเวลา
-        </button>
-        <button id="btnAdmin" class="px-3 py-1 rounded bg-slate-700 hover:bg-slate-800 text-white text-sm md:text-base">
-          เจ้าหน้าที่
-        </button>
-        <button id="btnResetUrl" class="px-3 py-1 rounded border border-slate-300 text-xs md:text-sm">
+        <button
+          id="btn-reset-url"
+          class="px-3 py-1.5 text-xs rounded-md border border-red-300 text-red-600 hover:bg-red-50"
+        >
           Reset URL
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Main content -->
-  <main class="flex-1">
-    <div class="max-w-6xl mx-auto px-4 py-4 space-y-6">
+  <main class="max-w-6xl mx-auto px-4 pt-6 pb-12 space-y-6">
+    <!-- ปุ่มเมนูด้านบน -->
+    <section class="flex flex-wrap gap-3">
+      <button
+        id="btn-open-manual-log"
+        class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm shadow-sm"
+      >
+        บันทึกมือ
+      </button>
+      <button
+        id="btn-open-dashboard"
+        class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm shadow-sm"
+      >
+        ตรวจสอบเวลา
+      </button>
+      <button
+        id="btn-open-admin"
+        class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-sm shadow-sm"
+      >
+        เจ้าหน้าที่
+      </button>
+    </section>
 
-      <!-- กล่องสแกนใบหน้า -->
-      <section class="bg-white shadow rounded-lg p-4 md:p-6">
-        <h2 class="text-lg md:text-xl font-semibold mb-1">
-          สแกนใบหน้าเพื่อลงเวลา
-        </h2>
-        <p class="text-sm text-gray-500 mb-4">
-          กรุณายืนหน้าตรง ไม่สวมหน้ากากอนามัย
-        </p>
+    <!-- ส่วนสแกนใบหน้า -->
+    <section class="grid md:grid-cols-3 gap-6">
+      <!-- กล้อง -->
+      <div class="md:col-span-2 bg-white rounded-xl shadow-sm p-4 space-y-4">
+        <div>
+          <h2 class="font-semibold text-lg">สแกนใบหน้าเพื่อ ลงเวลา</h2>
+          <p class="text-sm text-gray-500">
+            กรุณายืนหน้าตรง ไม่สวมหน้ากากอนามัย
+          </p>
+        </div>
 
-        <div class="flex flex-col lg:flex-row gap-4">
-          <!-- วิดีโอ -->
-          <div class="flex-1">
-            <div class="bg-black rounded-lg overflow-hidden flex items-center justify-center h-64 md:h-72">
-              <video id="video" autoplay muted playsinline class="w-full h-full object-cover hidden"></video>
-              <div id="videoPlaceholder" class="flex flex-col items-center text-gray-300 gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" viewBox="0 0 24 24" stroke="currentColor" fill="none">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 7h4l2-3h6l2 3h4v13H3V7z" />
-                  <circle cx="12" cy="14" r="4" />
-                </svg>
-                <span id="cameraStatusText" class="text-sm">กล้องปิดอยู่</span>
-              </div>
-              <canvas id="overlay" class="absolute inset-0 w-full h-full hidden"></canvas>
-            </div>
-
-            <!-- เลือกกล้อง + ปุ่มเริ่ม/หยุด -->
-            <div class="mt-3 flex flex-col md:flex-row gap-3 items-center">
-              <div class="flex-1 w-full">
-                <label class="text-sm text-gray-600 block mb-1">เลือกกล้อง:</label>
-                <select id="cameraSelect" class="w-full border rounded px-2 py-1 text-sm">
-                  <option value="">กำลังค้นหากล้อง...</option>
-                </select>
-              </div>
-              <div class="flex gap-2">
-                <button id="btnStartScan"
-                        class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">
-                  เริ่มสแกน
-                </button>
-                <button id="btnStopScan"
-                        class="px-4 py-2 rounded bg-rose-500 hover:bg-rose-600 text-white text-sm"
-                        disabled>
-                  หยุดสแกน
-                </button>
-              </div>
-            </div>
-
-            <div class="mt-2 text-sm text-gray-600">
-              <span>สถานะ: </span>
-              <span id="scanStatus" class="font-medium text-slate-700">
-                ยังไม่เริ่มสแกน
-              </span>
-            </div>
-          </div>
-
-          <!-- สรุปการสแกน (อนาคต: แสดงชื่อ/เวลา) -->
-          <div class="w-full lg:w-80 bg-slate-50 rounded-lg p-3 md:p-4 border border-slate-200">
-            <h3 class="font-semibold mb-2 text-slate-700">ผลการสแกนล่าสุด</h3>
-            <dl class="text-sm space-y-1">
-              <div class="flex justify-between">
-                <dt class="text-gray-500">พนักงาน:</dt>
-                <dd id="lastEmpName" class="font-medium text-slate-800">-</dd>
-              </div>
-              <div class="flex justify-between">
-                <dt class="text-gray-500">เวลา:</dt>
-                <dd id="lastEmpTime" class="font-medium text-slate-800">-</dd>
-              </div>
-              <div class="flex justify-between">
-                <dt class="text-gray-500">สถานะ:</dt>
-                <dd id="lastEmpStatus" class="font-medium text-slate-800">-</dd>
-              </div>
-            </dl>
+        <div
+          class="w-full aspect-video bg-black rounded-lg flex items-center justify-center overflow-hidden"
+        >
+          <video
+            id="video"
+            autoplay
+            muted
+            playsinline
+            class="w-full h-full object-cover"
+          ></video>
+          <div
+            id="camera-overlay"
+            class="absolute text-gray-400 flex flex-col items-center gap-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-12 w-12"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M3 8l3-3h4l3 3h4a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"
+              />
+              <circle cx="12" cy="13" r="3.5"></circle>
+            </svg>
+            <span class="text-sm">กล้องปิดอยู่</span>
           </div>
         </div>
-      </section>
 
-      <!-- Dashboard (ตาราง logs – simple mock ตอนนี้) -->
-      <section class="bg-white shadow rounded-lg p-4 md:p-6">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-lg md:text-xl font-semibold">ภาพรวมระบบ (Dashboard)</h2>
-          <button id="btnReloadDashboard"
-                  class="px-3 py-1 rounded border border-slate-300 text-xs md:text-sm">
-            รีโหลดข้อมูล
-          </button>
+        <!-- เลือกกล้อง + ปุ่ม -->
+        <div class="flex flex-col md:flex-row gap-3 items-center">
+          <div class="flex-1 w-full">
+            <label class="text-xs text-gray-500">เลือกกล้อง:</label>
+            <select
+              id="camera-select"
+              class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            >
+              <option value="">กำลังค้นหากล้อง...</option>
+            </select>
+          </div>
+          <div class="flex gap-2">
+            <button
+              id="btn-start-scan"
+              class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm shadow-sm"
+            >
+              เริ่มสแกน
+            </button>
+            <button
+              id="btn-stop-scan"
+              class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg text-sm"
+            >
+              หยุดสแกน
+            </button>
+          </div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 text-sm">
-            <thead class="bg-gray-50">
+
+        <!-- สถานะ -->
+        <div
+          id="scan-status"
+          class="mt-2 px-3 py-2 rounded-lg text-sm bg-sky-50 text-sky-700"
+        >
+          สถานะ: ยังไม่เริ่มสแกน
+        </div>
+      </div>
+
+      <!-- แผงผลลัพธ์ล่าสุด -->
+      <div class="bg-white rounded-xl shadow-sm p-4 space-y-4">
+        <h2 class="font-semibold text-lg">ผลการสแกนล่าสุด</h2>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-500">พนักงาน:</span>
+            <span id="last-emp" class="font-medium">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">เวลา:</span>
+            <span id="last-time" class="font-medium">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">สถานะ:</span>
+            <span id="last-status" class="font-medium">-</span>
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- ปุ่มลงเวลาแบบเลือกพนักงาน (เผื่อยังไม่ได้ต่อระบบสแกนจริง) -->
+        <div class="space-y-2">
+          <label class="text-xs text-gray-500"
+            >ลงเวลาจากรายชื่อพนักงาน (โหมดทดลอง):</label
+          >
+          <select
+            id="quick-employee-select"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="">-- เลือกพนักงาน --</option>
+          </select>
+          <div class="flex gap-2">
+            <button
+              id="btn-quick-checkin"
+              class="flex-1 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm"
+            >
+              ลงเวลาเข้า
+            </button>
+            <button
+              id="btn-quick-checkout"
+              class="flex-1 px-3 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-sm"
+            >
+              ลงเวลาออก
+            </button>
+          </div>
+          <p class="text-[11px] text-gray-500">
+            โหมดนี้ยังไม่ใช้ใบหน้าจริง แค่ช่วยเทสระบบบันทึกเวลากับ Google
+            Sheet ให้เรียบร้อยก่อน
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard สรุปวันนี้แบบง่าย ๆ -->
+    <section class="bg-white rounded-xl shadow-sm p-4 space-y-3">
+      <div class="flex justify-between items-center">
+        <h2 class="font-semibold text-lg">ภาพรวมระบบ (Dashboard)</h2>
+        <button
+          id="btn-refresh-dashboard"
+          class="px-3 py-1.5 text-xs rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+        >
+          รีเฟรชข้อมูล
+        </button>
+      </div>
+
+      <div id="dashboard-summary" class="text-sm text-gray-600">
+        กำลังโหลดข้อมูล...
+      </div>
+
+      <div class="overflow-auto">
+        <table class="min-w-full text-xs border mt-2">
+          <thead class="bg-gray-50">
             <tr>
-              <th class="px-3 py-2 text-left font-medium text-gray-600">วันที่</th>
-              <th class="px-3 py-2 text-left font-medium text-gray-600">รหัสพนักงาน</th>
-              <th class="px-3 py-2 text-left font-medium text-gray-600">ชื่อ-สกุล</th>
-              <th class="px-3 py-2 text-left font-medium text-gray-600">สาขา/แผนก</th>
-              <th class="px-3 py-2 text-left font-medium text-gray-600">เข้า</th>
-              <th class="px-3 py-2 text-left font-medium text-gray-600">ออก</th>
-              <th class="px-3 py-2 text-left font-medium text-gray-600">สถานะ</th>
+              <th class="border px-2 py-1">วันที่</th>
+              <th class="border px-2 py-1">รหัส</th>
+              <th class="border px-2 py-1">ชื่อ</th>
+              <th class="border px-2 py-1">แผนก</th>
+              <th class="border px-2 py-1">ระดับ</th>
+              <th class="border px-2 py-1">เข้า</th>
+              <th class="border px-2 py-1">ออก</th>
+              <th class="border px-2 py-1">สถานะ</th>
             </tr>
-            </thead>
-            <tbody id="logsTableBody" class="divide-y divide-gray-100">
-            <!-- เติมข้อมูลใน JS -->
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </div>
+          </thead>
+          <tbody id="today-logs-body"></tbody>
+        </table>
+      </div>
+    </section>
   </main>
 
-  <!-- Modal: ตั้งค่า Web App URL -->
-  <div id="webAppModal"
-       class="fixed inset-0 bg-black/50 flex items-center justify-center z-40 hidden">
-    <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-4 md:p-5">
-      <h3 class="text-lg font-semibold mb-3">เชื่อมต่อ Google Apps Script</h3>
-      <p class="text-sm text-gray-500 mb-3">
-        วาง <span class="font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">Web App URL</span>
-        จาก Apps Script (ลิงก์ที่ลงท้ายด้วย <code>/exec</code>)
+  <!-- MODALS ------------------------------------------------------------>
+
+  <!-- Modal ตั้งค่า Web App URL -->
+  <div
+    id="config-modal"
+    class="fixed inset-0 hidden items-center justify-center backdrop z-30"
+  >
+    <div class="backdrop absolute inset-0"></div>
+    <div
+      class="relative bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-5 space-y-4 z-10"
+    >
+      <h2 class="font-semibold text-lg">เชื่อมต่อ Google Apps Script</h2>
+      <p class="text-sm text-gray-600">
+        วาง <span class="font-mono text-xs bg-gray-100 px-1 py-0.5 rounded">Web
+        App URL</span>
+        ที่ได้จากการ Deploy Apps Script (ต้องลงท้ายด้วย
+        <code class="text-xs bg-gray-100 px-1 rounded">/exec</code> และตั้งค่าเป็น
+        <strong>Anyone</strong>)
       </p>
-      <label class="block text-sm text-gray-600 mb-1">Web App URL</label>
-      <input id="webAppUrlInput" type="text"
-             class="w-full border rounded px-2 py-1 text-sm mb-3"
-             placeholder="https://script.google.com/macros/s/XXXXX/exec">
 
-      <div id="webAppTestStatus" class="text-xs text-gray-500 mb-3"></div>
+      <div class="space-y-1">
+        <label class="text-xs text-gray-500">Web App URL</label>
+        <input
+          id="webapp-url-input"
+          type="text"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          placeholder="https://script.google.com/macros/s/XXXXX/exec"
+        />
+        <p id="webapp-url-error" class="text-xs text-red-500"></p>
+        <p id="webapp-url-success" class="text-xs text-emerald-600"></p>
+      </div>
 
-      <div class="flex justify-end gap-2">
-        <button id="btnCloseWebAppModal"
-                class="px-3 py-1 rounded border border-gray-300 text-sm">
+      <div class="flex justify-end gap-2 pt-2">
+        <button
+          id="btn-config-cancel"
+          class="px-3 py-1.5 text-xs rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+        >
           ยกเลิก
         </button>
-        <button id="btnSaveWebAppUrl"
-                class="px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">
-          บันทึก
+        <button
+          id="btn-config-save"
+          class="px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
+        >
+          บันทึกและทดสอบ
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Modal: เพิ่ม/แก้ไขพนักงาน -->
-  <div id="employeeModal"
-       class="fixed inset-0 bg-black/50 flex items-center justify-center z-40 hidden">
-    <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full p-4 md:p-6 relative">
-      <button id="btnCloseEmployeeModal"
-              class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
-        ✕
-      </button>
-      <h3 class="text-lg font-semibold mb-4">เพิ่ม/แก้ไข พนักงาน</h3>
+  <!-- Modal เพิ่มพนักงาน -->
+  <div
+    id="employee-modal"
+    class="fixed inset-0 hidden items-center justify-center backdrop z-30"
+  >
+    <div class="backdrop absolute inset-0"></div>
+    <div
+      class="relative bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 p-5 space-y-4 z-10"
+    >
+      <div class="flex justify-between items-center">
+        <h2 class="font-semibold text-lg">เพิ่ม/แก้ไข พนักงาน</h2>
+        <button
+          id="btn-employee-close"
+          class="text-sm text-gray-500 hover:text-gray-800"
+        >
+          ✕ ปิด
+        </button>
+      </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form id="employee-form" class="grid md:grid-cols-2 gap-4 text-sm">
+        <input type="hidden" id="emp-id" />
+
         <div>
-          <label class="block text-sm text-gray-600 mb-1">รหัสพนักงาน</label>
-          <input id="empCode" type="text"
-                 class="w-full border rounded px-2 py-1 text-sm mb-2"
-                 placeholder="เช่น 1001">
+          <label class="block text-xs text-gray-500">รหัสพนักงาน</label>
+          <input
+            id="emp-code"
+            type="text"
+            class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+            required
+          />
+        </div>
 
-          <label class="block text-sm text-gray-600 mb-1">ชื่อ-สกุล</label>
-          <input id="empFullName" type="text"
-                 class="w-full border rounded px-2 py-1 text-sm mb-2"
-                 placeholder="ชื่อจริง นามสกุล">
+        <div>
+          <label class="block text-xs text-gray-500">ชื่อ-สกุล</label>
+          <input
+            id="emp-name"
+            type="text"
+            class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+            required
+          />
+        </div>
 
-          <label class="block text-sm text-gray-600 mb-1">แผนก</label>
-          <select id="empBranch"
-                  class="w-full border rounded px-2 py-1 text-sm mb-2">
+        <div>
+          <label class="block text-xs text-gray-500">แผนก</label>
+          <select
+            id="emp-branch"
+            class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+            required
+          >
             <option value="">-- เลือกแผนก --</option>
           </select>
-
-          <label class="block text-sm text-gray-600 mb-1">ระดับ</label>
-          <select id="empLevel"
-                  class="w-full border rounded px-2 py-1 text-sm mb-2">
-            <option value="">-- เลือกระดับ --</option>
-          </select>
-
-          <label class="block text-sm text-gray-600 mb-1">อีเมล</label>
-          <input id="empEmail" type="email"
-                 class="w-full border rounded px-2 py-1 text-sm mb-2"
-                 placeholder="name@example.com">
         </div>
 
-        <div class="flex flex-col">
-          <label class="block text-sm text-gray-600 mb-1">รูปถ่าย (หน้าตรง)</label>
-          <input id="empPhotoFile" type="file" accept="image/*"
-                 class="mb-2 text-sm" />
+        <div>
+          <label class="block text-xs text-gray-500">ระดับ</label>
+          <select
+            id="emp-level"
+            class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+            required
+          >
+            <option value="">-- เลือกระดับ --</option>
+          </select>
+        </div>
 
-          <p class="text-xs text-gray-500 mb-2">
-            เลือกรูปจากมือถือ/คอมของพนักงาน ระบบจะเก็บเป็นข้อมูลใช้เทียบใบหน้า
+        <div>
+          <label class="block text-xs text-gray-500">อีเมล</label>
+          <input
+            id="emp-email"
+            type="email"
+            class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs text-gray-500">รูปถ่าย (หน้าตรง)</label>
+          <input
+            id="emp-photo"
+            type="file"
+            accept="image/*"
+            class="mt-1 block w-full text-xs"
+          />
+          <p class="text-[11px] text-gray-500 mt-1">
+            ตอนนี้ยังไม่อัปโหลดขึ้น Drive แค่เตรียมไว้ใช้ทำระบบรู้จำใบหน้าในขั้นถัดไป
           </p>
+        </div>
+      </form>
 
-          <div
-            class="border rounded-lg bg-slate-50 flex items-center justify-center overflow-hidden flex-1">
-            <img id="empPhotoPreview" alt="preview"
-                 class="max-h-56 object-cover hidden" />
-            <span id="empPhotoPlaceholder"
-                  class="text-gray-400 text-sm">ยังไม่มีรูป</span>
-          </div>
+      <div class="flex justify-between items-center pt-2 text-xs">
+        <div id="employee-form-status" class="text-gray-500"></div>
+        <div class="flex gap-2">
+          <button
+            id="btn-employee-cancel"
+            class="px-3 py-1.5 text-xs rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            ยกเลิก
+          </button>
+          <button
+            id="btn-employee-save"
+            class="px-3 py-1.5 text-xs rounded-md bg-emerald-500 text-white hover:bg-emerald-600"
+          >
+            บันทึกพนักงาน
+          </button>
         </div>
       </div>
 
-      <div class="mt-4 flex justify-end gap-2">
-        <button id="btnCancelEmployee"
-                class="px-3 py-1 rounded border border-gray-300 text-sm">
-          ยกเลิก
-        </button>
-        <button id="btnSaveEmployee"
-                class="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-sm">
-          บันทึก
-        </button>
+      <hr class="my-3" />
+
+      <div class="overflow-auto max-h-64 text-xs">
+        <table class="min-w-full border">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="border px-2 py-1">รหัส</th>
+              <th class="border px-2 py-1">ชื่อ</th>
+              <th class="border px-2 py-1">แผนก</th>
+              <th class="border px-2 py-1">ระดับ</th>
+              <th class="border px-2 py-1">อีเมล</th>
+            </tr>
+          </thead>
+          <tbody id="employee-table-body"></tbody>
+        </table>
       </div>
     </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- สคริปต์หลัก ----------------------------------------------------->
   <script>
-    /************************************
-     * Global state
-     ************************************/
-    const STORAGE_KEY_URL = 'faceAttendanceWebAppUrl';
+    /**********************
+     * STATE กลาง
+     **********************/
+    const LS_KEY_URL = "faceAttendance:webAppUrl";
 
-    let webAppUrl = localStorage.getItem(STORAGE_KEY_URL) || '';
-    let branches = [];
-    let levels = [];
-    let employees = [];
-    let currentPhotoDataUrl = '';
+    let webAppUrl = "";
+    let state = {
+      employees: [],
+      branches: [],
+      levels: [],
+      todayLogs: [],
+    };
 
-    // เผื่ออนาคตจะใช้ face-api matcher
-    let faceMatcher = null;
-    let videoStream = null;
-
-    /************************************
-     * Utility: call API
-     ************************************/
+    /**********************
+     * ฟังก์ชันเรียก API
+     * ใช้ form-urlencoded เพื่อเลี่ยง CORS preflight
+     **********************/
     async function callApi(action, payload = {}) {
       if (!webAppUrl) {
-        throw new Error('ยังไม่ได้ตั้งค่า Web App URL');
+        throw new Error("NOT_CONFIGURED");
       }
 
-      const body = JSON.stringify({
-        action,
-        ...payload
+      const params = new URLSearchParams();
+      params.append("action", action);
+      Object.entries(payload).forEach(([k, v]) => {
+        params.append(k, typeof v === "object" ? JSON.stringify(v) : v);
       });
 
       const res = await fetch(webAppUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body
+        method: "POST",
+        body: params,
       });
 
-      const text = await res.text();
-      let json;
-      try {
-        json = JSON.parse(text);
-      } catch (err) {
-        console.error('ไม่สามารถ parse JSON:', text);
-        throw new Error('API response ไม่ใช่ JSON');
+      if (!res.ok) {
+        throw new Error("HTTP " + res.status);
       }
 
-      if (!json.ok) {
-        throw new Error(json.error || 'API error');
+      const data = await res.json();
+      if (!data.ok) {
+        throw new Error(data.error || "API error");
       }
-      return json.data;
+      return data.result;
     }
 
-    /************************************
-     * Web App URL modal
-     ************************************/
-    const webAppModal = document.getElementById('webAppModal');
-    const webAppUrlInput = document.getElementById('webAppUrlInput');
-    const webAppTestStatus = document.getElementById('webAppTestStatus');
-
-    document.getElementById('btnResetUrl').addEventListener('click', () => {
-      webAppUrlInput.value = webAppUrl || '';
-      webAppTestStatus.textContent = '';
-      webAppModal.classList.remove('hidden');
-    });
-
-    document.getElementById('btnCloseWebAppModal').addEventListener('click', () => {
-      webAppModal.classList.add('hidden');
-    });
-
-    document.getElementById('btnSaveWebAppUrl').addEventListener('click', async () => {
-      const url = webAppUrlInput.value.trim();
-      if (!url) {
-        alert('กรุณาวาง Web App URL');
-        return;
-      }
-      webAppTestStatus.textContent = 'กำลังทดสอบการเชื่อมต่อ...';
-
-      try {
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'ping' })
-        });
-        const text = await res.text();
-        let json;
-        try {
-          json = JSON.parse(text);
-        } catch (e) {
-          throw new Error('response ไม่ใช่ JSON: ' + text);
-        }
-        if (!json.ok) {
-          throw new Error(json.error || 'ไม่สามารถ ping API ได้');
-        }
-
-        webAppUrl = url;
-        localStorage.setItem(STORAGE_KEY_URL, webAppUrl);
-        webAppTestStatus.textContent = 'เชื่อมต่อสำเร็จ ✔';
-        webAppTestStatus.className = 'text-xs text-emerald-600 mb-3';
-
-        webAppModal.classList.add('hidden');
-        await initialLoad();
-      } catch (err) {
-        console.error(err);
-        webAppTestStatus.textContent = 'เชื่อมต่อไม่สำเร็จ: ' + err.message;
-        webAppTestStatus.className = 'text-xs text-rose-600 mb-3';
-      }
-    });
-
-    /************************************
-     * Employee modal
-     ************************************/
-    const employeeModal = document.getElementById('employeeModal');
-    const empCodeEl = document.getElementById('empCode');
-    const empFullNameEl = document.getElementById('empFullName');
-    const empBranchEl = document.getElementById('empBranch');
-    const empLevelEl = document.getElementById('empLevel');
-    const empEmailEl = document.getElementById('empEmail');
-    const empPhotoFileEl = document.getElementById('empPhotoFile');
-    const empPhotoPreview = document.getElementById('empPhotoPreview');
-    const empPhotoPlaceholder = document.getElementById('empPhotoPlaceholder');
-
-    function openEmployeeModal() {
-      // reset form
-      empCodeEl.value = '';
-      empFullNameEl.value = '';
-      empBranchEl.value = '';
-      empLevelEl.value = '';
-      empEmailEl.value = '';
-      empPhotoFileEl.value = '';
-      currentPhotoDataUrl = '';
-      empPhotoPreview.classList.add('hidden');
-      empPhotoPlaceholder.classList.remove('hidden');
-
-      // เติม dropdown แผนก/ระดับ
-      fillBranchAndLevelOptions();
-
-      employeeModal.classList.remove('hidden');
+    /**********************
+     * จัดการ MODAL
+     **********************/
+    function openModal(el) {
+      el.classList.remove("hidden");
+      el.classList.add("flex");
+    }
+    function closeModal(el) {
+      el.classList.add("hidden");
+      el.classList.remove("flex");
     }
 
-    document.getElementById('btnAdmin').addEventListener('click', openEmployeeModal);
-    document.getElementById('btnCloseEmployeeModal').addEventListener('click', () => {
-      employeeModal.classList.add('hidden');
-    });
-    document.getElementById('btnCancelEmployee').addEventListener('click', () => {
-      employeeModal.classList.add('hidden');
-    });
+    /**********************
+     * ตั้งค่า / ทดสอบ URL
+     **********************/
+    async function onSaveWebAppUrl() {
+      const input = document.getElementById("webapp-url-input");
+      const url = input.value.trim();
+      const errorEl = document.getElementById("webapp-url-error");
+      const successEl = document.getElementById("webapp-url-success");
+      errorEl.textContent = "";
+      successEl.textContent = "";
 
-    empPhotoFileEl.addEventListener('change', () => {
-      const file = empPhotoFileEl.files[0];
-      if (!file) {
-        currentPhotoDataUrl = '';
-        empPhotoPreview.classList.add('hidden');
-        empPhotoPlaceholder.classList.remove('hidden');
+      if (!url || !url.startsWith("https://script.google.com/macros/s/")) {
+        errorEl.textContent = "กรุณาวาง URL ที่ถูกต้องจาก Apps Script (ต้องขึ้นต้นด้วย https://script.google.com/macros/s/ และลงท้าย /exec)";
+        return;
+      }
+      if (!url.endsWith("/exec")) {
+        errorEl.textContent = "URL ต้องลงท้ายด้วย /exec";
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = e => {
-        currentPhotoDataUrl = e.target.result; // data URL
-        empPhotoPreview.src = currentPhotoDataUrl;
-        empPhotoPreview.classList.remove('hidden');
-        empPhotoPlaceholder.classList.add('hidden');
-      };
-      reader.readAsDataURL(file);
-    });
-
-    document.getElementById('btnSaveEmployee').addEventListener('click', async () => {
-      const code = empCodeEl.value.trim();
-      const fullName = empFullNameEl.value.trim();
-      const branch = empBranchEl.value.trim();
-      const level = empLevelEl.value.trim();
-      const email = empEmailEl.value.trim();
-
-      if (!code || !fullName) {
-        alert('กรุณากรอกรหัสพนักงานและชื่อ-สกุล');
-        return;
-      }
-      if (!branch || !level) {
-        alert('กรุณาเลือกแผนกและระดับ');
-        return;
-      }
-      if (!currentPhotoDataUrl) {
-        if (!confirm('ยังไม่ได้เลือกรูปหน้า ต้องการบันทึกเลยหรือไม่?')) {
-          return;
-        }
-      }
+      webAppUrl = url;
 
       try {
-        const result = await callApi('saveEmployee', {
-          employee: {
-            code,
-            fullName,
-            branch,
-            level,
-            email,
-            photoDataUrl: currentPhotoDataUrl
-          }
-        });
-        console.log('saveEmployee result', result);
-        alert('บันทึกพนักงานสำเร็จ');
-        employeeModal.classList.add('hidden');
-        await loadEmployees(); // reload employees
+        await callApi("ping");
+        localStorage.setItem(LS_KEY_URL, url);
+        successEl.textContent = "เชื่อมต่อสำเร็จ! กำลังโหลดข้อมูลเริ่มต้น...";
+        await loadInitialData();
+        setTimeout(() => {
+          closeModal(document.getElementById("config-modal"));
+        }, 600);
       } catch (err) {
         console.error(err);
-        alert('บันทึกพนักงานไม่สำเร็จ: ' + err.message);
-      }
-    });
-
-    /************************************
-     * โหลด config (Branches / Levels / Employees / Logs)
-     ************************************/
-    async function loadConfig() {
-      try {
-        const data = await callApi('getConfig');
-        branches = data.branches || [];
-        levels = data.levels || [];
-        console.log('Config loaded', branches, levels);
-        fillBranchAndLevelOptions();
-      } catch (err) {
-        console.error(err);
-        alert('โหลดข้อมูลตั้งต้นไม่สำเร็จ: ' + err.message);
+        errorEl.textContent = "เชื่อมต่อไม่สำเร็จ: " + err.message;
       }
     }
 
-    function fillBranchAndLevelOptions() {
+    function resetUrl() {
+      localStorage.removeItem(LS_KEY_URL);
+      webAppUrl = "";
+      document.getElementById("webapp-url-input").value = "";
+      document.getElementById("webapp-url-error").textContent = "";
+      document.getElementById("webapp-url-success").textContent = "";
+      openModal(document.getElementById("config-modal"));
+    }
+
+    /**********************
+     * โหลดข้อมูลเริ่มต้นจาก API
+     **********************/
+    async function loadInitialData() {
+      if (!webAppUrl) return;
+      try {
+        const result = await callApi("getInitialData");
+        state.employees = result.employees || [];
+        state.branches = result.branches || [];
+        state.levels = result.levels || [];
+        state.todayLogs = result.todayLogs || [];
+
+        renderEmployees();
+        renderBranchesLevelsToForm();
+        renderDashboard();
+        renderQuickEmployeeSelect();
+      } catch (err) {
+        console.error(err);
+        document.getElementById("dashboard-summary").textContent =
+          "โหลดข้อมูลไม่สำเร็จ: " + err.message;
+      }
+    }
+
+    function renderEmployees() {
+      const tbody = document.getElementById("employee-table-body");
+      tbody.innerHTML = "";
+      state.employees.forEach((emp) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="border px-2 py-1">${emp.code || ""}</td>
+          <td class="border px-2 py-1">${emp.fullName || ""}</td>
+          <td class="border px-2 py-1">${emp.branch || ""}</td>
+          <td class="border px-2 py-1">${emp.level || ""}</td>
+          <td class="border px-2 py-1">${emp.email || ""}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderBranchesLevelsToForm() {
+      const branchSelect = document.getElementById("emp-branch");
+      const levelSelect = document.getElementById("emp-level");
+      const quickEmpSelect = document.getElementById("quick-employee-select");
+
       // Branches
-      empBranchEl.innerHTML =
-        '<option value="">-- เลือกแผนก --</option>' +
-        branches.map(b => `<option value="${b.name}">${b.name}</option>`).join('');
+      branchSelect.innerHTML = `<option value="">-- เลือกแผนก --</option>`;
+      state.branches.forEach((b) => {
+        const opt = document.createElement("option");
+        opt.value = b.name || b.id || "";
+        opt.textContent = b.name || "";
+        branchSelect.appendChild(opt);
+      });
 
       // Levels
-      empLevelEl.innerHTML =
-        '<option value="">-- เลือกระดับ --</option>' +
-        levels.map(l => `<option value="${l.name}">${l.name}</option>`).join('');
+      levelSelect.innerHTML = `<option value="">-- เลือกระดับ --</option>`;
+      state.levels.forEach((l) => {
+        const opt = document.createElement("option");
+        opt.value = l.name || l.id || "";
+        opt.textContent = l.name || "";
+        levelSelect.appendChild(opt);
+      });
+
+      // Quick select จะ render ใน renderQuickEmployeeSelect อีกที
+      quickEmpSelect.innerHTML = `<option value="">-- เลือกพนักงาน --</option>`;
     }
 
-    async function loadEmployees() {
+    function renderQuickEmployeeSelect() {
+      const sel = document.getElementById("quick-employee-select");
+      sel.innerHTML = `<option value="">-- เลือกพนักงาน --</option>`;
+      state.employees.forEach((emp) => {
+        const opt = document.createElement("option");
+        opt.value = emp.code || "";
+        opt.textContent = `${emp.code || ""} - ${emp.fullName || ""}`;
+        sel.appendChild(opt);
+      });
+    }
+
+    function renderDashboard() {
+      const summaryEl = document.getElementById("dashboard-summary");
+      const body = document.getElementById("today-logs-body");
+      body.innerHTML = "";
+
+      const count = state.todayLogs.length;
+      if (count === 0) {
+        summaryEl.textContent = "วันนี้ยังไม่มีการลงเวลา";
+      } else {
+        summaryEl.textContent = `วันนี้มีการลงเวลา ${count} รายการ`;
+      }
+
+      state.todayLogs.forEach((log) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="border px-2 py-1">${log.date || ""}</td>
+          <td class="border px-2 py-1">${log.code || ""}</td>
+          <td class="border px-2 py-1">${log.fullName || ""}</td>
+          <td class="border px-2 py-1">${log.branch || ""}</td>
+          <td class="border px-2 py-1">${log.level || ""}</td>
+          <td class="border px-2 py-1">${log.timeIn || ""}</td>
+          <td class="border px-2 py-1">${log.timeOut || ""}</td>
+          <td class="border px-2 py-1">${log.status || ""}</td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    /**********************
+     * บันทึกพนักงาน
+     **********************/
+    async function onSaveEmployee() {
+      const formStatus = document.getElementById("employee-form-status");
+      formStatus.textContent = "";
+
+      const id = document.getElementById("emp-id").value.trim();
+      const code = document.getElementById("emp-code").value.trim();
+      const name = document.getElementById("emp-name").value.trim();
+      const branch = document.getElementById("emp-branch").value.trim();
+      const level = document.getElementById("emp-level").value.trim();
+      const email = document.getElementById("emp-email").value.trim();
+      // ตอนนี้ยังไม่อัปโหลดรูป/faceData จริง
+      const photoUrl = "";
+      const faceData = "";
+
+      if (!code || !name || !branch || !level) {
+        formStatus.textContent = "กรุณากรอกข้อมูลให้ครบ";
+        formStatus.classList.remove("text-emerald-600");
+        formStatus.classList.add("text-red-500");
+        return;
+      }
+
       try {
-        employees = await callApi('getEmployees');
-        console.log('Employees', employees);
-        // อนาคต: ใช้สร้าง faceMatcher ได้
+        const result = await callApi("saveEmployee", {
+          id,
+          code,
+          fullName: name,
+          branch,
+          level,
+          email,
+          photoUrl,
+          faceData,
+        });
+        formStatus.textContent = "บันทึกสำเร็จ (id: " + result.id + ")";
+        formStatus.classList.remove("text-red-500");
+        formStatus.classList.add("text-emerald-600");
+
+        // เคลียร์ฟอร์มเบา ๆ
+        document.getElementById("emp-id").value = "";
+        document.getElementById("emp-code").value = "";
+        document.getElementById("emp-name").value = "";
+        document.getElementById("emp-email").value = "";
+        document.getElementById("emp-branch").value = "";
+        document.getElementById("emp-level").value = "";
+
+        await loadInitialData();
       } catch (err) {
         console.error(err);
-        alert('โหลดรายชื่อพนักงานไม่สำเร็จ: ' + err.message);
+        formStatus.textContent = "บันทึกไม่สำเร็จ: " + err.message;
+        formStatus.classList.remove("text-emerald-600");
+        formStatus.classList.add("text-red-500");
       }
     }
 
-    async function loadLogs() {
-      try {
-        const logs = await callApi('getLogs');
-        const tbody = document.getElementById('logsTableBody');
-        tbody.innerHTML = '';
+    /**********************
+     * ลงเวลาแบบ Quick Select (แทนสแกนจริงก่อน)
+     **********************/
+    async function quickLog(type) {
+      const select = document.getElementById("quick-employee-select");
+      const code = select.value;
+      if (!code) return;
 
-        if (!logs || logs.length === 0) {
-          const row = document.createElement('tr');
-          row.innerHTML =
-            '<td colspan="7" class="px-3 py-3 text-center text-gray-400 text-sm">ยังไม่มีข้อมูลการลงเวลา</td>';
-          tbody.appendChild(row);
+      const emp = state.employees.find((e) => String(e.code) === String(code));
+      if (!emp) return;
+
+      try {
+        const result = await callApi("logScan", {
+          code: emp.code || "",
+          fullName: emp.fullName || "",
+          branch: emp.branch || "",
+          level: emp.level || "",
+          logType: type,
+        });
+
+        // update last result panel
+        document.getElementById("last-emp").textContent =
+          emp.fullName || emp.code || "";
+        document.getElementById("last-time").textContent = result.time || "-";
+        document.getElementById("last-status").textContent =
+          result.type || type;
+
+        await loadInitialData();
+      } catch (err) {
+        console.error(err);
+        alert("ลงเวลาไม่สำเร็จ: " + err.message);
+      }
+    }
+
+    /**********************
+     * กล้อง (เวอร์ชันเบา ๆ)
+     **********************/
+    let currentStream = null;
+
+    async function listCameras() {
+      const select = document.getElementById("camera-select");
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoInputs = devices.filter((d) => d.kind === "videoinput");
+        select.innerHTML = "";
+        if (videoInputs.length === 0) {
+          select.innerHTML =
+            '<option value="">ไม่พบกล้อง</option>';
           return;
         }
-
-        logs.forEach(log => {
-          const tr = document.createElement('tr');
-          tr.className = 'hover:bg-slate-50';
-          tr.innerHTML = `
-            <td class="px-3 py-2">${log.date || ''}</td>
-            <td class="px-3 py-2">${log.code || ''}</td>
-            <td class="px-3 py-2">${log.fullName || ''}</td>
-            <td class="px-3 py-2">${log.branch || ''}</td>
-            <td class="px-3 py-2">${log.timeIn || ''}</td>
-            <td class="px-3 py-2">${log.timeOut || ''}</td>
-            <td class="px-3 py-2">${log.status || ''}</td>
-          `;
-          tbody.appendChild(tr);
+        videoInputs.forEach((dev, idx) => {
+          const opt = document.createElement("option");
+          opt.value = dev.deviceId;
+          opt.textContent =
+            dev.label || `camera ${idx + 1} (${dev.deviceId})`;
+          select.appendChild(opt);
         });
       } catch (err) {
         console.error(err);
-        alert('โหลดข้อมูลลงเวลาไม่สำเร็จ: ' + err.message);
-      }
-    }
-
-    document.getElementById('btnReloadDashboard')
-      .addEventListener('click', loadLogs);
-
-    /************************************
-     * กล้อง + สแกน (ตอนนี้ยังไม่ผูก face-api)
-     ************************************/
-    const videoEl = document.getElementById('video');
-    const overlayEl = document.getElementById('overlay');
-    const videoPlaceholder = document.getElementById('videoPlaceholder');
-    const cameraSelect = document.getElementById('cameraSelect');
-    const cameraStatusText = document.getElementById('cameraStatusText');
-    const scanStatus = document.getElementById('scanStatus');
-    const btnStartScan = document.getElementById('btnStartScan');
-    const btnStopScan = document.getElementById('btnStopScan');
-
-    async function enumerateCameras() {
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter(d => d.kind === 'videoinput');
-
-        if (videoDevices.length === 0) {
-          cameraSelect.innerHTML =
-            '<option value="">ไม่พบกล้อง</option>';
-          cameraStatusText.textContent = 'ไม่พบกล้อง';
-          return;
-        }
-
-        cameraSelect.innerHTML = videoDevices
-          .map((d, idx) =>
-            `<option value="${d.deviceId}">${d.label || 'กล้อง ' + (idx + 1)}</option>`
-          )
-          .join('');
-
-        cameraStatusText.textContent = 'กล้องพร้อมใช้งาน';
-      } catch (err) {
-        console.error('enumerateDevices error', err);
-        cameraSelect.innerHTML =
+        select.innerHTML =
           '<option value="">ไม่สามารถเข้าถึงกล้อง</option>';
-        cameraStatusText.textContent = 'ไม่สามารถเข้าถึงกล้อง';
       }
     }
 
-    async function startScan() {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert('เบราว์เซอร์ไม่รองรับการใช้กล้อง');
-        return;
-      }
-
-      const deviceId = cameraSelect.value;
-      const constraints = {
-        video: deviceId ? { deviceId: { exact: deviceId } } : true
-      };
+    async function startCamera() {
+      const statusEl = document.getElementById("scan-status");
+      const overlay = document.getElementById("camera-overlay");
+      const select = document.getElementById("camera-select");
+      const deviceId = select.value;
 
       try {
-        if (videoStream) {
-          videoStream.getTracks().forEach(t => t.stop());
+        if (currentStream) {
+          currentStream.getTracks().forEach((t) => t.stop());
         }
 
-        videoStream = await navigator.mediaDevices.getUserMedia(constraints);
-        videoEl.srcObject = videoStream;
+        const constraints = deviceId
+          ? { video: { deviceId: { exact: deviceId } } }
+          : { video: true };
 
-        videoEl.classList.remove('hidden');
-        videoPlaceholder.classList.add('hidden');
-
-        btnStartScan.disabled = true;
-        btnStopScan.disabled = false;
-        scanStatus.textContent = 'กำลังสแกน...';
-
-      } catch (err) {
-        console.error('getUserMedia error', err);
-        alert('ไม่สามารถเปิดกล้องได้: ' + err.message);
-      }
-    }
-
-    function stopScan() {
-      if (videoStream) {
-        videoStream.getTracks().forEach(t => t.stop());
-        videoStream = null;
-      }
-      videoEl.classList.add('hidden');
-      videoPlaceholder.classList.remove('hidden');
-      btnStartScan.disabled = false;
-      btnStopScan.disabled = true;
-      scanStatus.textContent = 'หยุดสแกนแล้ว';
-    }
-
-    btnStartScan.addEventListener('click', startScan);
-    btnStopScan.addEventListener('click', stopScan);
-
-    /************************************
-     * initial load
-     ************************************/
-    async function initialLoad() {
-      if (!webAppUrl) {
-        // บังคับให้ตั้งค่า URL ก่อน
-        webAppModal.classList.remove('hidden');
-        return;
-      }
-      try {
-        await loadConfig();
-        await loadEmployees();
-        await loadLogs();
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        currentStream = stream;
+        const video = document.getElementById("video");
+        video.srcObject = stream;
+        overlay.classList.add("hidden");
+        statusEl.textContent = "สถานะ: กำลังสแกน (ยังไม่ผูกกับใบหน้าจริง)";
       } catch (err) {
         console.error(err);
+        statusEl.textContent = "สถานะ: เปิดกล้องไม่สำเร็จ - " + err.message;
       }
     }
 
-    window.addEventListener('load', async () => {
-      await enumerateCameras();
-      await initialLoad();
+    function stopCamera() {
+      const statusEl = document.getElementById("scan-status");
+      const overlay = document.getElementById("camera-overlay");
+      if (currentStream) {
+        currentStream.getTracks().forEach((t) => t.stop());
+        currentStream = null;
+      }
+      document.getElementById("video").srcObject = null;
+      overlay.classList.remove("hidden");
+      statusEl.textContent = "สถานะ: หยุดสแกนแล้ว";
+    }
+
+    /**********************
+     * INIT
+     **********************/
+    document.addEventListener("DOMContentLoaded", async () => {
+      // โหลด URL จาก localStorage
+      const saved = localStorage.getItem(LS_KEY_URL);
+      if (saved) {
+        webAppUrl = saved;
+        document.getElementById("webapp-url-input").value = saved;
+        loadInitialData();
+      } else {
+        openModal(document.getElementById("config-modal"));
+      }
+
+      // เตรียมรายการกล้อง
+      if (navigator.mediaDevices?.enumerateDevices) {
+        listCameras();
+      } else {
+        document.getElementById("camera-select").innerHTML =
+          '<option value="">เบราว์เซอร์ไม่รองรับ mediaDevices</option>';
+      }
+
+      /***** ผูก event ต่าง ๆ *****/
+      document
+        .getElementById("btn-open-config")
+        .addEventListener("click", () =>
+          openModal(document.getElementById("config-modal"))
+        );
+
+      document
+        .getElementById("btn-config-save")
+        .addEventListener("click", onSaveWebAppUrl);
+
+      document
+        .getElementById("btn-config-cancel")
+        .addEventListener("click", () =>
+          closeModal(document.getElementById("config-modal"))
+        );
+
+      document
+        .getElementById("btn-reset-url")
+        .addEventListener("click", resetUrl);
+
+      document
+        .getElementById("btn-open-admin")
+        .addEventListener("click", () => {
+          renderEmployees();
+          renderBranchesLevelsToForm();
+          openModal(document.getElementById("employee-modal"));
+        });
+
+      document
+        .getElementById("btn-employee-close")
+        .addEventListener("click", () =>
+          closeModal(document.getElementById("employee-modal"))
+        );
+      document
+        .getElementById("btn-employee-cancel")
+        .addEventListener("click", () =>
+          closeModal(document.getElementById("employee-modal"))
+        );
+
+      document
+        .getElementById("btn-employee-save")
+        .addEventListener("click", (e) => {
+          e.preventDefault();
+          onSaveEmployee();
+        });
+
+      document
+        .getElementById("btn-refresh-dashboard")
+        .addEventListener("click", loadInitialData);
+
+      document
+        .getElementById("btn-start-scan")
+        .addEventListener("click", startCamera);
+      document
+        .getElementById("btn-stop-scan")
+        .addEventListener("click", stopCamera);
+
+      document
+        .getElementById("btn-quick-checkin")
+        .addEventListener("click", () => quickLog("IN"));
+      document
+        .getElementById("btn-quick-checkout")
+        .addEventListener("click", () => quickLog("OUT"));
     });
   </script>
 </body>
