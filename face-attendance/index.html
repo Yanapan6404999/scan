@@ -340,24 +340,33 @@ function resetUrl(evt) {
 
 /**************** API CALL ****************/
 
-async function callApi(action, payload = {}) {
+async function callApi(action, data = {}) {
+  const webAppUrl = localStorage.getItem('webAppUrl');
   if (!webAppUrl) {
     throw new Error('ยังไม่ได้ตั้งค่า Web App URL');
   }
-  const body = Object.assign({ action }, payload);
+
+  // ใช้ form-urlencoded เพื่อให้เป็น simple request (ไม่โดน preflight)
+  const params = new URLSearchParams();
+  params.append('action', action);
+  params.append('payload', JSON.stringify(data));
 
   const res = await fetch(webAppUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    body: params,             // ไม่ต้องใส่ headers เลย ให้ browser ตั้ง Content-Type เอง
   });
 
-  const data = await res.json();
-  if (!data.ok) {
-    throw new Error(data.error || 'API error');
+  if (!res.ok) {
+    throw new Error('API error: ' + res.status);
   }
-  return data;
+
+  const json = await res.json();
+  if (json.ok === false) {
+    throw new Error(json.error || 'API response error');
+  }
+  return json;
 }
+
 
 /**************** DASHBOARD ****************/
 
@@ -665,3 +674,4 @@ async function logTimeFromFace(code) {
 
 </body>
 </html>
+
