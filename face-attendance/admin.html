@@ -836,7 +836,7 @@
               </tr>
               </thead>
               <tbody id="summaryTableBody">
-              <tr><td colspan="9" class="text-center">ยังไม่มีข้อมูล</td></tr>
+              <tr><td colspan="8" class="text-center">ยังไม่มีข้อมูล</td></tr>
               </tbody>
             </table>
           </div>
@@ -1021,7 +1021,6 @@
   }
 
   function formatDateThai(dateStr) {
-    // dateStr จากชีตเป็น yyyy-MM-dd หรือ Date object
     let d;
     if (dateStr instanceof Date) {
       d = dateStr;
@@ -1035,7 +1034,7 @@
     }
     const dd = d.getDate().toString().padStart(2,'0');
     const mm = (d.getMonth()+1).toString().padStart(2,'0');
-    const yy = d.getFullYear() + 543; // แสดงเป็น พ.ศ.
+    const yy = d.getFullYear() + 543;
     return `${dd}/${mm}/${yy}`;
   }
 
@@ -1073,16 +1072,14 @@
     });
     $('statTodayLate').textContent = `สาย ${lateCount} คน`;
 
-    // summary เดือนนี้จาก getSummaryRange
     const rows = (monthSummary && monthSummary.rows) || [];
-    let normal = 0, late = 0, absent = 0, leave = 0;
+    let normal = 0, late = 0, absent = 0;
     rows.forEach(r => {
       normal += Number(r.normalCount || 0);
       late   += Number(r.lateCount || 0);
       absent += Number(r.absentCount || 0);
-      leave  += Number(r.leaveCount || 0);
     });
-    $('statMonthOverview').textContent = `${normal} ปกติ / ${late} สาย / ${leave} ลา / ${absent} ขาด`;
+    $('statMonthOverview').textContent = `${normal} ปกติ / ${late} สาย / ${absent} ขาด`;
 
     const tbody = $('dashboardTodayBody');
     if (!todayRows.length) {
@@ -1115,7 +1112,6 @@
       ? levels.map(l => `<option value="${l.name}">${l.name}</option>`).join('')
       : '<option value="">- ยังไม่มีระดับ -</option>';
 
-    // ใช้สำหรับ filter ด้วย
     const branchFilter = $('logBranchFilter');
     const branchFilter2 = $('sumBranchFilter');
     const opts = ['<option value="ALL">ทุกสาขา</option>']
@@ -1244,7 +1240,7 @@
     }
     tb.innerHTML = rows.map(r => {
       const total = calcTotalHours(r.t1, r.t4);
-      const locText = r.location || '';
+      const locText = r.locationText || '';
       const evidence = r.evidenceUrl
         ? `<a href="${r.evidenceUrl}" target="_blank">เปิดรูป</a>`
         : '-';
@@ -1285,7 +1281,7 @@
     const rows = (res && res.rows) || [];
     const tb = $('summaryTableBody');
     if (!rows.length) {
-      tb.innerHTML = '<tr><td colspan="9" class="text-center">ยังไม่มีข้อมูล</td></tr>';
+      tb.innerHTML = '<tr><td colspan="8" class="text-center">ยังไม่มีข้อมูล</td></tr>';
       return;
     }
     tb.innerHTML = rows.map(r => `
@@ -1297,7 +1293,6 @@
         <td>${r.days || 0}</td>
         <td>${r.normalCount || 0}</td>
         <td>${r.lateCount || 0}</td>
-        <td>${r.leaveCount || 0}</td>
         <td>${r.absentCount || 0}</td>
       </tr>
     `).join('');
@@ -1462,7 +1457,7 @@
     setApiUrl(url);
     $('apiUrlDisplay').textContent = 'API: ' + url;
     closeUrlCard();
-    initAdmin(); // ลองเชื่อมใหม่
+    initAdmin();
   }
 
   /***********************************************************
@@ -1493,7 +1488,6 @@
         api.call('getEmployees'),
         api.call('getBranchesLevels'),
         api.call('getTodaySummary'),
-        // summary เดือนปัจจุบัน ทุกสาขา
         (async () => {
           const now = new Date();
           const year = now.getFullYear();
@@ -1513,11 +1507,9 @@
       renderBranchesLevelsTables();
       renderDashboard(todaySummary, monthSummary);
 
-      // prepare selects year/month
       fillYearMonthSelect($('logYearFilter'), $('logMonthFilter'));
       fillYearMonthSelect($('sumYearFilter'), $('sumMonthFilter'));
 
-      // โหลด Logs / Summary ครั้งแรก
       reloadLogs();
       reloadSummary();
 
@@ -1532,7 +1524,6 @@
    * EVENT BINDING
    ***********************************************************/
   document.addEventListener('DOMContentLoaded', () => {
-    // navigation
     document.querySelectorAll('.nav-item').forEach(el => {
       el.addEventListener('click', () => {
         const sec = el.getAttribute('data-section');
@@ -1555,23 +1546,18 @@
     $('btnSaveUrl').addEventListener('click', saveUrl);
     $('btnCancelUrl').addEventListener('click', closeUrlCard);
 
-    // employees
     $('empSearch').addEventListener('input', renderEmployeesTable);
     $('btnSaveEmployee').addEventListener('click', saveEmployee);
     $('btnResetEmpForm').addEventListener('click', resetEmpForm);
 
-    // logs
     $('btnReloadLogs').addEventListener('click', reloadLogs);
     $('logSearch').addEventListener('keydown', e => { if (e.key === 'Enter') reloadLogs(); });
 
-    // summary
     $('btnReloadSummary').addEventListener('click', reloadSummary);
 
-    // settings
     $('btnAddBranch').addEventListener('click', addBranch);
     $('btnAddLevel').addEventListener('click', addLevel);
 
-    // init
     initAdmin();
   });
 </script>
