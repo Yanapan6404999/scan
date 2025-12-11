@@ -4,406 +4,1210 @@
   <meta charset="UTF-8" />
   <title>ระบบลงเวลาพนักงาน</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+
+  <!-- ฟอนต์สวยๆ -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
   <style>
+    :root {
+      --primary: #2563eb;
+      --primary-soft: #dbeafe;
+      --accent: #22c55e;
+      --danger: #ef4444;
+      --bg: #f3f4f6;
+      --text-main: #111827;
+      --text-soft: #6b7280;
+      --border: #e5e7eb;
+      --card-bg: #ffffff;
+      --yellow: #fbbf24;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Prompt", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
     body {
-      background-color: #f5f7fb;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text-main);
     }
-    .page-header {
-      padding: 16px 0;
-      margin-bottom: 8px;
-      border-bottom: 1px solid #e5e5e5;
+
+    .page-wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    header .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    header .title-main {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    header .title-sub {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .badge-connection {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: rgba(15, 118, 110, 0.15);
+      color: #a5f3fc;
+    }
+
+    .badge-connection.offline {
+      background: rgba(127, 29, 29, 0.4);
+      color: #fecaca;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.85);
+    }
+
+    .badge-connection.offline .dot {
+      background: #f97373;
+      box-shadow: 0 0 8px rgba(248, 113, 113, 0.8);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button,
+    .btn {
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 8px 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
+      white-space: nowrap;
+    }
+
+    button:active,
+    .btn:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: white;
+      border: 1px solid rgba(156, 163, 175, 0.8);
+    }
+
+    .btn-danger-outline {
+      background: transparent;
+      color: #fecaca;
+      border: 1px solid rgba(248, 113, 113, 0.7);
+    }
+
+    .btn-success {
+      background: #22c55e;
+      color: white;
+      box-shadow: 0 3px 10px rgba(34,197,94,0.4);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #111827;
+      border: 1px solid var(--border);
+    }
+
+    main {
+      flex: 1;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 7fr) minmax(260px, 4fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+      border: 1px solid #e5e7eb;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 8px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title span.icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .camera-card {
+      margin-bottom: 16px;
+    }
+
+    .camera-box {
+      border-radius: 16px;
+      border: 1px dashed #cbd5f5;
+      background: radial-gradient(circle at top left, #eff6ff, #e5e7eb);
+      height: 270px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .camera-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: #6b7280;
+    }
+
+    .camera-placeholder .icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 999px;
+      border: 2px solid #9ca3af;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+    }
+
+    .camera-footer {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    select {
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      outline: none;
+      font-size: 13px;
+      background: white;
+      min-width: 230px;
+    }
+
+    .pill {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #f9fafb;
+      color: #6b7280;
+    }
+
+    .pill strong {
+      color: #111827;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead {
+      background: #f3f4f6;
+    }
+
+    th, td {
+      padding: 7px 8px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      font-weight: 500;
+      color: #374151;
+      font-size: 12px;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f9fafb;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .badge-status {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 999px;
       display: inline-block;
-      margin-right: 4px;
+    }
+
+    .badge-normal {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-late {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .badge-absent {
+      background: #ffe4e6;
+      color: #be123c;
+    }
+
+    .badge-other {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .latest-box {
+      font-size: 13px;
+    }
+
+    .latest-label {
+      color: var(--text-soft);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .latest-content {
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: #f9fafb;
+      border: 1px dashed #e5e7eb;
+    }
+
+    .latest-row {
+      display: flex;
+      gap: 8px;
+      font-size: 13px;
+      flex-wrap: wrap;
+    }
+
+    .latest-row span.label {
+      min-width: 70px;
+      color: #6b7280;
+    }
+
+    .text-muted {
+      color: #9ca3af;
+    }
+
+    .mt-8 { margin-top: 8px; }
+    .mt-12 { margin-top: 12px; }
+
+    .text-sm { font-size: 12px; }
+
+    .flex {
+      display: flex;
+    }
+
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .gap-6 {
+      gap: 6px;
+    }
+
+    .scroll-x {
+      overflow-x: auto;
+    }
+
+    /* ---------- Modal ---------- */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 10px;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal {
+      max-width: 420px;
+      width: 100%;
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 10px 25px rgba(15,23,42,0.3);
+      padding: 18px 18px 16px;
+      animation: pop 0.16s ease-out;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: transparent;
+      border-radius: 999px;
+      width: 26px;
+      height: 26px;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      color: #6b7280;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    .form-label {
+      font-size: 13px;
+      margin-bottom: 3px;
+      color: #374151;
+    }
+
+    .input,
+    textarea {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      padding: 7px 9px;
+      font-size: 13px;
+      outline: none;
+      resize: vertical;
+      min-height: 32px;
+    }
+
+    .input:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px rgba(37,99,235,0.3);
+    }
+
+    textarea {
+      min-height: 70px;
+    }
+
+    .helper {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .modal-actions {
+      margin-top: 12px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .error-text {
+      font-size: 12px;
+      color: var(--danger);
+      margin-top: 4px;
+    }
+
+    .success-text {
+      font-size: 12px;
+      color: #16a34a;
+      margin-top: 4px;
+    }
+
+    @keyframes pop {
+      from {
+        transform: translateY(8px) scale(0.97);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container py-3">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center page-header">
+<div class="page-wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="title-block">
+      <div class="title-main">ระบบลงเวลาพนักงาน</div>
+      <div class="title-sub">
+        เวอร์ชันทดลองใช้ (บันทึกได้ 4 ช่วง) | <span id="apiUrlDisplay" class="text-sm"></span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div id="connectionBadge" class="badge-connection offline">
+        <span class="dot"></span>
+        <span id="connectionText">ยังไม่ได้เชื่อมต่อ</span>
+      </div>
+
+      <button class="btn btn-outline" id="btnSetUrl">ตั้งค่า URL</button>
+      <button class="btn btn-danger-outline" id="btnResetUrl">Reset URL</button>
+      <button class="btn btn-primary" id="btnGoAdmin">เจ้าหน้าที่ / HR</button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+    <div class="layout">
+
+      <!-- LEFT COLUMN -->
       <div>
-        <h4 class="mb-0">ระบบลงเวลาพนักงาน</h4>
-        <small class="text-muted">เวอร์ชันทดลองใช้ (บันทึกได้ 4 ช่วง)</small>
-        <div id="apiStatus" class="mt-1 text-muted small"></div>
-      </div>
-      <div class="btn-group">
-        <button id="btnSetUrl" class="btn btn-outline-secondary btn-sm">ตั้งค่า URL</button>
-        <button id="btnResetUrl" class="btn btn-outline-danger btn-sm">Reset URL</button>
-        <a href="admin.html" class="btn btn-dark btn-sm">เจ้าหน้าที่ / HR</a>
-      </div>
-    </div>
-
-    <!-- ปุ่มหลัก -->
-    <div class="mb-3">
-      <button id="btnManual" class="btn btn-success me-2">
-        บันทึกด้วยมือ (กรณีสแกนไม่ได้)
-      </button>
-      <button id="btnCheckToday" class="btn btn-primary">
-        ตรวจสอบเวลาวันนี้
-      </button>
-    </div>
-
-    <!-- ผลการบันทึกล่าสุด -->
-    <div class="card mb-3">
-      <div class="card-header">
-        ผลการบันทึกล่าสุด
-      </div>
-      <div class="card-body">
-        <div id="lastLogBox" class="text-muted">ยังไม่มีการบันทึกในหน้านี้</div>
-      </div>
-    </div>
-
-    <!-- ภาพรวมวันนี้ -->
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <span>ภาพรวมวันนี้ (ย่อ)</span>
-        <button id="btnRefreshOverview" class="btn btn-outline-secondary btn-sm">
-          รีเฟรชข้อมูล
-        </button>
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-sm mb-0">
-            <thead class="table-light">
-              <tr>
-                <th style="width: 80px;">รหัส</th>
-                <th>ชื่อ</th>
-                <th style="width: 90px;">เข้าเช้า</th>
-                <th style="width: 90px;">ออกเที่ยง</th>
-                <th style="width: 90px;">เข้าเที่ยง</th>
-                <th style="width: 90px;">ออกเย็น</th>
-              </tr>
-            </thead>
-            <tbody id="overviewBody">
-              <tr><td colspan="6" class="text-center text-muted py-3">ยังไม่มีข้อมูลวันนี้</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: บันทึกด้วยมือ -->
-  <div class="modal fade" id="manualModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">บันทึกเวลาด้วยมือ</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <form id="manualForm">
-            <div class="mb-3">
-              <label class="form-label">รหัสพนักงาน</label>
-              <input type="text" class="form-control" id="manualCode" required />
-              <div class="form-text" id="manualEmpInfo"></div>
+        <!-- Camera / Main action card -->
+        <div class="card camera-card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <span class="icon">📷</span>
+                <span>ลงเวลาผ่านกล้อง (กำลังพัฒนา)</span>
+              </div>
+              <div class="card-subtitle">
+                ตอนนี้ใช้ปุ่ม "บันทึกด้วยมือ" ไปก่อน ฟีเจอร์สแกนใบหน้าจะถูกเพิ่มทีหลัง
+              </div>
             </div>
-            <div class="mb-3">
-              <label class="form-label">ประเภทการบันทึก</label>
-              <select class="form-select" id="manualSlot" required>
-                <option value="">-- เลือก --</option>
-                <option value="IN1">เข้าเช้า</option>
-                <option value="OUT1">ออกเที่ยง</option>
-                <option value="IN2">เข้าเที่ยง</option>
-                <option value="OUT2">ออกเย็น</option>
-              </select>
+            <div class="flex gap-6">
+              <button class="btn btn-success" id="btnOpenManualModal">บันทึกด้วยมือ</button>
+              <button class="btn btn-secondary" id="btnOpenCheckToday">ตรวจสอบเวลาวันนี้</button>
             </div>
-            <div class="mb-3">
-              <label class="form-label">รูปหลักฐาน (เช่น รูปหน้าจอ, รูปกล้องวงจรปิด ฯลฯ)</label>
-              <input type="file" class="form-control" id="manualFile" accept="image/*" />
-              <div class="form-text">ถ้าไม่สะดวกสามารถเว้นว่างไว้ก่อนได้</div>
-            </div>
-          </form>
-          <div id="manualStatus" class="small text-muted"></div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-          <button type="button" class="btn btn-primary" id="btnManualSubmit">ยืนยันบันทึก</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: ตรวจสอบเวลาวันนี้ -->
-  <div class="modal fade" id="checkModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">ตรวจสอบเวลาวันนี้</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">รหัสพนักงาน</label>
-            <input type="text" id="checkCode" class="form-control" />
           </div>
-          <button id="btnCheckGo" class="btn btn-primary mb-3">ตรวจสอบ</button>
-          <div id="checkResult" class="small text-muted"></div>
+
+          <div class="camera-box">
+            <div class="camera-placeholder">
+              <div class="icon">📸</div>
+              <div>กล้องปิดอยู่</div>
+              <div class="text-muted text-sm">ฟีเจอร์สแกนใบหน้าจะใช้งานได้ในเวอร์ชันถัดไป</div>
+            </div>
+          </div>
+
+          <div class="camera-footer">
+            <div class="flex gap-6" style="align-items:center; flex-wrap:wrap;">
+              <select id="cameraSelect" disabled>
+                <option>ไม่สามารถเข้าถึงกล้อง</option>
+              </select>
+              <button class="btn btn-primary" id="btnStartScan" disabled>เริ่มสแกน</button>
+            </div>
+            <div class="pill">
+              กติกาเวลา: <strong>เข้าเช้าก่อน 08:00</strong> | พักเที่ยงไม่เกิน <strong>1 ชม.</strong> | เลิกงานหลัง <strong>17:00</strong>
+            </div>
+          </div>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+
+        <!-- Today summary -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <span class="icon">📊</span>
+                ภาพรวมวันนี้ (ย่อ)
+              </div>
+              <div class="card-subtitle">
+                แสดงเวลาทั้ง 4 ช่วงของพนักงานที่มีบันทึกในวันนี้
+              </div>
+            </div>
+            <button class="btn btn-secondary" id="btnRefreshToday">รีเฟรชข้อมูล</button>
+          </div>
+
+          <div class="scroll-x">
+            <table>
+              <thead>
+              <tr>
+                <th>รหัส</th>
+                <th>ชื่อ</th>
+                <th>แผนก</th>
+                <th>ระดับ</th>
+                <th>เข้าเช้า</th>
+                <th>ออกเที่ยง</th>
+                <th>เข้าเที่ยง</th>
+                <th>ออกเย็น</th>
+                <th>สถานะ</th>
+              </tr>
+              </thead>
+              <tbody id="todaySummaryBody">
+              <tr>
+                <td colspan="9" style="text-align:center; padding:12px 8px;" class="text-muted">
+                  ยังไม่มีข้อมูลของวันนี้
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-8 text-sm text-muted">
+            * ข้อมูลนี้อ่านจากชีต <strong>Logs</strong> โดยตรง ถ้าบันทึกใหม่แล้วไม่ขึ้น ให้ลองกดปุ่ม "รีเฟรชข้อมูล"
+          </div>
         </div>
       </div>
+
+      <!-- RIGHT COLUMN -->
+      <div>
+
+        <!-- Latest log -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span class="icon">⏱</span>
+              ผลการบันทึกล่าสุด
+            </div>
+          </div>
+
+          <div id="latestBox" class="latest-box">
+            <div class="latest-label">
+              ข้อมูลนี้แสดงจากอุปกรณ์เครื่องนี้เท่านั้น (ช่วยยืนยันว่ากดบันทึกแล้ว)
+            </div>
+            <div class="latest-content" id="latestContent">
+              <div class="text-muted text-sm">ยังไม่มีการบันทึกในหน้านี้</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Helper / tip -->
+        <div class="card" style="margin-top:16px;">
+          <div class="card-title">
+            <span class="icon">💡</span>
+            วิธีใช้ง่าย ๆ
+          </div>
+          <ul class="text-sm" style="color:#4b5563; margin-top:8px; padding-left:18px;">
+            <li>ตั้งค่า URL API ให้ถูกต้อง โดยใช้ลิงก์ Web App จาก Apps Script (ปุ่มด้านบนขวา)</li>
+            <li>กด "บันทึกด้วยมือ" เลือกรหัสพนักงาน และแนบรูปหลักฐาน (รูปไลน์, รูปกล้องวงจรปิด ฯลฯ)</li>
+            <li>หลังบันทึก ระบบจะคำนวณสถานะให้อัตโนมัติตามกติกาเวลา 4 ช่วง</li>
+            <li>กด "ตรวจสอบเวลาวันนี้" เพื่อตรวจดูว่าแต่ละช่วงลงเวลาไว้กี่โมง</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: ตั้งค่า URL -->
+<div class="modal-backdrop" id="modalUrl">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">ตั้งค่า URL ของระบบ</div>
+      <button class="modal-close" data-close-modal="modalUrl">&times;</button>
+    </div>
+    <div class="form-group">
+      <div class="form-label">URL จาก Apps Script Web App</div>
+      <input type="text" id="inputApiUrl" class="input" placeholder="เช่น https://script.google.com/macros/s/XXXXX/exec" />
+      <div class="helper">
+        คัดลอก URL จากเมนู <strong>Deploy &gt; Test deployments &gt; Web App</strong> ใน Apps Script แล้ววางลงที่นี่
+      </div>
+    </div>
+    <div id="urlError" class="error-text" style="display:none;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" data-close-modal="modalUrl">ยกเลิก</button>
+      <button class="btn btn-primary" id="btnSaveUrl">บันทึก</button>
     </div>
   </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // ------------ CONFIG / HELPERS -------------
-    function getApiUrl() {
-      return localStorage.getItem('hr_att_api_url') || '';
+<!-- MODAL: บันทึกด้วยมือ -->
+<div class="modal-backdrop" id="modalManual">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">บันทึกเวลาด้วยมือ</div>
+      <button class="modal-close" data-close-modal="modalManual">&times;</button>
+    </div>
+    <div class="form-group">
+      <div class="form-label">รหัสพนักงาน</div>
+      <input type="text" id="manualCode" class="input" placeholder="เช่น 1011" />
+      <div id="manualEmpInfo" class="helper">กรอกรหัสแล้วระบบจะแสดงชื่อ-สกุล / แผนก / ระดับ</div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">ประเภทการบันทึก (เพื่อความเข้าใจเท่านั้น)</div>
+      <select id="manualType" class="input">
+        <option value="AUTO">ให้ระบบตัดสินใจอัตโนมัติ</option>
+        <option value="MORNING_IN">เข้าเช้า</option>
+        <option value="NOON_OUT">ออกเที่ยง</option>
+        <option value="NOON_IN">เข้าเที่ยง</option>
+        <option value="EVENING_OUT">ออกเย็น</option>
+        <option value="EXTRA">อื่น ๆ / พิเศษ</option>
+      </select>
+      <div class="helper">
+        ระบบยังคงตัดสินใจช่อง t1–t4, tExtra1–tExtra2 ให้เองอยู่ดี ช่องนี้เอาไว้บันทึกบริบทเฉย ๆ (ในอนาคตอาจใช้ต่อยอด)
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">รูปหลักฐาน (เช่น รูปหน้าจอ, รูปกล้องวงจรปิด ฯลฯ)</div>
+      <input type="file" id="manualFile" accept="image/*" />
+      <div class="helper">
+        ถ้าไม่สะดวกสามารถเว้นว่างไว้ก่อนได้ ภาพจะถูกเก็บในโฟลเดอร์ Drive ตามที่ตั้งค่าใน Apps Script
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">ผลการทำงาน</div>
+      <textarea id="manualResult" readonly placeholder="ระบบจะแจ้งผลการบันทึกที่นี่"></textarea>
+    </div>
+
+    <div id="manualError" class="error-text" style="display:none;"></div>
+    <div id="manualSuccess" class="success-text" style="display:none;"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" data-close-modal="modalManual">ยกเลิก</button>
+      <button class="btn btn-primary" id="btnManualSubmit">ยืนยันบันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ตรวจสอบเวลาวันนี้ -->
+<div class="modal-backdrop" id="modalCheckToday">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">ตรวจสอบเวลาวันนี้</div>
+      <button class="modal-close" data-close-modal="modalCheckToday">&times;</button>
+    </div>
+    <div class="form-group">
+      <div class="form-label">รหัสพนักงาน</div>
+      <input type="text" id="checkCode" class="input" placeholder="เช่น 1011" />
+    </div>
+    <div class="form-group">
+      <div class="form-label">ผลการตรวจสอบ</div>
+      <textarea id="checkResult" readonly placeholder="ระบบจะแสดงเวลาทั้ง 4 ช่วงของวันนี้"></textarea>
+    </div>
+    <div id="checkError" class="error-text" style="display:none;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" data-close-modal="modalCheckToday">ปิด</button>
+      <button class="btn btn-primary" id="btnCheckTodaySubmit">ตรวจสอบ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /**************************************************
+   * CONFIG & STORAGE
+   **************************************************/
+  const STORAGE_KEY = 'attendance_api_url_v2';
+
+  function getApiUrl() {
+    return localStorage.getItem(STORAGE_KEY) || '';
+  }
+
+  function setApiUrl(url) {
+    if (url) {
+      localStorage.setItem(STORAGE_KEY, url);
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
     }
+  }
 
-    function setApiUrl(url) {
-      localStorage.setItem('hr_att_api_url', url);
-    }
-
-    function resetApiUrl() {
-      localStorage.removeItem('hr_att_api_url');
-    }
-
-    async function callApi(action, params = {}) {
-      const url = getApiUrl();
-      if (!url) {
-        throw new Error('ยังไม่ได้ตั้งค่า URL ของ API');
+  /**************************************************
+   * API CALL HELPER
+   **************************************************/
+  const api = {
+    async call(action, params = {}) {
+      const apiUrl = getApiUrl();
+      if (!apiUrl) {
+        throw new Error('ยังไม่ได้ตั้งค่า URL API');
       }
-      const payload = new URLSearchParams({ action, ...params });
-      const res = await fetch(url, {
+
+      const body = new URLSearchParams({ action, ...params }).toString();
+
+      const res = await fetch(apiUrl, {
         method: 'POST',
-        body: payload
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body
       });
+
       const text = await res.text();
-      let json;
+      let data;
+
       try {
-        json = JSON.parse(text);
+        data = JSON.parse(text);
       } catch (e) {
-        console.error('API raw response:', text);
-        throw new Error('รูปแบบข้อมูลจากเซิร์ฟเวอร์ไม่ใช่ JSON (อาจใช้ URL ผิด: ต้องเป็น /macros/s/.../exec)');
+        console.error('API response is not JSON:', text);
+        throw new Error('API ส่งผลลัพธ์ไม่ใช่ JSON (ตรวจสอบ URL ว่าถูกตัว exec หรือไม่)');
       }
-      if (!json.ok) {
-        throw new Error(json.error || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
+
+      if (!data.ok) {
+        throw new Error(data.error || 'ไม่ทราบสาเหตุจากเซิร์ฟเวอร์');
       }
-      return json.result;
+      return data.result;
+    }
+  };
+
+  /**************************************************
+   * GLOBAL STATE
+   **************************************************/
+  let employeesCache = [];
+
+  /**************************************************
+   * DOM UTIL
+   **************************************************/
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function showModal(id) {
+    const el = $(id);
+    if (el) el.classList.add('show');
+  }
+
+  function hideModal(id) {
+    const el = $(id);
+    if (el) el.classList.remove('show');
+  }
+
+  function setConnectionStatus(online, msg) {
+    const badge = $('connectionBadge');
+    const text  = $('connectionText');
+    if (!badge || !text) return;
+
+    if (online) {
+      badge.classList.remove('offline');
+      text.textContent = msg || 'เชื่อมต่อสำเร็จ';
+    } else {
+      badge.classList.add('offline');
+      text.textContent = msg || 'ยังไม่ได้เชื่อมต่อ';
+    }
+  }
+
+  function statusBadgeHtml(status) {
+    if (!status) return '<span class="badge-status badge-absent">ขาด</span>';
+
+    let cls = 'badge-other';
+    if (status === 'ปกติ') cls = 'badge-normal';
+    else if (status.includes('สาย')) cls = 'badge-late';
+    else if (status === 'ขาด') cls = 'badge-absent';
+
+    return '<span class="badge-status ' + cls + '">' + status + '</span>';
+  }
+
+  /**************************************************
+   * FILE → BASE64
+   **************************************************/
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      if (!file) return resolve(null);
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error || new Error('อ่านไฟล์ไม่สำเร็จ'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /**************************************************
+   * LOAD INITIAL DATA
+   **************************************************/
+  async function init() {
+    // แสดง URL ที่ตั้งไว้
+    const apiUrl = getApiUrl();
+    $('apiUrlDisplay').textContent = apiUrl ? 'API: ' + apiUrl : 'ยังไม่ได้ตั้งค่า URL';
+
+    if (!apiUrl) {
+      setConnectionStatus(false, 'ยังไม่ได้ตั้งค่า URL');
+      return;
     }
 
-    function setApiStatus(ok, msg) {
-      const box = document.getElementById('apiStatus');
-      if (!ok) {
-        box.innerHTML =
-          '<span class="status-dot bg-danger"></span>' +
-          (msg || 'ยังไม่ได้เชื่อมต่อ API');
-      } else {
-        box.innerHTML =
-          '<span class="status-dot bg-success"></span>' +
-          (msg || 'เชื่อมต่อสำเร็จ');
-      }
+    try {
+      const result = await api.call('getInitialData');
+      employeesCache = result.employees || [];
+      setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
+      loadTodaySummaryFromResult(result.todaySummary);
+    } catch (err) {
+      console.error(err);
+      setConnectionStatus(false, err.message);
+    }
+  }
+
+  function loadTodaySummaryFromResult(summary) {
+    const tbody = $('todaySummaryBody');
+    if (!tbody) return;
+
+    const rows = (summary && summary.rows) || [];
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:12px 8px;" class="text-muted">ยังไม่มีข้อมูลของวันนี้</td></tr>';
+      return;
     }
 
-    function renderOverview(list) {
-      const tbody = document.getElementById('overviewBody');
-      tbody.innerHTML = '';
-      if (!list || list.length === 0) {
-        tbody.innerHTML =
-          '<tr><td colspan="6" class="text-center text-muted py-3">ยังไม่มีข้อมูลวันนี้</td></tr>';
+    tbody.innerHTML = rows.map(row => {
+      return `
+        <tr>
+          <td>${row.code || ''}</td>
+          <td>${row.fullName || ''}</td>
+          <td>${row.branch || ''}</td>
+          <td>${row.level || ''}</td>
+          <td>${row.t1 || ''}</td>
+          <td>${row.t2 || ''}</td>
+          <td>${row.t3 || ''}</td>
+          <td>${row.t4 || ''}</td>
+          <td>${statusBadgeHtml(row.status || '')}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function loadTodaySummary() {
+    try {
+      const result = await api.call('getTodaySummary');
+      loadTodaySummaryFromResult(result);
+    } catch (err) {
+      alert('โหลดภาพรวมวันนี้ไม่สำเร็จ: ' + err.message);
+    }
+  }
+
+  /**************************************************
+   * MANUAL MODAL LOGIC
+   **************************************************/
+  function findEmployeeByCode(code) {
+    return employeesCache.find(e => String(e.code) === String(code));
+  }
+
+  function updateManualEmpInfo() {
+    const code = $('manualCode').value.trim();
+    const infoEl = $('manualEmpInfo');
+    if (!code) {
+      infoEl.textContent = 'กรอกรหัสแล้วระบบจะแสดงชื่อ-สกุล / แผนก / ระดับ';
+      return;
+    }
+    const emp = findEmployeeByCode(code);
+    if (!emp) {
+      infoEl.textContent = 'ไม่พบพนักงานรหัสนี้ในชีต Employees';
+    } else {
+      infoEl.textContent = `${emp.fullName || ''} | แผนก: ${emp.branch || '-'} | ระดับ: ${emp.level || '-'}`;
+    }
+  }
+
+  async function submitManual() {
+    const code   = $('manualCode').value.trim();
+    const type   = $('manualType').value;
+    const fileEl = $('manualFile');
+    const resultEl = $('manualResult');
+    const errEl = $('manualError');
+    const sucEl = $('manualSuccess');
+
+    errEl.style.display = 'none';
+    sucEl.style.display = 'none';
+    resultEl.value = '';
+
+    if (!code) {
+      errEl.textContent = 'กรุณากรอกรหัสพนักงาน';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    try {
+      const file = fileEl.files[0];
+      const base64 = await fileToBase64(file);
+
+      const payload = { code };
+      if (base64) {
+        payload.evidenceBase64 = base64;
+        payload.evidenceName   = file ? file.name : ('evidence-' + code + '.png');
+      }
+      // ส่งชนิดการบันทึกไปด้วย เผื่อจะใช้ต่อในอนาคต แม้ตอนนี้ฝั่ง gs ยังไม่ได้ใช้
+      payload.manualType = type;
+
+      const res = await api.call('saveManualLog', payload);
+
+      // แสดงผลใน textarea
+      const lines = [];
+      lines.push(`บันทึกสำเร็จ: เวลา ${res.time} (${res.slot})`);
+      if (res.employee) {
+        lines.push(`รหัส: ${res.employee.code}`);
+        lines.push(`ชื่อ: ${res.employee.fullName || ''}`);
+        lines.push(`แผนก: ${res.employee.branch || ''}`);
+        lines.push(`ระดับ: ${res.employee.level || ''}`);
+      }
+      lines.push(`สถานะวันนี้: ${res.status || ''}`);
+      if (res.evidenceUrl) {
+        lines.push(`หลักฐาน: ${res.evidenceUrl}`);
+      }
+      resultEl.value = lines.join('\n');
+
+      sucEl.textContent = 'บันทึกเรียบร้อยแล้ว';
+      sucEl.style.display = 'block';
+
+      // อัปเดตกล่อง "ผลการบันทึกล่าสุด"
+      updateLatestFromManual(res);
+
+      // โหลดภาพรวมวันนี้ใหม่
+      loadTodaySummary();
+
+    } catch (err) {
+      console.error(err);
+      errEl.textContent = 'บันทึกไม่สำเร็จ: ' + err.message;
+      errEl.style.display = 'block';
+    }
+  }
+
+  function updateLatestFromManual(res) {
+    const box = $('latestContent');
+    if (!box) return;
+    const emp = res.employee || {};
+    const statusHtml = statusBadgeHtml(res.status || '');
+    box.innerHTML = `
+      <div class="latest-row">
+        <span class="label">พนักงาน</span>
+        <span>${emp.code || ''} - ${emp.fullName || ''}</span>
+      </div>
+      <div class="latest-row mt-8">
+        <span class="label">เวลา</span>
+        <span>${res.time || ''} (ลงช่อง ${res.slot || '-'})</span>
+      </div>
+      <div class="latest-row mt-8">
+        <span class="label">สถานะวันนี้</span>
+        <span>${statusHtml}</span>
+      </div>
+      ${res.evidenceUrl ? `
+      <div class="latest-row mt-8">
+        <span class="label">หลักฐาน</span>
+        <span><a href="${res.evidenceUrl}" target="_blank">เปิดรูปหลักฐาน</a></span>
+      </div>` : ''}
+    `;
+  }
+
+  /**************************************************
+   * CHECK TODAY MODAL LOGIC
+   **************************************************/
+  async function submitCheckToday() {
+    const code = $('checkCode').value.trim();
+    const resultEl = $('checkResult');
+    const errEl = $('checkError');
+
+    errEl.style.display = 'none';
+    resultEl.value = '';
+
+    if (!code) {
+      errEl.textContent = 'กรุณากรอกรหัสพนักงาน';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    try {
+      const res = await api.call('checkTodayByCode', { code });
+      if (!res.found) {
+        resultEl.value = res.message || 'วันนี้ยังไม่มีการบันทึกเวลา';
         return;
       }
-      list.forEach((item) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${item.code || ''}</td>
-          <td>${item.fullName || ''}</td>
-          <td>${item.in1 || ''}</td>
-          <td>${item.out1 || ''}</td>
-          <td>${item.in2 || ''}</td>
-          <td>${item.out2 || ''}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+
+      const emp = res.employee || {};
+      const log = res.log || {};
+      const lines = [];
+      lines.push(`รหัส: ${emp.code || ''}`);
+      lines.push(`ชื่อ: ${emp.fullName || ''}`);
+      lines.push(`แผนก: ${emp.branch || ''}`);
+      lines.push(`ระดับ: ${emp.level || ''}`);
+      lines.push('-----------------------------');
+      lines.push(`เข้าเช้า (t1): ${log.t1 || '-'}`);
+      lines.push(`ออกเที่ยง (t2): ${log.t2 || '-'}`);
+      lines.push(`เข้าเที่ยง (t3): ${log.t3 || '-'}`);
+      lines.push(`ออกเย็น (t4): ${log.t4 || '-'}`);
+      lines.push(`Extra1: ${log.tExtra1 || '-'}`);
+      lines.push(`Extra2: ${log.tExtra2 || '-'}`);
+      lines.push('-----------------------------');
+      lines.push(`สถานะวันนี้: ${log.status || '-'}`);
+      if (log.evidenceUrl) {
+        lines.push(`หลักฐาน: ${log.evidenceUrl}`);
+      }
+      resultEl.value = lines.join('\n');
+
+    } catch (err) {
+      console.error(err);
+      errEl.textContent = 'ตรวจสอบไม่สำเร็จ: ' + err.message;
+      errEl.style.display = 'block';
+    }
+  }
+
+  /**************************************************
+   * URL MODAL LOGIC
+   **************************************************/
+  function openUrlModal() {
+    $('inputApiUrl').value = getApiUrl();
+    $('urlError').style.display = 'none';
+    showModal('modalUrl');
+  }
+
+  function saveUrl() {
+    const url = $('inputApiUrl').value.trim();
+    const errEl = $('urlError');
+    errEl.style.display = 'none';
+
+    if (!url) {
+      errEl.textContent = 'กรุณากรอก URL';
+      errEl.style.display = 'block';
+      return;
     }
 
-    async function loadInitial() {
-      try {
-        const data = await callApi('getInitialData');
-        setApiStatus(true, 'เชื่อมต่อสำเร็จ');
-        renderOverview(data.todayOverview || []);
-        window._employees = data.employees || [];
-      } catch (err) {
-        console.error(err);
-        setApiStatus(false, err.message);
-        renderOverview([]);
+    if (!/^https:\/\/script\.google\.com\/macros\/s\//.test(url)) {
+      // ไม่บังคับ แต่เตือนนิดหน่อย
+      if (!confirm('URL ดูเหมือนจะไม่ใช่ Web App ของ Apps Script แน่ใจหรือไม่ว่าจะใช้ URL นี้?')) {
+        return;
       }
     }
 
-    function findEmployeeByCode(code) {
-      if (!window._employees) return null;
-      return window._employees.find((e) => String(e.code) === String(code));
+    setApiUrl(url);
+    $('apiUrlDisplay').textContent = 'API: ' + url;
+    hideModal('modalUrl');
+    // ลองเชื่อมใหม่
+    init();
+  }
+
+  function resetUrl() {
+    if (confirm('ต้องการลบ URL ที่ตั้งค่าไว้หรือไม่?')) {
+      setApiUrl('');
+      $('apiUrlDisplay').textContent = 'ยังไม่ได้ตั้งค่า URL';
+      setConnectionStatus(false, 'ยังไม่ได้ตั้งค่า URL');
     }
+  }
 
-    function fileToDataUrl(file) {
-      return new Promise((resolve, reject) => {
-        if (!file) {
-          resolve('');
-          return;
-        }
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = (e) => reject(e);
-        reader.readAsDataURL(file);
+  /**************************************************
+   * EVENT BINDING
+   **************************************************/
+  document.addEventListener('DOMContentLoaded', () => {
+    // modal close button
+    document.querySelectorAll('[data-close-modal]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-close-modal');
+        hideModal(id);
       });
-    }
-
-    // ------------ MAIN -------------
-    document.addEventListener('DOMContentLoaded', () => {
-      const apiUrl = getApiUrl();
-      if (apiUrl) {
-        setApiStatus(true, 'กำลังเชื่อมต่อ API...');
-        loadInitial();
-      } else {
-        setApiStatus(false, 'ยังไม่ได้ตั้งค่า URL ของ API');
-      }
-
-      const manualModal = new bootstrap.Modal(document.getElementById('manualModal'));
-      const checkModal = new bootstrap.Modal(document.getElementById('checkModal'));
-
-      document.getElementById('btnSetUrl').addEventListener('click', () => {
-        const current = getApiUrl();
-        const url = prompt(
-          'กรุณาวาง URL ของ Web App (รูปแบบ: https://script.google.com/macros/s/.../exec)',
-          current || ''
-        );
-        if (url) {
-          setApiUrl(url.trim());
-          setApiStatus(true, 'บันทึก URL แล้ว ลองรีเฟรชหน้าเว็บ');
-          loadInitial();
-        }
-      });
-
-      document.getElementById('btnResetUrl').addEventListener('click', () => {
-        if (confirm('ต้องการลบ URL ปัจจุบันหรือไม่?')) {
-          resetApiUrl();
-          setApiStatus(false, 'ลบ URL แล้ว กรุณาตั้งค่าใหม่');
-          renderOverview([]);
-        }
-      });
-
-      document.getElementById('btnManual').addEventListener('click', () => {
-        document.getElementById('manualForm').reset();
-        document.getElementById('manualEmpInfo').textContent = '';
-        document.getElementById('manualStatus').textContent = '';
-        manualModal.show();
-      });
-
-      document
-        .getElementById('manualCode')
-        .addEventListener('blur', (e) => {
-          const code = e.target.value.trim();
-          const emp = findEmployeeByCode(code);
-          const info = document.getElementById('manualEmpInfo');
-          if (emp) {
-            info.textContent =
-              (emp.fullName || '') +
-              (emp.branch ? ' | แผนก: ' + emp.branch : '') +
-              (emp.level ? ' | ระดับ: ' + emp.level : '');
-            info.classList.remove('text-danger');
-            info.classList.add('text-success');
-          } else if (code) {
-            info.textContent = 'ไม่พบพนักงานรหัสนี้ในระบบ';
-            info.classList.remove('text-success');
-            info.classList.add('text-danger');
-          } else {
-            info.textContent = '';
-          }
-        });
-
-      document.getElementById('btnManualSubmit').addEventListener('click', async () => {
-        const code = document.getElementById('manualCode').value.trim();
-        const slot = document.getElementById('manualSlot').value;
-        const file = document.getElementById('manualFile').files[0];
-        const statusBox = document.getElementById('manualStatus');
-
-        if (!code || !slot) {
-          alert('กรุณากรอกรหัสและเลือกประเภทการบันทึก');
-          return;
-        }
-
-        try {
-          statusBox.textContent = 'กำลังบันทึก...';
-          const dataUrl = await fileToDataUrl(file);
-          const result = await callApi('saveManualLog', {
-            code,
-            slot,
-            evidenceBase64: dataUrl
-          });
-
-          statusBox.textContent = 'บันทึกสำเร็จเวลา ' + result.time;
-          document.getElementById('lastLogBox').textContent =
-            'รหัส ' +
-            result.code +
-            ' | ' +
-            (result.fullName || '') +
-            ' | ประเภท: ' +
-            result.slot +
-            ' | เวลา: ' +
-            result.time +
-            (result.status ? ' (' + result.status + ')' : '');
-          loadInitial();
-        } catch (err) {
-          console.error(err);
-          statusBox.textContent = 'บันทึกไม่สำเร็จ: ' + err.message;
-        }
-      });
-
-      document.getElementById('btnCheckToday').addEventListener('click', () => {
-        document.getElementById('checkCode').value = '';
-        document.getElementById('checkResult').textContent = '';
-        checkModal.show();
-      });
-
-      document.getElementById('btnCheckGo').addEventListener('click', async () => {
-        const code = document.getElementById('checkCode').value.trim();
-        const box = document.getElementById('checkResult');
-        if (!code) {
-          alert('กรุณากรอกรหัส');
-          return;
-        }
-        try {
-          box.textContent = 'กำลังตรวจสอบ...';
-          const r = await callApi('checkTodayByCode', { code });
-          if (!r.found) {
-            box.textContent = r.message || 'วันนี้ยังไม่มีการบันทึกเวลา';
-          } else {
-            box.innerHTML =
-              '<b>' +
-              (r.fullName || '') +
-              '</b><br>' +
-              'เข้าเช้า: ' +
-              (r.in1 || '-') +
-              '<br>ออกเที่ยง: ' +
-              (r.out1 || '-') +
-              '<br>เข้าเที่ยง: ' +
-              (r.in2 || '-') +
-              '<br>ออกเย็น: ' +
-              (r.out2 || '-');
-          }
-        } catch (err) {
-          console.error(err);
-          box.textContent = 'ตรวจสอบไม่สำเร็จ: ' + err.message;
-        }
-      });
-
-      document
-        .getElementById('btnRefreshOverview')
-        .addEventListener('click', loadInitial);
     });
-  </script>
+
+    // backdrop click (คลิกนอกกล่องเพื่อปิด)
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+      backdrop.addEventListener('click', e => {
+        if (e.target === backdrop) {
+          backdrop.classList.remove('show');
+        }
+      });
+    });
+
+    // buttons
+    $('btnSetUrl').addEventListener('click', openUrlModal);
+    $('btnSaveUrl').addEventListener('click', saveUrl);
+    $('btnResetUrl').addEventListener('click', resetUrl);
+    $('btnGoAdmin').addEventListener('click', () => {
+      // สมมติไฟล์ admin.html อยู่โฟลเดอร์เดียวกัน
+      window.location.href = 'admin.html';
+    });
+
+    $('btnOpenManualModal').addEventListener('click', () => {
+      $('manualCode').value = '';
+      $('manualFile').value = '';
+      $('manualType').value = 'AUTO';
+      $('manualResult').value = '';
+      $('manualError').style.display = 'none';
+      $('manualSuccess').style.display = 'none';
+      $('manualEmpInfo').textContent = 'กรอกรหัสแล้วระบบจะแสดงชื่อ-สกุล / แผนก / ระดับ';
+      showModal('modalManual');
+    });
+
+    $('manualCode').addEventListener('input', updateManualEmpInfo);
+    $('btnManualSubmit').addEventListener('click', submitManual);
+
+    $('btnOpenCheckToday').addEventListener('click', () => {
+      $('checkCode').value = '';
+      $('checkResult').value = '';
+      $('checkError').style.display = 'none';
+      showModal('modalCheckToday');
+    });
+    $('btnCheckTodaySubmit').addEventListener('click', submitCheckToday);
+
+    $('btnRefreshToday').addEventListener('click', loadTodaySummary);
+
+    // กล้องยังไม่ทำอะไร (disabled ไว้ก่อน)
+    $('btnStartScan').addEventListener('click', () => {
+      alert('ฟีเจอร์สแกนใบหน้ายังไม่เปิดใช้งานในเวอร์ชันนี้');
+    });
+
+    init();
+  });
+</script>
 </body>
 </html>
