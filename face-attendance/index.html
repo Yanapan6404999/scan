@@ -4,1324 +4,642 @@
   <meta charset="UTF-8" />
   <title>ระบบลงเวลาพนักงาน</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-      sans-serif;
-    }
-    .backdrop {
-      background: rgba(0, 0, 0, 0.45);
-    }
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .backdrop { background: rgba(0, 0, 0, 0.45); }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen">
-<!-- HEADER -------------------------------------------------------------->
-<header class="bg-white shadow-sm sticky top-0 z-20">
-  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-    <div class="flex flex-col">
-      <span class="text-lg font-semibold text-indigo-700">
-        ระบบลงเวลาพนักงาน
-      </span>
-      <span class="text-xs text-slate-500">เวอร์ชันทดลองใช้ (เช็คเวลา 4 ช่วง)</span>
-    </div>
-    <div class="flex gap-2">
-      <button
-        id="btn-open-config"
-        class="px-3 py-1.5 text-xs rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
-      >
-        ตั้งค่า URL
-      </button>
-      <button
-        id="btn-reset-url"
-        class="px-3 py-1.5 text-xs rounded-md border border-red-300 text-red-600 hover:bg-red-50"
-      >
-        Reset URL
-      </button>
-    </div>
-  </div>
-</header>
 
-<main class="max-w-6xl mx-auto px-4 pt-6 pb-10 space-y-6">
+  <!-- Navbar -->
+  <header class="bg-white shadow-sm sticky top-0 z-20">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex flex-col">
+        <span class="text-lg font-semibold text-sky-700">
+          ระบบลงเวลาพนักงาน
+        </span>
+        <span class="text-xs text-slate-500">เวอร์ชันทดลองใช้ (ใช้เวลา 4 ช่องได้)</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          id="btn-open-config"
+          class="px-3 py-1.5 text-xs rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50">
+          ตั้งค่า URL
+        </button>
+        <button
+          id="btn-reset-url"
+          class="px-3 py-1.5 text-xs rounded-md border border-rose-300 text-rose-600 hover:bg-rose-50">
+          Reset URL
+        </button>
+        <button
+          id="btn-go-admin"
+          class="px-3 py-1.5 text-xs rounded-md bg-slate-800 text-white hover:bg-slate-900">
+          เจ้าหน้าที่ / HR
+        </button>
+      </div>
+    </div>
+  </header>
 
-  <!-- FRONT PAGE : สำหรับพนักงานทั่วไป ---------------------------------->
-  <section id="front-page" class="space-y-6">
+  <main class="max-w-5xl mx-auto px-4 pt-6 pb-10 space-y-6">
     <!-- ปุ่มหลัก -->
-    <div class="bg-white rounded-xl shadow-sm p-4 flex flex-wrap gap-3">
+    <section class="flex flex-wrap gap-3">
       <button
         id="btn-open-manual-log"
-        class="px-5 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm shadow-sm"
-      >
-        บันทึกด้วยมือ (กรณีสแกนไม่ได้)
+        class="px-4 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm shadow-sm flex items-center gap-2">
+        <span>บันทึกด้วยมือ (กรณีสแกนไม่ได้)</span>
       </button>
-
       <button
-        id="btn-open-checktime"
-        class="px-5 py-3 bg-sky-500 hover:bg-sky-600 text-white rounded-lg text-sm shadow-sm"
-      >
+        id="btn-open-checktoday"
+        class="px-4 py-3 bg-sky-500 hover:bg-sky-600 text-white rounded-lg text-sm shadow-sm">
         ตรวจสอบเวลา วันนี้
       </button>
+    </section>
 
-      <button
-        id="btn-open-admin-login"
-        class="px-5 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-sm shadow-sm ml-auto"
-      >
-        เจ้าหน้าที่ / HR
-      </button>
-    </div>
-
-    <!-- แสดงผลการลงเวลาล่าสุด (ให้พนักงานเห็นทันทีหลังบันทึก) -->
-    <section class="bg-white rounded-xl shadow-sm p-4 space-y-3">
-      <h2 class="font-semibold text-lg">ผลการบันทึกล่าสุด</h2>
-      <p class="text-xs text-slate-500">
-        ข้อมูลนี้แสดงจากอุปกรณ์นี้ เท่านั้น (ช่วยยืนยันว่ากดบันทึกแล้ว)
-      </p>
-      <div class="grid sm:grid-cols-2 gap-3 text-sm">
-        <div class="space-y-1">
+    <!-- ผลการบันทึกล่าสุด -->
+    <section class="grid md:grid-cols-2 gap-4">
+      <div class="bg-white rounded-xl shadow-sm p-4 space-y-2">
+        <h2 class="font-semibold text-base">ผลการบันทึกล่าสุด</h2>
+        <p class="text-xs text-slate-500">
+          ข้อมูลนี้เฉพาะการบันทึกจากอุปกรณ์เครื่องนี้เท่านั้น (ช่วยยืนยันว่ากดสำเร็จ)
+        </p>
+        <div class="mt-2 space-y-1 text-sm">
           <div class="flex justify-between">
             <span class="text-slate-500">รหัสพนักงาน:</span>
-            <span id="last-log-code" class="font-medium">-</span>
+            <span id="last-code" class="font-medium">-</span>
           </div>
           <div class="flex justify-between">
             <span class="text-slate-500">ชื่อ-สกุล:</span>
-            <span id="last-log-name" class="font-medium">-</span>
-          </div>
-        </div>
-        <div class="space-y-1">
-          <div class="flex justify-between">
-            <span class="text-slate-500">การกระทำ:</span>
-            <span id="last-log-type" class="font-medium">-</span>
+            <span id="last-name" class="font-medium">-</span>
           </div>
           <div class="flex justify-between">
             <span class="text-slate-500">เวลา:</span>
-            <span id="last-log-time" class="font-medium">-</span>
+            <span id="last-time" class="font-medium">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">สถานะ:</span>
+            <span id="last-status" class="font-medium">-</span>
           </div>
         </div>
       </div>
-      <p id="last-log-status" class="text-xs text-emerald-600 mt-1"></p>
+
+      <!-- กล่องอธิบาย 4 ช่วงเวลา -->
+      <div class="bg-white rounded-xl shadow-sm p-4 space-y-2 text-sm">
+        <h2 class="font-semibold text-base">กติกาเวลา (แนวคิด 4 ช่วง)</h2>
+        <ul class="list-disc pl-4 space-y-1 text-xs text-slate-600">
+          <li>เข้าเช้าก่อน 08:00 = ปกติ / หลัง 08:00 = สาย</li>
+          <li>ออกพักเที่ยง / เข้าเที่ยง บันทึกได้ตามจริง (ใช้ OUT / IN)</li>
+          <li>ออกกลับบ้านก่อน 17:00 = ออกก่อนเวลา</li>
+          <li>กรณี ลา / ขาด ให้ HR บันทึกด้วยมือพร้อมหลักฐาน</li>
+        </ul>
+      </div>
     </section>
 
-    <!-- Dashboard วันนี้แบบย่อให้พนักงานเห็นภาพรวมทั้งบริษัท -->
+    <!-- ภาพรวมวันนี้ -->
     <section class="bg-white rounded-xl shadow-sm p-4 space-y-3">
-      <div class="flex justify-between items-center">
-        <h2 class="font-semibold text-lg">ภาพรวมวันนี้ (ย่อ)</h2>
+      <div class="flex items-center justify-between">
+        <h2 class="font-semibold text-base">ภาพรวมวันนี้ (ย่อ)</h2>
         <button
-          id="btn-refresh-front-dashboard"
-          class="px-3 py-1.5 text-xs rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
-        >
+          id="btn-refresh-dashboard"
+          class="px-3 py-1.5 text-xs rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50">
           รีเฟรชข้อมูล
         </button>
       </div>
-
-      <div id="front-dashboard-summary" class="text-sm text-slate-600">
+      <div id="dashboard-summary" class="text-sm text-slate-600">
         กำลังโหลดข้อมูล...
       </div>
 
       <div class="overflow-auto">
         <table class="min-w-full text-xs border mt-2">
           <thead class="bg-slate-50">
-          <tr>
-            <th class="border px-2 py-1">รหัส</th>
-            <th class="border px-2 py-1">ชื่อ</th>
-            <th class="border px-2 py-1">เข้าเช้า</th>
-            <th class="border px-2 py-1">ออกเที่ยง</th>
-            <th class="border px-2 py-1">เข้าเที่ยง</th>
-            <th class="border px-2 py-1">ออกเย็น</th>
-            <th class="border px-2 py-1">สรุปทั้งวัน</th>
-          </tr>
+            <tr>
+              <th class="border px-2 py-1">รหัส</th>
+              <th class="border px-2 py-1">ชื่อ</th>
+              <th class="border px-2 py-1">แผนก</th>
+              <th class="border px-2 py-1">ระดับ</th>
+              <th class="border px-2 py-1">เข้า</th>
+              <th class="border px-2 py-1">ออก</th>
+              <th class="border px-2 py-1">สถานะ</th>
+            </tr>
           </thead>
-          <tbody id="front-today-logs-body"></tbody>
+          <tbody id="today-logs-body"></tbody>
         </table>
       </div>
     </section>
-  </section>
+  </main>
 
-  <!-- ADMIN PAGE : เฉพาะเจ้าหน้าที่ / HR ---------------------------------->
-  <section id="admin-page" class="hidden h-[calc(100vh-5rem)]">
-    <div class="flex h-full rounded-xl overflow-hidden shadow-sm">
-      <!-- SIDEBAR -->
-      <aside class="w-60 bg-slate-900 text-slate-100 flex flex-col">
-        <div class="px-4 py-4 border-b border-slate-800">
-          <h2 class="font-semibold text-base">Admin Panel</h2>
-          <p class="text-[11px] text-slate-400">
-            สำหรับ HR / เจ้าหน้าที่เท่านั้น
-          </p>
-        </div>
-        <nav class="flex-1 text-sm">
-          <button
-            id="admin-nav-dashboard"
-            class="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-slate-800 text-left bg-slate-800"
-          >
-            <span>📊</span> <span>แดชบอร์ด</span>
-          </button>
-          <button
-            id="admin-nav-employees"
-            class="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-slate-800 text-left"
-          >
-            <span>👥</span> <span>จัดการพนักงาน</span>
-          </button>
-          <!-- ปุ่มอื่น ๆ ไว้เพิ่มทีหลัง -->
-        </nav>
-        <div class="p-4 border-t border-slate-800">
-          <button
-            id="btn-admin-logout"
-            class="w-full px-3 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-sm"
-          >
-            ออกจากระบบ
-          </button>
-        </div>
-      </aside>
+  <!-- MODALS ------------------------------------------------------------>
 
-      <!-- CONTENT -->
-      <div class="flex-1 bg-slate-50 flex flex-col">
-        <!-- top bar -->
-        <div class="h-12 flex items-center justify-between px-4 border-b bg-white">
-          <span class="text-sm font-medium">ยินดีต้อนรับ, <span class="text-indigo-600">Admin</span></span>
-          <span id="admin-date-label" class="text-xs text-slate-500"></span>
-        </div>
-
-        <div class="flex-1 overflow-auto p-4 space-y-4">
-          <!-- DASHBOARD -->
-          <div id="admin-dashboard" class="space-y-4">
-            <div class="grid sm:grid-cols-4 gap-3 text-sm">
-              <div class="bg-white rounded-xl shadow-sm p-3 border border-slate-100">
-                <p class="text-xs text-slate-500">จำนวนพนักงานทั้งหมด</p>
-                <p id="admin-card-total-emp" class="text-2xl font-semibold mt-1">-</p>
-              </div>
-              <div class="bg-white rounded-xl shadow-sm p-3 border border-slate-100">
-                <p class="text-xs text-slate-500">จำนวนการเช็ควันนี้</p>
-                <p id="admin-card-total-logs" class="text-2xl font-semibold mt-1">-</p>
-              </div>
-              <div class="bg-white rounded-xl shadow-sm p-3 border border-slate-100">
-                <p class="text-xs text-slate-500">มาปกติ</p>
-                <p id="admin-card-normal" class="text-2xl font-semibold mt-1">-</p>
-              </div>
-              <div class="bg-white rounded-xl shadow-sm p-3 border border-slate-100">
-                <p class="text-xs text-slate-500">มีผิดปกติ / ขาด</p>
-                <p id="admin-card-abnormal" class="text-2xl font-semibold mt-1">-</p>
-              </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
-              <div class="flex justify-between items-center mb-2">
-                <h3 class="font-semibold text-base">รายการลงเวลาวันนี้</h3>
-                <button
-                  id="btn-admin-refresh"
-                  class="px-3 py-1.5 text-xs rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
-                >
-                  รีเฟรช
-                </button>
-              </div>
-              <div class="overflow-auto max-h-[420px]">
-                <table class="min-w-full text-xs border">
-                  <thead class="bg-slate-50">
-                  <tr>
-                    <th class="border px-2 py-1">วันที่</th>
-                    <th class="border px-2 py-1">รหัส</th>
-                    <th class="border px-2 py-1">ชื่อ</th>
-                    <th class="border px-2 py-1">เข้าเช้า</th>
-                    <th class="border px-2 py-1">ออกเที่ยง</th>
-                    <th class="border px-2 py-1">เข้าเที่ยง</th>
-                    <th class="border px-2 py-1">ออกเย็น</th>
-                    <th class="border px-2 py-1">สรุปทั้งวัน</th>
-                  </tr>
-                  </thead>
-                  <tbody id="admin-today-logs-body"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- EMPLOYEES -->
-          <div id="admin-employees" class="hidden space-y-3">
-            <div class="flex justify-between items-center">
-              <h3 class="font-semibold text-base">จัดการพนักงาน</h3>
-              <div class="flex gap-2">
-                <button
-                  id="btn-admin-emp-refresh"
-                  class="px-3 py-1.5 text-xs rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
-                >
-                  รีเฟรช
-                </button>
-                <button
-                  id="btn-admin-emp-add"
-                  class="px-3 py-1.5 text-xs rounded-md bg-emerald-500 text-white hover:bg-emerald-600"
-                >
-                  + เพิ่มพนักงาน
-                </button>
-              </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100">
-              <div class="overflow-auto max-h-[460px]">
-                <table class="min-w-full text-xs border">
-                  <thead class="bg-slate-50">
-                  <tr>
-                    <th class="border px-2 py-1">รหัส</th>
-                    <th class="border px-2 py-1">ชื่อ</th>
-                    <th class="border px-2 py-1">แผนก</th>
-                    <th class="border px-2 py-1">ระดับ</th>
-                    <th class="border px-2 py-1">อีเมล</th>
-                    <th class="border px-2 py-1">จัดการ</th>
-                  </tr>
-                  </thead>
-                  <tbody id="admin-emp-table-body"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-</main>
-
-<!-- MODALS -------------------------------------------------------------->
-
-<!-- Modal ตั้งค่า Web App URL -->
-<div
-  id="config-modal"
-  class="fixed inset-0 hidden items-center justify-center z-30"
->
-  <div class="backdrop absolute inset-0"></div>
+  <!-- Modal ตั้งค่า Web App URL -->
   <div
-    class="relative bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-5 space-y-4 z-10"
-  >
-    <h2 class="font-semibold text-lg">เชื่อมต่อ Google Apps Script</h2>
-    <p class="text-sm text-slate-600">
-      วาง
-      <span class="font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">Web App URL</span>
-      ที่ได้จากการ Deploy Apps Script
-      (ต้องลงท้ายด้วย <code class="text-xs bg-slate-100 px-1 rounded">/exec</code>
-      และตั้งค่าเป็น <strong>Anyone</strong>)
-    </p>
+    id="config-modal"
+    class="fixed inset-0 hidden items-center justify-center z-30">
+    <div class="backdrop absolute inset-0"></div>
+    <div class="relative bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-5 space-y-4 z-10">
+      <h2 class="font-semibold text-lg">เชื่อมต่อ Google Apps Script</h2>
+      <p class="text-sm text-slate-600">
+        วาง
+        <span class="font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">Web App URL</span>
+        ที่ได้จากการ Deploy Apps Script (ต้องลงท้ายด้วย
+        <code class="text-xs bg-slate-100 px-1 rounded">/exec</code> และตั้งค่าเป็น
+        <strong>Anyone</strong>
+      </p>
 
-    <div class="space-y-1">
-      <label class="text-xs text-slate-500">Web App URL</label>
-      <input
-        id="webapp-url-input"
-        type="text"
-        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-        placeholder="https://script.google.com/macros/s/XXXXX/exec"
-      />
-      <p id="webapp-url-error" class="text-xs text-red-500"></p>
-      <p id="webapp-url-success" class="text-xs text-emerald-600"></p>
-    </div>
-
-    <div class="flex justify-end gap-2 pt-2">
-      <button
-        id="btn-config-cancel"
-        class="px-3 py-1.5 text-xs rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
-      >
-        ยกเลิก
-      </button>
-      <button
-        id="btn-config-save"
-        class="px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
-      >
-        บันทึกและทดสอบ
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Login Admin -->
-<div
-  id="admin-login-modal"
-  class="fixed inset-0 hidden items-center justify-center z-30"
->
-  <div class="backdrop absolute inset-0"></div>
-  <div class="relative bg-white rounded-xl shadow-xl max-w-sm w-full mx-4 p-5 space-y-4 z-10">
-    <h2 class="font-semibold text-lg">เข้าสู่ระบบเจ้าหน้าที่ / HR</h2>
-    <p class="text-sm text-slate-600">เดโม: <span class="font-mono text-xs bg-slate-100 px-1 rounded">admin / 1234</span></p>
-
-    <div class="space-y-2 text-sm">
-      <div>
-        <label class="text-xs text-slate-500">ชื่อผู้ใช้</label>
+      <div class="space-y-1">
+        <label class="text-xs text-slate-500">Web App URL</label>
         <input
-          id="admin-login-user"
+          id="webapp-url-input"
           type="text"
-          class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
-          placeholder="admin"
-        />
+          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
+          placeholder="https://script.google.com/macros/s/XXXXX/exec" />
+        <p id="webapp-url-error" class="text-xs text-rose-500"></p>
+        <p id="webapp-url-success" class="text-xs text-emerald-600"></p>
       </div>
-      <div>
-        <label class="text-xs text-slate-500">รหัสผ่าน</label>
-        <input
-          id="admin-login-pass"
-          type="password"
-          class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
-          placeholder="••••"
-        />
-      </div>
-      <p id="admin-login-error" class="text-xs text-red-500"></p>
-    </div>
 
-    <div class="flex justify-end gap-2 pt-2 text-xs">
-      <button
-        id="btn-admin-login-cancel"
-        class="px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
-      >
-        ยกเลิก
-      </button>
-      <button
-        id="btn-admin-login-submit"
-        class="px-3 py-1.5 rounded-md bg-slate-800 text-white hover:bg-slate-900"
-      >
-        เข้าสู่ระบบ
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal บันทึกด้วยมือ -->
-<div
-  id="manual-log-modal"
-  class="fixed inset-0 hidden items-center justify-center z-30"
->
-  <div class="backdrop absolute inset-0"></div>
-  <div class="relative bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 p-5 space-y-4 z-10">
-    <h2 class="font-semibold text-lg">บันทึกเวลาด้วยมือ</h2>
-    <p class="text-xs text-slate-500">
-      ใช้ในกรณีสแกนใบหน้าไม่ได้ / ลืมสแกน แต่ต้องมีหลักฐานประกอบ
-    </p>
-
-    <div class="space-y-3 text-sm">
-      <div class="flex gap-2 items-end">
-        <div class="flex-1">
-          <label class="text-xs text-slate-500">รหัสพนักงาน</label>
-          <input
-            id="manual-code-input"
-            type="text"
-            class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
-            placeholder="เช่น 1011"
-          />
-        </div>
+      <div class="flex justify-end gap-2 pt-2">
         <button
-          id="btn-manual-find-emp"
-          class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm"
-        >
-          ตรวจสอบ
-        </button>
-      </div>
-
-      <div
-        id="manual-emp-box"
-        class="border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 text-xs text-slate-700"
-      >
-        ยังไม่ได้ตรวจสอบรหัส
-      </div>
-
-      <div>
-        <label class="text-xs text-slate-500">ประเภทการบันทึก (โน้ตเฉย ๆ)</label>
-        <select
-          id="manual-type-select"
-          class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-        >
-          <option value="AUTO">ให้ระบบตัดสินอัตโนมัติ</option>
-          <option value="เข้าเช้า">เข้าเช้า</option>
-          <option value="ออกพักเที่ยง">ออกพักเที่ยง</option>
-          <option value="เข้าเที่ยง">กลับเข้าทำงานหลังพักเที่ยง</option>
-          <option value="ออกเย็น">ออกกลับบ้าน</option>
-        </select>
-        <p class="text-[11px] text-slate-500 mt-1">
-          ตอนนี้ระบบใช้เวลาจริงเป็นหลัก ส่วนประเภทนี้จะเก็บเป็นโน้ตให้ HR ดูภายหลัง (ยังไม่บังคับใช้)
-        </p>
-      </div>
-
-      <div>
-        <label class="text-xs text-slate-500">รูปยืนยัน / หลักฐานการลา</label>
-        <input
-          id="manual-proof-input"
-          type="file"
-          accept="image/*"
-          class="mt-1 block w-full text-xs"
-        />
-        <p class="text-[11px] text-slate-500 mt-1">
-          เวอร์ชันนี้ยังไม่อัปโหลดขึ้น Drive แค่เลือกไฟล์ไว้เป็นหลักฐานในเครื่องก่อน (ฟีเจอร์อัปโหลดจริงจะเพิ่มในขั้นถัดไป)
-        </p>
-      </div>
-
-      <p id="manual-status" class="text-xs text-emerald-600"></p>
-    </div>
-
-    <div class="flex justify-end gap-2 pt-2 text-xs">
-      <button
-        id="btn-manual-cancel"
-        class="px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
-      >
-        ยกเลิก
-      </button>
-      <button
-        id="btn-manual-submit"
-        class="px-3 py-1.5 rounded-md bg-emerald-500 text-white hover:bg-emerald-600"
-      >
-        บันทึกเวลา
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal ตรวจสอบเวลา -->
-<div
-  id="checktime-modal"
-  class="fixed inset-0 hidden items-center justify-center z-30"
->
-  <div class="backdrop absolute inset-0"></div>
-  <div class="relative bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-5 space-y-4 z-10">
-    <h2 class="font-semibold text-lg">ตรวจสอบเวลาวันนี้</h2>
-
-    <div class="space-y-3 text-sm">
-      <div class="flex gap-2 items-end">
-        <div class="flex-1">
-          <label class="text-xs text-slate-500">รหัสพนักงาน</label>
-          <input
-            id="checktime-code-input"
-            type="text"
-            class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
-            placeholder="เช่น 1011"
-          />
-        </div>
-        <button
-          id="btn-checktime-submit"
-          class="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg text-sm"
-        >
-          ตรวจสอบ
-        </button>
-      </div>
-
-      <div
-        id="checktime-result"
-        class="border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 text-xs text-slate-700 min-h-[72px]"
-      >
-        กรอกรหัสแล้วกดตรวจสอบ เพื่อดูว่าเข้า-ออกกี่โมง สรุปทั้งวันเป็นอย่างไร
-      </div>
-    </div>
-
-    <div class="flex justify-end pt-2 text-xs">
-      <button
-        id="btn-checktime-close"
-        class="px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
-      >
-        ปิด
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal เพิ่ม/แก้ไขพนักงาน (ใช้ในหน้าแอดมิน) -->
-<div
-  id="employee-modal"
-  class="fixed inset-0 hidden items-center justify-center z-30"
->
-  <div class="backdrop absolute inset-0"></div>
-  <div
-    class="relative bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 p-5 space-y-4 z-10"
-  >
-    <div class="flex justify-between items-center">
-      <h2 class="font-semibold text-lg">เพิ่ม/แก้ไข พนักงาน</h2>
-      <button
-        id="btn-employee-close"
-        class="text-sm text-slate-500 hover:text-slate-800"
-      >
-        ✕ ปิด
-      </button>
-    </div>
-
-    <form id="employee-form" class="grid md:grid-cols-2 gap-4 text-sm">
-      <input type="hidden" id="emp-id" />
-
-      <div>
-        <label class="block text-xs text-slate-500">รหัสพนักงาน</label>
-        <input
-          id="emp-code"
-          type="text"
-          class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
-          required
-        />
-      </div>
-
-      <div>
-        <label class="block text-xs text-slate-500">ชื่อ-สกุล</label>
-        <input
-          id="emp-name"
-          type="text"
-          class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
-          required
-        />
-      </div>
-
-      <div>
-        <label class="block text-xs text-slate-500">แผนก</label>
-        <select
-          id="emp-branch"
-          class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
-          required
-        >
-          <option value="">-- เลือกแผนก --</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-xs text-slate-500">ระดับ</label>
-        <select
-          id="emp-level"
-          class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
-          required
-        >
-          <option value="">-- เลือกระดับ --</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-xs text-slate-500">อีเมล</label>
-        <input
-          id="emp-email"
-          type="email"
-          class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
-        />
-      </div>
-
-      <div>
-        <label class="block text-xs text-slate-500">รูปถ่าย (หน้าตรง)</label>
-        <input
-          id="emp-photo"
-          type="file"
-          accept="image/*"
-          class="mt-1 block w-full text-xs"
-        />
-        <p class="text-[11px] text-slate-500 mt-1">
-          ตอนนี้ยังไม่อัปโหลดขึ้น Drive แค่เตรียมไว้ใช้ทำระบบรู้จำใบหน้าในขั้นถัดไป
-        </p>
-      </div>
-    </form>
-
-    <div class="flex justify-between items-center pt-2 text-xs">
-      <div id="employee-form-status" class="text-slate-500"></div>
-      <div class="flex gap-2">
-        <button
-          id="btn-employee-cancel"
-          class="px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
-        >
+          id="btn-config-cancel"
+          class="px-3 py-1.5 text-xs rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50">
           ยกเลิก
         </button>
         <button
-          id="btn-employee-save"
-          class="px-3 py-1.5 rounded-md bg-emerald-500 text-white hover:bg-emerald-600"
-        >
-          บันทึกพนักงาน
+          id="btn-config-save"
+          class="px-3 py-1.5 text-xs rounded-md bg-sky-600 text-white hover:bg-sky-700">
+          บันทึกและทดสอบ
         </button>
       </div>
     </div>
+  </div>
 
-    <hr class="my-3" />
+  <!-- Modal บันทึกด้วยมือ -->
+  <div
+    id="manual-modal"
+    class="fixed inset-0 hidden items-center justify-center z-30">
+    <div class="backdrop absolute inset-0"></div>
+    <div class="relative bg-white rounded-xl shadow-xl max-w-xl w-full mx-4 p-5 space-y-4 z-10">
+      <div class="flex justify-between items-center">
+        <h2 class="font-semibold text-lg">บันทึกเวลาด้วยมือ</h2>
+        <button
+          id="btn-manual-close"
+          class="text-sm text-slate-500 hover:text-slate-800">
+          ✕ ปิด
+        </button>
+      </div>
 
-    <div class="overflow-auto max-h-64 text-xs">
-      <table class="min-w-full border">
-        <thead class="bg-slate-50">
-        <tr>
-          <th class="border px-2 py-1">รหัส</th>
-          <th class="border px-2 py-1">ชื่อ</th>
-          <th class="border px-2 py-1">แผนก</th>
-          <th class="border px-2 py-1">ระดับ</th>
-          <th class="border px-2 py-1">อีเมล</th>
-        </tr>
-        </thead>
-        <tbody id="employee-table-body"></tbody>
-      </table>
+      <form class="space-y-4 text-sm" id="manual-form">
+        <div class="grid md:grid-cols-[2fr,auto] gap-2 items-end">
+          <div>
+            <label class="block text-xs text-slate-500">รหัสพนักงาน</label>
+            <input
+              id="manual-code"
+              type="text"
+              class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
+              required />
+          </div>
+          <button
+            type="button"
+            id="btn-manual-check-code"
+            class="px-3 py-2 rounded-lg bg-slate-800 text-white hover:bg-slate-900 text-xs">
+            ตรวจสอบข้อมูล
+          </button>
+        </div>
+
+        <div class="bg-slate-50 rounded-lg px-3 py-2 text-xs space-y-1">
+          <div>ชื่อ-สกุล: <span id="manual-name" class="font-medium">-</span></div>
+          <div>แผนก: <span id="manual-branch">-</span></div>
+          <div>ระดับ: <span id="manual-level">-</span></div>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-500">ประเภทการบันทึก</label>
+          <select
+            id="manual-type"
+            class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+            <option value="IN">เข้าเช้า (ปกติ)</option>
+            <option value="IN_LATE">เข้าเช้า (มาสาย)</option>
+            <option value="OUT">ออกพักเที่ยง / ออกกลับบ้าน</option>
+            <option value="LEAVE">ลา (ทั้งวัน)</option>
+            <option value="ABSENT">ขาด (ทั้งวัน)</option>
+          </select>
+          <p class="text-[11px] text-slate-500 mt-1">
+            * ใช้ OUT ได้ทั้งตอนออกพักเที่ยงและออกกลับบ้าน ระบบจะบันทึกเวลาตามจริง
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-500">
+            รูปยืนยันตัวตน / หลักฐานการมาทำงาน
+          </label>
+          <input
+            id="manual-file"
+            type="file"
+            accept="image/*"
+            class="mt-1 block w-full text-xs" />
+          <p class="text-[11px] text-slate-500 mt-1">
+            แนะนำให้แนบรูปกรณีบันทึกย้อนหลัง, ลา, หรือขาด เพื่อให้ HR ตรวจสอบได้
+          </p>
+        </div>
+      </form>
+
+      <div class="flex justify-between items-center pt-2 text-xs">
+        <div id="manual-status" class="text-slate-500"></div>
+        <div class="flex gap-2">
+          <button
+            id="btn-manual-cancel"
+            class="px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50">
+            ยกเลิก
+          </button>
+          <button
+            id="btn-manual-save"
+            class="px-3 py-1.5 rounded-md bg-emerald-500 text-white hover:bg-emerald-600">
+            บันทึกเวลา
+          </button>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- SCRIPT -------------------------------------------------------------->
-<script>
-  /**********************
-   * STATE กลาง
-   **********************/
-  const LS_KEY_URL = "faceAttendance:webAppUrl";
-  const ADMIN_USER = "admin";
-  const ADMIN_PASS = "1234";
+  <!-- Modal ตรวจสอบเวลาวันนี้ -->
+  <div
+    id="checktoday-modal"
+    class="fixed inset-0 hidden items-center justify-center z-30">
+    <div class="backdrop absolute inset-0"></div>
+    <div class="relative bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-5 space-y-4 z-10">
+      <div class="flex justify-between items-center">
+        <h2 class="font-semibold text-lg">ตรวจสอบเวลาวันนี้</h2>
+        <button
+          id="btn-checktoday-close"
+          class="text-sm text-slate-500 hover:text-slate-800">
+          ✕ ปิด
+        </button>
+      </div>
 
-  let webAppUrl = "";
-  let isAdminLoggedIn = false;
+      <div class="space-y-3 text-sm">
+        <div class="grid md:grid-cols-[2fr,auto] gap-2 items-end">
+          <div>
+            <label class="block text-xs text-slate-500">รหัสพนักงาน</label>
+            <input
+              id="checktoday-code"
+              type="text"
+              class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2" />
+          </div>
+          <button
+            id="btn-checktoday-do"
+            class="px-3 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 text-xs">
+            ตรวจสอบ
+          </button>
+        </div>
 
-  let state = {
-    employees: [],
-    branches: [],
-    levels: [],
-    todayLogs: [],
-  };
+        <div
+          id="checktoday-result"
+          class="min-h-[64px] bg-slate-50 rounded-lg px-3 py-2 text-xs text-slate-700">
+          วันนี้ยังไม่มีการบันทึกของรหัสนี้
+        </div>
+      </div>
+    </div>
+  </div>
 
-  let manualSelectedEmp = null; // สำหรับ modal บันทึกด้วยมือ
+  <!-- SCRIPT ------------------------------------------------------------->
+  <script>
+    const LS_KEY_URL = "faceAttendance:webAppUrl";
 
-  /**********************
-   * ฟังก์ชันเรียก API
-   **********************/
-  async function callApi(action, payload = {}) {
-    if (!webAppUrl) {
-      throw new Error("NOT_CONFIGURED");
+    let webAppUrl = "";
+    let state = {
+      employees: [],
+      branches: [],
+      levels: [],
+      todayLogs: []
+    };
+
+    function openModal(el) {
+      el.classList.remove("hidden");
+      el.classList.add("flex");
+    }
+    function closeModal(el) {
+      el.classList.add("hidden");
+      el.classList.remove("flex");
     }
 
-    const params = new URLSearchParams();
-    params.append("action", action);
-    Object.entries(payload).forEach(([k, v]) => {
-      params.append(k, typeof v === "object" ? JSON.stringify(v) : v);
-    });
-
-    const res = await fetch(webAppUrl, {
-      method: "POST",
-      body: params,
-    });
-
-    if (!res.ok) {
-      throw new Error("HTTP " + res.status);
-    }
-    const data = await res.json();
-    if (!data.ok) {
-      throw new Error(data.error || "API error");
-    }
-    return data.result;
-  }
-
-  /**********************
-   * Modal helper
-   **********************/
-  function openModal(el) {
-    el.classList.remove("hidden");
-    el.classList.add("flex");
-  }
-  function closeModal(el) {
-    el.classList.add("hidden");
-    el.classList.remove("flex");
-  }
-
-  /**********************
-   * ตั้งค่า / ทดสอบ URL
-   **********************/
-  async function onSaveWebAppUrl() {
-    const input = document.getElementById("webapp-url-input");
-    const url = input.value.trim();
-    const errorEl = document.getElementById("webapp-url-error");
-    const successEl = document.getElementById("webapp-url-success");
-    errorEl.textContent = "";
-    successEl.textContent = "";
-
-    if (!url || !url.startsWith("https://script.google.com/macros/s/")) {
-      errorEl.textContent =
-        "กรุณาวาง URL ที่ถูกต้องจาก Apps Script (ต้องขึ้นต้นด้วย https://script.google.com/macros/s/ และลงท้าย /exec)";
-      return;
-    }
-    if (!url.endsWith("/exec")) {
-      errorEl.textContent = "URL ต้องลงท้ายด้วย /exec";
-      return;
-    }
-
-    webAppUrl = url;
-    try {
-      await callApi("ping");
-      localStorage.setItem(LS_KEY_URL, url);
-      successEl.textContent = "เชื่อมต่อสำเร็จ! กำลังโหลดข้อมูลเริ่มต้น...";
-      await loadInitialData();
-      setTimeout(() => {
-        closeModal(document.getElementById("config-modal"));
-      }, 600);
-    } catch (err) {
-      console.error(err);
-      errorEl.textContent = "เชื่อมต่อไม่สำเร็จ: " + err.message;
-    }
-  }
-
-  function resetUrl() {
-    localStorage.removeItem(LS_KEY_URL);
-    webAppUrl = "";
-    document.getElementById("webapp-url-input").value = "";
-    document.getElementById("webapp-url-error").textContent = "";
-    document.getElementById("webapp-url-success").textContent = "";
-    openModal(document.getElementById("config-modal"));
-  }
-
-  /**********************
-   * โหลดข้อมูลเริ่มต้นจาก API
-   **********************/
-  async function loadInitialData() {
-    if (!webAppUrl) return;
-    try {
-      const result = await callApi("getInitialData");
-      state.employees = result.employees || [];
-      state.branches = result.branches || [];
-      state.levels = result.levels || [];
-      state.todayLogs = result.todayLogs || [];
-
-      renderEmployeesTableInModal();
-      renderBranchesLevelsToForm();
-      renderFrontDashboard();
-      renderAdminDashboard();
-      renderAdminEmployeeTable();
-    } catch (err) {
-      console.error(err);
-      document.getElementById("front-dashboard-summary").textContent =
-        "โหลดข้อมูลไม่สำเร็จ: " + err.message;
-    }
-  }
-
-  /**********************
-   * Render ส่วนต่าง ๆ
-   **********************/
-  function renderEmployeesTableInModal() {
-    const tbody = document.getElementById("employee-table-body");
-    if (!tbody) return;
-    tbody.innerHTML = "";
-    state.employees.forEach((emp) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="border px-2 py-1">${emp.code || ""}</td>
-        <td class="border px-2 py-1">${emp.fullName || ""}</td>
-        <td class="border px-2 py-1">${emp.branch || ""}</td>
-        <td class="border px-2 py-1">${emp.level || ""}</td>
-        <td class="border px-2 py-1">${emp.email || ""}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function renderBranchesLevelsToForm() {
-    const branchSelect = document.getElementById("emp-branch");
-    const levelSelect = document.getElementById("emp-level");
-
-    if (!branchSelect || !levelSelect) return;
-
-    branchSelect.innerHTML = `<option value="">-- เลือกแผนก --</option>`;
-    state.branches.forEach((b) => {
-      const opt = document.createElement("option");
-      opt.value = b.name || b.id || "";
-      opt.textContent = b.name || "";
-      branchSelect.appendChild(opt);
-    });
-
-    levelSelect.innerHTML = `<option value="">-- เลือกระดับ --</option>`;
-    state.levels.forEach((l) => {
-      const opt = document.createElement("option");
-      opt.value = l.name || l.id || "";
-      opt.textContent = l.name || "";
-      levelSelect.appendChild(opt);
-    });
-  }
-
-  // dashboard ย่อด้านหน้า
-  function renderFrontDashboard() {
-    const summaryEl = document.getElementById("front-dashboard-summary");
-    const body = document.getElementById("front-today-logs-body");
-    if (!summaryEl || !body) return;
-
-    body.innerHTML = "";
-
-    const count = state.todayLogs.length;
-    if (count === 0) {
-      summaryEl.textContent = "วันนี้ยังไม่มีการบันทึกเวลา";
-    } else {
-      summaryEl.textContent = `วันนี้มีการบันทึกเวลาแล้ว ${count} รายการ`;
-    }
-
-    state.todayLogs.forEach((log) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="border px-2 py-1">${log.code || ""}</td>
-        <td class="border px-2 py-1">${log.fullName || ""}</td>
-        <td class="border px-2 py-1">${log.t1 || ""}</td>
-        <td class="border px-2 py-1">${log.t2 || ""}</td>
-        <td class="border px-2 py-1">${log.t3 || ""}</td>
-        <td class="border px-2 py-1">${log.t4 || ""}</td>
-        <td class="border px-2 py-1">${log.statusDay || ""}</td>
-      `;
-      body.appendChild(tr);
-    });
-  }
-
-  // dashboard admin
-  function renderAdminDashboard() {
-    const totalEmpEl = document.getElementById("admin-card-total-emp");
-    const totalLogsEl = document.getElementById("admin-card-total-logs");
-    const normalEl = document.getElementById("admin-card-normal");
-    const abnormalEl = document.getElementById("admin-card-abnormal");
-    const body = document.getElementById("admin-today-logs-body");
-    const dateLabel = document.getElementById("admin-date-label");
-
-    if (dateLabel) {
-      const d = new Date();
-      dateLabel.textContent =
-        d.toLocaleDateString("th-TH", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        }) + " เวลา " + d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
-    }
-
-    if (!totalEmpEl || !totalLogsEl || !body) return;
-
-    totalEmpEl.textContent = state.employees.length;
-    totalLogsEl.textContent = state.todayLogs.length;
-
-    let normal = 0;
-    let abnormal = 0;
-
-    state.todayLogs.forEach((log) => {
-      if (log.statusDay === "ปกติ") normal++;
-      else if (log.statusDay) abnormal++;
-    });
-
-    if (normalEl) normalEl.textContent = normal;
-    if (abnormalEl) abnormalEl.textContent = abnormal;
-
-    body.innerHTML = "";
-    state.todayLogs.forEach((log) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="border px-2 py-1">${log.date || ""}</td>
-        <td class="border px-2 py-1">${log.code || ""}</td>
-        <td class="border px-2 py-1">${log.fullName || ""}</td>
-        <td class="border px-2 py-1">${log.t1 || ""}</td>
-        <td class="border px-2 py-1">${log.t2 || ""}</td>
-        <td class="border px-2 py-1">${log.t3 || ""}</td>
-        <td class="border px-2 py-1">${log.t4 || ""}</td>
-        <td class="border px-2 py-1">${log.statusDay || ""}</td>
-      `;
-      body.appendChild(tr);
-    });
-  }
-
-  // ตารางพนักงานในหน้า admin
-  function renderAdminEmployeeTable() {
-    const tbody = document.getElementById("admin-emp-table-body");
-    if (!tbody) return;
-    tbody.innerHTML = "";
-
-    state.employees.forEach((emp) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="border px-2 py-1">${emp.code || ""}</td>
-        <td class="border px-2 py-1">${emp.fullName || ""}</td>
-        <td class="border px-2 py-1">${emp.branch || ""}</td>
-        <td class="border px-2 py-1">${emp.level || ""}</td>
-        <td class="border px-2 py-1">${emp.email || ""}</td>
-        <td class="border px-2 py-1 text-center">
-          <button class="text-xs text-indigo-600 hover:underline" data-code="${emp.code}">แก้ไข</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    // ผูก event "แก้ไข"
-    tbody.querySelectorAll("button[data-code]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const code = btn.getAttribute("data-code");
-        const emp = state.employees.find((e) => String(e.code) === String(code));
-        if (!emp) return;
-        openEmployeeModalForEdit(emp);
+    async function callApi(action, payload = {}) {
+      if (!webAppUrl) throw new Error("NOT_CONFIGURED");
+      const params = new URLSearchParams();
+      params.append("action", action);
+      Object.entries(payload).forEach(([k, v]) => {
+        params.append(k, typeof v === "object" ? JSON.stringify(v) : v);
       });
-    });
-  }
-
-  /**********************
-   * บันทึกพนักงาน (admin)
-   **********************/
-  async function onSaveEmployee() {
-    const formStatus = document.getElementById("employee-form-status");
-    formStatus.textContent = "";
-    formStatus.classList.remove("text-red-500", "text-emerald-600");
-
-    const id = document.getElementById("emp-id").value.trim();
-    const code = document.getElementById("emp-code").value.trim();
-    const name = document.getElementById("emp-name").value.trim();
-    const branch = document.getElementById("emp-branch").value.trim();
-    const level = document.getElementById("emp-level").value.trim();
-    const email = document.getElementById("emp-email").value.trim();
-    const photoUrl = "";
-    const faceData = "";
-
-    if (!code || !name || !branch || !level) {
-      formStatus.textContent = "กรุณากรอกข้อมูลให้ครบ";
-      formStatus.classList.add("text-red-500");
-      return;
-    }
-
-    try {
-      const result = await callApi("saveEmployee", {
-        id,
-        code,
-        fullName: name,
-        branch,
-        level,
-        email,
-        photoUrl,
-        faceData,
+      const res = await fetch(webAppUrl, {
+        method: "POST",
+        body: params
       });
-
-      formStatus.textContent = "บันทึกสำเร็จ (id: " + result.id + ")";
-      formStatus.classList.add("text-emerald-600");
-
-      document.getElementById("emp-id").value = "";
-      document.getElementById("emp-code").value = "";
-      document.getElementById("emp-name").value = "";
-      document.getElementById("emp-email").value = "";
-      document.getElementById("emp-branch").value = "";
-      document.getElementById("emp-level").value = "";
-
-      await loadInitialData();
-      renderAdminEmployeeTable();
-    } catch (err) {
-      console.error(err);
-      formStatus.textContent = "บันทึกไม่สำเร็จ: " + err.message;
-      formStatus.classList.add("text-red-500");
-    }
-  }
-
-  function openEmployeeModalForAdd() {
-    document.getElementById("emp-id").value = "";
-    document.getElementById("emp-code").value = "";
-    document.getElementById("emp-name").value = "";
-    document.getElementById("emp-email").value = "";
-    document.getElementById("emp-branch").value = "";
-    document.getElementById("emp-level").value = "";
-    document.getElementById("employee-form-status").textContent = "";
-    openModal(document.getElementById("employee-modal"));
-  }
-
-  function openEmployeeModalForEdit(emp) {
-    document.getElementById("emp-id").value = emp.id || "";
-    document.getElementById("emp-code").value = emp.code || "";
-    document.getElementById("emp-name").value = emp.fullName || "";
-    document.getElementById("emp-email").value = emp.email || "";
-    document.getElementById("emp-branch").value = emp.branch || "";
-    document.getElementById("emp-level").value = emp.level || "";
-    document.getElementById("employee-form-status").textContent = "";
-    openModal(document.getElementById("employee-modal"));
-  }
-
-  /**********************
-   * บันทึกด้วยมือ
-   **********************/
-  function findEmployeeByCode(code) {
-    return state.employees.find((e) => String(e.code) === String(code));
-  }
-
-  function showManualEmpInfo(text, isError) {
-    const box = document.getElementById("manual-emp-box");
-    box.textContent = text;
-    box.classList.remove("text-red-600", "text-emerald-700");
-    if (isError) box.classList.add("text-red-600");
-  }
-
-  async function handleManualFindEmp() {
-    const code = document.getElementById("manual-code-input").value.trim();
-    manualSelectedEmp = null;
-
-    if (!code) {
-      showManualEmpInfo("กรุณากรอกรหัสพนักงานก่อน", true);
-      return;
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "API error");
+      return data.result;
     }
 
-    const emp = findEmployeeByCode(code);
-    if (!emp) {
-      showManualEmpInfo("ไม่พบรหัสนี้ในระบบ กรุณาตรวจสอบอีกครั้ง หรือให้ HR เพิ่มพนักงาน", true);
-      return;
-    }
+    async function onSaveWebAppUrl() {
+      const input = document.getElementById("webapp-url-input");
+      const url = input.value.trim();
+      const errorEl = document.getElementById("webapp-url-error");
+      const successEl = document.getElementById("webapp-url-success");
+      errorEl.textContent = "";
+      successEl.textContent = "";
 
-    manualSelectedEmp = emp;
-    showManualEmpInfo(
-      `รหัส: ${emp.code || "-"} | ชื่อ: ${emp.fullName || "-"} | แผนก: ${
-        emp.branch || "-"
-      } | ระดับ: ${emp.level || "-"}`,
-      false
-    );
-  }
-
-  async function handleManualSubmit() {
-    const statusEl = document.getElementById("manual-status");
-    statusEl.textContent = "";
-    statusEl.classList.remove("text-red-500", "text-emerald-600");
-
-    if (!manualSelectedEmp) {
-      statusEl.textContent = "กรุณากรอกรหัสและกด 'ตรวจสอบ' ให้เจอพนักงานก่อน";
-      statusEl.classList.add("text-red-500");
-      return;
-    }
-
-    const noteType = document.getElementById("manual-type-select").value || "";
-    try {
-      const result = await callApi("logScan", {
-        code: manualSelectedEmp.code || "",
-        fullName: manualSelectedEmp.fullName || "",
-        branch: manualSelectedEmp.branch || "",
-        level: manualSelectedEmp.level || "",
-        note: "manual: " + noteType,
-      });
-
-      // update last-log panel หน้าแรก
-      document.getElementById("last-log-code").textContent =
-        manualSelectedEmp.code || "";
-      document.getElementById("last-log-name").textContent =
-        manualSelectedEmp.fullName || "";
-      document.getElementById("last-log-type").textContent =
-        result.type || "-";
-      document.getElementById("last-log-time").textContent =
-        result.time || "-";
-      document.getElementById("last-log-status").textContent =
-        result.statusDay
-          ? "สรุปทั้งวัน: " + result.statusDay
-          : "บันทึกสำเร็จ";
-
-      statusEl.textContent = "บันทึกสำเร็จ เวลา " + (result.time || "-");
-      statusEl.classList.add("text-emerald-600");
-
-      await loadInitialData();
-    } catch (err) {
-      console.error(err);
-      statusEl.textContent = "บันทึกไม่สำเร็จ: " + err.message;
-      statusEl.classList.add("text-red-500");
-    }
-  }
-
-  /**********************
-   * ตรวจสอบเวลาวันนี้ (พนักงาน)
-   **********************/
-  async function handleCheckTime() {
-    const code = document.getElementById("checktime-code-input").value.trim();
-    const resultBox = document.getElementById("checktime-result");
-    resultBox.classList.remove("text-red-600");
-    resultBox.textContent = "กำลังตรวจสอบ...";
-
-    if (!code) {
-      resultBox.textContent = "กรุณากรอกรหัสพนักงานก่อน";
-      resultBox.classList.add("text-red-600");
-      return;
-    }
-
-    try {
-      const result = await callApi("getTodayByCode", { code });
-      if (!result.found) {
-        resultBox.textContent = result.message || "วันนี้ยังไม่มีการบันทึกเวลาของรหัสนี้";
+      if (!url || !url.startsWith("https://script.google.com/macros/s/")) {
+        errorEl.textContent =
+          "กรุณาวาง URL ที่ถูกต้องจาก Apps Script (ต้องขึ้นต้นด้วย https://script.google.com/macros/s/ และลงท้าย /exec)";
+        return;
+      }
+      if (!url.endsWith("/exec")) {
+        errorEl.textContent = "URL ต้องลงท้ายด้วย /exec";
         return;
       }
 
-      const log = result.log || {};
-      resultBox.innerHTML = `
-        <div>รหัส: <span class="font-medium">${log.code || "-"}</span></div>
-        <div>ชื่อ: <span class="font-medium">${log.fullName || "-"}</span></div>
-        <hr class="my-2">
-        <div>เข้าเช้า (T1): <span class="font-medium">${log.t1 || "-"}</span></div>
-        <div>ออกพักเที่ยง (T2): <span class="font-medium">${log.t2 || "-"}</span></div>
-        <div>กลับจากพักเที่ยง (T3): <span class="font-medium">${log.t3 || "-"}</span></div>
-        <div>ออกกลับบ้าน (T4): <span class="font-medium">${log.t4 || "-"}</span></div>
-        <hr class="my-2">
-        <div>เช้า: <span class="font-medium">${log.statusMorning || "-"}</span></div>
-        <div>พักเที่ยง: <span class="font-medium">${log.statusLunch || "-"}</span></div>
-        <div>เย็น: <span class="font-medium">${log.statusAfternoon || "-"}</span></div>
-        <div>สรุปทั้งวัน: <span class="font-semibold">${log.statusDay || "-"}</span></div>
-      `;
-    } catch (err) {
-      console.error(err);
-      resultBox.textContent = "ตรวจสอบไม่สำเร็จ: " + err.message;
-      resultBox.classList.add("text-red-600");
+      webAppUrl = url;
+      try {
+        await callApi("ping");
+        localStorage.setItem(LS_KEY_URL, url);
+        successEl.textContent = "เชื่อมต่อสำเร็จ! กำลังโหลดข้อมูล...";
+        await loadInitialData();
+        setTimeout(() => {
+          closeModal(document.getElementById("config-modal"));
+        }, 600);
+      } catch (err) {
+        console.error(err);
+        errorEl.textContent = "เชื่อมต่อไม่สำเร็จ: " + err.message;
+      }
     }
-  }
 
-  /**********************
-   * Admin login / logout + nav
-   **********************/
-  function showAdminPage() {
-    document.getElementById("front-page").classList.add("hidden");
-    document.getElementById("admin-page").classList.remove("hidden");
-  }
-
-  function showFrontPage() {
-    document.getElementById("admin-page").classList.add("hidden");
-    document.getElementById("front-page").classList.remove("hidden");
-  }
-
-  function setAdminNav(active) {
-    const dashBtn = document.getElementById("admin-nav-dashboard");
-    const empBtn = document.getElementById("admin-nav-employees");
-    const dashPage = document.getElementById("admin-dashboard");
-    const empPage = document.getElementById("admin-employees");
-
-    dashBtn.classList.remove("bg-slate-800");
-    empBtn.classList.remove("bg-slate-800");
-    dashPage.classList.add("hidden");
-    empPage.classList.add("hidden");
-
-    if (active === "dashboard") {
-      dashBtn.classList.add("bg-slate-800");
-      dashPage.classList.remove("hidden");
-    } else if (active === "employees") {
-      empBtn.classList.add("bg-slate-800");
-      empPage.classList.remove("hidden");
-    }
-  }
-
-  async function handleAdminLogin() {
-    const user = document.getElementById("admin-login-user").value.trim();
-    const pass = document.getElementById("admin-login-pass").value.trim();
-    const errEl = document.getElementById("admin-login-error");
-    errEl.textContent = "";
-
-    if (user === ADMIN_USER && pass === ADMIN_PASS) {
-      isAdminLoggedIn = true;
-      closeModal(document.getElementById("admin-login-modal"));
-      showAdminPage();
-      setAdminNav("dashboard");
-      await loadInitialData();
-    } else {
-      errEl.textContent = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
-    }
-  }
-
-  function handleAdminLogout() {
-    isAdminLoggedIn = false;
-    showFrontPage();
-  }
-
-  /**********************
-   * INIT
-   **********************/
-  document.addEventListener("DOMContentLoaded", async () => {
-    // โหลด URL จาก localStorage
-    const saved = localStorage.getItem(LS_KEY_URL);
-    if (saved) {
-      webAppUrl = saved;
-      document.getElementById("webapp-url-input").value = saved;
-      loadInitialData();
-    } else {
+    function resetUrl() {
+      localStorage.removeItem(LS_KEY_URL);
+      webAppUrl = "";
+      document.getElementById("webapp-url-input").value = "";
+      document.getElementById("webapp-url-error").textContent = "";
+      document.getElementById("webapp-url-success").textContent = "";
       openModal(document.getElementById("config-modal"));
     }
 
-    // ปุ่ม Config URL
-    document
-      .getElementById("btn-open-config")
-      .addEventListener("click", () =>
-        openModal(document.getElementById("config-modal"))
-      );
-    document
-      .getElementById("btn-config-save")
-      .addEventListener("click", onSaveWebAppUrl);
-    document
-      .getElementById("btn-config-cancel")
-      .addEventListener("click", () =>
-        closeModal(document.getElementById("config-modal"))
-      );
-    document
-      .getElementById("btn-reset-url")
-      .addEventListener("click", resetUrl);
+    function renderTodayLogs() {
+      const summaryEl = document.getElementById("dashboard-summary");
+      const body = document.getElementById("today-logs-body");
+      body.innerHTML = "";
 
-    // ปุ่มหน้า front
-    document
-      .getElementById("btn-open-manual-log")
-      .addEventListener("click", () => {
-        manualSelectedEmp = null;
-        document.getElementById("manual-code-input").value = "";
-        showManualEmpInfo("ยังไม่ได้ตรวจสอบรหัส", false);
-        document.getElementById("manual-status").textContent = "";
-        openModal(document.getElementById("manual-log-modal"));
+      const logs = state.todayLogs || [];
+      if (logs.length === 0) {
+        summaryEl.textContent = "วันนี้ยังไม่มีการบันทึกเวลา";
+        return;
+      }
+
+      const presentCodes = new Set();
+      let late = 0;
+
+      logs.forEach(log => {
+        presentCodes.add(String(log.code || ""));
+        if (String(log.status || "").includes("สาย")) late++;
       });
 
-    document
-      .getElementById("btn-open-checktime")
-      .addEventListener("click", () => {
-        document.getElementById("checktime-code-input").value = "";
-        document.getElementById("checktime-result").textContent =
-          "กรอกรหัสแล้วกดตรวจสอบ เพื่อดูว่าเข้า-ออกกี่โมง สรุปทั้งวันเป็นอย่างไร";
-        openModal(document.getElementById("checktime-modal"));
+      summaryEl.textContent =
+        `วันนี้มีการบันทึก ${logs.length} รายการ, พนักงานที่มาวันนี้ ${presentCodes.size} คน, มาสาย ${late} คน`;
+
+      logs.forEach(log => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="border px-2 py-1">${log.code || ""}</td>
+          <td class="border px-2 py-1">${log.fullName || ""}</td>
+          <td class="border px-2 py-1">${log.branch || ""}</td>
+          <td class="border px-2 py-1">${log.level || ""}</td>
+          <td class="border px-2 py-1">${log.timeIn || ""}</td>
+          <td class="border px-2 py-1">${log.timeOut || ""}</td>
+          <td class="border px-2 py-1">${log.status || ""}</td>
+        `;
+        body.appendChild(tr);
       });
+    }
 
-    document
-      .getElementById("btn-open-admin-login")
-      .addEventListener("click", () => {
-        document.getElementById("admin-login-user").value = "";
-        document.getElementById("admin-login-pass").value = "";
-        document.getElementById("admin-login-error").textContent = "";
-        openModal(document.getElementById("admin-login-modal"));
+    async function loadInitialData() {
+      if (!webAppUrl) return;
+      try {
+        const result = await callApi("getInitialData");
+        state.employees = result.employees || [];
+        state.branches = result.branches || [];
+        state.levels = result.levels || [];
+        state.todayLogs = result.todayLogs || [];
+        renderTodayLogs();
+      } catch (err) {
+        console.error(err);
+        document.getElementById("dashboard-summary").textContent =
+          "โหลดข้อมูลไม่สำเร็จ: " + err.message;
+      }
+    }
+
+    function findEmployeeByCode(code) {
+      return state.employees.find(
+        e => String(e.code || "").trim() === String(code || "").trim()
+      );
+    }
+
+    function fillManualEmployeeInfo(emp) {
+      document.getElementById("manual-name").textContent =
+        emp ? emp.fullName || "-" : "-";
+      document.getElementById("manual-branch").textContent =
+        emp ? emp.branch || "-" : "-";
+      document.getElementById("manual-level").textContent =
+        emp ? emp.level || "-" : "-";
+    }
+
+    function resetManualForm() {
+      document.getElementById("manual-code").value = "";
+      document.getElementById("manual-type").value = "IN";
+      document.getElementById("manual-file").value = "";
+      document.getElementById("manual-status").textContent = "";
+      fillManualEmployeeInfo(null);
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result;
+          const commaIndex = String(result).indexOf(",");
+          const base64 = commaIndex >= 0
+            ? String(result).slice(commaIndex + 1)
+            : String(result);
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
       });
+    }
 
-    document
-      .getElementById("btn-refresh-front-dashboard")
-      .addEventListener("click", loadInitialData);
+    async function onManualSave() {
+      const statusEl = document.getElementById("manual-status");
+      statusEl.classList.remove("text-rose-500", "text-emerald-600");
+      statusEl.textContent = "";
 
-    // modal manual log
-    document
-      .getElementById("btn-manual-find-emp")
-      .addEventListener("click", handleManualFindEmp);
-    document
-      .getElementById("btn-manual-submit")
-      .addEventListener("click", handleManualSubmit);
-    document
-      .getElementById("btn-manual-cancel")
-      .addEventListener("click", () =>
-        closeModal(document.getElementById("manual-log-modal"))
-      );
+      const code = document.getElementById("manual-code").value.trim();
+      const manualType = document.getElementById("manual-type").value;
+      const fileInput = document.getElementById("manual-file");
+      const emp = findEmployeeByCode(code);
 
-    // modal checktime
-    document
-      .getElementById("btn-checktime-submit")
-      .addEventListener("click", handleCheckTime);
-    document
-      .getElementById("btn-checktime-close")
-      .addEventListener("click", () =>
-        closeModal(document.getElementById("checktime-modal"))
-      );
+      if (!code) {
+        statusEl.textContent = "กรุณากรอกรหัสพนักงาน";
+        statusEl.classList.add("text-rose-500");
+        return;
+      }
+      if (!emp) {
+        statusEl.textContent = "ไม่พบข้อมูลพนักงานรหัสนี้ในระบบ";
+        statusEl.classList.add("text-rose-500");
+        return;
+      }
 
-    // admin login modal
-    document
-      .getElementById("btn-admin-login-submit")
-      .addEventListener("click", handleAdminLogin);
-    document
-      .getElementById("btn-admin-login-cancel")
-      .addEventListener("click", () =>
-        closeModal(document.getElementById("admin-login-modal"))
-      );
+      let evidenceBase64 = "";
+      let evidenceMime = "";
+      let evidenceName = "";
 
-    // admin sidebar nav
-    document
-      .getElementById("admin-nav-dashboard")
-      .addEventListener("click", () => setAdminNav("dashboard"));
-    document
-      .getElementById("admin-nav-employees")
-      .addEventListener("click", () => setAdminNav("employees"));
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        evidenceBase64 = await fileToBase64(file);
+        evidenceMime = file.type || "image/jpeg";
+        evidenceName = file.name || "evidence.jpg";
+      }
 
-    // admin top buttons
-    document
-      .getElementById("btn-admin-refresh")
-      .addEventListener("click", loadInitialData);
-    document
-      .getElementById("btn-admin-emp-refresh")
-      .addEventListener("click", loadInitialData);
-    document
-      .getElementById("btn-admin-emp-add")
-      .addEventListener("click", openEmployeeModalForAdd);
-    document
-      .getElementById("btn-admin-logout")
-      .addEventListener("click", handleAdminLogout);
+      try {
+        statusEl.textContent = "กำลังบันทึก...";
+        const result = await callApi("manualLog", {
+          code: emp.code || "",
+          fullName: emp.fullName || "",
+          branch: emp.branch || "",
+          level: emp.level || "",
+          manualType,
+          evidenceBase64,
+          evidenceMime,
+          evidenceName
+        });
 
-    // employee modal close / cancel / save
-    document
-      .getElementById("btn-employee-close")
-      .addEventListener("click", () =>
-        closeModal(document.getElementById("employee-modal"))
-      );
-    document
-      .getElementById("btn-employee-cancel")
-      .addEventListener("click", () =>
-        closeModal(document.getElementById("employee-modal"))
-      );
-    document
-      .getElementById("btn-employee-save")
-      .addEventListener("click", (e) => {
-        e.preventDefault();
-        onSaveEmployee();
-      });
-  });
-</script>
+        statusEl.textContent = "บันทึกสำเร็จ: " + (result.status || "");
+        statusEl.classList.add("text-emerald-600");
+
+        // อัปเดตผลล่าสุด
+        document.getElementById("last-code").textContent = emp.code || "";
+        document.getElementById("last-name").textContent =
+          emp.fullName || emp.code || "";
+        document.getElementById("last-time").textContent = result.time || "-";
+        document.getElementById("last-status").textContent =
+          result.status || manualType;
+
+        await loadInitialData();
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "บันทึกไม่สำเร็จ: " + err.message;
+        statusEl.classList.add("text-rose-500");
+      }
+    }
+
+    async function onCheckToday() {
+      const code = document.getElementById("checktoday-code").value.trim();
+      const resultEl = document.getElementById("checktoday-result");
+      resultEl.textContent = "กำลังตรวจสอบ...";
+
+      if (!code) {
+        resultEl.textContent = "กรุณากรอกรหัสพนักงาน";
+        return;
+      }
+      try {
+        const result = await callApi("checkTodayByCode", { code });
+        if (!result || !result.found) {
+          resultEl.textContent = "วันนี้ยังไม่มีการบันทึกของรหัสนี้";
+          return;
+        }
+        const parts = [];
+        parts.push("รหัส " + (result.code || "") + " : " + (result.fullName || ""));
+        parts.push("เข้างาน: " + (result.timeIn || "-"));
+        parts.push("ออกงาน: " + (result.timeOut || "-"));
+        parts.push("สถานะ: " + (result.status || "-"));
+        resultEl.textContent = parts.join(" | ");
+      } catch (err) {
+        console.error(err);
+        resultEl.textContent = "ตรวจสอบไม่สำเร็จ: " + err.message;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const saved = localStorage.getItem(LS_KEY_URL);
+      if (saved) {
+        webAppUrl = saved;
+        document.getElementById("webapp-url-input").value = saved;
+        loadInitialData();
+      } else {
+        openModal(document.getElementById("config-modal"));
+      }
+
+      // ปุ่มตั้งค่า URL
+      document.getElementById("btn-open-config")
+        .addEventListener("click", () =>
+          openModal(document.getElementById("config-modal"))
+        );
+      document.getElementById("btn-config-save")
+        .addEventListener("click", onSaveWebAppUrl);
+      document.getElementById("btn-config-cancel")
+        .addEventListener("click", () =>
+          closeModal(document.getElementById("config-modal"))
+        );
+      document.getElementById("btn-reset-url")
+        .addEventListener("click", resetUrl);
+
+      // ไปหน้า Admin (ล็อกง่าย ๆ)
+      document.getElementById("btn-go-admin")
+        .addEventListener("click", () => {
+          const pwd = prompt("กรอกรหัสเจ้าหน้าที่ (เช่น 1234)");
+          if (pwd === "1234") {
+            sessionStorage.setItem("faceAttendance:isAdmin", "1");
+            window.location.href = "admin.html";
+          } else if (pwd !== null) {
+            alert("รหัสไม่ถูกต้อง");
+          }
+        });
+
+      // Manual modal
+      document.getElementById("btn-open-manual-log")
+        .addEventListener("click", () => {
+          resetManualForm();
+          openModal(document.getElementById("manual-modal"));
+        });
+      document.getElementById("btn-manual-close")
+        .addEventListener("click", () =>
+          closeModal(document.getElementById("manual-modal"))
+        );
+      document.getElementById("btn-manual-cancel")
+        .addEventListener("click", () =>
+          closeModal(document.getElementById("manual-modal"))
+        );
+      document.getElementById("btn-manual-check-code")
+        .addEventListener("click", () => {
+          const code = document.getElementById("manual-code").value.trim();
+          const emp = findEmployeeByCode(code);
+          fillManualEmployeeInfo(emp || null);
+        });
+      document.getElementById("btn-manual-save")
+        .addEventListener("click", (e) => {
+          e.preventDefault();
+          onManualSave();
+        });
+
+      // Check today modal
+      document.getElementById("btn-open-checktoday")
+        .addEventListener("click", () =>
+          openModal(document.getElementById("checktoday-modal"))
+        );
+      document.getElementById("btn-checktoday-close")
+        .addEventListener("click", () =>
+          closeModal(document.getElementById("checktoday-modal"))
+        );
+      document.getElementById("btn-checktoday-do")
+        .addEventListener("click", () => onCheckToday());
+
+      // dashboard refresh
+      document.getElementById("btn-refresh-dashboard")
+        .addEventListener("click", loadInitialData);
+    });
+  </script>
 </body>
 </html>
