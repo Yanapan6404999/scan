@@ -910,7 +910,9 @@
     const tbody = $('todaySummaryBody');
     if (!tbody) return;
 
-    const rows = (summary && summary.rows) || [];
+    // ✅ แก้ตรงนี้: summary เป็น array โดยตรง
+    const rows = Array.isArray(summary) ? summary : [];
+    
     if (!rows.length) {
       tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:12px 8px;" class="text-muted">ยังไม่มีข้อมูลของวันนี้</td></tr>';
       return;
