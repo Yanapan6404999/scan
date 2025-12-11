@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin – ระบบลงเวลาพนักงาน</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .backdrop { background: rgba(0, 0, 0, 0.45); }
+    .nav-active { background-color: rgba(15, 23, 42, 0.12); color: #0f172a; font-weight: 600; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+
+<div class="min-h-screen flex">
+  <!-- Sidebar -->
+  <aside class="w-60 bg-slate-900 text-slate-100 flex flex-col">
+    <div class="px-4 py-4 border-b border-slate-800">
+      <div class="text-sm text-slate-400">Admin Panel</div>
+      <div class="font-semibold text-lg">HR Attendance</div>
+    </div>
+
+    <nav class="flex-1 px-2 py-3 space-y-1 text-sm">
+      <button data-view="dashboard"
+              class="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-slate-800 text-left nav-active">
+        <span>แดชบอร์ด</span>
+      </button>
+      <button data-view="employees"
+              class="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-slate-800 text-left">
+        <span>จัดการพนักงาน</span>
+      </button>
+      <button data-view="history"
+              class="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-slate-800 text-left">
+        <span>ประวัติเวลา</span>
+      </button>
+      <button data-view="settings"
+              class="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-slate-800 text-left">
+        <span>ตั้งค่า (แผนก/ระดับ)</span>
+      </button>
+      <button data-view="summary"
+              class="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-slate-800 text-left">
+        <span>สรุปเวลาทำงาน</span>
+      </button>
+    </nav>
+
+    <div class="px-4 py-4 border-t border-slate-800">
+      <button
+        id="btn-admin-logout"
+        class="w-full px-3 py-2 rounded-md bg-rose-500 hover:bg-rose-600 text-sm">
+        ออกจากระบบ
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="flex-1 flex flex-col">
+    <!-- Top bar -->
+    <header class="bg-white shadow-sm">
+      <div class="px-5 py-3 flex items-center justify-between">
+        <div>
+          <div class="text-xs text-slate-400">หน้าจัดการหลังบ้าน</div>
+          <div id="page-title" class="font-semibold text-lg">แดชบอร์ด</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            id="btn-open-config"
+            class="px-3 py-1.5 text-xs rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50">
+            ตั้งค่า URL
+          </button>
+          <button
+            id="btn-reset-url"
+            class="px-3 py-1.5 text-xs rounded-md border border-rose-300 text-rose-600 hover:bg-rose-50">
+            Reset URL
+          </button>
+          <a href="index.html"
+             class="px-3 py-1.5 text-xs rounded-md bg-slate-800 text-white hover:bg-slate-900">
+            กลับหน้าหลัก
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="flex-1 overflow-y-auto px-5 py-5 space-y-6">
+      <!-- Dashboard view -->
+      <section id="view-dashboard" class="space-y-4">
+        <div class="grid md:grid-cols-4 gap-4 text-sm">
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <div class="text-xs text-slate-500">พนักงานทั้งหมด</div>
+            <div id="dash-total-emp" class="mt-1 text-2xl font-semibold">0</div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <div class="text-xs text-slate-500">มาวันนี้</div>
+            <div id="dash-present" class="mt-1 text-2xl font-semibold">0</div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <div class="text-xs text-slate-500">มาสายวันนี้</div>
+            <div id="dash-late" class="mt-1 text-2xl font-semibold text-amber-600">0</div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm p-4">
+            <div class="text-xs text-slate-500">ขาด / ไม่มาวันนี้</div>
+            <div id="dash-absent" class="mt-1 text-2xl font-semibold text-rose-600">0</div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-4 space-y-3 text-sm">
+          <div class="flex items-center justify-between">
+            <h2 class="font-semibold">บันทึกวันนี้</h2>
+            <button
+              id="btn-dashboard-refresh"
+              class="px-3 py-1.5 text-xs rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50">
+              รีเฟรช
+            </button>
+          </div>
+          <div id="dash-today-summary" class="text-slate-600 text-sm">
+            กำลังโหลดข้อมูล...
+          </div>
+          <div class="overflow-auto">
+            <table class="min-w-full text-xs border mt-2">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="border px-2 py-1">วันที่</th>
+                  <th class="border px-2 py-1">รหัส</th>
+                  <th class="border px-2 py-1">ชื่อ</th>
+                  <th class="border px-2 py-1">แผนก</th>
+                  <th class="border px-2 py-1">ระดับ</th>
+                  <th class="border px-2 py-1">เข้า</th>
+                  <th class="border px-2 py-1">ออก</th>
+                  <th class="border px-2 py-1">สถานะ</th>
+                </tr>
+              </thead>
+              <tbody id="dash-today-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Employees view -->
+      <section id="view-employees" class="hidden space-y-4">
+        <div class="flex items-center justify-between text-sm">
+          <h2 class="font-semibold text-base">จัดการพนักงาน</h2>
+          <div class="flex gap-2">
+            <button
+              id="btn-employees-refresh"
+              class="px-3 py-1.5 text-xs rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50">
+              รีเฟรช
+            </button>
+            <button
+              id="btn-employee-add"
+              class="px-3 py-1.5 text-xs rounded-md bg-emerald-500 text-white hover:bg-emerald-600">
+              + เพิ่มพนักงาน
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-4 text-xs">
+          <div class="overflow-auto">
+            <table class="min-w-full border">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="border px-2 py-1">รหัส</th>
+                  <th class="border px-2 py-1">ชื่อ</th>
+                  <th class="border px-2 py-1">แผนก</th>
+                  <th class="border px-2 py-1">ระดับ</th>
+                  <th class="border px-2 py-1">อีเมล</th>
+                  <th class="border px-2 py-1">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="employee-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- History view -->
+      <section id="view-history" class="hidden space-y-4">
+        <div class="flex flex-wrap items-end gap-3 text-sm">
+          <h2 class="font-semibold text-base mr-auto">ประวัติเวลา</h2>
+          <div>
+            <label class="block text-xs text-slate-500">ค้นหา (รหัส/ชื่อ)</label>
+            <input
+              id="history-search"
+              type="text"
+              class="mt-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500">แผนก</label>
+            <select
+              id="history-branch"
+              class="mt-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs">
+              <option value="">ทุกแผนก</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500">ปี</label>
+            <select
+              id="history-year"
+              class="mt-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs">
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500">เดือน</label>
+            <select
+              id="history-month"
+              class="mt-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs">
+              <option value="">ทั้งปี</option>
+            </select>
+          </div>
+          <button
+            id="btn-history-refresh"
+            class="px-3 py-1.5 text-xs rounded-md bg-slate-800 text-white hover:bg-slate-900">
+            รีเฟรช
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-4 text-xs space-y-2">
+          <div id="history-summary" class="text-slate-600 text-sm">
+            -
+          </div>
+          <div class="overflow-auto">
+            <table class="min-w-full border">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="border px-2 py-1">วันที่</th>
+                  <th class="border px-2 py-1">รหัส</th>
+                  <th class="border px-2 py-1">ชื่อ</th>
+                  <th class="border px-2 py-1">แผนก</th>
+                  <th class="border px-2 py-1">ระดับ</th>
+                  <th class="border px-2 py-1">เข้า</th>
+                  <th class="border px-2 py-1">ออก</th>
+                  <th class="border px-2 py-1">สถานะ</th>
+                  <th class="border px-2 py-1">รูปหลักฐาน</th>
+                </tr>
+              </thead>
+              <tbody id="history-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings view -->
+      <section id="view-settings" class="hidden space-y-4 text-sm">
+        <h2 class="font-semibold text-base">ตั้งค่าระบบ (แผนก / ระดับ)</h2>
+        <div class="grid md:grid-cols-2 gap-4">
+          <!-- Branches -->
+          <div class="bg-white rounded-xl shadow-sm p-4 space-y-3">
+            <div class="flex items-end gap-2">
+              <div class="flex-1">
+                <label class="block text-xs text-slate-500">ชื่อแผนกใหม่</label>
+                <input
+                  id="branch-new-name"
+                  type="text"
+                  class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs" />
+              </div>
+              <button
+                id="btn-branch-add"
+                class="px-3 py-1.5 text-xs rounded-md bg-emerald-500 text-white hover:bg-emerald-600">
+                เพิ่ม
+              </button>
+            </div>
+            <div class="text-xs text-slate-500">รายการแผนก</div>
+            <ul id="branch-list" class="divide-y divide-slate-100 text-xs"></ul>
+          </div>
+
+          <!-- Levels -->
+          <div class="bg-white rounded-xl shadow-sm p-4 space-y-3">
+            <div class="flex items-end gap-2">
+              <div class="flex-1">
+                <label class="block text-xs text-slate-500">ชื่อระดับใหม่</label>
+                <input
+                  id="level-new-name"
+                  type="text"
+                  class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs" />
+              </div>
+              <button
+                id="btn-level-add"
+                class="px-3 py-1.5 text-xs rounded-md bg-emerald-500 text-white hover:bg-emerald-600">
+                เพิ่ม
+              </button>
+            </div>
+            <div class="text-xs text-slate-500">รายการระดับ</div>
+            <ul id="level-list" class="divide-y divide-slate-100 text-xs"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Summary view -->
+      <section id="view-summary" class="hidden space-y-4 text-sm">
+        <div class="flex flex-wrap items-end gap-3">
+          <h2 class="font-semibold text-base mr-auto">สรุปเวลาทำงานรายบุคคล</h2>
+          <div>
+            <label class="block text-xs text-slate-500">แผนก</label>
+            <select
+              id="summary-branch"
+              class="mt-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs">
+              <option value="">ทุกแผนก</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500">ปี</label>
+            <select
+              id="summary-year"
+              class="mt-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs">
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500">เดือน</label>
+            <select
+              id="summary-month"
+              class="mt-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs">
+              <option value="">ทั้งปี</option>
+            </select>
+          </div>
+          <button
+            id="btn-summary-refresh"
+            class="px-3 py-1.5 text-xs rounded-md bg-slate-800 text-white hover:bg-slate-900">
+            รีเฟรช
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-4 text-xs space-y-2">
+          <div id="summary-info" class="text-slate-600 text-sm">-</div>
+          <div class="overflow-auto">
+            <table class="min-w-full border">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="border px-2 py-1">รหัส</th>
+                  <th class="border px-2 py-1">ชื่อ</th>
+                  <th class="border px-2 py-1">แผนก</th>
+                  <th class="border px-2 py-1">ระดับ</th>
+                  <th class="border px-2 py-1">จำนวนวัน</th>
+                  <th class="border px-2 py-1">สาย (ครั้ง)</th>
+                  <th class="border px-2 py-1">ลา (ครั้ง)</th>
+                  <th class="border px-2 py-1">ขาด (ครั้ง)</th>
+                </tr>
+              </thead>
+              <tbody id="summary-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- MODALS -------------------------------------------------------------->
+<!-- Config modal -->
+<div
+  id="config-modal"
+  class="fixed inset-0 hidden items-center justify-center z-30">
+  <div class="backdrop absolute inset-0"></div>
+  <div class="relative bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-5 space-y-4 z-10">
+    <h2 class="font-semibold text-lg">เชื่อมต่อ Google Apps Script</h2>
+    <p class="text-sm text-slate-600">
+      วาง <span class="font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">Web App URL</span>
+      ที่ได้จากการ Deploy Apps Script (ต้องลงท้ายด้วย
+      <code class="text-xs bg-slate-100 px-1 rounded">/exec</code>)
+    </p>
+    <div class="space-y-1">
+      <label class="text-xs text-slate-500">Web App URL</label>
+      <input
+        id="webapp-url-input"
+        type="text"
+        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
+        placeholder="https://script.google.com/macros/s/XXXXX/exec" />
+      <p id="webapp-url-error" class="text-xs text-rose-500"></p>
+      <p id="webapp-url-success" class="text-xs text-emerald-600"></p>
+    </div>
+    <div class="flex justify-end gap-2 pt-2">
+      <button
+        id="btn-config-cancel"
+        class="px-3 py-1.5 text-xs rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50">
+        ยกเลิก
+      </button>
+      <button
+        id="btn-config-save"
+        class="px-3 py-1.5 text-xs rounded-md bg-sky-600 text-white hover:bg-sky-700">
+        บันทึกและทดสอบ
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Employee modal -->
+<div
+  id="employee-modal"
+  class="fixed inset-0 hidden items-center justify-center z-30">
+  <div class="backdrop absolute inset-0"></div>
+  <div class="relative bg-white rounded-xl shadow-xl max-w-xl w-full mx-4 p-5 space-y-4 z-10">
+    <div class="flex justify-between items-center">
+      <h2 class="font-semibold text-lg">เพิ่ม/แก้ไข พนักงาน</h2>
+      <button
+        id="btn-employee-close"
+        class="text-sm text-slate-500 hover:text-slate-800">
+        ✕ ปิด
+      </button>
+    </div>
+
+    <form id="employee-form" class="grid md:grid-cols-2 gap-4 text-sm">
+      <input type="hidden" id="emp-id" />
+      <div>
+        <label class="block text-xs text-slate-500">รหัสพนักงาน</label>
+        <input
+          id="emp-code"
+          type="text"
+          class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
+          required />
+      </div>
+      <div>
+        <label class="block text-xs text-slate-500">ชื่อ-สกุล</label>
+        <input
+          id="emp-name"
+          type="text"
+          class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
+          required />
+      </div>
+      <div>
+        <label class="block text-xs text-slate-500">แผนก</label>
+        <select
+          id="emp-branch"
+          class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
+          required>
+          <option value="">-- เลือกแผนก --</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-slate-500">ระดับ</label>
+        <select
+          id="emp-level"
+          class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2"
+          required>
+          <option value="">-- เลือกระดับ --</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-slate-500">อีเมล</label>
+        <input
+          id="emp-email"
+          type="email"
+          class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-xs text-slate-500">รูปถ่าย (หน้าตรง)</label>
+        <input
+          id="emp-photo"
+          type="file"
+          accept="image/*"
+          class="mt-1 block w-full text-xs" />
+        <p class="text-[11px] text-slate-500 mt-1">
+          ตอนนี้ยังไม่อัปโหลดจริง แค่เก็บไฟล์ไว้ภายในองค์กร (ส่วนเชื่อม Drive ค่อยทำเพิ่มได้)
+        </p>
+      </div>
+    </form>
+
+    <div class="flex justify-between items-center pt-2 text-xs">
+      <div id="employee-form-status" class="text-slate-500"></div>
+      <div class="flex gap-2">
+        <button
+          id="btn-employee-cancel"
+          class="px-3 py-1.5 text-xs rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50">
+          ยกเลิก
+        </button>
+        <button
+          id="btn-employee-save"
+          class="px-3 py-1.5 text-xs rounded-md bg-emerald-500 text-white hover:bg-emerald-600">
+          บันทึกพนักงาน
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPT -------------------------------------------------------------->
+<script>
+  const LS_KEY_URL = "faceAttendance:webAppUrl";
+  let webAppUrl = "";
+  let state = {
+    employees: [],
+    branches: [],
+    levels: [],
+    todayLogs: []
+  };
+
+  function openModal(el) {
+    el.classList.remove("hidden");
+    el.classList.add("flex");
+  }
+  function closeModal(el) {
+    el.classList.add("hidden");
+    el.classList.remove("flex");
+  }
+
+  async function callApi(action, payload = {}) {
+    if (!webAppUrl) throw new Error("NOT_CONFIGURED");
+    const params = new URLSearchParams();
+    params.append("action", action);
+    Object.entries(payload).forEach(([k, v]) => {
+      params.append(k, typeof v === "object" ? JSON.stringify(v) : v);
+    });
+    const res = await fetch(webAppUrl, { method: "POST", body: params });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "API error");
+    return data.result;
+  }
+
+  async function onSaveWebAppUrl() {
+    const input = document.getElementById("webapp-url-input");
+    const url = input.value.trim();
+    const errorEl = document.getElementById("webapp-url-error");
+    const successEl = document.getElementById("webapp-url-success");
+    errorEl.textContent = "";
+    successEl.textContent = "";
+
+    if (!url || !url.startsWith("https://script.google.com/macros/s/")) {
+      errorEl.textContent =
+        "กรุณาวาง URL ที่ถูกต้องจาก Apps Script (ต้องขึ้นต้นด้วย https://script.google.com/macros/s/ และลงท้าย /exec)";
+      return;
+    }
+    if (!url.endsWith("/exec")) {
+      errorEl.textContent = "URL ต้องลงท้ายด้วย /exec";
+      return;
+    }
+
+    webAppUrl = url;
+    try {
+      await callApi("ping");
+      localStorage.setItem(LS_KEY_URL, url);
+      successEl.textContent = "เชื่อมต่อสำเร็จ! กำลังโหลดข้อมูล...";
+      await loadInitialData();
+      setTimeout(() => closeModal(document.getElementById("config-modal")), 600);
+    } catch (err) {
+      console.error(err);
+      errorEl.textContent = "เชื่อมต่อไม่สำเร็จ: " + err.message;
+    }
+  }
+
+  function resetUrl() {
+    localStorage.removeItem(LS_KEY_URL);
+    webAppUrl = "";
+    document.getElementById("webapp-url-input").value = "";
+    document.getElementById("webapp-url-error").textContent = "";
+    document.getElementById("webapp-url-success").textContent = "";
+    openModal(document.getElementById("config-modal"));
+  }
+
+  async function loadInitialData() {
+    if (!webAppUrl) return;
+    try {
+      const result = await callApi("getInitialData");
+      state.employees = result.employees || [];
+      state.branches = result.branches || [];
+      state.levels = result.levels || [];
+      state.todayLogs = result.todayLogs || [];
+      renderDashboard();
+      renderEmployeeTable();
+      renderBranchLevelOptions();
+      renderBranchLevelLists();
+    } catch (err) {
+      console.error(err);
+      document.getElementById("dash-today-summary").textContent =
+        "โหลดข้อมูลไม่สำเร็จ: " + err.message;
+    }
+  }
+
+  function renderDashboard() {
+    const totalEmp = state.employees.length;
+    const logs = state.todayLogs || [];
+
+    const presentCodes = new Set();
+    let late = 0;
+    logs.forEach(l => {
+      presentCodes.add(String(l.code || ""));
+      if (String(l.status || "").includes("สาย")) late++;
+    });
+    const present = presentCodes.size;
+    const absent = totalEmp > 0 ? totalEmp - present : 0;
+
+    document.getElementById("dash-total-emp").textContent = totalEmp;
+    document.getElementById("dash-present").textContent = present;
+    document.getElementById("dash-late").textContent = late;
+    document.getElementById("dash-absent").textContent = absent;
+
+    const summaryEl = document.getElementById("dash-today-summary");
+    const body = document.getElementById("dash-today-body");
+    body.innerHTML = "";
+
+    if (logs.length === 0) {
+      summaryEl.textContent = "วันนี้ยังไม่มีการบันทึกเวลา";
+      return;
+    }
+
+    summaryEl.textContent =
+      `วันนี้มีการบันทึก ${logs.length} รายการ, มาวันนี้ ${present} คน, มาสาย ${late} คน, ขาด ${absent} คน`;
+
+    logs.forEach(log => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="border px-2 py-1">${log.date || ""}</td>
+        <td class="border px-2 py-1">${log.code || ""}</td>
+        <td class="border px-2 py-1">${log.fullName || ""}</td>
+        <td class="border px-2 py-1">${log.branch || ""}</td>
+        <td class="border px-2 py-1">${log.level || ""}</td>
+        <td class="border px-2 py-1">${log.timeIn || ""}</td>
+        <td class="border px-2 py-1">${log.timeOut || ""}</td>
+        <td class="border px-2 py-1">${log.status || ""}</td>
+      `;
+      body.appendChild(tr);
+    });
+  }
+
+  function renderEmployeeTable() {
+    const tbody = document.getElementById("employee-table-body");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    state.employees.forEach(emp => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="border px-2 py-1">${emp.code || ""}</td>
+        <td class="border px-2 py-1">${emp.fullName || ""}</td>
+        <td class="border px-2 py-1">${emp.branch || ""}</td>
+        <td class="border px-2 py-1">${emp.level || ""}</td>
+        <td class="border px-2 py-1">${emp.email || ""}</td>
+        <td class="border px-2 py-1">
+          <button data-id="${emp.id}" class="text-xs text-sky-600 hover:underline mr-2 btn-emp-edit">แก้ไข</button>
+          <button data-id="${emp.id}" class="text-xs text-rose-600 hover:underline btn-emp-delete">ลบ</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderBranchLevelOptions() {
+    const branchSelect = document.getElementById("emp-branch");
+    const levelSelect  = document.getElementById("emp-level");
+    const hBranch = document.getElementById("history-branch");
+    const sBranch = document.getElementById("summary-branch");
+
+    if (branchSelect) {
+      branchSelect.innerHTML = `<option value="">-- เลือกแผนก --</option>`;
+      state.branches.forEach(b => {
+        const v = b.name || b.id || "";
+        if (!v) return;
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = b.name || v;
+        branchSelect.appendChild(opt);
+      });
+    }
+
+    if (levelSelect) {
+      levelSelect.innerHTML = `<option value="">-- เลือกระดับ --</option>`;
+      state.levels.forEach(l => {
+        const v = l.name || l.id || "";
+        if (!v) return;
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = l.name || v;
+        levelSelect.appendChild(opt);
+      });
+    }
+
+    if (hBranch) {
+      hBranch.innerHTML = `<option value="">ทุกแผนก</option>`;
+      state.branches.forEach(b => {
+        const v = b.name || b.id || "";
+        if (!v) return;
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = b.name || v;
+        hBranch.appendChild(opt);
+      });
+    }
+
+    if (sBranch) {
+      sBranch.innerHTML = `<option value="">ทุกแผนก</option>`;
+      state.branches.forEach(b => {
+        const v = b.name || b.id || "";
+        if (!v) return;
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = b.name || v;
+        sBranch.appendChild(opt);
+      });
+    }
+  }
+
+  function renderBranchLevelLists() {
+    const branchList = document.getElementById("branch-list");
+    const levelList  = document.getElementById("level-list");
+    if (branchList) {
+      branchList.innerHTML = "";
+      state.branches.forEach(b => {
+        const li = document.createElement("li");
+        li.className = "flex items-center justify-between py-1.5";
+        li.innerHTML = `
+          <span>${b.name || ""}</span>
+          <button data-id="${b.id}" class="text-rose-500 hover:underline text-[11px] btn-branch-delete">ลบ</button>
+        `;
+        branchList.appendChild(li);
+      });
+    }
+    if (levelList) {
+      levelList.innerHTML = "";
+      state.levels.forEach(l => {
+        const li = document.createElement("li");
+        li.className = "flex items-center justify-between py-1.5";
+        li.innerHTML = `
+          <span>${l.name || ""}</span>
+          <button data-id="${l.id}" class="text-rose-500 hover:underline text-[11px] btn-level-delete">ลบ</button>
+        `;
+        levelList.appendChild(li);
+      });
+    }
+  }
+
+  async function onSaveEmployee() {
+    const statusEl = document.getElementById("employee-form-status");
+    statusEl.textContent = "";
+    statusEl.classList.remove("text-rose-500", "text-emerald-600");
+
+    const id     = document.getElementById("emp-id").value.trim();
+    const code   = document.getElementById("emp-code").value.trim();
+    const name   = document.getElementById("emp-name").value.trim();
+    const branch = document.getElementById("emp-branch").value.trim();
+    const level  = document.getElementById("emp-level").value.trim();
+    const email  = document.getElementById("emp-email").value.trim();
+
+    if (!code || !name || !branch || !level) {
+      statusEl.textContent = "กรุณากรอกข้อมูลให้ครบ";
+      statusEl.classList.add("text-rose-500");
+      return;
+    }
+
+    try {
+      const result = await callApi("saveEmployee", {
+        id,
+        code,
+        fullName: name,
+        branch,
+        level,
+        email,
+        photoUrl: "",
+        faceData: ""
+      });
+      statusEl.textContent = "บันทึกสำเร็จ (id: " + result.id + ")";
+      statusEl.classList.add("text-emerald-600");
+
+      document.getElementById("emp-id").value = "";
+      document.getElementById("emp-code").value = "";
+      document.getElementById("emp-name").value = "";
+      document.getElementById("emp-email").value = "";
+      document.getElementById("emp-branch").value = "";
+      document.getElementById("emp-level").value = "";
+
+      await loadInitialData();
+      renderEmployeeTable();
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = "บันทึกไม่สำเร็จ: " + err.message;
+      statusEl.classList.add("text-rose-500");
+    }
+  }
+
+  async function onDeleteEmployee(id) {
+    if (!confirm("ต้องการลบพนักงานคนนี้หรือไม่?")) return;
+    try {
+      await callApi("deleteEmployee", { id });
+      await loadInitialData();
+      renderEmployeeTable();
+    } catch (err) {
+      alert("ลบไม่สำเร็จ: " + err.message);
+    }
+  }
+
+  async function onAddBranch() {
+    const nameInput = document.getElementById("branch-new-name");
+    const name = nameInput.value.trim();
+    if (!name) return;
+    try {
+      await callApi("saveBranch", { name });
+      nameInput.value = "";
+      await loadInitialData();
+    } catch (err) {
+      alert("เพิ่มแผนกไม่สำเร็จ: " + err.message);
+    }
+  }
+
+  async function onDeleteBranch(id) {
+    if (!confirm("ต้องการลบแผนกนี้หรือไม่?")) return;
+    try {
+      await callApi("deleteBranch", { id });
+      await loadInitialData();
+    } catch (err) {
+      alert("ลบแผนกไม่สำเร็จ: " + err.message);
+    }
+  }
+
+  async function onAddLevel() {
+    const nameInput = document.getElementById("level-new-name");
+    const name = nameInput.value.trim();
+    if (!name) return;
+    try {
+      await callApi("saveLevel", { name });
+      nameInput.value = "";
+      await loadInitialData();
+    } catch (err) {
+      alert("เพิ่มระดับไม่สำเร็จ: " + err.message);
+    }
+  }
+
+  async function onDeleteLevel(id) {
+    if (!confirm("ต้องการลบระดับนี้หรือไม่?")) return;
+    try {
+      await callApi("deleteLevel", { id });
+      await loadInitialData();
+    } catch (err) {
+      alert("ลบระดับไม่สำเร็จ: " + err.message);
+    }
+  }
+
+  function initYearMonthSelects() {
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const years = [curYear - 1, curYear, curYear + 1];
+
+    ["history-year", "summary-year"].forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      sel.innerHTML = "";
+      years.forEach(y => {
+        const opt = document.createElement("option");
+        opt.value = y;
+        opt.textContent = y;
+        if (y === curYear) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    });
+
+    const monthNames = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+    ["history-month", "summary-month"].forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      // ถ้ามี option แรก "ทั้งปี" อยู่แล้ว ให้ไม่ลบทิ้ง
+      const keepFirst = sel.options.length > 0 && sel.options[0].value === "";
+      if (keepFirst) {
+        while (sel.options.length > 1) sel.remove(1);
+      } else {
+        sel.innerHTML = `<option value="">ทั้งปี</option>`;
+      }
+      monthNames.forEach((name, idx) => {
+        const m = idx + 1;
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m + " - " + name;
+        if (m === now.getMonth() + 1) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    });
+  }
+
+  async function loadHistory() {
+    const year  = document.getElementById("history-year").value;
+    const month = document.getElementById("history-month").value;
+    const branch = document.getElementById("history-branch").value;
+    const search = document.getElementById("history-search").value.trim();
+
+    let codeFilter = "";
+    if (/^\d+$/.test(search)) {
+      codeFilter = search;
+    }
+
+    const params = { year };
+    if (month) params.month = month;
+    if (branch) params.branch = branch;
+    if (codeFilter) params.code = codeFilter;
+
+    try {
+      const result = await callApi("getLogsRange", params);
+      let logs = result.logs || [];
+
+      if (search && !codeFilter) {
+        const lower = search.toLowerCase();
+        logs = logs.filter(l =>
+          String(l.fullName || "").toLowerCase().includes(lower) ||
+          String(l.code || "").includes(search)
+        );
+      }
+
+      const tbody = document.getElementById("history-table-body");
+      const summaryEl = document.getElementById("history-summary");
+      tbody.innerHTML = "";
+
+      summaryEl.textContent = `พบข้อมูล ${logs.length} รายการ`;
+
+      logs.forEach(l => {
+        const tr = document.createElement("tr");
+        const dateStr = l.date ? String(l.date) : "";
+        const evidence = l.evidenceUrl
+          ? `<a href="${l.evidenceUrl}" target="_blank" class="text-sky-600 underline">ดูรูป</a>`
+          : "-";
+        tr.innerHTML = `
+          <td class="border px-2 py-1">${dateStr}</td>
+          <td class="border px-2 py-1">${l.code || ""}</td>
+          <td class="border px-2 py-1">${l.fullName || ""}</td>
+          <td class="border px-2 py-1">${l.branch || ""}</td>
+          <td class="border px-2 py-1">${l.level || ""}</td>
+          <td class="border px-2 py-1">${l.timeIn || ""}</td>
+          <td class="border px-2 py-1">${l.timeOut || ""}</td>
+          <td class="border px-2 py-1">${l.status || ""}</td>
+          <td class="border px-2 py-1">${evidence}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      alert("โหลดประวัติไม่สำเร็จ: " + err.message);
+    }
+  }
+
+  async function loadSummary() {
+    const year  = document.getElementById("summary-year").value;
+    const month = document.getElementById("summary-month").value;
+    const branch = document.getElementById("summary-branch").value;
+
+    const params = { year };
+    if (month) params.month = month;
+    if (branch) params.branch = branch;
+
+    try {
+      const result = await callApi("getSummary", params);
+      const list = result.summary || [];
+      const infoEl = document.getElementById("summary-info");
+      const tbody = document.getElementById("summary-table-body");
+      tbody.innerHTML = "";
+
+      const labelMonth = month ? `เดือน ${month}` : "ทั้งปี";
+      infoEl.textContent =
+        `ปี ${year}, ${labelMonth}, พบพนักงานมีบันทึก ${list.length} คน`;
+
+      list.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="border px-2 py-1">${s.code || ""}</td>
+          <td class="border px-2 py-1">${s.fullName || ""}</td>
+          <td class="border px-2 py-1">${s.branch || ""}</td>
+          <td class="border px-2 py-1">${s.level || ""}</td>
+          <td class="border px-2 py-1 text-center">${s.days || 0}</td>
+          <td class="border px-2 py-1 text-center">${s.late || 0}</td>
+          <td class="border px-2 py-1 text-center">${s.leave || 0}</td>
+          <td class="border px-2 py-1 text-center">${s.absent || 0}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      alert("โหลดสรุปไม่สำเร็จ: " + err.message);
+    }
+  }
+
+  function showView(name) {
+    const views = ["dashboard", "employees", "history", "settings", "summary"];
+    views.forEach(v => {
+      const el = document.getElementById("view-" + v);
+      if (el) el.classList.toggle("hidden", v !== name);
+    });
+
+    document.getElementById("page-title").textContent =
+      name === "dashboard" ? "แดชบอร์ด"
+      : name === "employees" ? "จัดการพนักงาน"
+      : name === "history" ? "ประวัติเวลา"
+      : name === "settings" ? "ตั้งค่า (แผนก/ระดับ)"
+      : "สรุปเวลาทำงาน";
+
+    document.querySelectorAll("aside nav button").forEach(btn => {
+      if (btn.dataset.view === name) {
+        btn.classList.add("nav-active");
+      } else {
+        btn.classList.remove("nav-active");
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // guard แบบง่าย
+    if (sessionStorage.getItem("faceAttendance:isAdmin") !== "1") {
+      const ok = confirm("คุณยังไม่ได้ยืนยันสิทธิ์เจ้าหน้าที่ ต้องการกลับหน้าหลักหรือไม่?");
+      if (ok) {
+        window.location.href = "index.html";
+        return;
+      }
+    }
+
+    const saved = localStorage.getItem(LS_KEY_URL);
+    if (saved) {
+      webAppUrl = saved;
+      document.getElementById("webapp-url-input").value = saved;
+      initYearMonthSelects();
+      loadInitialData();
+    } else {
+      initYearMonthSelects();
+      openModal(document.getElementById("config-modal"));
+    }
+
+    // top buttons
+    document.getElementById("btn-open-config")
+      .addEventListener("click", () =>
+        openModal(document.getElementById("config-modal"))
+      );
+    document.getElementById("btn-config-save")
+      .addEventListener("click", onSaveWebAppUrl);
+    document.getElementById("btn-config-cancel")
+      .addEventListener("click", () =>
+        closeModal(document.getElementById("config-modal"))
+      );
+    document.getElementById("btn-reset-url")
+      .addEventListener("click", resetUrl);
+
+    document.getElementById("btn-admin-logout")
+      .addEventListener("click", () => {
+        sessionStorage.removeItem("faceAttendance:isAdmin");
+        window.location.href = "index.html";
+      });
+
+    // nav
+    document.querySelectorAll("aside nav button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const view = btn.dataset.view;
+        showView(view);
+        if (view === "history") loadHistory();
+        if (view === "summary") loadSummary();
+      });
+    });
+
+    // dashboard refresh
+    document.getElementById("btn-dashboard-refresh")
+      .addEventListener("click", loadInitialData);
+
+    // employees
+    document.getElementById("btn-employees-refresh")
+      .addEventListener("click", loadInitialData);
+    document.getElementById("btn-employee-add")
+      .addEventListener("click", () => {
+        document.getElementById("emp-id").value = "";
+        document.getElementById("emp-code").value = "";
+        document.getElementById("emp-name").value = "";
+        document.getElementById("emp-email").value = "";
+        document.getElementById("emp-branch").value = "";
+        document.getElementById("emp-level").value = "";
+        document.getElementById("employee-form-status").textContent = "";
+        openModal(document.getElementById("employee-modal"));
+      });
+    document.getElementById("btn-employee-close")
+      .addEventListener("click", () =>
+        closeModal(document.getElementById("employee-modal"))
+      );
+    document.getElementById("btn-employee-cancel")
+      .addEventListener("click", () =>
+        closeModal(document.getElementById("employee-modal"))
+      );
+    document.getElementById("btn-employee-save")
+      .addEventListener("click", (e) => {
+        e.preventDefault();
+        onSaveEmployee();
+      });
+
+    document
+      .getElementById("view-employees")
+      .addEventListener("click", (e) => {
+        if (e.target.classList.contains("btn-emp-edit")) {
+          const id = e.target.dataset.id;
+          const emp = state.employees.find(x => String(x.id) === String(id));
+          if (!emp) return;
+          document.getElementById("emp-id").value = emp.id || "";
+          document.getElementById("emp-code").value = emp.code || "";
+          document.getElementById("emp-name").value = emp.fullName || "";
+          document.getElementById("emp-email").value = emp.email || "";
+          document.getElementById("emp-branch").value = emp.branch || "";
+          document.getElementById("emp-level").value = emp.level || "";
+          document.getElementById("employee-form-status").textContent = "";
+          openModal(document.getElementById("employee-modal"));
+        }
+        if (e.target.classList.contains("btn-emp-delete")) {
+          const id = e.target.dataset.id;
+          onDeleteEmployee(id);
+        }
+      });
+
+    // settings
+    document.getElementById("btn-branch-add")
+      .addEventListener("click", onAddBranch);
+    document.getElementById("btn-level-add")
+      .addEventListener("click", onAddLevel);
+
+    document.getElementById("branch-list")
+      .addEventListener("click", (e) => {
+        if (e.target.classList.contains("btn-branch-delete")) {
+          const id = e.target.dataset.id;
+          onDeleteBranch(id);
+        }
+      });
+    document.getElementById("level-list")
+      .addEventListener("click", (e) => {
+        if (e.target.classList.contains("btn-level-delete")) {
+          const id = e.target.dataset.id;
+          onDeleteLevel(id);
+        }
+      });
+
+    // history
+    document.getElementById("btn-history-refresh")
+      .addEventListener("click", loadHistory);
+
+    // summary
+    document.getElementById("btn-summary-refresh")
+      .addEventListener("click", loadSummary);
+  });
+</script>
+</body>
+</html>
