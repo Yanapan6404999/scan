@@ -1,281 +1,409 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>ระบบลงเวลาพนักงาน</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet">
+    rel="stylesheet"
+  />
   <style>
-    body { background:#f8fafc; }
-    .card { margin-bottom:1rem; }
+    body {
+      background-color: #f5f7fb;
+    }
+    .page-header {
+      padding: 16px 0;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 4px;
+    }
   </style>
 </head>
 <body>
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h3 class="mb-0">ระบบลงเวลาพนักงาน</h3>
-      <small class="text-muted">เวอร์ชันทดลองใช้ (บันทึกได้ 4 ช่วง)</small>
+  <div class="container py-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center page-header">
+      <div>
+        <h4 class="mb-0">ระบบลงเวลาพนักงาน</h4>
+        <small class="text-muted">เวอร์ชันทดลองใช้ (บันทึกได้ 4 ช่วง)</small>
+        <div id="apiStatus" class="mt-1 text-muted small"></div>
+      </div>
+      <div class="btn-group">
+        <button id="btnSetUrl" class="btn btn-outline-secondary btn-sm">ตั้งค่า URL</button>
+        <button id="btnResetUrl" class="btn btn-outline-danger btn-sm">Reset URL</button>
+        <a href="admin.html" class="btn btn-dark btn-sm">เจ้าหน้าที่ / HR</a>
+      </div>
     </div>
-    <div>
-      <a href="admin.html" class="btn btn-dark">เจ้าหน้าที่ / HR</a>
-    </div>
-  </div>
 
-  <!-- ปุ่มหลัก -->
-  <div class="mb-3 d-flex gap-2">
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#manualModal">
-      บันทึกด้วยมือ (กรณีสแกนไม่ได้)
-    </button>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#checkModal">
-      ตรวจสอบเวลาวันนี้
-    </button>
-  </div>
-
-  <!-- ผลการบันทึกล่าสุด -->
-  <div class="card">
-    <div class="card-header">ผลการบันทึกล่าสุด</div>
-    <div class="card-body" id="lastLogBox">
-      ยังไม่มีการบันทึกในหน้านี้
+    <!-- ปุ่มหลัก -->
+    <div class="mb-3">
+      <button id="btnManual" class="btn btn-success me-2">
+        บันทึกด้วยมือ (กรณีสแกนไม่ได้)
+      </button>
+      <button id="btnCheckToday" class="btn btn-primary">
+        ตรวจสอบเวลาวันนี้
+      </button>
     </div>
-  </div>
 
-  <!-- ภาพรวมวันนี้ (ย่อ) -->
-  <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <span>ภาพรวมวันนี้ (ย่อ)</span>
-      <button class="btn btn-outline-secondary btn-sm" id="btnRefreshToday">รีเฟรชข้อมูล</button>
+    <!-- ผลการบันทึกล่าสุด -->
+    <div class="card mb-3">
+      <div class="card-header">
+        ผลการบันทึกล่าสุด
+      </div>
+      <div class="card-body">
+        <div id="lastLogBox" class="text-muted">ยังไม่มีการบันทึกในหน้านี้</div>
+      </div>
     </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-sm align-middle">
-          <thead>
-          <tr>
-            <th>รหัส</th>
-            <th>ชื่อ</th>
-            <th>เข้าเช้า</th>
-            <th>ออกเที่ยง</th>
-            <th>เข้าเที่ยง</th>
-            <th>ออกเย็น</th>
-          </tr>
-          </thead>
-          <tbody id="todayTableBody">
-          <tr><td colspan="6" class="text-center text-muted">กำลังโหลด...</td></tr>
-          </tbody>
-        </table>
+
+    <!-- ภาพรวมวันนี้ -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>ภาพรวมวันนี้ (ย่อ)</span>
+        <button id="btnRefreshOverview" class="btn btn-outline-secondary btn-sm">
+          รีเฟรชข้อมูล
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 80px;">รหัส</th>
+                <th>ชื่อ</th>
+                <th style="width: 90px;">เข้าเช้า</th>
+                <th style="width: 90px;">ออกเที่ยง</th>
+                <th style="width: 90px;">เข้าเที่ยง</th>
+                <th style="width: 90px;">ออกเย็น</th>
+              </tr>
+            </thead>
+            <tbody id="overviewBody">
+              <tr><td colspan="6" class="text-center text-muted py-3">ยังไม่มีข้อมูลวันนี้</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL: บันทึกด้วยมือ -->
-<div class="modal fade" id="manualModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">บันทึกเวลาด้วยตนเอง</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
+  <!-- Modal: บันทึกด้วยมือ -->
+  <div class="modal fade" id="manualModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">บันทึกเวลาด้วยมือ</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="manualForm">
+            <div class="mb-3">
+              <label class="form-label">รหัสพนักงาน</label>
+              <input type="text" class="form-control" id="manualCode" required />
+              <div class="form-text" id="manualEmpInfo"></div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">ประเภทการบันทึก</label>
+              <select class="form-select" id="manualSlot" required>
+                <option value="">-- เลือก --</option>
+                <option value="IN1">เข้าเช้า</option>
+                <option value="OUT1">ออกเที่ยง</option>
+                <option value="IN2">เข้าเที่ยง</option>
+                <option value="OUT2">ออกเย็น</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">รูปหลักฐาน (เช่น รูปหน้าจอ, รูปกล้องวงจรปิด ฯลฯ)</label>
+              <input type="file" class="form-control" id="manualFile" accept="image/*" />
+              <div class="form-text">ถ้าไม่สะดวกสามารถเว้นว่างไว้ก่อนได้</div>
+            </div>
+          </form>
+          <div id="manualStatus" class="small text-muted"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+          <button type="button" class="btn btn-primary" id="btnManualSubmit">ยืนยันบันทึก</button>
+        </div>
       </div>
-      <div class="modal-body">
-        <form id="manualForm">
+    </div>
+  </div>
+
+  <!-- Modal: ตรวจสอบเวลาวันนี้ -->
+  <div class="modal fade" id="checkModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">ตรวจสอบเวลาวันนี้</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
           <div class="mb-3">
             <label class="form-label">รหัสพนักงาน</label>
-            <input type="text" name="code" class="form-control" required>
+            <input type="text" id="checkCode" class="form-control" />
           </div>
-          <div class="mb-3">
-            <label class="form-label">อัปโหลดรูปหลักฐาน (ใบลงเวลา / รูป Selfie ฯลฯ)</label>
-            <input type="file" id="evidenceFile" accept="image/*" class="form-control">
-            <div class="form-text">
-              ไม่บังคับ แต่แนะนำให้มีรูปเพื่อให้ HR ตรวจสอบง่าย
-            </div>
-          </div>
-          <div class="alert alert-secondary small">
-            ระบบจะใช้เวลา ณ ตอนนี้เป็นเวลาเช็คชื่อ:  
-            ครั้งที่ 1 = เข้าเช้า,  
-            ครั้งที่ 2 = ออกเที่ยง,  
-            ครั้งที่ 3 = เข้าเที่ยง,  
-            ครั้งที่ 4 = ออกเย็น (ต่อวันต่อคน)
-          </div>
-        </form>
-        <div id="manualResult" class="mt-2 small text-muted"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-        <button class="btn btn-primary" id="btnManualSubmit">ยืนยันบันทึก</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: ตรวจสอบเวลาวันนี้ -->
-<div class="modal fade" id="checkModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">ตรวจสอบเวลาวันนี้</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label">รหัสพนักงาน</label>
-          <input type="text" id="checkCode" class="form-control">
+          <button id="btnCheckGo" class="btn btn-primary mb-3">ตรวจสอบ</button>
+          <div id="checkResult" class="small text-muted"></div>
         </div>
-        <button class="btn btn-primary mb-3" id="btnCheckToday">ตรวจสอบ</button>
-        <div id="checkResult" class="small"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-const API_URL = 'PUT_YOUR_WEB_APP_URL_HERE';
-
-/************* API HELPER *************/
-async function callApi(action, data = {}) {
-  const body = new URLSearchParams({ action, ...data });
-  const res = await fetch(API_URL, { method: 'POST', body });
-  const json = await res.json();
-  if (!json.ok) throw new Error(json.error || 'Unknown error');
-  return json.result;
-}
-
-/************* MANUAL LOG *************/
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) return resolve('');
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-document.getElementById('btnManualSubmit').addEventListener('click', async () => {
-  const form = document.getElementById('manualForm');
-  const code = form.code.value.trim();
-  if (!code) {
-    alert('กรุณากรอกรหัสพนักงาน');
-    return;
-  }
-
-  const file = document.getElementById('evidenceFile').files[0];
-  const base64 = await fileToBase64(file);
-
-  try {
-    const result = await callApi('logScan', {
-      code,
-      evidenceBase64: base64,
-      rawType: 'MANUAL'
-    });
-    document.getElementById('manualResult').innerText =
-      `${result.message || ''} เวลา ${result.time || ''}`;
-    document.getElementById('lastLogBox').innerText =
-      `รหัส ${code} : ${result.message || ''} เวลา ${result.time || ''}`;
-    loadTodayOverview();
-  } catch (err) {
-    alert('บันทึกไม่สำเร็จ: ' + err.message);
-  }
-});
-
-/************* CHECK TODAY BY CODE *************/
-document.getElementById('btnCheckToday').addEventListener('click', async () => {
-  const code = document.getElementById('checkCode').value.trim();
-  if (!code) {
-    alert('กรุณากรอกรหัสพนักงาน');
-    return;
-  }
-  const box = document.getElementById('checkResult');
-  box.innerHTML = 'กำลังโหลด...';
-
-  try {
-    const r = await callApi('checkTodayByCode', { code });
-    if (!r.hasData) {
-      box.innerHTML = `<div class="alert alert-warning">${r.message}</div>`;
-      return;
-    }
-    box.innerHTML = `
-      <div class="mb-2"><strong>วันที่:</strong> ${r.date}</div>
-      <table class="table table-sm">
-        <tr><th>เข้าเช้า</th><td>${r.inMorning || '-'}</td><td>${r.statusMorning || '-'}</td></tr>
-        <tr><th>ออกเที่ยง</th><td>${r.outLunch || '-'}</td><td>${r.statusLunch || '-'}</td></tr>
-        <tr><th>เข้าเที่ยง</th><td>${r.inAfternoon || '-'}</td><td>-</td></tr>
-        <tr><th>ออกเย็น</th><td>${r.outEvening || '-'}</td><td>${r.statusEvening || '-'}</td></tr>
-      </table>
-    `;
-  } catch (err) {
-    box.innerHTML = `<div class="alert alert-danger">ตรวจสอบไม่สำเร็จ: ${err.message}</div>`;
-  }
-});
-
-/************* TODAY OVERVIEW (TABLE) *************/
-async function loadTodayOverview() {
-  const tbody = document.getElementById('todayTableBody');
-  tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">กำลังโหลด...</td></tr>';
-
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  const tzOffset = now.getTimezoneOffset() * 60000;
-  const todayStr = new Date(Date.now() - tzOffset).toISOString().slice(0,10); // yyyy-MM-dd
-
-  try {
-    const r = await callApi('getLogsRange', { year, month, branch: 'ALL', search: '' });
-    const logs = (r.logs || []).filter(log => log.date === todayStr);
-
-    // group by code + fullName
-    const map = {};
-    logs.forEach(log => {
-      const key = log.code + '|' + (log.fullName || '');
-      if (!map[key]) map[key] = [];
-      map[key].push(log);
-    });
-
-    const rows = [];
-    Object.keys(map).forEach(key => {
-      const [code, name] = key.split('|');
-      const arr = map[key];
-
-      arr.sort((a,b) => String(a.timeIn || '').localeCompare(String(b.timeIn || '')));
-
-      const first  = arr[0] || {};
-      const second = arr[1] || {};
-
-      const inMorning   = first.timeIn  || '';
-      const outLunch    = first.timeOut || '';
-      const inAfternoon = second.timeIn || '';
-      const outEvening  = second.timeOut|| '';
-
-      rows.push({ code, name, inMorning, outLunch, inAfternoon, outEvening });
-    });
-
-    if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">วันนี้ยังไม่มีการบันทึกเวลา</td></tr>';
-      return;
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ------------ CONFIG / HELPERS -------------
+    function getApiUrl() {
+      return localStorage.getItem('hr_att_api_url') || '';
     }
 
-    tbody.innerHTML = rows.map(r => `
-      <tr>
-        <td>${r.code}</td>
-        <td>${r.name || '-'}</td>
-        <td>${r.inMorning || '-'}</td>
-        <td>${r.outLunch || '-'}</td>
-        <td>${r.inAfternoon || '-'}</td>
-        <td>${r.outEvening || '-'}</td>
-      </tr>
-    `).join('');
-  } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">โหลดไม่สำเร็จ: ${err.message}</td></tr>`;
-  }
-}
+    function setApiUrl(url) {
+      localStorage.setItem('hr_att_api_url', url);
+    }
 
-document.getElementById('btnRefreshToday').addEventListener('click', loadTodayOverview);
-window.addEventListener('load', loadTodayOverview);
-</script>
+    function resetApiUrl() {
+      localStorage.removeItem('hr_att_api_url');
+    }
+
+    async function callApi(action, params = {}) {
+      const url = getApiUrl();
+      if (!url) {
+        throw new Error('ยังไม่ได้ตั้งค่า URL ของ API');
+      }
+      const payload = new URLSearchParams({ action, ...params });
+      const res = await fetch(url, {
+        method: 'POST',
+        body: payload
+      });
+      const text = await res.text();
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch (e) {
+        console.error('API raw response:', text);
+        throw new Error('รูปแบบข้อมูลจากเซิร์ฟเวอร์ไม่ใช่ JSON (อาจใช้ URL ผิด: ต้องเป็น /macros/s/.../exec)');
+      }
+      if (!json.ok) {
+        throw new Error(json.error || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
+      }
+      return json.result;
+    }
+
+    function setApiStatus(ok, msg) {
+      const box = document.getElementById('apiStatus');
+      if (!ok) {
+        box.innerHTML =
+          '<span class="status-dot bg-danger"></span>' +
+          (msg || 'ยังไม่ได้เชื่อมต่อ API');
+      } else {
+        box.innerHTML =
+          '<span class="status-dot bg-success"></span>' +
+          (msg || 'เชื่อมต่อสำเร็จ');
+      }
+    }
+
+    function renderOverview(list) {
+      const tbody = document.getElementById('overviewBody');
+      tbody.innerHTML = '';
+      if (!list || list.length === 0) {
+        tbody.innerHTML =
+          '<tr><td colspan="6" class="text-center text-muted py-3">ยังไม่มีข้อมูลวันนี้</td></tr>';
+        return;
+      }
+      list.forEach((item) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.code || ''}</td>
+          <td>${item.fullName || ''}</td>
+          <td>${item.in1 || ''}</td>
+          <td>${item.out1 || ''}</td>
+          <td>${item.in2 || ''}</td>
+          <td>${item.out2 || ''}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function loadInitial() {
+      try {
+        const data = await callApi('getInitialData');
+        setApiStatus(true, 'เชื่อมต่อสำเร็จ');
+        renderOverview(data.todayOverview || []);
+        window._employees = data.employees || [];
+      } catch (err) {
+        console.error(err);
+        setApiStatus(false, err.message);
+        renderOverview([]);
+      }
+    }
+
+    function findEmployeeByCode(code) {
+      if (!window._employees) return null;
+      return window._employees.find((e) => String(e.code) === String(code));
+    }
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        if (!file) {
+          resolve('');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (e) => reject(e);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ------------ MAIN -------------
+    document.addEventListener('DOMContentLoaded', () => {
+      const apiUrl = getApiUrl();
+      if (apiUrl) {
+        setApiStatus(true, 'กำลังเชื่อมต่อ API...');
+        loadInitial();
+      } else {
+        setApiStatus(false, 'ยังไม่ได้ตั้งค่า URL ของ API');
+      }
+
+      const manualModal = new bootstrap.Modal(document.getElementById('manualModal'));
+      const checkModal = new bootstrap.Modal(document.getElementById('checkModal'));
+
+      document.getElementById('btnSetUrl').addEventListener('click', () => {
+        const current = getApiUrl();
+        const url = prompt(
+          'กรุณาวาง URL ของ Web App (รูปแบบ: https://script.google.com/macros/s/.../exec)',
+          current || ''
+        );
+        if (url) {
+          setApiUrl(url.trim());
+          setApiStatus(true, 'บันทึก URL แล้ว ลองรีเฟรชหน้าเว็บ');
+          loadInitial();
+        }
+      });
+
+      document.getElementById('btnResetUrl').addEventListener('click', () => {
+        if (confirm('ต้องการลบ URL ปัจจุบันหรือไม่?')) {
+          resetApiUrl();
+          setApiStatus(false, 'ลบ URL แล้ว กรุณาตั้งค่าใหม่');
+          renderOverview([]);
+        }
+      });
+
+      document.getElementById('btnManual').addEventListener('click', () => {
+        document.getElementById('manualForm').reset();
+        document.getElementById('manualEmpInfo').textContent = '';
+        document.getElementById('manualStatus').textContent = '';
+        manualModal.show();
+      });
+
+      document
+        .getElementById('manualCode')
+        .addEventListener('blur', (e) => {
+          const code = e.target.value.trim();
+          const emp = findEmployeeByCode(code);
+          const info = document.getElementById('manualEmpInfo');
+          if (emp) {
+            info.textContent =
+              (emp.fullName || '') +
+              (emp.branch ? ' | แผนก: ' + emp.branch : '') +
+              (emp.level ? ' | ระดับ: ' + emp.level : '');
+            info.classList.remove('text-danger');
+            info.classList.add('text-success');
+          } else if (code) {
+            info.textContent = 'ไม่พบพนักงานรหัสนี้ในระบบ';
+            info.classList.remove('text-success');
+            info.classList.add('text-danger');
+          } else {
+            info.textContent = '';
+          }
+        });
+
+      document.getElementById('btnManualSubmit').addEventListener('click', async () => {
+        const code = document.getElementById('manualCode').value.trim();
+        const slot = document.getElementById('manualSlot').value;
+        const file = document.getElementById('manualFile').files[0];
+        const statusBox = document.getElementById('manualStatus');
+
+        if (!code || !slot) {
+          alert('กรุณากรอกรหัสและเลือกประเภทการบันทึก');
+          return;
+        }
+
+        try {
+          statusBox.textContent = 'กำลังบันทึก...';
+          const dataUrl = await fileToDataUrl(file);
+          const result = await callApi('saveManualLog', {
+            code,
+            slot,
+            evidenceBase64: dataUrl
+          });
+
+          statusBox.textContent = 'บันทึกสำเร็จเวลา ' + result.time;
+          document.getElementById('lastLogBox').textContent =
+            'รหัส ' +
+            result.code +
+            ' | ' +
+            (result.fullName || '') +
+            ' | ประเภท: ' +
+            result.slot +
+            ' | เวลา: ' +
+            result.time +
+            (result.status ? ' (' + result.status + ')' : '');
+          loadInitial();
+        } catch (err) {
+          console.error(err);
+          statusBox.textContent = 'บันทึกไม่สำเร็จ: ' + err.message;
+        }
+      });
+
+      document.getElementById('btnCheckToday').addEventListener('click', () => {
+        document.getElementById('checkCode').value = '';
+        document.getElementById('checkResult').textContent = '';
+        checkModal.show();
+      });
+
+      document.getElementById('btnCheckGo').addEventListener('click', async () => {
+        const code = document.getElementById('checkCode').value.trim();
+        const box = document.getElementById('checkResult');
+        if (!code) {
+          alert('กรุณากรอกรหัส');
+          return;
+        }
+        try {
+          box.textContent = 'กำลังตรวจสอบ...';
+          const r = await callApi('checkTodayByCode', { code });
+          if (!r.found) {
+            box.textContent = r.message || 'วันนี้ยังไม่มีการบันทึกเวลา';
+          } else {
+            box.innerHTML =
+              '<b>' +
+              (r.fullName || '') +
+              '</b><br>' +
+              'เข้าเช้า: ' +
+              (r.in1 || '-') +
+              '<br>ออกเที่ยง: ' +
+              (r.out1 || '-') +
+              '<br>เข้าเที่ยง: ' +
+              (r.in2 || '-') +
+              '<br>ออกเย็น: ' +
+              (r.out2 || '-');
+          }
+        } catch (err) {
+          console.error(err);
+          box.textContent = 'ตรวจสอบไม่สำเร็จ: ' + err.message;
+        }
+      });
+
+      document
+        .getElementById('btnRefreshOverview')
+        .addEventListener('click', loadInitial);
+    });
+  </script>
 </body>
 </html>
