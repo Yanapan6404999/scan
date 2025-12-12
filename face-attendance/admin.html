@@ -626,7 +626,7 @@
 
     /* ✅ ใช้แก้ input+ปุ่ม ในหน้า ตั้งค่า ให้เรียงลงบนมือถือ */
     .flex-stack-mobile {
-      /* desktop ใช้ flex แถวเดียวตามปกติ */
+      /* desktop แสดงเป็นแถวเดียวตามปกติ */
     }
 
     @media (max-width: 640px) {
@@ -1077,8 +1077,9 @@
           </div>
         </section>
 
-        <!-- SETTINGS ---------------------------------------------->
+        <!-- SETTINGS (แยกเป็น 2 การ์ด) -------------------------->
         <section class="section" id="section-settings">
+          <!-- การ์ด แผนก -->
           <div class="card">
             <div class="card-header">
               <div>
@@ -1091,46 +1092,52 @@
               </div>
             </div>
 
-            <div class="grid-2">
-              <!-- Branches -->
-              <div>
-                <div class="card-subtitle">แผนก</div>
-                <!-- ✅ แก้เป็น flex-stack-mobile -->
-                <div class="mt-8 flex flex-stack-mobile">
-                  <input id="branchName" class="input-block" placeholder="ชื่อแผนกใหม่" />
-                  <button class="btn btn-primary btn-small" id="btnAddBranch">เพิ่ม</button>
-                </div>
-                <div class="scroll-x mt-8" style="max-height:320px; overflow-y:auto;">
-                  <table>
-                    <thead>
-                    <tr><th>แผนก</th><th>จัดการ</th></tr>
-                    </thead>
-                    <tbody id="branchTableBody">
-                    <tr><td colspan="2" class="text-center">ยังไม่มีข้อมูล</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+            <div class="card-subtitle">แผนก</div>
+            <div class="mt-8 flex flex-stack-mobile">
+              <input id="branchName" class="input-block" placeholder="ชื่อแผนกใหม่" />
+              <button class="btn btn-primary btn-small" id="btnAddBranch">เพิ่ม</button>
+            </div>
 
-              <!-- Levels -->
+            <div class="scroll-x mt-8" style="max-height:320px; overflow-y:auto;">
+              <table>
+                <thead>
+                  <tr><th>แผนก</th><th>จัดการ</th></tr>
+                </thead>
+                <tbody id="branchTableBody">
+                  <tr><td colspan="2" class="text-center">ยังไม่มีข้อมูล</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- การ์ด ระดับ / ตำแหน่ง -->
+          <div class="card">
+            <div class="card-header">
               <div>
-                <div class="card-subtitle">ระดับ / ตำแหน่ง</div>
-                <!-- ✅ แก้เป็น flex-stack-mobile -->
-                <div class="mt-8 flex flex-stack-mobile">
-                  <input id="levelName" class="input-block" placeholder="ชื่อตำแหน่งใหม่" />
-                  <button class="btn btn-primary btn-small" id="btnAddLevel">เพิ่ม</button>
+                <div class="card-title">
+                  <span class="icon">📌</span> ระดับ / ตำแหน่ง
                 </div>
-                <div class="scroll-x mt-8" style="max-height:320px; overflow-y:auto;">
-                  <table>
-                    <thead>
-                    <tr><th>ระดับ</th><th>จัดการ</th></tr>
-                    </thead>
-                    <tbody id="levelTableBody">
-                    <tr><td colspan="2" class="text-center">ยังไม่มีระดับ</td></tr>
-                    </tbody>
-                  </table>
+                <div class="card-subtitle">
+                  ใช้กำหนดตำแหน่งงาน เช่น หัวหน้างาน พนักงานทั่วไป ผู้จัดการสาขา ฯลฯ
                 </div>
               </div>
+            </div>
+
+            <div class="card-subtitle">ระดับ / ตำแหน่ง</div>
+            <div class="mt-8 flex flex-stack-mobile">
+              <input id="levelName" class="input-block" placeholder="ชื่อตำแหน่งใหม่" />
+              <button class="btn btn-primary btn-small" id="btnAddLevel">เพิ่ม</button>
+            </div>
+
+            <div class="scroll-x mt-8" style="max-height:320px; overflow-y:auto;">
+              <table>
+                <thead>
+                  <tr><th>ระดับ</th><th>จัดการ</th></tr>
+                </thead>
+                <tbody id="levelTableBody">
+                  <tr><td colspan="2" class="text-center">ยังไม่มีระดับ</td></tr>
+                </tbody>
+              </table>
             </div>
 
             <div id="settingsError" class="error-text" style="display:none;"></div>
