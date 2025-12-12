@@ -638,6 +638,9 @@
         width: 100%;
         justify-content: center;
       }
+      .scroll-x > table {
+        min-width: 640px;
+      }
     }
 
     .table-actions {
@@ -914,6 +917,14 @@
                   <div class="helper">อีเมล (ถ้ามี)</div>
                   <input id="empEmail" class="input-block" placeholder="optional" />
                 </div>
+
+                <!-- ✅ รูปพนักงาน -->
+                <div class="mt-8">
+                  <div class="helper">รูปพนักงาน (ใช้ช่วยระบบตรวจจับใบหน้า / ไม่บังคับ)</div>
+                  <input type="file" id="empPhoto" accept="image/*" class="input-block" />
+                  <img id="empPhotoPreview" style="width:100px;margin-top:8px;border-radius:8px;display:none;" />
+                </div>
+
                 <div class="mt-10 flex">
                   <button class="btn btn-primary" id="btnSaveEmployee">บันทึก</button>
                   <button class="btn btn-secondary" id="btnResetEmpForm">ล้างฟอร์ม</button>
@@ -1214,6 +1225,16 @@
     return document.getElementById(id);
   }
 
+  // ✅ ฟังก์ชันแปลงไฟล์รูปเป็น Base64
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = err => reject(err);
+      reader.readAsDataURL(file);
+    });
+  }
+
   function setConnectionStatus(online, msg) {
     const bdg = $('connectionBadge');
     const txt = $('connectionText');
@@ -1409,6 +1430,19 @@
     $('empBranch').value = emp.branch || '';
     $('empLevel').value = emp.level || '';
     $('empEmail').value = emp.email || '';
+
+    // ✅ โหลดรูปพนักงานมาแสดงถ้ามี
+    const preview = $('empPhotoPreview');
+    const inputPhoto = $('empPhoto');
+    if (emp.photo) {
+      preview.src = emp.photo;
+      preview.style.display = 'block';
+    } else {
+      preview.src = '';
+      preview.style.display = 'none';
+    }
+    if (inputPhoto) inputPhoto.value = '';
+
     $('empFormError').style.display = 'none';
     $('empFormSuccess').style.display = 'none';
   };
@@ -1443,6 +1477,17 @@
       return;
     }
 
+    // ✅ แปลงรูปพนักงานเป็น Base64 ถ้ามีไฟล์
+    let photoBase64 = '';
+    const photoInput = $('empPhoto');
+    if (photoInput && photoInput.files && photoInput.files[0]) {
+      try {
+        photoBase64 = await fileToBase64(photoInput.files[0]);
+      } catch (e) {
+        console.error('แปลงรูปไม่สำเร็จ', e);
+      }
+    }
+
     try {
       await api.call('saveEmployee', {
         id: editingEmpId || '',
@@ -1450,7 +1495,8 @@
         fullName,
         branch,
         level,
-        email
+        email,
+        photoBase64  // ✅ ส่งรูปไปยัง API
       });
       employees = await api.call('getEmployees');
       renderEmployeesTable();
@@ -1472,6 +1518,13 @@
     if ($('empBranch').options.length) $('empBranch').selectedIndex = 0;
     if ($('empLevel').options.length) $('empLevel').selectedIndex = 0;
     $('empEmail').value = '';
+    const photoInput = $('empPhoto');
+    const preview = $('empPhotoPreview');
+    if (photoInput) photoInput.value = '';
+    if (preview) {
+      preview.src = '';
+      preview.style.display = 'none';
+    }
     $('empFormError').style.display = 'none';
     $('empFormSuccess').style.display = 'none';
   }
@@ -1787,6 +1840,23 @@
     $('empSearch').addEventListener('input', renderEmployeesTable);
     $('btnSaveEmployee').addEventListener('click', saveEmployee);
     $('btnResetEmpForm').addEventListener('click', resetEmpForm);
+
+    // ✅ แสดง preview รูปทันทีเมื่อเลือกไฟล์
+    const photoInput = $('empPhoto');
+    const preview = $('empPhotoPreview');
+    if (photoInput && preview) {
+      photoInput.addEventListener('change', () => {
+        const file = photoInput.files && photoInput.files[0];
+        if (!file) {
+          preview.src = '';
+          preview.style.display = 'none';
+          return;
+        }
+        const url = URL.createObjectURL(file);
+        preview.src = url;
+        preview.style.display = 'block';
+      });
+    }
 
     $('btnReloadLogs').addEventListener('click', reloadLogs);
     $('logSearch').addEventListener('keydown', e => { if (e.key === 'Enter') reloadLogs(); });
