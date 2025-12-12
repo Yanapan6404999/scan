@@ -5,7 +5,7 @@
   <title>ระบบลงเวลาพนักงาน</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- ฟอนต์สวยๆ -->
+  <!-- ฟอนต์ -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
@@ -29,7 +29,7 @@
 
     body {
       margin: 0;
-      background: var(--bg);
+      background: radial-gradient(circle at top left, #e5edff, #f3f4f6 40%, #e5e7eb 100%);
       color: var(--text-main);
     }
 
@@ -40,17 +40,17 @@
     }
 
     header {
-      background: #111827;
+      background: #0f172a;
       color: white;
       padding: 12px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      box-shadow: 0 2px 12px rgba(15,23,42,0.6);
       position: sticky;
       top: 0;
       z-index: 20;
-      gap: 8px;
+      gap: 12px;
     }
 
     header .title-block {
@@ -62,6 +62,7 @@
     header .title-main {
       font-size: 20px;
       font-weight: 600;
+      letter-spacing: 0.02em;
     }
 
     header .title-sub {
@@ -76,12 +77,12 @@
       padding: 4px 10px;
       border-radius: 999px;
       font-size: 11px;
-      background: rgba(15, 118, 110, 0.15);
+      background: rgba(15, 118, 110, 0.18);
       color: #a5f3fc;
     }
 
     .badge-connection.offline {
-      background: rgba(127, 29, 29, 0.4);
+      background: rgba(127, 29, 29, 0.55);
       color: #fecaca;
     }
 
@@ -90,12 +91,12 @@
       height: 8px;
       border-radius: 999px;
       background: #22c55e;
-      box-shadow: 0 0 8px rgba(34, 197, 94, 0.85);
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
     }
 
     .badge-connection.offline .dot {
       background: #f97373;
-      box-shadow: 0 0 8px rgba(248, 113, 113, 0.8);
+      box-shadow: 0 0 8px rgba(248, 113, 113, 0.9);
     }
 
     .header-actions {
@@ -136,9 +137,9 @@
     }
 
     .btn-primary {
-      background: var(--primary);
+      background: linear-gradient(to right, #2563eb, #4f46e5);
       color: white;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.45);
     }
 
     .btn-outline {
@@ -150,7 +151,7 @@
     .btn-danger-outline {
       background: transparent;
       color: #fecaca;
-      border: 1px solid rgba(248, 113, 113, 0.7);
+      border: 1px solid rgba(248, 113, 113, 0.8);
     }
 
     .btn-success {
@@ -167,7 +168,7 @@
 
     main {
       flex: 1;
-      padding: 20px;
+      padding: 24px 20px 28px;
       max-width: 1200px;
       margin: 0 auto;
       width: 100%;
@@ -177,6 +178,7 @@
       display: grid;
       grid-template-columns: minmax(0, 7fr) minmax(260px, 4fr);
       gap: 18px;
+      align-items: flex-start;
     }
 
     @media (max-width: 900px) {
@@ -189,8 +191,8 @@
       background: var(--card-bg);
       border-radius: 18px;
       padding: 18px 18px 16px;
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
-      border: 1px solid #e5e7eb;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      border: 1px solid rgba(148,163,184,0.25);
     }
 
     .card-header {
@@ -446,7 +448,6 @@
       font-weight: 600;
     }
 
-    /* ปุ่ม X ให้ใหญ่ขึ้น กดง่ายขึ้น */
     .modal-close {
       background: transparent;
       border-radius: 999px;
@@ -535,7 +536,7 @@
       }
     }
 
-    /* -------- Mobile tweak ให้ใช้ได้ทั้งมือถือและ PC -------- */
+    /* -------- Mobile tweak -------- */
     @media (max-width: 640px) {
       header {
         flex-direction: column;
@@ -543,7 +544,7 @@
       }
 
       main {
-        padding: 12px;
+        padding: 16px 12px 22px;
       }
 
       .layout {
@@ -562,6 +563,10 @@
 
       .header-actions {
         justify-content: flex-start;
+      }
+
+      th, td {
+        padding: 6px 6px;
       }
     }
   </style>
@@ -818,11 +823,42 @@
   </div>
 </div>
 
+<!-- MODAL: Login Admin -->
+<div class="modal-backdrop" id="modalAdminLogin">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">เข้าสู่ระบบเจ้าหน้าที่ / HR</div>
+      <button class="modal-close" data-close-modal="modalAdminLogin">&times;</button>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">ชื่อผู้ใช้</div>
+      <input type="text" id="adminUsername" class="input" placeholder="เช่น admin" />
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">รหัสผ่าน</div>
+      <input type="password" id="adminPassword" class="input" placeholder="รหัสผ่าน" />
+      <div class="helper">
+        สำหรับเจ้าหน้าที่ HR เท่านั้น ห้ามเผยแพร่ให้ผู้อื่นทราบ
+      </div>
+    </div>
+
+    <div id="adminLoginError" class="error-text" style="display:none;"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" data-close-modal="modalAdminLogin">ยกเลิก</button>
+      <button class="btn btn-primary" id="btnAdminLoginSubmit">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+</div>
+
 <script>
   /**************************************************
    * CONFIG & STORAGE
    **************************************************/
   const STORAGE_KEY = 'attendance_api_url_v2';
+  const ADMIN_TOKEN_KEY = 'attendance_admin_token_v1';
 
   function getApiUrl() {
     return localStorage.getItem(STORAGE_KEY) || '';
@@ -834,6 +870,18 @@
     } else {
       localStorage.removeItem(STORAGE_KEY);
     }
+  }
+
+  function setAdminToken(token) {
+    if (token) {
+      localStorage.setItem(ADMIN_TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(ADMIN_TOKEN_KEY);
+    }
+  }
+
+  function getAdminToken() {
+    return localStorage.getItem(ADMIN_TOKEN_KEY) || '';
   }
 
   /**************************************************
@@ -964,7 +1012,6 @@
    * LOAD INITIAL DATA
    **************************************************/
   async function init() {
-    // แสดง URL ที่ตั้งไว้
     const apiUrl = getApiUrl();
     $('apiUrlDisplay').textContent = apiUrl ? 'API: ' + apiUrl : 'ยังไม่ได้ตั้งค่า URL';
 
@@ -1067,7 +1114,6 @@
     resultEl.value = 'กำลังขอสิทธิ์และดึงพิกัด GPS จากอุปกรณ์...';
 
     try {
-      // 1) ขอพิกัด GPS ก่อน
       const position = await getCurrentPositionPromise({
         enableHighAccuracy: true,
         timeout: 10000,
@@ -1075,11 +1121,9 @@
       });
       const { latitude, longitude } = position.coords;
 
-      // 2) เตรียมไฟล์
       const file = fileEl.files[0];
       const base64 = await fileToBase64(file);
 
-      // 3) Payload ส่งไป Apps Script (บังคับมี lat/lng)
       const payload = {
         code,
         lat: latitude,
@@ -1093,7 +1137,6 @@
 
       const res = await api.call('saveManualLog', payload);
 
-      // แสดงผลใน textarea
       const lines = [];
       lines.push(`บันทึกสำเร็จ: เวลา ${res.time} (${res.slot})`);
       if (res.employee) {
@@ -1131,13 +1174,9 @@
       sucEl.textContent = 'บันทึกเรียบร้อยแล้ว';
       sucEl.style.display = 'block';
 
-      // อัปเดตกล่อง "ผลการบันทึกล่าสุด"
       updateLatestFromManual(res);
-
-      // โหลดภาพรวมวันนี้ใหม่
       loadTodaySummary();
 
-      // ปิดหน้าต่างภายใน 2 วิ เพื่อลดความสับสน
       setTimeout(() => {
         hideModal('modalManual');
       }, 2000);
@@ -1301,10 +1340,59 @@
   }
 
   /**************************************************
+   * ADMIN LOGIN LOGIC
+   **************************************************/
+  async function submitAdminLogin() {
+    const username = $('adminUsername').value.trim();
+    const password = $('adminPassword').value.trim();
+    const errEl    = $('adminLoginError');
+    const btn      = $('btnAdminLoginSubmit');
+
+    errEl.style.display = 'none';
+
+    if (!username || !password) {
+      errEl.textContent = 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'กำลังตรวจสอบ...';
+
+    try {
+      const res = await api.call('loginAdmin', { username, password });
+      setAdminToken(res.token || '');
+      hideModal('modalAdminLogin');
+      window.location.href = 'admin.html';
+    } catch (err) {
+      console.error(err);
+      errEl.textContent = 'เข้าสู่ระบบไม่สำเร็จ: ' + err.message;
+      errEl.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'เข้าสู่ระบบ';
+    }
+  }
+
+  function openAdminLoginModal() {
+    // ถ้ามี token อยู่แล้ว อาจจะให้เข้าตรงเลย (กันยุ่งยาก)
+    const existingToken = getAdminToken();
+    if (existingToken) {
+      if (confirm('คุณเข้าสู่ระบบเจ้าหน้าที่ไว้แล้ว ต้องการเข้าหน้า Admin เลยหรือไม่?')) {
+        window.location.href = 'admin.html';
+        return;
+      }
+    }
+    $('adminUsername').value = '';
+    $('adminPassword').value = '';
+    $('adminLoginError').style.display = 'none';
+    showModal('modalAdminLogin');
+  }
+
+  /**************************************************
    * EVENT BINDING
    **************************************************/
   document.addEventListener('DOMContentLoaded', () => {
-    // modal close button
     document.querySelectorAll('[data-close-modal]').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-close-modal');
@@ -1312,7 +1400,6 @@
       });
     });
 
-    // backdrop click (คลิกนอกกล่องเพื่อปิด)
     document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
       backdrop.addEventListener('click', e => {
         if (e.target === backdrop) {
@@ -1321,13 +1408,12 @@
       });
     });
 
-    // buttons
     $('btnSetUrl').addEventListener('click', openUrlModal);
     $('btnSaveUrl').addEventListener('click', saveUrl);
     $('btnResetUrl').addEventListener('click', resetUrl);
-    $('btnGoAdmin').addEventListener('click', () => {
-      window.location.href = 'admin.html';
-    });
+
+    $('btnGoAdmin').addEventListener('click', openAdminLoginModal);
+    $('btnAdminLoginSubmit').addEventListener('click', submitAdminLogin);
 
     $('btnOpenManualModal').addEventListener('click', () => {
       $('manualCode').value = '';
@@ -1353,7 +1439,6 @@
 
     $('btnRefreshToday').addEventListener('click', loadTodaySummary);
 
-    // กล้องยังไม่ทำอะไร (disabled ไว้ก่อน)
     $('btnStartScan').addEventListener('click', () => {
       alert('ฟีเจอร์สแกนใบหน้ายังไม่เปิดใช้งานในเวอร์ชันนี้');
     });
