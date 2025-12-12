@@ -33,7 +33,6 @@
       margin: 0;
       width: 100%;
       max-width: 100%;
-      /* ยอมให้เลื่อนถ้ามีล้น แต่เดี๋ยวเราจัด layout ไม่ให้ล้นแทน */
     }
 
     body {
@@ -59,7 +58,7 @@
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      padding: 16px 0 28px;
+      padding: 12px 0 24px;
       width: 100%;
     }
 
@@ -73,14 +72,14 @@
 
     /* HEADER CARD (ด้านบน) */
     header.app-header {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .header-card {
       background: linear-gradient(135deg, #020617 0%, #020617 40%, #0b1120 100%);
       color: #e5e7eb;
       border-radius: 20px;
-      padding: 14px 16px 14px;
+      padding: 12px 14px 12px;
       box-shadow: 0 18px 40px rgba(15, 23, 42, 0.4);
       position: relative;
       overflow: hidden;
@@ -104,7 +103,7 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 12px;
+      gap: 10px;
       position: relative;
       z-index: 1;
       flex-wrap: wrap;
@@ -116,7 +115,7 @@
       flex-direction: column;
       gap: 4px;
       max-width: 100%;
-      min-width: 0; /* ป้องกัน flex item ดันล้น */
+      min-width: 0;
     }
 
     .header-title {
@@ -274,7 +273,7 @@
     .card {
       background: var(--card-bg);
       border-radius: 18px;
-      padding: 16px 16px 14px;
+      padding: 14px 14px 12px;
       box-shadow:
         0 16px 40px rgba(15, 23, 42, 0.06),
         0 0 0 1px rgba(15,23,42,0.02);
@@ -507,6 +506,7 @@
     .scroll-x {
       overflow-x: auto;
       max-width: 100%;
+      -webkit-overflow-scrolling: touch;
     }
 
     .scroll-x::-webkit-scrollbar {
@@ -654,7 +654,7 @@
     /* ---------- MOBILE TWEAK ---------- */
     @media (max-width: 640px) {
       .page-shell {
-        padding: 10px 0 22px;
+        padding: 10px 0 18px;
       }
 
       .app-container {
@@ -662,7 +662,7 @@
       }
 
       .header-card {
-        padding: 12px 12px 12px;
+        padding: 10px 12px 10px;
         border-radius: 18px;
       }
 
@@ -693,10 +693,9 @@
         height: 220px;
       }
 
-      .modal {
-        max-width: 100%;
+      .card {
+        padding: 12px 12px 10px;
         border-radius: 16px;
-        padding: 16px 14px 14px;
       }
     }
   </style>
