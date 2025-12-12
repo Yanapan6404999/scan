@@ -50,6 +50,7 @@
       position: sticky;
       top: 0;
       z-index: 20;
+      gap: 8px;
     }
 
     header .title-block {
@@ -102,6 +103,7 @@
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     button,
@@ -115,12 +117,20 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease, opacity 0.1s ease;
       white-space: nowrap;
     }
 
-    button:active,
-    .btn:active {
+    button:disabled,
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    button:active:not(:disabled),
+    .btn:active:not(:disabled) {
       transform: translateY(1px) scale(0.99);
       box-shadow: none;
     }
@@ -189,6 +199,7 @@
       align-items: center;
       margin-bottom: 12px;
       gap: 8px;
+      flex-wrap: wrap;
     }
 
     .card-title {
@@ -427,6 +438,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
+      gap: 8px;
     }
 
     .modal-title {
@@ -434,18 +446,25 @@
       font-weight: 600;
     }
 
+    /* ปุ่ม X ให้ใหญ่ขึ้น กดง่ายขึ้น */
     .modal-close {
       background: transparent;
       border-radius: 999px;
-      width: 26px;
-      height: 26px;
+      width: 34px;
+      height: 34px;
       border: none;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 18px;
-      color: #6b7280;
+      font-size: 22px;
+      color: #4b5563;
+      transition: background 0.1s ease, transform 0.08s ease;
+    }
+
+    .modal-close:hover {
+      background: #e5e7eb;
+      transform: scale(1.02);
     }
 
     .form-group {
@@ -490,6 +509,7 @@
       display: flex;
       justify-content: flex-end;
       gap: 8px;
+      flex-wrap: wrap;
     }
 
     .error-text {
@@ -512,6 +532,36 @@
       to {
         transform: translateY(0) scale(1);
         opacity: 1;
+      }
+    }
+
+    /* -------- Mobile tweak ให้ใช้ได้ทั้งมือถือและ PC -------- */
+    @media (max-width: 640px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      main {
+        padding: 12px;
+      }
+
+      .layout {
+        gap: 12px;
+      }
+
+      .camera-box {
+        height: 220px;
+      }
+
+      .modal {
+        max-width: 100%;
+        border-radius: 14px;
+        padding: 16px 14px 14px;
+      }
+
+      .header-actions {
+        justify-content: flex-start;
       }
     }
   </style>
@@ -557,7 +607,7 @@
                 ตอนนี้ใช้ปุ่ม "บันทึกด้วยมือ" ไปก่อน ฟีเจอร์สแกนใบหน้าจะถูกเพิ่มทีหลัง
               </div>
             </div>
-            <div class="flex gap-6">
+            <div class="flex gap-6" style="flex-wrap:wrap;">
               <button class="btn btn-success" id="btnOpenManualModal">บันทึกด้วยมือ</button>
               <button class="btn btn-secondary" id="btnOpenCheckToday">ตรวจสอบเวลาวันนี้</button>
             </div>
@@ -661,6 +711,7 @@
           <ul class="text-sm" style="color:#4b5563; margin-top:8px; padding-left:18px;">
             <li>ตั้งค่า URL API ให้ถูกต้อง โดยใช้ลิงก์ Web App จาก Apps Script (ปุ่มด้านบนขวา)</li>
             <li>กด "บันทึกด้วยมือ" เลือกรหัสพนักงาน และแนบรูปหลักฐาน (รูปไลน์, รูปกล้องวงจรปิด ฯลฯ)</li>
+            <li>ก่อนบันทึก ระบบจะขอสิทธิ์เข้าถึงตำแหน่ง (GPS) เพื่อยืนยันว่าอยู่ในพื้นที่บริษัท</li>
             <li>หลังบันทึก ระบบจะคำนวณสถานะให้อัตโนมัติตามกติกาเวลา 4 ช่วง</li>
             <li>กด "ตรวจสอบเวลาวันนี้" เพื่อตรวจดูว่าแต่ละช่วงลงเวลาไว้กี่โมง</li>
           </ul>
@@ -883,6 +934,33 @@
   }
 
   /**************************************************
+   * GEOLOCATION (GPS)
+   **************************************************/
+  function getCurrentPositionPromise(options = {}) {
+    return new Promise((resolve, reject) => {
+      if (!('geolocation' in navigator)) {
+        reject(new Error('เบราว์เซอร์นี้ไม่รองรับการระบุตำแหน่ง (GPS) กรุณาเปิดจากมือถือหรือใช้ Chrome / Edge'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        pos => resolve(pos),
+        err => {
+          let msg = 'ไม่สามารถดึงพิกัด GPS ได้';
+          if (err.code === err.PERMISSION_DENIED) {
+            msg = 'ระบบต้องการสิทธิ์เข้าถึงตำแหน่งก่อนบันทึกเวลา กรุณาเปิด Location และกด "อนุญาต" ในเบราว์เซอร์';
+          } else if (err.code === err.POSITION_UNAVAILABLE) {
+            msg = 'ไม่พบสัญญาณตำแหน่ง กรุณาลองใหม่อีกครั้ง หรือออกนอกอาคาร';
+          } else if (err.code === err.TIMEOUT) {
+            msg = 'ดึงพิกัดนานเกินไป กรุณาลองใหม่อีกครั้ง';
+          }
+          reject(new Error(msg));
+        },
+        options
+      );
+    });
+  }
+
+  /**************************************************
    * LOAD INITIAL DATA
    **************************************************/
   async function init() {
@@ -910,9 +988,8 @@
     const tbody = $('todaySummaryBody');
     if (!tbody) return;
 
-    // ✅ แก้ตรงนี้: summary เป็น array โดยตรง
     const rows = Array.isArray(summary) ? summary : [];
-    
+
     if (!rows.length) {
       tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:12px 8px;" class="text-muted">ยังไม่มีข้อมูลของวันนี้</td></tr>';
       return;
@@ -973,6 +1050,7 @@
     const resultEl = $('manualResult');
     const errEl = $('manualError');
     const sucEl = $('manualSuccess');
+    const submitBtn = $('btnManualSubmit');
 
     errEl.style.display = 'none';
     sucEl.style.display = 'none';
@@ -984,17 +1062,34 @@
       return;
     }
 
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'กำลังบันทึก...';
+    resultEl.value = 'กำลังขอสิทธิ์และดึงพิกัด GPS จากอุปกรณ์...';
+
     try {
+      // 1) ขอพิกัด GPS ก่อน
+      const position = await getCurrentPositionPromise({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
+      const { latitude, longitude } = position.coords;
+
+      // 2) เตรียมไฟล์
       const file = fileEl.files[0];
       const base64 = await fileToBase64(file);
 
-      const payload = { code };
+      // 3) Payload ส่งไป Apps Script (บังคับมี lat/lng)
+      const payload = {
+        code,
+        lat: latitude,
+        lng: longitude,
+        manualType: type
+      };
       if (base64) {
         payload.evidenceBase64 = base64;
         payload.evidenceName   = file ? file.name : ('evidence-' + code + '.png');
       }
-      // ส่งชนิดการบันทึกไปด้วย เผื่อจะใช้ต่อในอนาคต แม้ตอนนี้ฝั่ง gs ยังไม่ได้ใช้
-      payload.manualType = type;
 
       const res = await api.call('saveManualLog', payload);
 
@@ -1008,6 +1103,26 @@
         lines.push(`ระดับ: ${res.employee.level || ''}`);
       }
       lines.push(`สถานะวันนี้: ${res.status || ''}`);
+
+      if (res.location) {
+        const loc = res.location;
+        if (loc.locationText) {
+          lines.push(`สถานที่โดยประมาณ: ${loc.locationText}`);
+        }
+        if (loc.lat && loc.lng) {
+          lines.push(`พิกัด: ${loc.lat}, ${loc.lng}`);
+          lines.push(`แผนที่: https://www.google.com/maps?q=${loc.lat},${loc.lng}`);
+        }
+      }
+
+      if (res.locationZone) {
+        if (res.locationZone === 'IN') {
+          lines.push(`โซนตำแหน่ง: ในเขตบริษัท`);
+        } else if (res.locationZone === 'OUT') {
+          lines.push(`โซนตำแหน่ง: นอกเขตบริษัท (กรุณาตรวจสอบ)`);
+        }
+      }
+
       if (res.evidenceUrl) {
         lines.push(`หลักฐาน: ${res.evidenceUrl}`);
       }
@@ -1022,10 +1137,19 @@
       // โหลดภาพรวมวันนี้ใหม่
       loadTodaySummary();
 
+      // ปิดหน้าต่างภายใน 2 วิ เพื่อลดความสับสน
+      setTimeout(() => {
+        hideModal('modalManual');
+      }, 2000);
+
     } catch (err) {
       console.error(err);
       errEl.textContent = 'บันทึกไม่สำเร็จ: ' + err.message;
       errEl.style.display = 'block';
+      resultEl.value = '';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'ยืนยันบันทึก';
     }
   }
 
@@ -1034,6 +1158,22 @@
     if (!box) return;
     const emp = res.employee || {};
     const statusHtml = statusBadgeHtml(res.status || '');
+    const loc = res.location || {};
+    let zoneText = '';
+    if (res.locationZone === 'IN') zoneText = ' (ในเขตบริษัท)';
+    else if (res.locationZone === 'OUT') zoneText = ' (นอกเขตบริษัท - กรุณาตรวจสอบ)';
+
+    let locationHtml = '';
+    if (loc.lat && loc.lng) {
+      const mapUrl = 'https://www.google.com/maps?q=' + encodeURIComponent(loc.lat + ',' + loc.lng);
+      const locText = loc.locationText ? loc.locationText + '<br>' : '';
+      locationHtml = `
+        <div class="latest-row mt-8">
+          <span class="label">สถานที่</span>
+          <span>${locText}<a href="${mapUrl}" target="_blank">เปิดแผนที่ (Google Maps)</a>${zoneText}</span>
+        </div>`;
+    }
+
     box.innerHTML = `
       <div class="latest-row">
         <span class="label">พนักงาน</span>
@@ -1047,6 +1187,7 @@
         <span class="label">สถานะวันนี้</span>
         <span>${statusHtml}</span>
       </div>
+      ${locationHtml}
       ${res.evidenceUrl ? `
       <div class="latest-row mt-8">
         <span class="label">หลักฐาน</span>
@@ -1098,6 +1239,18 @@
       if (log.evidenceUrl) {
         lines.push(`หลักฐาน: ${log.evidenceUrl}`);
       }
+
+      if (log.locationText || (log.lat && log.lng)) {
+        lines.push('-----------------------------');
+        if (log.locationText) {
+          lines.push(`สถานที่โดยประมาณ: ${log.locationText}`);
+        }
+        if (log.lat && log.lng) {
+          lines.push(`พิกัด: ${log.lat}, ${log.lng}`);
+          lines.push(`แผนที่: https://www.google.com/maps?q=${log.lat},${log.lng}`);
+        }
+      }
+
       resultEl.value = lines.join('\n');
 
     } catch (err) {
@@ -1128,7 +1281,6 @@
     }
 
     if (!/^https:\/\/script\.google\.com\/macros\/s\//.test(url)) {
-      // ไม่บังคับ แต่เตือนนิดหน่อย
       if (!confirm('URL ดูเหมือนจะไม่ใช่ Web App ของ Apps Script แน่ใจหรือไม่ว่าจะใช้ URL นี้?')) {
         return;
       }
@@ -1137,7 +1289,6 @@
     setApiUrl(url);
     $('apiUrlDisplay').textContent = 'API: ' + url;
     hideModal('modalUrl');
-    // ลองเชื่อมใหม่
     init();
   }
 
@@ -1175,7 +1326,6 @@
     $('btnSaveUrl').addEventListener('click', saveUrl);
     $('btnResetUrl').addEventListener('click', resetUrl);
     $('btnGoAdmin').addEventListener('click', () => {
-      // สมมติไฟล์ admin.html อยู่โฟลเดอร์เดียวกัน
       window.location.href = 'admin.html';
     });
 
