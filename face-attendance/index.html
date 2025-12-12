@@ -33,7 +33,7 @@
       margin: 0;
       width: 100%;
       max-width: 100%;
-      overflow-x: hidden; /* กันเลื่อนแนวนอน */
+      /* ยอมให้เลื่อนถ้ามีล้น แต่เดี๋ยวเราจัด layout ไม่ให้ล้นแทน */
     }
 
     body {
@@ -58,8 +58,8 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: stretch;          /* ยืดเต็ม ไม่จัดกลาง */
-      padding: 8px 0 16px;           /* ลด padding รอบนอก */
+      align-items: stretch;
+      padding: 16px 0 28px;
       width: 100%;
     }
 
@@ -67,13 +67,13 @@
       width: 100%;
       max-width: 1120px;
       margin: 0 auto;
-      max-inline-size: 100%;
-      padding: 0 12px 12px;          /* คุมระยะห่างซ้ายขวา */
+      padding: 0 12px;
+      box-sizing: border-box;
     }
 
     /* HEADER CARD (ด้านบน) */
     header.app-header {
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
 
     .header-card {
@@ -116,6 +116,7 @@
       flex-direction: column;
       gap: 4px;
       max-width: 100%;
+      min-width: 0; /* ป้องกัน flex item ดันล้น */
     }
 
     .header-title {
@@ -134,7 +135,9 @@
       margin-top: 2px;
       color: #e5e7eb;
       word-break: break-all;
-      overflow-wrap: anywhere;  /* กัน URL ดันจอ */
+      overflow-wrap: anywhere;
+      font-size: 11px;
+      line-height: 1.4;
       max-width: 100%;
     }
 
@@ -144,6 +147,7 @@
       align-items: flex-end;
       gap: 8px;
       flex: 0 0 auto;
+      max-width: 100%;
     }
 
     .badge-connection {
@@ -183,6 +187,7 @@
       flex-wrap: wrap;
       gap: 8px;
       justify-content: flex-end;
+      max-width: 100%;
     }
 
     /* BUTTONS */
@@ -649,11 +654,11 @@
     /* ---------- MOBILE TWEAK ---------- */
     @media (max-width: 640px) {
       .page-shell {
-        padding: 4px 0 10px;      /* ลดขอบบน–ล่างบนมือถือ */
+        padding: 10px 0 22px;
       }
 
       .app-container {
-        padding: 0 8px 10px;      /* การ์ดเกือบชิดขอบจอ */
+        padding: 0 10px;
       }
 
       .header-card {
@@ -664,6 +669,10 @@
       .header-main {
         flex-direction: column;
         align-items: flex-start;
+      }
+
+      .header-title {
+        font-size: 18px;
       }
 
       .header-right {
@@ -1099,7 +1108,6 @@
    * LOAD INITIAL DATA
    **************************************************/
   async function init() {
-    // แสดง URL ที่ตั้งไว้
     const apiUrl = getApiUrl();
     $('apiUrlDisplay').textContent = apiUrl ? 'API: ' + apiUrl : 'ยังไม่ได้ตั้งค่า URL';
 
@@ -1202,7 +1210,6 @@
     resultEl.value = 'กำลังขอสิทธิ์และดึงพิกัด GPS จากอุปกรณ์...';
 
     try {
-      // 1) ขอพิกัด GPS ก่อน
       const position = await getCurrentPositionPromise({
         enableHighAccuracy: true,
         timeout: 10000,
@@ -1210,11 +1217,9 @@
       });
       const { latitude, longitude } = position.coords;
 
-      // 2) เตรียมไฟล์
       const file = fileEl.files[0];
       const base64 = await fileToBase64(file);
 
-      // 3) Payload ส่งไป Apps Script (บังคับมี lat/lng)
       const payload = {
         code,
         lat: latitude,
@@ -1228,7 +1233,6 @@
 
       const res = await api.call('saveManualLog', payload);
 
-      // แสดงผลใน textarea
       const lines = [];
       lines.push(`บันทึกสำเร็จ: เวลา ${res.time} (${res.slot})`);
       if (res.employee) {
@@ -1266,13 +1270,9 @@
       sucEl.textContent = 'บันทึกเรียบร้อยแล้ว';
       sucEl.style.display = 'block';
 
-      // อัปเดตกล่อง "ผลการบันทึกล่าสุด"
       updateLatestFromManual(res);
-
-      // โหลดภาพรวมวันนี้ใหม่
       loadTodaySummary();
 
-      // ปิดหน้าต่างภายใน 2 วิ เพื่อลดความสับสน
       setTimeout(() => {
         hideModal('modalManual');
       }, 2000);
@@ -1439,7 +1439,6 @@
    * EVENT BINDING
    **************************************************/
   document.addEventListener('DOMContentLoaded', () => {
-    // modal close button
     document.querySelectorAll('[data-close-modal]').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-close-modal');
@@ -1447,7 +1446,6 @@
       });
     });
 
-    // backdrop click (คลิกนอกกล่องเพื่อปิด)
     document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
       backdrop.addEventListener('click', e => {
         if (e.target === backdrop) {
@@ -1456,7 +1454,6 @@
       });
     });
 
-    // buttons
     $('btnSetUrl').addEventListener('click', openUrlModal);
     $('btnSaveUrl').addEventListener('click', saveUrl);
     $('btnResetUrl').addEventListener('click', resetUrl);
@@ -1488,7 +1485,6 @@
 
     $('btnRefreshToday').addEventListener('click', loadTodaySummary);
 
-    // กล้องยังไม่ทำอะไร (disabled ไว้ก่อน)
     $('btnStartScan').addEventListener('click', () => {
       alert('ฟีเจอร์สแกนใบหน้ายังไม่เปิดใช้งานในเวอร์ชันนี้');
     });
