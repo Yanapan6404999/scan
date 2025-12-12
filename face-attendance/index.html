@@ -28,8 +28,15 @@
       font-family: "Prompt", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
+    html,
     body {
       margin: 0;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden; /* ป้องกันหน้ากว้างกว่า viewport */
+    }
+
+    body {
       color: var(--text-main);
       background:
         radial-gradient(circle at top left, #e0e7ff 0, transparent 55%),
@@ -53,11 +60,14 @@
       flex-direction: column;
       align-items: center;
       padding: 16px 12px 28px;
+      width: 100%;
     }
 
     .app-container {
       width: 100%;
       max-width: 1120px;
+      margin: 0 auto;
+      max-inline-size: 100%;
     }
 
     /* HEADER CARD (ด้านบน) */
@@ -73,6 +83,7 @@
       box-shadow: 0 18px 40px rgba(15, 23, 42, 0.4);
       position: relative;
       overflow: hidden;
+      max-width: 100%;
     }
 
     .header-card::after {
@@ -95,6 +106,7 @@
       position: relative;
       z-index: 1;
       flex-wrap: wrap;
+      max-width: 100%;
     }
 
     .header-left {
@@ -112,6 +124,7 @@
     .header-sub {
       font-size: 12px;
       color: #9ca3af;
+      max-width: 100%;
     }
 
     .header-sub span.api {
@@ -119,6 +132,8 @@
       margin-top: 2px;
       color: #e5e7eb;
       word-break: break-all;
+      overflow-wrap: anywhere;  /* กัน URL ดันจอ */
+      max-width: 100%;
     }
 
     .header-right {
@@ -139,6 +154,7 @@
       background: rgba(15, 118, 110, 0.15);
       color: #a5f3fc;
       border: 1px solid rgba(34,197,94,0.5);
+      max-width: 100%;
     }
 
     .badge-connection.offline {
@@ -238,6 +254,7 @@
       grid-template-columns: minmax(0, 7fr) minmax(260px, 4fr);
       gap: 16px;
       align-items: flex-start;
+      max-width: 100%;
     }
 
     @media (max-width: 960px) {
@@ -255,6 +272,7 @@
         0 16px 40px rgba(15, 23, 42, 0.06),
         0 0 0 1px rgba(15,23,42,0.02);
       border: 1px solid rgba(226, 232, 240, 0.9);
+      max-width: 100%;
     }
 
     .card-header {
@@ -306,6 +324,7 @@
       justify-content: center;
       position: relative;
       overflow: hidden;
+      max-width: 100%;
     }
 
     .camera-placeholder {
@@ -478,6 +497,15 @@
 
     .scroll-x {
       overflow-x: auto;
+      max-width: 100%;
+    }
+
+    .scroll-x::-webkit-scrollbar {
+      height: 6px;
+    }
+    .scroll-x::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 999px;
     }
 
     ul.helper-list {
