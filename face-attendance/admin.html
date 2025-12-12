@@ -253,7 +253,6 @@
       max-width: 100%;
     }
 
-    /* span API URL */
     #apiUrlDisplay {
       word-break: break-all;
       overflow-wrap: anywhere;
@@ -615,14 +614,6 @@
       margin-top: 4px;
     }
 
-    .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;        /* ✅ ให้ wrap เพื่อไม่ดันหลุดขอบขวา */
-    }
-
     .flex {
       display: flex;
       gap: 8px;
@@ -640,6 +631,22 @@
       border-radius: 999px;
       background: #e5e7eb;
       color: #4b5563;
+    }
+
+    .header-search-box {
+      min-width: 220px;
+      max-width: 280px;
+      width: 100%;
+    }
+
+    @media (max-width: 640px) {
+      .header-search-box {
+        min-width: 100%;
+        max-width: 100%;
+      }
+      #empSearch {
+        width: 100%;
+      }
     }
 
     /* RESPONSIVE ---------------------------------------------------- */
@@ -682,12 +689,6 @@
       }
       .filters .field {
         min-width: 46%;
-      }
-      /* ✅ ช่องค้นหาพนักงานบนมือถือให้เต็มบรรทัด ไม่ล้นขวา */
-      #empSearch {
-        width: 100%;
-        max-width: 100%;
-        flex: 1 1 100%;
       }
     }
 
@@ -786,7 +787,7 @@
 
     <main class="main">
       <div class="main-inner">
-        <!-- DASHBOARD ------------------------------------------------>
+        <!-- DASHBOARD ---------------------------------------------->
         <section class="section active" id="section-dashboard">
           <div class="card">
             <div class="card-header">
@@ -851,82 +852,91 @@
           </div>
         </section>
 
-        <!-- EMPLOYEES ------------------------------------------------>
+        <!-- EMPLOYEES ---------------------------------------------->
         <section class="section" id="section-employees">
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title">
-                  <span class="icon">👥</span> จัดการสมาชิก / พนักงาน
+          <div class="grid-2">
+            <!-- CARD 1: FORM ---------------------------------------->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">
+                    <span class="icon">👥</span> จัดการสมาชิก / พนักงาน
+                  </div>
+                  <div class="card-subtitle">
+                    เพิ่ม–แก้ไขข้อมูลพนักงาน เชื่อมกับชีต Employees โดยตรง
+                  </div>
                 </div>
-                <div class="card-subtitle">
-                  เพิ่ม–แก้ไขข้อมูลพนักงาน เชื่อมกับชีต Employees โดยตรง
+              </div>
+
+              <div class="card-subtitle" id="empFormTitle">เพิ่มพนักงานใหม่</div>
+
+              <div class="mt-8">
+                <div class="mt-8">
+                  <div class="helper">รหัสพนักงาน</div>
+                  <input id="empCode" class="input-block" placeholder="เช่น 1011" />
                 </div>
+                <div class="mt-8">
+                  <div class="helper">ชื่อ–นามสกุล</div>
+                  <input id="empFullName" class="input-block" placeholder="ชื่อ นามสกุล" />
+                </div>
+                <div class="mt-8">
+                  <div class="helper">แผนก</div>
+                  <select id="empBranch" class="input-block"></select>
+                </div>
+                <div class="mt-8">
+                  <div class="helper">ระดับ / ตำแหน่ง</div>
+                  <select id="empLevel" class="input-block"></select>
+                </div>
+                <div class="mt-8">
+                  <div class="helper">อีเมล (ถ้ามี)</div>
+                  <input id="empEmail" class="input-block" placeholder="optional" />
+                </div>
+                <div class="mt-10 flex">
+                  <button class="btn btn-primary" id="btnSaveEmployee">บันทึก</button>
+                  <button class="btn btn-secondary" id="btnResetEmpForm">ล้างฟอร์ม</button>
+                </div>
+                <div id="empFormError" class="error-text" style="display:none;"></div>
+                <div id="empFormSuccess" class="success-text" style="display:none;"></div>
               </div>
             </div>
 
-            <div class="grid-2">
-              <!-- Form -->
-              <div>
-                <div class="card-subtitle"><span id="empFormTitle">เพิ่มพนักงานใหม่</span></div>
-                <div class="mt-8">
-                  <div class="mt-8">
-                    <div class="helper">รหัสพนักงาน</div>
-                    <input id="empCode" class="input-block" placeholder="เช่น 1011" />
+            <!-- CARD 2: TABLE --------------------------------------->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">
+                    <span class="icon">📋</span> รายชื่อพนักงาน
                   </div>
-                  <div class="mt-8">
-                    <div class="helper">ชื่อ–นามสกุล</div>
-                    <input id="empFullName" class="input-block" placeholder="ชื่อ นามสกุล" />
+                  <div class="card-subtitle">
+                    เลื่อนตารางเพื่อดูข้อมูลทั้งหมดได้ ทั้งบนคอมและมือถือ
                   </div>
-                  <div class="mt-8">
-                    <div class="helper">แผนก</div>
-                    <select id="empBranch" class="input-block"></select>
-                  </div>
-                  <div class="mt-8">
-                    <div class="helper">ระดับ / ตำแหน่ง</div>
-                    <select id="empLevel" class="input-block"></select>
-                  </div>
-                  <div class="mt-8">
-                    <div class="helper">อีเมล (ถ้ามี)</div>
-                    <input id="empEmail" class="input-block" placeholder="optional" />
-                  </div>
-                  <div class="mt-10 flex">
-                    <button class="btn btn-primary" id="btnSaveEmployee">บันทึก</button>
-                    <button class="btn btn-secondary" id="btnResetEmpForm">ล้างฟอร์ม</button>
-                  </div>
-                  <div id="empFormError" class="error-text" style="display:none;"></div>
-                  <div id="empFormSuccess" class="success-text" style="display:none;"></div>
+                </div>
+                <div class="header-search-box">
+                  <input type="text" id="empSearch" class="input-block" placeholder="ค้นหาจากรหัส / ชื่อ" />
                 </div>
               </div>
 
-              <!-- Table -->
-              <div>
-                <div class="flex-between">
-                  <div class="helper">รายชื่อพนักงาน</div>
-                  <input type="text" id="empSearch" class="input-block" placeholder="ค้นหาจากรหัส / ชื่อ" />
-                </div>
-                <div class="scroll-x mt-8" style="max-height:420px; overflow-y:auto;">
-                  <table>
-                    <thead>
-                    <tr>
-                      <th>รหัส</th>
-                      <th>ชื่อ</th>
-                      <th>แผนก</th>
-                      <th>ระดับ</th>
-                      <th>จัดการ</th>
-                    </tr>
-                    </thead>
-                    <tbody id="empTableBody">
-                    <tr><td colspan="5" class="text-center">กำลังโหลด...</td></tr>
-                    </tbody>
-                  </table>
-                </div>
+              <div class="scroll-x" style="max-height:420px; overflow-y:auto;">
+                <table>
+                  <thead>
+                  <tr>
+                    <th>รหัส</th>
+                    <th>ชื่อ</th>
+                    <th>แผนก</th>
+                    <th>ระดับ</th>
+                    <th>จัดการ</th>
+                  </tr>
+                  </thead>
+                  <tbody id="empTableBody">
+                  <tr><td colspan="5" class="text-center">กำลังโหลด...</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- LOGS / HISTORY ------------------------------------------->
+        <!-- LOGS --------------------------------------------------->
         <section class="section" id="section-logs">
           <div class="card">
             <div class="card-header">
@@ -989,7 +999,7 @@
           </div>
         </section>
 
-        <!-- SUMMARY ------------------------------------------------->
+        <!-- SUMMARY ----------------------------------------------->
         <section class="section" id="section-summary">
           <div class="card">
             <div class="card-header">
@@ -1044,7 +1054,7 @@
           </div>
         </section>
 
-        <!-- SETTINGS (BRANCH / LEVEL) ------------------------------->
+        <!-- SETTINGS ---------------------------------------------->
         <section class="section" id="section-settings">
           <div class="card">
             <div class="card-header">
@@ -1103,7 +1113,7 @@
           </div>
         </section>
 
-        <!-- URL CARD ------------------------------------------------->
+        <!-- URL CARD ---------------------------------------------->
         <div class="card" id="urlCard" style="display:none;">
           <div class="card-header">
             <div class="card-title">
@@ -1126,9 +1136,6 @@
 </div>
 
 <script>
-  /***********************************************************
-   * CONFIG
-   ***********************************************************/
   const STORAGE_KEY = 'attendance_api_url_v2';
 
   function getApiUrl() {
@@ -1165,18 +1172,12 @@
     }
   };
 
-  /***********************************************************
-   * GLOBAL STATE
-   ***********************************************************/
   let employees = [];
   let branches = [];
   let levels = [];
 
   let editingEmpId = null;
 
-  /***********************************************************
-   * UTIL
-   ***********************************************************/
   function $(id) {
     return document.getElementById(id);
   }
@@ -1258,9 +1259,6 @@
     }).join('');
   }
 
-  /***********************************************************
-   * RENDER – DASHBOARD
-   ***********************************************************/
   function renderDashboard(todaySummary, monthSummary) {
     $('statTotalEmployees').textContent = employees.length.toString();
 
@@ -1320,9 +1318,6 @@
     }
   }
 
-  /***********************************************************
-   * RENDER – EMPLOYEES
-   ***********************************************************/
   function renderBranchLevelSelects() {
     const branchSel = $('empBranch');
     const levelSel  = $('empLevel');
@@ -1449,9 +1444,6 @@
     $('empFormSuccess').style.display = 'none';
   }
 
-  /***********************************************************
-   * LOGS
-   ***********************************************************/
   function renderLogsTable(res) {
     const rows = (res && res.rows) || [];
     const tb = $('logsTableBody');
@@ -1496,9 +1488,6 @@
     }
   }
 
-  /***********************************************************
-   * SUMMARY
-   ***********************************************************/
   function renderSummaryTable(res) {
     const rows = (res && res.rows) || [];
     const tb = $('summaryTableBody');
@@ -1532,9 +1521,6 @@
     }
   }
 
-  /***********************************************************
-   * SETTINGS (BRANCH / LEVEL)
-   ***********************************************************/
   function renderBranchesLevelsTables() {
     const bt = $('branchTableBody');
     const lt = $('levelTableBody');
@@ -1654,9 +1640,6 @@
     }
   }
 
-  /***********************************************************
-   * URL CARD
-   ***********************************************************/
   function openUrlCard() {
     $('inputApiUrl').value = getApiUrl();
     $('urlCard').style.display = 'block';
@@ -1682,9 +1665,6 @@
     initAdmin();
   }
 
-  /***********************************************************
-   * NAVIGATION
-   ***********************************************************/
   function switchSection(section) {
     document.querySelectorAll('.nav-item').forEach(el => {
       el.classList.toggle('active', el.dataset.section === section);
@@ -1697,9 +1677,6 @@
     });
   }
 
-  /***********************************************************
-   * INIT
-   ***********************************************************/
   async function initAdmin() {
     const apiUrl = getApiUrl();
     $('apiUrlDisplay').textContent = apiUrl ? 'API: ' + apiUrl : 'ยังไม่ได้ตั้งค่า URL';
@@ -1745,9 +1722,6 @@
     }
   }
 
-  /***********************************************************
-   * EVENT BINDING
-   ***********************************************************/
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.nav-item').forEach(el => {
       el.addEventListener('click', () => {
