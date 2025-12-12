@@ -34,7 +34,7 @@
       padding: 0;
       width: 100%;
       max-width: 100%;
-      /* เอา overflow-x:hidden ออก เพื่อให้เลื่อนซ้ายขวาได้เวลา table กว้าง */
+      /* เอา overflow-x:hidden ออก เพื่อให้หน้าเลื่อนได้ถ้าตารางกว้างกว่า */
     }
 
     body {
@@ -520,9 +520,9 @@
       max-width: 100%;
     }
 
-    /* KEY: บังคับให้ตารางกว้างกว่าการ์ดเสมอ -> มือถือเลื่อนซ้ายขวาได้แน่นอน */
+    /* บังคับให้ตารางกว้างกว่าจอ เพื่อให้เลื่อนซ้าย–ขวาได้แน่นอนบนมือถือ */
     .scroll-x > table {
-      width: 120%;
+      min-width: 720px;
     }
 
     .scroll-x::-webkit-scrollbar {
@@ -644,13 +644,6 @@
       width: 100%;
     }
 
-    /* ให้จอใหญ่ตารางกลับมากว้าง 100% ก็พอ ไม่ต้องเลื่อน */
-    @media (min-width: 1024px) {
-      .scroll-x > table {
-        width: 100%;
-      }
-    }
-
     @media (max-width: 640px) {
       .header-search-box {
         min-width: 100%;
@@ -658,6 +651,10 @@
       }
       #empSearch {
         width: 100%;
+      }
+      /* ตารางบนมือถือให้กว้างเกินจอ แต่ไม่เยอะเกินไป */
+      .scroll-x > table {
+        min-width: 640px;
       }
     }
 
@@ -799,14 +796,354 @@
 
     <main class="main">
       <div class="main-inner">
-        <!-- DASHBOARD (เหมือนเดิม) -->
-        <!-- ... (ส่วน Dashboard, Logs, Summary, Settings, URL Card, Script ทั้งหมดเหมือนเวอร์ชันก่อนหน้า) ... -->
+        <!-- DASHBOARD ---------------------------------------------->
+        <section class="section active" id="section-dashboard">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <span class="icon">📊</span>
+                  ภาพรวมระบบวันนี้
+                </div>
+                <div class="card-subtitle">
+                  ดูสถานะเข้า–ออกงานแบบรวดเร็ว เพื่อใช้ประกอบการตัดสินใจของ HR
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-3">
+              <div class="stat-card">
+                <div class="stat-label">จำนวนพนักงานทั้งหมด</div>
+                <div class="stat-value" id="statTotalEmployees">–</div>
+                <div class="stat-extra">ข้อมูลจากชีต Employees</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">จำนวนคนที่มีบันทึกวันนี้</div>
+                <div class="stat-value stat-accent" id="statTodayCount">–</div>
+                <div class="stat-extra">
+                  สถานะ <span class="stat-danger" id="statTodayLate">สาย 0 คน</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">สรุปเดือนนี้ (ปกติ / สาย / ขาด)</div>
+                <div class="stat-value" id="statMonthOverview">–</div>
+                <div class="stat-extra">อ่านจากฟังก์ชัน getSummaryRange</div>
+              </div>
+            </div>
+
+            <div class="mt-12">
+              <div class="card-subtitle">ตัวอย่างข้อมูลวันนี้</div>
+              <div class="scroll-x mt-8">
+                <table>
+                  <thead>
+                  <tr>
+                    <th>รหัส</th>
+                    <th>ชื่อ</th>
+                    <th>เข้าเช้า</th>
+                    <th>ออกเที่ยง</th>
+                    <th>เข้าเที่ยง</th>
+                    <th>ออกเย็น</th>
+                    <th>สถานที่</th>
+                    <th>สถานะ</th>
+                  </tr>
+                  </thead>
+                  <tbody id="dashboardTodayBody">
+                  <tr><td colspan="8" class="text-center">ยังไม่มีข้อมูลวันนี้</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="mt-8">
+                <div class="card-subtitle">สรุปตามจุดลงเวลา (วันนี้)</div>
+                <div id="dashboardLocationSummary" class="mt-8" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- EMPLOYEES ---------------------------------------------->
+        <section class="section" id="section-employees">
+          <div class="grid-2">
+            <!-- CARD 1: FORM ---------------------------------------->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">
+                    <span class="icon">👥</span> จัดการสมาชิก / พนักงาน
+                  </div>
+                  <div class="card-subtitle">
+                    เพิ่ม–แก้ไขข้อมูลพนักงาน เชื่อมกับชีต Employees โดยตรง
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-subtitle" id="empFormTitle">เพิ่มพนักงานใหม่</div>
+
+              <div class="mt-8">
+                <div class="mt-8">
+                  <div class="helper">รหัสพนักงาน</div>
+                  <input id="empCode" class="input-block" placeholder="เช่น 1011" />
+                </div>
+                <div class="mt-8">
+                  <div class="helper">ชื่อ–นามสกุล</div>
+                  <input id="empFullName" class="input-block" placeholder="ชื่อ นามสกุล" />
+                </div>
+                <div class="mt-8">
+                  <div class="helper">แผนก</div>
+                  <select id="empBranch" class="input-block"></select>
+                </div>
+                <div class="mt-8">
+                  <div class="helper">ระดับ / ตำแหน่ง</div>
+                  <select id="empLevel" class="input-block"></select>
+                </div>
+                <div class="mt-8">
+                  <div class="helper">อีเมล (ถ้ามี)</div>
+                  <input id="empEmail" class="input-block" placeholder="optional" />
+                </div>
+                <div class="mt-10 flex">
+                  <button class="btn btn-primary" id="btnSaveEmployee">บันทึก</button>
+                  <button class="btn btn-secondary" id="btnResetEmpForm">ล้างฟอร์ม</button>
+                </div>
+                <div id="empFormError" class="error-text" style="display:none;"></div>
+                <div id="empFormSuccess" class="success-text" style="display:none;"></div>
+              </div>
+            </div>
+
+            <!-- CARD 2: TABLE --------------------------------------->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">
+                    <span class="icon">📋</span> รายชื่อพนักงาน
+                  </div>
+                  <div class="card-subtitle">
+                    เลื่อนตารางเพื่อดูข้อมูลทั้งหมดได้ ทั้งบนคอมและมือถือ
+                  </div>
+                </div>
+                <div class="header-search-box">
+                  <input type="text" id="empSearch" class="input-block" placeholder="ค้นหาจากรหัส / ชื่อ" />
+                </div>
+              </div>
+
+              <div class="scroll-x" style="max-height:420px; overflow-y:auto;">
+                <table>
+                  <thead>
+                  <tr>
+                    <th>รหัส</th>
+                    <th>ชื่อ</th>
+                    <th>แผนก</th>
+                    <th>ระดับ</th>
+                    <th>จัดการ</th>
+                  </tr>
+                  </thead>
+                  <tbody id="empTableBody">
+                  <tr><td colspan="5" class="text-center">กำลังโหลด...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- LOGS --------------------------------------------------->
+        <section class="section" id="section-logs">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <span class="icon">⏱</span> ประวัติเวลา
+                </div>
+                <div class="card-subtitle">
+                  ดูประวัติการลงเวลาในแต่ละวัน สามารถค้นหาจากรหัส/ชื่อ และกรองตามเดือน/สาขาได้
+                </div>
+              </div>
+            </div>
+
+            <div class="filters mt-8">
+              <div class="field" style="flex:1; min-width:160px;">
+                <span>ค้นหาชื่อ / รหัส</span>
+                <input type="text" id="logSearch" placeholder="เช่น 1011, สมชาย" />
+              </div>
+              <div class="field">
+                <span>สาขา</span>
+                <select id="logBranchFilter"></select>
+              </div>
+              <div class="field">
+                <span>เดือน</span>
+                <select id="logMonthFilter"></select>
+              </div>
+              <div class="field">
+                <span>ปี (พ.ศ.)</span>
+                <select id="logYearFilter"></select>
+              </div>
+              <div class="field">
+                <span>&nbsp;</span>
+                <button class="btn btn-primary btn-small" id="btnReloadLogs">รีเฟรช</button>
+              </div>
+            </div>
+
+            <div class="scroll-x mt-10" style="max-height:480px; overflow-y:auto;">
+              <table>
+                <thead>
+                <tr>
+                  <th>วันที่</th>
+                  <th>รหัส</th>
+                  <th>ชื่อ</th>
+                  <th>เวลาเข้า</th>
+                  <th>เวลาออก</th>
+                  <th>ชั่วโมงรวม</th>
+                  <th>สถานะ</th>
+                  <th>สถานที่</th>
+                  <th>รูปหลักฐาน</th>
+                </tr>
+                </thead>
+                <tbody id="logsTableBody">
+                <tr><td colspan="9" class="text-center">ยังไม่มีข้อมูล</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="helper mt-8">
+              * ชั่วโมงรวมจะคำนวณจาก t1 ถึง t4 ถ้ามีข้อมูลครบ หากไม่มีเวลาออกจะไม่แสดงค่า
+            </div>
+          </div>
+        </section>
+
+        <!-- SUMMARY ----------------------------------------------->
+        <section class="section" id="section-summary">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <span class="icon">📈</span> สรุปเวลาทำงานรายบุคคล
+                </div>
+                <div class="card-subtitle">
+                  ใช้ดูภาพรวมทั้งเดือน เช่น ใครมาสายกี่ครั้ง ขาดกี่วัน ฯลฯ
+                </div>
+              </div>
+            </div>
+
+            <div class="filters mt-8">
+              <div class="field">
+                <span>สาขา</span>
+                <select id="sumBranchFilter"></select>
+              </div>
+              <div class="field">
+                <span>เดือน</span>
+                <select id="sumMonthFilter"></select>
+              </div>
+              <div class="field">
+                <span>ปี (พ.ศ.)</span>
+                <select id="sumYearFilter"></select>
+              </div>
+              <div class="field">
+                <span>&nbsp;</span>
+                <button class="btn btn-primary btn-small" id="btnReloadSummary">รีเฟรช</button>
+              </div>
+            </div>
+
+            <div class="scroll-x mt-10" style="max-height:480px; overflow-y:auto;">
+              <table>
+                <thead>
+                <tr>
+                  <th>รหัส</th>
+                  <th>ชื่อ</th>
+                  <th>แผนก</th>
+                  <th>ระดับ</th>
+                  <th>จำนวนวัน</th>
+                  <th>ปกติ</th>
+                  <th>สาย</th>
+                  <th>ขาด</th>
+                </tr>
+                </thead>
+                <tbody id="summaryTableBody">
+                <tr><td colspan="8" class="text-center">ยังไม่มีข้อมูล</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- SETTINGS ---------------------------------------------->
+        <section class="section" id="section-settings">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <span class="icon">⚙️</span> ตั้งค่าแผนก / ชั้น
+                </div>
+                <div class="card-subtitle">
+                  ข้อมูลตรงนี้จะถูกใช้ในหน้าเพิ่มพนักงาน และการกรองสรุปต่าง ๆ
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <!-- Branches -->
+              <div>
+                <div class="card-subtitle">แผนก</div>
+                <div class="mt-8 flex">
+                  <input id="branchName" class="input-block" placeholder="ชื่อแผนกใหม่" />
+                  <button class="btn btn-primary btn-small" id="btnAddBranch">เพิ่ม</button>
+                </div>
+                <div class="scroll-x mt-8" style="max-height:320px; overflow-y:auto;">
+                  <table>
+                    <thead>
+                    <tr><th>แผนก</th><th>จัดการ</th></tr>
+                    </thead>
+                    <tbody id="branchTableBody">
+                    <tr><td colspan="2" class="text-center">ยังไม่มีข้อมูล</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Levels -->
+              <div>
+                <div class="card-subtitle">ระดับ / ตำแหน่ง</div>
+                <div class="mt-8 flex">
+                  <input id="levelName" class="input-block" placeholder="ชื่อตำแหน่งใหม่" />
+                  <button class="btn btn-primary btn-small" id="btnAddLevel">เพิ่ม</button>
+                </div>
+                <div class="scroll-x mt-8" style="max-height:320px; overflow-y:auto;">
+                  <table>
+                    <thead>
+                    <tr><th>ระดับ</th><th>จัดการ</th></tr>
+                    </thead>
+                    <tbody id="levelTableBody">
+                    <tr><td colspan="2" class="text-center">ยังไม่มีระดับ</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div id="settingsError" class="error-text" style="display:none;"></div>
+            <div id="settingsSuccess" class="success-text" style="display:none;"></div>
+          </div>
+        </section>
+
+        <!-- URL CARD ---------------------------------------------->
+        <div class="card" id="urlCard" style="display:none;">
+          <div class="card-header">
+            <div class="card-title">
+              <span class="icon">🔗</span> ตั้งค่า URL API
+            </div>
+          </div>
+          <div>
+            <div class="helper">URL จาก Apps Script Web App (ตัวที่ลงท้ายด้วย <code>/exec</code>)</div>
+            <input id="inputApiUrl" class="input-block mt-8" placeholder="เช่น https://script.google.com/macros/s/XXXXX/exec" />
+            <div class="mt-8 flex">
+              <button class="btn btn-primary" id="btnSaveUrl">บันทึก</button>
+              <button class="btn btn-secondary" id="btnCancelUrl">ยกเลิก</button>
+            </div>
+            <div id="urlError" class="error-text" style="display:none;"></div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
 </div>
 
-<!-- *** สคริปต์ทั้งหมดเหมือนรอบที่แล้ว เปลี่ยนเฉพาะ CSS ด้านบน ไม่ต้องแก้ JS เพิ่ม *** -->
 <script>
   const STORAGE_KEY = 'attendance_api_url_v2';
 
