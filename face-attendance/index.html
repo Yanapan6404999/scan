@@ -14,8 +14,9 @@
       --primary-soft: #dbeafe;
       --accent: #22c55e;
       --danger: #ef4444;
-      --bg: #f3f4f6;
-      --text-main: #111827;
+      --bg: #eef2ff;
+      --bg-soft: #f3f4ff;
+      --text-main: #0f172a;
       --text-soft: #6b7280;
       --border: #e5e7eb;
       --card-bg: #ffffff;
@@ -29,45 +30,103 @@
 
     body {
       margin: 0;
-      background: radial-gradient(circle at top left, #e5edff, #f3f4f6 40%, #e5e7eb 100%);
       color: var(--text-main);
+      background:
+        radial-gradient(circle at top left, #e0e7ff 0, transparent 55%),
+        radial-gradient(circle at bottom right, #e5f5ff 0, transparent 50%),
+        #f3f4f6;
     }
 
-    .page-wrapper {
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* ---------- APP SHELL ---------- */
+    .page-shell {
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-    }
-
-    header {
-      background: #0f172a;
-      color: white;
-      padding: 12px 20px;
-      display: flex;
       align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 2px 12px rgba(15,23,42,0.6);
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      gap: 12px;
+      padding: 16px 12px 28px;
     }
 
-    header .title-block {
+    .app-container {
+      width: 100%;
+      max-width: 1120px;
+    }
+
+    /* HEADER CARD (ด้านบน) */
+    header.app-header {
+      margin-bottom: 16px;
+    }
+
+    .header-card {
+      background: linear-gradient(135deg, #020617 0%, #020617 40%, #0b1120 100%);
+      color: #e5e7eb;
+      border-radius: 20px;
+      padding: 14px 16px 14px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-card::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      top: -80px;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(59,130,246,0.4), transparent 65%);
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .header-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+      flex-wrap: wrap;
+    }
+
+    .header-left {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
+      max-width: 100%;
     }
 
-    header .title-main {
+    .header-title {
       font-size: 20px;
       font-weight: 600;
-      letter-spacing: 0.02em;
     }
 
-    header .title-sub {
+    .header-sub {
       font-size: 12px;
       color: #9ca3af;
+    }
+
+    .header-sub span.api {
+      display: block;
+      margin-top: 2px;
+      color: #e5e7eb;
+      word-break: break-all;
+    }
+
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      flex: 0 0 auto;
     }
 
     .badge-connection {
@@ -77,13 +136,15 @@
       padding: 4px 10px;
       border-radius: 999px;
       font-size: 11px;
-      background: rgba(15, 118, 110, 0.18);
+      background: rgba(15, 118, 110, 0.15);
       color: #a5f3fc;
+      border: 1px solid rgba(34,197,94,0.5);
     }
 
     .badge-connection.offline {
-      background: rgba(127, 29, 29, 0.55);
+      background: rgba(127, 29, 29, 0.4);
       color: #fecaca;
+      border-color: rgba(248,113,113,0.8);
     }
 
     .dot {
@@ -91,28 +152,28 @@
       height: 8px;
       border-radius: 999px;
       background: #22c55e;
-      box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.85);
     }
 
     .badge-connection.offline .dot {
       background: #f97373;
-      box-shadow: 0 0 8px rgba(248, 113, 113, 0.9);
+      box-shadow: 0 0 8px rgba(248,113,113,0.8);
     }
 
     .header-actions {
       display: flex;
-      align-items: center;
-      gap: 8px;
       flex-wrap: wrap;
+      gap: 8px;
       justify-content: flex-end;
     }
 
+    /* BUTTONS */
     button,
     .btn {
       border-radius: 999px;
       border: none;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 13px;
       padding: 8px 16px;
       display: inline-flex;
       align-items: center;
@@ -137,75 +198,76 @@
     }
 
     .btn-primary {
-      background: linear-gradient(to right, #2563eb, #4f46e5);
-      color: white;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.45);
+      background: #3b82f6;
+      color: #fff;
+      box-shadow: 0 12px 30px rgba(37, 99, 235, 0.55);
     }
 
     .btn-outline {
       background: transparent;
-      color: white;
-      border: 1px solid rgba(156, 163, 175, 0.8);
+      color: #e5e7eb;
+      border: 1px solid rgba(148,163,184,0.9);
     }
 
     .btn-danger-outline {
       background: transparent;
       color: #fecaca;
-      border: 1px solid rgba(248, 113, 113, 0.8);
+      border: 1px solid rgba(248,113,113,0.8);
     }
 
     .btn-success {
       background: #22c55e;
-      color: white;
-      box-shadow: 0 3px 10px rgba(34,197,94,0.4);
+      color: #fff;
+      box-shadow: 0 12px 30px rgba(34,197,94,0.45);
     }
 
     .btn-secondary {
-      background: white;
+      background: #ffffff;
       color: #111827;
       border: 1px solid var(--border);
     }
 
-    main {
-      flex: 1;
-      padding: 24px 20px 28px;
-      max-width: 1200px;
-      margin: 0 auto;
+    /* MAIN LAYOUT */
+    main.main {
       width: 100%;
+      margin-top: 8px;
     }
 
     .layout {
       display: grid;
       grid-template-columns: minmax(0, 7fr) minmax(260px, 4fr);
-      gap: 18px;
+      gap: 16px;
       align-items: flex-start;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 960px) {
       .layout {
         grid-template-columns: 1fr;
       }
     }
 
+    /* CARD */
     .card {
       background: var(--card-bg);
       border-radius: 18px;
-      padding: 18px 18px 16px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-      border: 1px solid rgba(148,163,184,0.25);
+      padding: 16px 16px 14px;
+      box-shadow:
+        0 16px 40px rgba(15, 23, 42, 0.06),
+        0 0 0 1px rgba(15,23,42,0.02);
+      border: 1px solid rgba(226, 232, 240, 0.9);
     }
 
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       gap: 8px;
       flex-wrap: wrap;
     }
 
     .card-title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       display: flex;
       align-items: center;
@@ -213,8 +275,8 @@
     }
 
     .card-title span.icon {
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       border-radius: 999px;
       display: inline-flex;
       align-items: center;
@@ -229,15 +291,16 @@
       color: var(--text-soft);
     }
 
+    /* CAMERA SECTION */
     .camera-card {
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .camera-box {
       border-radius: 16px;
       border: 1px dashed #cbd5f5;
       background: radial-gradient(circle at top left, #eff6ff, #e5e7eb);
-      height: 270px;
+      height: 260px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -251,17 +314,19 @@
       align-items: center;
       gap: 6px;
       color: #6b7280;
+      text-align: center;
     }
 
     .camera-placeholder .icon {
-      width: 54px;
-      height: 54px;
+      width: 60px;
+      height: 60px;
       border-radius: 999px;
       border: 2px solid #9ca3af;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 26px;
+      background: rgba(255,255,255,0.7);
     }
 
     .camera-footer {
@@ -280,7 +345,12 @@
       outline: none;
       font-size: 13px;
       background: white;
-      min-width: 230px;
+      min-width: 220px;
+    }
+
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px rgba(37,99,235,0.3);
     }
 
     .pill {
@@ -295,6 +365,7 @@
       color: #111827;
     }
 
+    /* TABLES */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -322,10 +393,10 @@
       background: #f9fafb;
     }
 
-    .text-right {
-      text-align: right;
-    }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
 
+    /* STATUS BADGE */
     .badge-status {
       font-size: 11px;
       padding: 3px 9px;
@@ -353,6 +424,7 @@
       color: #92400e;
     }
 
+    /* LATEST BOX */
     .latest-box {
       font-size: 13px;
     }
@@ -364,7 +436,7 @@
     }
 
     .latest-content {
-      padding: 8px 10px;
+      padding: 9px 10px;
       border-radius: 12px;
       background: #f9fafb;
       border: 1px dashed #e5e7eb;
@@ -378,7 +450,7 @@
     }
 
     .latest-row span.label {
-      min-width: 70px;
+      min-width: 74px;
       color: #6b7280;
     }
 
@@ -386,10 +458,11 @@
       color: #9ca3af;
     }
 
-    .mt-8 { margin-top: 8px; }
-    .mt-12 { margin-top: 12px; }
-
     .text-sm { font-size: 12px; }
+
+    .mt-8 { margin-top: 8px; }
+    .mt-10 { margin-top: 10px; }
+    .mt-12 { margin-top: 12px; }
 
     .flex {
       display: flex;
@@ -401,15 +474,20 @@
       align-items: center;
     }
 
-    .gap-6 {
-      gap: 6px;
-    }
+    .gap-6 { gap: 6px; }
 
     .scroll-x {
       overflow-x: auto;
     }
 
-    /* ---------- Modal ---------- */
+    ul.helper-list {
+      font-size: 12px;
+      color: #4b5563;
+      margin-top: 8px;
+      padding-left: 18px;
+    }
+
+    /* MODALS */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -430,7 +508,7 @@
       width: 100%;
       background: white;
       border-radius: 18px;
-      box-shadow: 0 10px 25px rgba(15,23,42,0.3);
+      box-shadow: 0 18px 40px rgba(15,23,42,0.35);
       padding: 18px 18px 16px;
       animation: pop 0.16s ease-out;
     }
@@ -536,19 +614,34 @@
       }
     }
 
-    /* -------- Mobile tweak -------- */
+    /* ---------- MOBILE TWEAK ---------- */
     @media (max-width: 640px) {
-      header {
+      .page-shell {
+        padding: 10px 8px 22px;
+      }
+
+      .header-card {
+        padding: 12px 12px 12px;
+        border-radius: 18px;
+      }
+
+      .header-main {
         flex-direction: column;
         align-items: flex-start;
       }
 
-      main {
-        padding: 16px 12px 22px;
+      .header-right {
+        align-items: flex-start;
+        width: 100%;
       }
 
-      .layout {
-        gap: 12px;
+      .header-actions {
+        justify-content: flex-start;
+        width: 100%;
+      }
+
+      main.main {
+        margin-top: 10px;
       }
 
       .camera-box {
@@ -557,174 +650,175 @@
 
       .modal {
         max-width: 100%;
-        border-radius: 14px;
+        border-radius: 16px;
         padding: 16px 14px 14px;
-      }
-
-      .header-actions {
-        justify-content: flex-start;
-      }
-
-      th, td {
-        padding: 6px 6px;
       }
     }
   </style>
 </head>
 <body>
-<div class="page-wrapper">
+<div class="page-shell">
+  <div class="app-container">
 
-  <!-- HEADER -->
-  <header>
-    <div class="title-block">
-      <div class="title-main">ระบบลงเวลาพนักงาน</div>
-      <div class="title-sub">
-        เวอร์ชันทดลองใช้ (บันทึกได้ 4 ช่วง) | <span id="apiUrlDisplay" class="text-sm"></span>
-      </div>
-    </div>
-    <div class="header-actions">
-      <div id="connectionBadge" class="badge-connection offline">
-        <span class="dot"></span>
-        <span id="connectionText">ยังไม่ได้เชื่อมต่อ</span>
-      </div>
-
-      <button class="btn btn-outline" id="btnSetUrl">ตั้งค่า URL</button>
-      <button class="btn btn-danger-outline" id="btnResetUrl">Reset URL</button>
-      <button class="btn btn-primary" id="btnGoAdmin">เจ้าหน้าที่ / HR</button>
-    </div>
-  </header>
-
-  <!-- MAIN -->
-  <main>
-    <div class="layout">
-
-      <!-- LEFT COLUMN -->
-      <div>
-        <!-- Camera / Main action card -->
-        <div class="card camera-card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">
-                <span class="icon">📷</span>
-                <span>ลงเวลาผ่านกล้อง (กำลังพัฒนา)</span>
-              </div>
-              <div class="card-subtitle">
-                ตอนนี้ใช้ปุ่ม "บันทึกด้วยมือ" ไปก่อน ฟีเจอร์สแกนใบหน้าจะถูกเพิ่มทีหลัง
-              </div>
-            </div>
-            <div class="flex gap-6" style="flex-wrap:wrap;">
-              <button class="btn btn-success" id="btnOpenManualModal">บันทึกด้วยมือ</button>
-              <button class="btn btn-secondary" id="btnOpenCheckToday">ตรวจสอบเวลาวันนี้</button>
+    <!-- HEADER CARD -->
+    <header class="app-header">
+      <div class="header-card">
+        <div class="header-main">
+          <div class="header-left">
+            <div class="header-title">ระบบลงเวลาพนักงาน</div>
+            <div class="header-sub">
+              เวอร์ชันทดลองใช้ (บันทึกได้ 4 ช่วง)
+              <span class="api" id="apiUrlDisplay">ยังไม่ได้ตั้งค่า URL</span>
             </div>
           </div>
 
-          <div class="camera-box">
-            <div class="camera-placeholder">
-              <div class="icon">📸</div>
-              <div>กล้องปิดอยู่</div>
-              <div class="text-muted text-sm">ฟีเจอร์สแกนใบหน้าจะใช้งานได้ในเวอร์ชันถัดไป</div>
+          <div class="header-right">
+            <div id="connectionBadge" class="badge-connection offline">
+              <span class="dot"></span>
+              <span id="connectionText">ยังไม่ได้เชื่อมต่อ</span>
+            </div>
+
+            <div class="header-actions">
+              <button class="btn btn-outline" id="btnSetUrl">ตั้งค่า URL</button>
+              <button class="btn btn-danger-outline" id="btnResetUrl">Reset URL</button>
+              <button class="btn btn-primary" id="btnGoAdmin">เจ้าหน้าที่ / HR</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <div class="layout">
+
+        <!-- LEFT COLUMN -->
+        <div>
+          <!-- Camera / Main action card -->
+          <div class="card camera-card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <span class="icon">📷</span>
+                  <span>ลงเวลาผ่านกล้อง (กำลังพัฒนา)</span>
+                </div>
+                <div class="card-subtitle">
+                  ตอนนี้ใช้ปุ่ม <strong>“บันทึกด้วยมือ”</strong> ไปก่อน ฟีเจอร์สแกนใบหน้าจะถูกเพิ่มทีหลัง
+                </div>
+              </div>
+              <div class="flex gap-6" style="flex-wrap:wrap;">
+                <button class="btn btn-success" id="btnOpenManualModal">บันทึกด้วยมือ</button>
+                <button class="btn btn-secondary" id="btnOpenCheckToday">ตรวจสอบเวลาวันนี้</button>
+              </div>
+            </div>
+
+            <div class="camera-box">
+              <div class="camera-placeholder">
+                <div class="icon">📸</div>
+                <div>กล้องปิดอยู่</div>
+                <div class="text-muted text-sm">ฟีเจอร์สแกนใบหน้าจะใช้งานได้ในเวอร์ชันถัดไป</div>
+              </div>
+            </div>
+
+            <div class="camera-footer">
+              <div class="flex gap-6" style="align-items:center; flex-wrap:wrap;">
+                <select id="cameraSelect" disabled>
+                  <option>ไม่สามารถเข้าถึงกล้อง</option>
+                </select>
+                <button class="btn btn-primary" id="btnStartScan" disabled>เริ่มสแกน</button>
+              </div>
+              <div class="pill">
+                กติกาเวลา: <strong>เข้าเช้าก่อน 08:00</strong> | พักเที่ยงไม่เกิน <strong>1 ชม.</strong> | เลิกงานหลัง <strong>17:00</strong>
+              </div>
             </div>
           </div>
 
-          <div class="camera-footer">
-            <div class="flex gap-6" style="align-items:center; flex-wrap:wrap;">
-              <select id="cameraSelect" disabled>
-                <option>ไม่สามารถเข้าถึงกล้อง</option>
-              </select>
-              <button class="btn btn-primary" id="btnStartScan" disabled>เริ่มสแกน</button>
+          <!-- Today summary -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <span class="icon">📊</span>
+                  ภาพรวมวันนี้ (ย่อ)
+                </div>
+                <div class="card-subtitle">
+                  แสดงเวลาทั้ง 4 ช่วงของพนักงานที่มีบันทึกในวันนี้
+                </div>
+              </div>
+              <button class="btn btn-secondary" id="btnRefreshToday">รีเฟรชข้อมูล</button>
             </div>
-            <div class="pill">
-              กติกาเวลา: <strong>เข้าเช้าก่อน 08:00</strong> | พักเที่ยงไม่เกิน <strong>1 ชม.</strong> | เลิกงานหลัง <strong>17:00</strong>
+
+            <div class="scroll-x">
+              <table>
+                <thead>
+                <tr>
+                  <th>รหัส</th>
+                  <th>ชื่อ</th>
+                  <th>แผนก</th>
+                  <th>ระดับ</th>
+                  <th>เข้าเช้า</th>
+                  <th>ออกเที่ยง</th>
+                  <th>เข้าเที่ยง</th>
+                  <th>ออกเย็น</th>
+                  <th>สถานะ</th>
+                </tr>
+                </thead>
+                <tbody id="todaySummaryBody">
+                <tr>
+                  <td colspan="9" class="text-center text-muted" style="padding:12px 8px;">
+                    ยังไม่มีข้อมูลของวันนี้
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mt-8 text-sm text-muted">
+              * ข้อมูลนี้อ่านจากชีต <strong>Logs</strong> โดยตรง ถ้าบันทึกใหม่แล้วไม่ขึ้น ให้ลองกดปุ่ม "รีเฟรชข้อมูล"
             </div>
           </div>
         </div>
 
-        <!-- Today summary -->
-        <div class="card">
-          <div class="card-header">
-            <div>
+        <!-- RIGHT COLUMN -->
+        <div>
+          <!-- Latest log -->
+          <div class="card">
+            <div class="card-header">
               <div class="card-title">
-                <span class="icon">📊</span>
-                ภาพรวมวันนี้ (ย่อ)
-              </div>
-              <div class="card-subtitle">
-                แสดงเวลาทั้ง 4 ช่วงของพนักงานที่มีบันทึกในวันนี้
+                <span class="icon">⏱</span>
+                ผลการบันทึกล่าสุด
               </div>
             </div>
-            <button class="btn btn-secondary" id="btnRefreshToday">รีเฟรชข้อมูล</button>
+
+            <div id="latestBox" class="latest-box">
+              <div class="latest-label">
+                ข้อมูลนี้แสดงจากอุปกรณ์เครื่องนี้เท่านั้น (ช่วยยืนยันว่ากดบันทึกแล้ว)
+              </div>
+              <div class="latest-content" id="latestContent">
+                <div class="text-muted text-sm">ยังไม่มีการบันทึกในหน้านี้</div>
+              </div>
+            </div>
           </div>
 
-          <div class="scroll-x">
-            <table>
-              <thead>
-              <tr>
-                <th>รหัส</th>
-                <th>ชื่อ</th>
-                <th>แผนก</th>
-                <th>ระดับ</th>
-                <th>เข้าเช้า</th>
-                <th>ออกเที่ยง</th>
-                <th>เข้าเที่ยง</th>
-                <th>ออกเย็น</th>
-                <th>สถานะ</th>
-              </tr>
-              </thead>
-              <tbody id="todaySummaryBody">
-              <tr>
-                <td colspan="9" style="text-align:center; padding:12px 8px;" class="text-muted">
-                  ยังไม่มีข้อมูลของวันนี้
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="mt-8 text-sm text-muted">
-            * ข้อมูลนี้อ่านจากชีต <strong>Logs</strong> โดยตรง ถ้าบันทึกใหม่แล้วไม่ขึ้น ให้ลองกดปุ่ม "รีเฟรชข้อมูล"
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT COLUMN -->
-      <div>
-
-        <!-- Latest log -->
-        <div class="card">
-          <div class="card-header">
+          <!-- Helper / tip -->
+          <div class="card" style="margin-top:16px;">
             <div class="card-title">
-              <span class="icon">⏱</span>
-              ผลการบันทึกล่าสุด
+              <span class="icon">💡</span>
+              วิธีใช้ง่าย ๆ
             </div>
-          </div>
-
-          <div id="latestBox" class="latest-box">
-            <div class="latest-label">
-              ข้อมูลนี้แสดงจากอุปกรณ์เครื่องนี้เท่านั้น (ช่วยยืนยันว่ากดบันทึกแล้ว)
-            </div>
-            <div class="latest-content" id="latestContent">
-              <div class="text-muted text-sm">ยังไม่มีการบันทึกในหน้านี้</div>
-            </div>
+            <ul class="helper-list">
+              <li>ตั้งค่า URL API ให้ถูกต้อง โดยใช้ลิงก์ Web App จาก Apps Script (ปุ่มด้านบน)</li>
+              <li>กด "บันทึกด้วยมือ" เลือกรหัสพนักงาน และแนบรูปหลักฐาน (รูปไลน์, รูปกล้องวงจรปิด ฯลฯ)</li>
+              <li>ก่อนบันทึก ระบบจะขอสิทธิ์เข้าถึงตำแหน่ง (GPS) เพื่อยืนยันว่าอยู่ในพื้นที่บริษัท</li>
+              <li>หลังบันทึก ระบบจะคำนวณสถานะให้อัตโนมัติตามกติกาเวลา 4 ช่วง</li>
+              <li>กด "ตรวจสอบเวลาวันนี้" เพื่อตรวจดูว่าแต่ละช่วงลงเวลาไว้กี่โมง</li>
+            </ul>
           </div>
         </div>
 
-        <!-- Helper / tip -->
-        <div class="card" style="margin-top:16px;">
-          <div class="card-title">
-            <span class="icon">💡</span>
-            วิธีใช้ง่าย ๆ
-          </div>
-          <ul class="text-sm" style="color:#4b5563; margin-top:8px; padding-left:18px;">
-            <li>ตั้งค่า URL API ให้ถูกต้อง โดยใช้ลิงก์ Web App จาก Apps Script (ปุ่มด้านบนขวา)</li>
-            <li>กด "บันทึกด้วยมือ" เลือกรหัสพนักงาน และแนบรูปหลักฐาน (รูปไลน์, รูปกล้องวงจรปิด ฯลฯ)</li>
-            <li>ก่อนบันทึก ระบบจะขอสิทธิ์เข้าถึงตำแหน่ง (GPS) เพื่อยืนยันว่าอยู่ในพื้นที่บริษัท</li>
-            <li>หลังบันทึก ระบบจะคำนวณสถานะให้อัตโนมัติตามกติกาเวลา 4 ช่วง</li>
-            <li>กด "ตรวจสอบเวลาวันนี้" เพื่อตรวจดูว่าแต่ละช่วงลงเวลาไว้กี่โมง</li>
-          </ul>
-        </div>
       </div>
-
-    </div>
-  </main>
+    </main>
+  </div>
 </div>
 
 <!-- MODAL: ตั้งค่า URL -->
@@ -823,42 +917,11 @@
   </div>
 </div>
 
-<!-- MODAL: Login Admin -->
-<div class="modal-backdrop" id="modalAdminLogin">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">เข้าสู่ระบบเจ้าหน้าที่ / HR</div>
-      <button class="modal-close" data-close-modal="modalAdminLogin">&times;</button>
-    </div>
-
-    <div class="form-group">
-      <div class="form-label">ชื่อผู้ใช้</div>
-      <input type="text" id="adminUsername" class="input" placeholder="เช่น admin" />
-    </div>
-
-    <div class="form-group">
-      <div class="form-label">รหัสผ่าน</div>
-      <input type="password" id="adminPassword" class="input" placeholder="รหัสผ่าน" />
-      <div class="helper">
-        สำหรับเจ้าหน้าที่ HR เท่านั้น ห้ามเผยแพร่ให้ผู้อื่นทราบ
-      </div>
-    </div>
-
-    <div id="adminLoginError" class="error-text" style="display:none;"></div>
-
-    <div class="modal-actions">
-      <button class="btn btn-secondary" data-close-modal="modalAdminLogin">ยกเลิก</button>
-      <button class="btn btn-primary" id="btnAdminLoginSubmit">เข้าสู่ระบบ</button>
-    </div>
-  </div>
-</div>
-
 <script>
   /**************************************************
    * CONFIG & STORAGE
    **************************************************/
   const STORAGE_KEY = 'attendance_api_url_v2';
-  const ADMIN_TOKEN_KEY = 'attendance_admin_token_v1';
 
   function getApiUrl() {
     return localStorage.getItem(STORAGE_KEY) || '';
@@ -870,18 +933,6 @@
     } else {
       localStorage.removeItem(STORAGE_KEY);
     }
-  }
-
-  function setAdminToken(token) {
-    if (token) {
-      localStorage.setItem(ADMIN_TOKEN_KEY, token);
-    } else {
-      localStorage.removeItem(ADMIN_TOKEN_KEY);
-    }
-  }
-
-  function getAdminToken() {
-    return localStorage.getItem(ADMIN_TOKEN_KEY) || '';
   }
 
   /**************************************************
@@ -1012,6 +1063,7 @@
    * LOAD INITIAL DATA
    **************************************************/
   async function init() {
+    // แสดง URL ที่ตั้งไว้
     const apiUrl = getApiUrl();
     $('apiUrlDisplay').textContent = apiUrl ? 'API: ' + apiUrl : 'ยังไม่ได้ตั้งค่า URL';
 
@@ -1114,6 +1166,7 @@
     resultEl.value = 'กำลังขอสิทธิ์และดึงพิกัด GPS จากอุปกรณ์...';
 
     try {
+      // 1) ขอพิกัด GPS ก่อน
       const position = await getCurrentPositionPromise({
         enableHighAccuracy: true,
         timeout: 10000,
@@ -1121,9 +1174,11 @@
       });
       const { latitude, longitude } = position.coords;
 
+      // 2) เตรียมไฟล์
       const file = fileEl.files[0];
       const base64 = await fileToBase64(file);
 
+      // 3) Payload ส่งไป Apps Script (บังคับมี lat/lng)
       const payload = {
         code,
         lat: latitude,
@@ -1137,6 +1192,7 @@
 
       const res = await api.call('saveManualLog', payload);
 
+      // แสดงผลใน textarea
       const lines = [];
       lines.push(`บันทึกสำเร็จ: เวลา ${res.time} (${res.slot})`);
       if (res.employee) {
@@ -1174,9 +1230,13 @@
       sucEl.textContent = 'บันทึกเรียบร้อยแล้ว';
       sucEl.style.display = 'block';
 
+      // อัปเดตกล่อง "ผลการบันทึกล่าสุด"
       updateLatestFromManual(res);
+
+      // โหลดภาพรวมวันนี้ใหม่
       loadTodaySummary();
 
+      // ปิดหน้าต่างภายใน 2 วิ เพื่อลดความสับสน
       setTimeout(() => {
         hideModal('modalManual');
       }, 2000);
@@ -1340,59 +1400,10 @@
   }
 
   /**************************************************
-   * ADMIN LOGIN LOGIC
-   **************************************************/
-  async function submitAdminLogin() {
-    const username = $('adminUsername').value.trim();
-    const password = $('adminPassword').value.trim();
-    const errEl    = $('adminLoginError');
-    const btn      = $('btnAdminLoginSubmit');
-
-    errEl.style.display = 'none';
-
-    if (!username || !password) {
-      errEl.textContent = 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = 'กำลังตรวจสอบ...';
-
-    try {
-      const res = await api.call('loginAdmin', { username, password });
-      setAdminToken(res.token || '');
-      hideModal('modalAdminLogin');
-      window.location.href = 'admin.html';
-    } catch (err) {
-      console.error(err);
-      errEl.textContent = 'เข้าสู่ระบบไม่สำเร็จ: ' + err.message;
-      errEl.style.display = 'block';
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'เข้าสู่ระบบ';
-    }
-  }
-
-  function openAdminLoginModal() {
-    // ถ้ามี token อยู่แล้ว อาจจะให้เข้าตรงเลย (กันยุ่งยาก)
-    const existingToken = getAdminToken();
-    if (existingToken) {
-      if (confirm('คุณเข้าสู่ระบบเจ้าหน้าที่ไว้แล้ว ต้องการเข้าหน้า Admin เลยหรือไม่?')) {
-        window.location.href = 'admin.html';
-        return;
-      }
-    }
-    $('adminUsername').value = '';
-    $('adminPassword').value = '';
-    $('adminLoginError').style.display = 'none';
-    showModal('modalAdminLogin');
-  }
-
-  /**************************************************
    * EVENT BINDING
    **************************************************/
   document.addEventListener('DOMContentLoaded', () => {
+    // modal close button
     document.querySelectorAll('[data-close-modal]').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-close-modal');
@@ -1400,6 +1411,7 @@
       });
     });
 
+    // backdrop click (คลิกนอกกล่องเพื่อปิด)
     document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
       backdrop.addEventListener('click', e => {
         if (e.target === backdrop) {
@@ -1408,12 +1420,13 @@
       });
     });
 
+    // buttons
     $('btnSetUrl').addEventListener('click', openUrlModal);
     $('btnSaveUrl').addEventListener('click', saveUrl);
     $('btnResetUrl').addEventListener('click', resetUrl);
-
-    $('btnGoAdmin').addEventListener('click', openAdminLoginModal);
-    $('btnAdminLoginSubmit').addEventListener('click', submitAdminLogin);
+    $('btnGoAdmin').addEventListener('click', () => {
+      window.location.href = 'admin.html';
+    });
 
     $('btnOpenManualModal').addEventListener('click', () => {
       $('manualCode').value = '';
@@ -1439,6 +1452,7 @@
 
     $('btnRefreshToday').addEventListener('click', loadTodaySummary);
 
+    // กล้องยังไม่ทำอะไร (disabled ไว้ก่อน)
     $('btnStartScan').addEventListener('click', () => {
       alert('ฟีเจอร์สแกนใบหน้ายังไม่เปิดใช้งานในเวอร์ชันนี้');
     });
