@@ -449,36 +449,6 @@
       color: #b91c1c;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    thead {
-      background: #f3f4f6;
-    }
-
-    th, td {
-      padding: 7px 8px;
-      border-bottom: 1px solid #e5e7eb;
-      text-align: left;
-      white-space: nowrap;
-    }
-
-    th {
-      font-weight: 500;
-      color: #374151;
-      font-size: 12px;
-    }
-
-    tbody tr:nth-child(even) {
-      background: #f9fafb;
-    }
-
-    .text-right { text-align: right; }
-    .text-center { text-align: center; }
-
     .badge-status {
       font-size: 11px;
       padding: 3px 9px;
@@ -514,10 +484,45 @@
       color: #374151;
     }
 
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead {
+      background: #f3f4f6;
+    }
+
+    th, td {
+      padding: 7px 8px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      white-space: nowrap; /* ป้องกันหัวตารางพับ ทำให้ต้องเลื่อนซ้ายขวาแทน */
+    }
+
+    th {
+      font-weight: 500;
+      color: #374151;
+      font-size: 12px;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f9fafb;
+    }
+
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+
     .scroll-x {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       max-width: 100%;
+    }
+
+    /* KEY: บังคับให้ตารางกว้างกว่าจอ เพื่อให้เลื่อนซ้าย–ขวาได้บนมือถือ */
+    .scroll-x > table {
+      min-width: 720px;
     }
 
     .scroll-x::-webkit-scrollbar {
@@ -646,6 +651,10 @@
       }
       #empSearch {
         width: 100%;
+      }
+      /* ให้ min-width ตารางเล็กลงนิดบนจอเล็กมาก */
+      .scroll-x > table {
+        min-width: 640px;
       }
     }
 
@@ -1561,7 +1570,7 @@
       $('settingsSuccess').style.display = 'block';
       $('settingsError').style.display = 'none';
     } catch (err) {
-      $('settingsError').textContent = 'ลบไม่สำเร็จ: ' + err.message;
+      $('settingsError').textContent = 'ลบแผนกไม่สำเร็จ: ' + err.message;
       $('settingsError').style.display = 'block';
       $('settingsSuccess').style.display = 'none';
     }
@@ -1580,7 +1589,7 @@
       $('settingsSuccess').style.display = 'block';
       $('settingsError').style.display = 'none';
     } catch (err) {
-      $('settingsError').textContent = 'ลบไม่สำเร็จ: ' + err.message;
+      $('settingsError').textContent = 'ลบระดับไม่สำเร็จ: ' + err.message;
       $('settingsError').style.display = 'block';
       $('settingsSuccess').style.display = 'none';
     }
