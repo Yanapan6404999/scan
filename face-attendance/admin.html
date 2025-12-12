@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <title>HR Attendance – Admin</title>
+  <title>ระบบจัดการเวลาทำงาน – Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -253,7 +253,7 @@
       max-width: 100%;
     }
 
-    /* ตัวนี้คือ span API ที่ล้น – บังคับให้ตัดบรรทัด/ห่อคำยาว ๆ */
+    /* span API URL */
     #apiUrlDisplay {
       word-break: break-all;
       overflow-wrap: anywhere;
@@ -367,7 +367,7 @@
       margin-bottom: 14px;
       backdrop-filter: blur(10px);
       width: 100%;
-      max-width: 100%;      /* การ์ดไม่กว้างเกิน */
+      max-width: 100%;
     }
 
     .card-header {
@@ -620,6 +620,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 8px;
+      flex-wrap: wrap;        /* ✅ ให้ wrap เพื่อไม่ดันหลุดขอบขวา */
     }
 
     .flex {
@@ -682,9 +683,15 @@
       .filters .field {
         min-width: 46%;
       }
+      /* ✅ ช่องค้นหาพนักงานบนมือถือให้เต็มบรรทัด ไม่ล้นขวา */
+      #empSearch {
+        width: 100%;
+        max-width: 100%;
+        flex: 1 1 100%;
+      }
     }
 
-    /* URL Card ให้ลอย ไม่ดัน layout -------------------------------- */
+    /* URL Card ลอยด้านล่าง ---------------------------------------- */
     #urlCard {
       position: fixed;
       right: 16px;
@@ -709,7 +716,7 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="sidebar-title">Internship Admin</div>
+      <div class="sidebar-title">ระบบจัดการเวลาทำงาน</div>
       <div class="sidebar-sub">HR Attendance Panel</div>
     </div>
 
@@ -896,7 +903,7 @@
               <div>
                 <div class="flex-between">
                   <div class="helper">รายชื่อพนักงาน</div>
-                  <input type="text" id="empSearch" class="input-block" placeholder="ค้นหาจากรหัส / ชื่อ" style="max-width:220px;" />
+                  <input type="text" id="empSearch" class="input-block" placeholder="ค้นหาจากรหัส / ชื่อ" />
                 </div>
                 <div class="scroll-x mt-8" style="max-height:420px; overflow-y:auto;">
                   <table>
