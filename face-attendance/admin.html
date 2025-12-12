@@ -34,7 +34,6 @@
       padding: 0;
       width: 100%;
       max-width: 100%;
-      /* เอา overflow-x:hidden ออก เพื่อให้หน้าเลื่อนได้ถ้าตารางกว้างกว่า */
     }
 
     body {
@@ -625,6 +624,22 @@
       align-items: center;
     }
 
+    /* ✅ ใช้แก้ input+ปุ่ม ในหน้า ตั้งค่า ให้เรียงลงบนมือถือ */
+    .flex-stack-mobile {
+      /* desktop ใช้ flex แถวเดียวตามปกติ */
+    }
+
+    @media (max-width: 640px) {
+      .flex-stack-mobile {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .flex-stack-mobile .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
     .table-actions {
       display: flex;
       gap: 4px;
@@ -652,7 +667,6 @@
       #empSearch {
         width: 100%;
       }
-      /* ตารางบนมือถือให้กว้างเกินจอ แต่ไม่เยอะเกินไป */
       .scroll-x > table {
         min-width: 640px;
       }
@@ -864,7 +878,7 @@
         <!-- EMPLOYEES ---------------------------------------------->
         <section class="section" id="section-employees">
           <div class="grid-2">
-            <!-- CARD 1: FORM ---------------------------------------->
+            <!-- CARD 1: FORM --------------------------------------->
             <div class="card">
               <div class="card-header">
                 <div>
@@ -909,7 +923,7 @@
               </div>
             </div>
 
-            <!-- CARD 2: TABLE --------------------------------------->
+            <!-- CARD 2: TABLE -------------------------------------->
             <div class="card">
               <div class="card-header">
                 <div>
@@ -1081,7 +1095,8 @@
               <!-- Branches -->
               <div>
                 <div class="card-subtitle">แผนก</div>
-                <div class="mt-8 flex">
+                <!-- ✅ แก้เป็น flex-stack-mobile -->
+                <div class="mt-8 flex flex-stack-mobile">
                   <input id="branchName" class="input-block" placeholder="ชื่อแผนกใหม่" />
                   <button class="btn btn-primary btn-small" id="btnAddBranch">เพิ่ม</button>
                 </div>
@@ -1100,7 +1115,8 @@
               <!-- Levels -->
               <div>
                 <div class="card-subtitle">ระดับ / ตำแหน่ง</div>
-                <div class="mt-8 flex">
+                <!-- ✅ แก้เป็น flex-stack-mobile -->
+                <div class="mt-8 flex flex-stack-mobile">
                   <input id="levelName" class="input-block" placeholder="ชื่อตำแหน่งใหม่" />
                   <button class="btn btn-primary btn-small" id="btnAddLevel">เพิ่ม</button>
                 </div>
@@ -1322,7 +1338,7 @@
       } else {
         locBox.innerHTML = entries.map(([name,count]) =>
           `<span class="tag">${name} – ${count} คน</span>`
-        ).join('');
+        ).join(' ');
       }
     }
   }
