@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>ระบบลงเวลาพนักงาน</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
   <!-- ฟอนต์ -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -28,38 +28,28 @@
       font-family: "Prompt", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    html,
-    body {
+    html, body {
       margin: 0;
       width: 100%;
       max-width: 100%;
-      overflow-x: hidden; /* กันเลื่อนแนวนอน */
-    }
-
-    body {
-      color: var(--text-main);
+      overflow-x: hidden;
       background:
         radial-gradient(circle at top left, #e0e7ff 0, transparent 55%),
         radial-gradient(circle at bottom right, #e5f5ff 0, transparent 50%),
         #f3f4f6;
+      color: var(--text-main);
     }
 
-    a {
-      color: var(--primary);
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
     /* ---------- APP SHELL ---------- */
     .page-shell {
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: stretch;          /* ยืดเต็ม ไม่จัดกลาง */
-      padding: 8px 0 16px;           /* ลด padding รอบนอก */
+      align-items: stretch;
+      padding: 8px 0 16px;
       width: 100%;
     }
 
@@ -68,13 +58,10 @@
       max-width: 1120px;
       margin: 0 auto;
       max-inline-size: 100%;
-      padding: 0 12px 12px;          /* คุมระยะห่างซ้ายขวา */
+      padding: 0 12px 12px;
     }
 
-    /* HEADER CARD (ด้านบน) */
-    header.app-header {
-      margin-bottom: 12px;
-    }
+    header.app-header { margin-bottom: 12px; }
 
     .header-card {
       background: linear-gradient(135deg, #020617 0%, #020617 40%, #0b1120 100%);
@@ -111,33 +98,15 @@
       max-width: 100%;
     }
 
-    .header-left {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      max-width: 100%;
-
-    }
-
-    .header-title {
-      font-size: 20px;
-      font-weight: 600;
-    }
-
-    .header-sub {
-      font-size: 12px;
-      color: #9ca3af;
-      max-width: 100%;
-    }
-
+    .header-left { display: flex; flex-direction: column; gap: 4px; max-width: 100%; }
+    .header-title { font-size: 20px; font-weight: 600; }
+    .header-sub { font-size: 12px; color: #9ca3af; max-width: 100%; }
     .header-sub span.api {
       display: block;
       margin-top: 2px;
       color: #e5e7eb;
       word-break: break-all;
-      overflow-wrap: anywhere;  /* กัน URL ดันจอ */
-
-
+      overflow-wrap: anywhere;
       max-width: 100%;
     }
 
@@ -147,7 +116,7 @@
       align-items: flex-end;
       gap: 8px;
       flex: 0 0 auto;
-
+      max-width: 100%;
     }
 
     .badge-connection {
@@ -162,7 +131,6 @@
       border: 1px solid rgba(34,197,94,0.5);
       max-width: 100%;
     }
-
     .badge-connection.offline {
       background: rgba(127, 29, 29, 0.4);
       color: #fecaca;
@@ -170,91 +138,55 @@
     }
 
     .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
+      width: 8px; height: 8px; border-radius: 999px;
       background: #22c55e;
       box-shadow: 0 0 8px rgba(34, 197, 94, 0.85);
     }
-
     .badge-connection.offline .dot {
       background: #f97373;
       box-shadow: 0 0 8px rgba(248,113,113,0.8);
     }
 
-    .header-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: flex-end;
-
-    }
+    .header-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
 
     /* BUTTONS */
-    button,
-    .btn {
+    button, .btn {
       border-radius: 999px;
       border: none;
       cursor: pointer;
       font-size: 13px;
-      padding: 8px 16px;
+      padding: 10px 16px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
       transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease, opacity 0.1s ease;
       white-space: nowrap;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    button:disabled,
-    .btn:disabled {
+    button:disabled, .btn:disabled {
       opacity: 0.7;
       cursor: default;
       box-shadow: none;
       transform: none;
     }
 
-    button:active:not(:disabled),
-    .btn:active:not(:disabled) {
+    button:active:not(:disabled), .btn:active:not(:disabled) {
       transform: translateY(1px) scale(0.99);
       box-shadow: none;
     }
 
-    .btn-primary {
-      background: #3b82f6;
-      color: #fff;
-      box-shadow: 0 12px 30px rgba(37, 99, 235, 0.55);
-    }
+    .btn-primary { background: #3b82f6; color: #fff; box-shadow: 0 12px 30px rgba(37, 99, 235, 0.55); }
+    .btn-outline { background: transparent; color: #e5e7eb; border: 1px solid rgba(148,163,184,0.9); }
+    .btn-danger-outline { background: transparent; color: #fecaca; border: 1px solid rgba(248,113,113,0.8); }
+    .btn-success { background: #22c55e; color: #fff; box-shadow: 0 12px 30px rgba(34,197,94,0.45); }
+    .btn-secondary { background: #ffffff; color: #111827; border: 1px solid var(--border); }
+    .btn-warning { background: #f59e0b; color: #111827; box-shadow: 0 12px 30px rgba(245, 158, 11, 0.35); }
 
-    .btn-outline {
-      background: transparent;
-      color: #e5e7eb;
-      border: 1px solid rgba(148,163,184,0.9);
-    }
-
-    .btn-danger-outline {
-      background: transparent;
-      color: #fecaca;
-      border: 1px solid rgba(248,113,113,0.8);
-    }
-
-    .btn-success {
-      background: #22c55e;
-      color: #fff;
-      box-shadow: 0 12px 30px rgba(34,197,94,0.45);
-    }
-
-    .btn-secondary {
-      background: #ffffff;
-      color: #111827;
-      border: 1px solid var(--border);
-    }
-
-    /* MAIN LAYOUT */
-    main.main {
-      width: 100%;
-      margin-top: 8px;
-    }
+    /* MAIN */
+    main.main { width: 100%; margin-top: 8px; }
 
     .layout {
       display: grid;
@@ -263,21 +195,14 @@
       align-items: flex-start;
       max-width: 100%;
     }
-
-    @media (max-width: 960px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-    }
+    @media (max-width: 960px) { .layout { grid-template-columns: 1fr; } }
 
     /* CARD */
     .card {
       background: var(--card-bg);
       border-radius: 18px;
       padding: 16px 16px 14px;
-      box-shadow:
-        0 16px 40px rgba(15, 23, 42, 0.06),
-        0 0 0 1px rgba(15,23,42,0.02);
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(15,23,42,0.02);
       border: 1px solid rgba(226, 232, 240, 0.9);
       width: 100%;
       max-width: 100%;
@@ -292,41 +217,22 @@
       flex-wrap: wrap;
     }
 
-    .card-title {
-      font-size: 15px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
+    .card-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
     .card-title span.icon {
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      background: var(--primary-soft);
-      color: var(--primary);
+      width: 24px; height: 24px; border-radius: 999px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 13px; background: var(--primary-soft); color: var(--primary);
     }
+    .card-subtitle { font-size: 12px; color: var(--text-soft); }
 
-    .card-subtitle {
-      font-size: 12px;
-      color: var(--text-soft);
-    }
-
-    /* CAMERA SECTION */
-    .camera-card {
-      margin-bottom: 14px;
-    }
+    /* CAMERA */
+    .camera-card { margin-bottom: 14px; }
 
     .camera-box {
       border-radius: 16px;
       border: 1px dashed #cbd5f5;
       background: radial-gradient(circle at top left, #eff6ff, #e5e7eb);
-      height: 260px;
+      height: 320px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -343,186 +249,126 @@
       gap: 6px;
       color: #6b7280;
       text-align: center;
+      padding: 12px;
     }
 
     .camera-placeholder .icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 999px;
+      width: 60px; height: 60px; border-radius: 999px;
       border: 2px solid #9ca3af;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       font-size: 26px;
       background: rgba(255,255,255,0.7);
     }
+
+    .cam-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+      transform: scaleX(-1); /* selfie */
+    }
+    .cam-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: none;
+    }
+
+    .scan-hud {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      right: 12px;
+      display: none;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+    .scan-pill {
+      pointer-events: none;
+      background: rgba(255,255,255,0.85);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: #111827;
+      box-shadow: 0 10px 25px rgba(15,23,42,0.08);
+      max-width: 100%;
+    }
+    .scan-pill strong { color: #0f172a; }
 
     .camera-footer {
       margin-top: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
     select {
-      padding: 7px 10px;
+      padding: 9px 12px;
       border-radius: 999px;
       border: 1px solid var(--border);
       outline: none;
       font-size: 13px;
       background: white;
       min-width: 220px;
+      max-width: 100%;
     }
 
-    select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 1px rgba(37,99,235,0.3);
-    }
+    select:focus { border-color: var(--primary); box-shadow: 0 0 0 1px rgba(37,99,235,0.3); }
 
     .pill {
       font-size: 11px;
-      padding: 4px 10px;
+      padding: 6px 10px;
       border-radius: 999px;
       background: #f9fafb;
       color: #6b7280;
+      border: 1px solid rgba(226,232,240,0.8);
     }
-
-    .pill strong {
-      color: #111827;
-    }
+    .pill strong { color: #111827; }
 
     /* TABLES */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    thead {
-      background: #f3f4f6;
-    }
-
-    th, td {
-      padding: 7px 8px;
-      border-bottom: 1px solid #e5e7eb;
-      text-align: left;
-      white-space: nowrap;
-    }
-
-    th {
-      font-weight: 500;
-      color: #374151;
-      font-size: 12px;
-    }
-
-    tbody tr:nth-child(even) {
-      background: #f9fafb;
-    }
-
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead { background: #f3f4f6; }
+    th, td { padding: 7px 8px; border-bottom: 1px solid #e5e7eb; text-align: left; white-space: nowrap; }
+    th { font-weight: 500; color: #374151; font-size: 12px; }
+    tbody tr:nth-child(even) { background: #f9fafb; }
     .text-right { text-align: right; }
     .text-center { text-align: center; }
 
-    /* STATUS BADGE */
-    .badge-status {
-      font-size: 11px;
-      padding: 3px 9px;
-      border-radius: 999px;
-      display: inline-block;
-    }
+    /* STATUS */
+    .badge-status { font-size: 11px; padding: 3px 9px; border-radius: 999px; display: inline-block; }
+    .badge-normal { background: #dcfce7; color: #166534; }
+    .badge-late { background: #fee2e2; color: #b91c1c; }
+    .badge-absent { background: #ffe4e6; color: #be123c; }
+    .badge-other { background: #fef3c7; color: #92400e; }
 
-    .badge-normal {
-      background: #dcfce7;
-      color: #166534;
-    }
+    /* LATEST */
+    .latest-box { font-size: 13px; }
+    .latest-label { color: var(--text-soft); font-size: 12px; margin-bottom: 4px; }
+    .latest-content { padding: 9px 10px; border-radius: 12px; background: #f9fafb; border: 1px dashed #e5e7eb; }
+    .latest-row { display: flex; gap: 8px; font-size: 13px; flex-wrap: wrap; }
+    .latest-row span.label { min-width: 74px; color: #6b7280; }
 
-    .badge-late {
-      background: #fee2e2;
-      color: #b91c1c;
-    }
-
-    .badge-absent {
-      background: #ffe4e6;
-      color: #be123c;
-    }
-
-    .badge-other {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    /* LATEST BOX */
-    .latest-box {
-      font-size: 13px;
-    }
-
-    .latest-label {
-      color: var(--text-soft);
-      font-size: 12px;
-      margin-bottom: 4px;
-    }
-
-    .latest-content {
-      padding: 9px 10px;
-      border-radius: 12px;
-      background: #f9fafb;
-      border: 1px dashed #e5e7eb;
-    }
-
-    .latest-row {
-      display: flex;
-      gap: 8px;
-      font-size: 13px;
-      flex-wrap: wrap;
-    }
-
-    .latest-row span.label {
-      min-width: 74px;
-      color: #6b7280;
-    }
-
-    .text-muted {
-      color: #9ca3af;
-    }
-
+    .text-muted { color: #9ca3af; }
     .text-sm { font-size: 12px; }
-
     .mt-8 { margin-top: 8px; }
     .mt-10 { margin-top: 10px; }
     .mt-12 { margin-top: 12px; }
 
-    .flex {
-      display: flex;
-    }
-
-    .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
+    .flex { display: flex; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
     .gap-6 { gap: 6px; }
 
-    .scroll-x {
-      overflow-x: auto;
-      max-width: 100%;
-    }
+    .scroll-x { overflow-x: auto; max-width: 100%; }
+    .scroll-x::-webkit-scrollbar { height: 6px; }
+    .scroll-x::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
 
-    .scroll-x::-webkit-scrollbar {
-      height: 6px;
-    }
-    .scroll-x::-webkit-scrollbar-thumb {
-      background: #d1d5db;
-      border-radius: 999px;
-    }
-
-    ul.helper-list {
-      font-size: 12px;
-      color: #4b5563;
-      margin-top: 8px;
-      padding-left: 18px;
-    }
+    ul.helper-list { font-size: 12px; color: #4b5563; margin-top: 8px; padding-left: 18px; }
 
     /* MODALS */
     .modal-backdrop {
@@ -535,13 +381,10 @@
       z-index: 50;
       padding: 10px;
     }
-
-    .modal-backdrop.show {
-      display: flex;
-    }
+    .modal-backdrop.show { display: flex; }
 
     .modal {
-      max-width: 420px;
+      max-width: 440px;
       width: 100%;
       background: white;
       border-radius: 18px;
@@ -549,158 +392,74 @@
       padding: 18px 18px 16px;
       animation: pop 0.16s ease-out;
     }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      gap: 8px;
-    }
-
-    .modal-title {
-      font-size: 16px;
-      font-weight: 600;
-    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; }
+    .modal-title { font-size: 16px; font-weight: 600; }
 
     .modal-close {
       background: transparent;
       border-radius: 999px;
-      width: 34px;
-      height: 34px;
+      width: 34px; height: 34px;
       border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       cursor: pointer;
       font-size: 22px;
       color: #4b5563;
       transition: background 0.1s ease, transform 0.08s ease;
     }
+    .modal-close:hover { background: #e5e7eb; transform: scale(1.02); }
 
-    .modal-close:hover {
-      background: #e5e7eb;
-      transform: scale(1.02);
-    }
-
-    .form-group {
-      margin-bottom: 10px;
-    }
-
-    .form-label {
-      font-size: 13px;
-      margin-bottom: 3px;
-      color: #374151;
-    }
-
-    .input,
-    textarea {
+    .form-group { margin-bottom: 10px; }
+    .form-label { font-size: 13px; margin-bottom: 3px; color: #374151; }
+    .input, textarea {
       width: 100%;
       border-radius: 10px;
       border: 1px solid #d1d5db;
-      padding: 7px 9px;
+      padding: 9px 10px;
       font-size: 13px;
       outline: none;
       resize: vertical;
-      min-height: 32px;
+      min-height: 36px;
     }
+    .input:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 1px rgba(37,99,235,0.3); }
+    textarea { min-height: 70px; }
 
-    .input:focus,
-    textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 1px rgba(37,99,235,0.3);
-    }
+    .helper { font-size: 11px; color: #6b7280; }
+    .modal-actions { margin-top: 12px; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+    .error-text { font-size: 12px; color: var(--danger); margin-top: 4px; }
+    .success-text { font-size: 12px; color: #16a34a; margin-top: 4px; }
 
-    textarea {
-      min-height: 70px;
-    }
-
-    .helper {
-      font-size: 11px;
+    .mini-note {
+      font-size: 12px;
       color: #6b7280;
-    }
-
-    .modal-actions {
-      margin-top: 12px;
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .error-text {
-      font-size: 12px;
-      color: var(--danger);
-      margin-top: 4px;
-    }
-
-    .success-text {
-      font-size: 12px;
-      color: #16a34a;
-      margin-top: 4px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px;
+      border-radius: 12px;
     }
 
     @keyframes pop {
-      from {
-        transform: translateY(8px) scale(0.97);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-      }
+      from { transform: translateY(8px) scale(0.97); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
     }
 
-    /* ---------- MOBILE TWEAK ---------- */
+    /* MOBILE */
     @media (max-width: 640px) {
-      .page-shell {
-        padding: 4px 0 10px;      /* ลดขอบบน–ล่างบนมือถือ */
-      }
-
-      .app-container {
-        padding: 0 8px 10px;      /* การ์ดเกือบชิดขอบจอ */
-      }
-
-      .header-card {
-        padding: 12px 12px 12px;
-        border-radius: 18px;
-      }
-
-      .header-main {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-
-
-
-
-      .header-right {
-        align-items: flex-start;
-        width: 100%;
-      }
-
-      .header-actions {
-        justify-content: flex-start;
-        width: 100%;
-      }
-
-      main.main {
-        margin-top: 10px;
-      }
-
-      .camera-box {
-        height: 220px;
-      }
-
-      .modal {
-        max-width: 100%;
-        border-radius: 16px;
-        padding: 16px 14px 14px;
-      }
+      .page-shell { padding: 4px 0 10px; }
+      .app-container { padding: 0 8px 10px; }
+      .header-card { padding: 12px 12px 12px; border-radius: 18px; }
+      .header-main { flex-direction: column; align-items: flex-start; }
+      .header-right { align-items: flex-start; width: 100%; }
+      .header-actions { justify-content: flex-start; width: 100%; }
+      .camera-box { height: 300px; }
+      .modal { max-width: 100%; border-radius: 16px; padding: 16px 14px 14px; }
+      button, .btn { padding: 11px 16px; font-size: 14px; }
+      select { width: 100%; min-width: 0; }
+      .camera-footer { gap: 8px; }
+      .pill { width: 100%; border-radius: 14px; }
     }
   </style>
 </head>
+
 <body>
 <div class="page-shell">
   <div class="app-container">
@@ -712,7 +471,7 @@
           <div class="header-left">
             <div class="header-title">ระบบลงเวลาพนักงาน</div>
             <div class="header-sub">
-              เวอร์ชันทดลองใช้ (บันทึกได้ 4 ช่วง)
+              เวอร์ชันทดลองใช้ (บันทึกได้ 4 ช่วง + สแกนใบหน้า)
               <span class="api" id="apiUrlDisplay">ยังไม่ได้ตั้งค่า URL</span>
             </div>
           </div>
@@ -726,6 +485,7 @@
             <div class="header-actions">
               <button class="btn btn-outline" id="btnSetUrl">ตั้งค่า URL</button>
               <button class="btn btn-danger-outline" id="btnResetUrl">Reset URL</button>
+              <button class="btn btn-warning" id="btnEnrollFace">ลงทะเบียนใบหน้า (HR)</button>
               <button class="btn btn-primary" id="btnGoAdmin">เจ้าหน้าที่ / HR</button>
             </div>
           </div>
@@ -745,12 +505,13 @@
               <div>
                 <div class="card-title">
                   <span class="icon">📷</span>
-                  <span>ลงเวลาผ่านกล้อง (กำลังพัฒนา)</span>
+                  <span>ลงเวลาผ่านสแกนใบหน้า</span>
                 </div>
-                <div class="card-subtitle">
-                  ตอนนี้ใช้ปุ่ม <strong>“บันทึกด้วยมือ”</strong> ไปก่อน ฟีเจอร์สแกนใบหน้าจะถูกเพิ่มทีหลัง
+                <div class="card-subtitle" id="faceStatusLine">
+                  พร้อมใช้งานเมื่อ: ตั้งค่า URL + อนุญาตกล้อง + โหลด models สำเร็จ
                 </div>
               </div>
+
               <div class="flex gap-6" style="flex-wrap:wrap;">
                 <button class="btn btn-success" id="btnOpenManualModal">บันทึกด้วยมือ</button>
                 <button class="btn btn-secondary" id="btnOpenCheckToday">ตรวจสอบเวลาวันนี้</button>
@@ -758,23 +519,39 @@
             </div>
 
             <div class="camera-box">
-              <div class="camera-placeholder">
+              <video id="camVideo" class="cam-video" autoplay muted playsinline></video>
+              <canvas id="camOverlay" class="cam-overlay"></canvas>
+
+              <div id="scanHud" class="scan-hud">
+                <div class="scan-pill" id="scanPillLeft"><strong>สถานะ:</strong> ยังไม่เริ่ม</div>
+                <div class="scan-pill" id="scanPillRight"><strong>พบ:</strong> -</div>
+              </div>
+
+              <div id="cameraPlaceholder" class="camera-placeholder">
                 <div class="icon">📸</div>
                 <div>กล้องปิดอยู่</div>
-                <div class="text-muted text-sm">ฟีเจอร์สแกนใบหน้าจะใช้งานได้ในเวอร์ชันถัดไป</div>
+                <div class="text-muted text-sm">กด “เริ่มสแกน” เพื่อเปิดกล้อง</div>
               </div>
             </div>
 
             <div class="camera-footer">
-              <div class="flex gap-6" style="align-items:center; flex-wrap:wrap;">
-                <select id="cameraSelect" disabled>
-                  <option>ไม่สามารถเข้าถึงกล้อง</option>
+              <div class="flex gap-6" style="align-items:center; flex-wrap:wrap; width:100%;">
+                <select id="cameraSelect">
+                  <option value="">เลือกกล้อง (เปิดกล้องก่อนเพื่อให้เห็นรายการ)</option>
                 </select>
-                <button class="btn btn-primary" id="btnStartScan" disabled>เริ่มสแกน</button>
+
+                <button class="btn btn-primary" id="btnStartScan">เริ่มสแกน</button>
+                <button class="btn btn-secondary" id="btnStopScan" disabled>หยุด</button>
+                <button class="btn btn-success" id="btnScanSubmit" disabled>บันทึกจากการสแกน</button>
               </div>
+
               <div class="pill">
                 กติกาเวลา: <strong>เข้าเช้าก่อน 08:00</strong> | พักเที่ยงไม่เกิน <strong>1 ชม.</strong> | เลิกงานหลัง <strong>17:00</strong>
               </div>
+            </div>
+
+            <div class="mt-10 mini-note">
+              <strong>หมายเหตุ:</strong> ถ้ายังไม่เคยลงทะเบียนใบหน้า ให้กดปุ่ม <strong>“ลงทะเบียนใบหน้า (HR)”</strong> ก่อน แล้วค่อยสแกนเข้า-ออก
             </div>
           </div>
 
@@ -845,26 +622,38 @@
             </div>
           </div>
 
-          <!-- Helper / tip -->
+          <!-- Helper -->
           <div class="card" style="margin-top:16px;">
             <div class="card-title">
               <span class="icon">💡</span>
               วิธีใช้ง่าย ๆ
             </div>
             <ul class="helper-list">
-              <li>ตั้งค่า URL API ให้ถูกต้อง โดยใช้ลิงก์ Web App จาก Apps Script (ปุ่มด้านบน)</li>
-              <li>กด "บันทึกด้วยมือ" เลือกรหัสพนักงาน และแนบรูปหลักฐาน (รูปไลน์, รูปกล้องวงจรปิด ฯลฯ)</li>
-              <li>ก่อนบันทึก ระบบจะขอสิทธิ์เข้าถึงตำแหน่ง (GPS) เพื่อยืนยันว่าอยู่ในพื้นที่บริษัท</li>
-              <li>หลังบันทึก ระบบจะคำนวณสถานะให้อัตโนมัติตามกติกาเวลา 4 ช่วง</li>
-              <li>กด "ตรวจสอบเวลาวันนี้" เพื่อตรวจดูว่าแต่ละช่วงลงเวลาไว้กี่โมง</li>
+              <li>ตั้งค่า URL API ให้ถูกต้อง (ปุ่มด้านบน)</li>
+              <li>ถ้าจะสแกนใบหน้า: กด “เริ่มสแกน” → ให้กล้องเห็นหน้า → ระบบจะจับคู่ → กด “บันทึกจากการสแกน”</li>
+              <li>ก่อนใช้งานครั้งแรก: HR ต้อง “ลงทะเบียนใบหน้า” ให้พนักงานก่อน</li>
+              <li>บันทึกด้วยมือยังใช้ได้เหมือนเดิม (มี GPS + แนบรูปหลักฐาน)</li>
             </ul>
           </div>
+
+          <div class="card" style="margin-top:16px;">
+            <div class="card-title"><span class="icon">🧩</span>เช็คก่อนถ้ากล้องไม่ขึ้น</div>
+            <ul class="helper-list">
+              <li>เปิดผ่าน <strong>HTTPS</strong> (มือถือบังคับ)</li>
+              <li>อนุญาตกล้อง + อนุญาตตำแหน่ง (Location)</li>
+              <li>มีโฟลเดอร์ <strong>models/</strong> อยู่ระดับเดียวกับไฟล์นี้</li>
+            </ul>
+          </div>
+
         </div>
 
       </div>
     </main>
   </div>
 </div>
+
+<!-- datalist ช่วยพิมพ์ง่ายบนมือถือ -->
+<datalist id="empDatalist"></datalist>
 
 <!-- MODAL: ตั้งค่า URL -->
 <div class="modal-backdrop" id="modalUrl">
@@ -877,7 +666,7 @@
       <div class="form-label">URL จาก Apps Script Web App</div>
       <input type="text" id="inputApiUrl" class="input" placeholder="เช่น https://script.google.com/macros/s/XXXXX/exec" />
       <div class="helper">
-        คัดลอก URL จากเมนู <strong>Deploy &gt; Test deployments &gt; Web App</strong> ใน Apps Script แล้ววางลงที่นี่
+        คัดลอก URL จากเมนู <strong>Deploy &gt; Web app</strong> ใน Apps Script แล้ววางลงที่นี่
       </div>
     </div>
     <div id="urlError" class="error-text" style="display:none;"></div>
@@ -897,7 +686,7 @@
     </div>
     <div class="form-group">
       <div class="form-label">รหัสพนักงาน</div>
-      <input type="text" id="manualCode" class="input" placeholder="เช่น 1011" />
+      <input type="text" id="manualCode" class="input" list="empDatalist" inputmode="numeric" placeholder="เช่น 1011" />
       <div id="manualEmpInfo" class="helper">กรอกรหัสแล้วระบบจะแสดงชื่อ-สกุล / แผนก / ระดับ</div>
     </div>
 
@@ -912,7 +701,7 @@
         <option value="EXTRA">อื่น ๆ / พิเศษ</option>
       </select>
       <div class="helper">
-        ระบบยังคงตัดสินใจช่อง t1–t4, tExtra1–tExtra2 ให้เองอยู่ดี ช่องนี้เอาไว้บันทึกบริบทเฉย ๆ (ในอนาคตอาจใช้ต่อยอด)
+        ระบบยังคงตัดสินใจช่อง t1–t4, tExtra1–tExtra2 ให้เองอยู่ดี ช่องนี้เอาไว้บันทึกบริบทเฉย ๆ
       </div>
     </div>
 
@@ -948,7 +737,7 @@
     </div>
     <div class="form-group">
       <div class="form-label">รหัสพนักงาน</div>
-      <input type="text" id="checkCode" class="input" placeholder="เช่น 1011" />
+      <input type="text" id="checkCode" class="input" list="empDatalist" inputmode="numeric" placeholder="เช่น 1011" />
     </div>
     <div class="form-group">
       <div class="form-label">ผลการตรวจสอบ</div>
@@ -962,105 +751,147 @@
   </div>
 </div>
 
+<!-- MODAL: ลงทะเบียนใบหน้า (HR) -->
+<div class="modal-backdrop" id="modalEnroll">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">ลงทะเบียนใบหน้า (HR)</div>
+      <button class="modal-close" data-close-modal="modalEnroll">&times;</button>
+    </div>
+
+    <div id="enrollStepLogin">
+      <div class="form-group">
+        <div class="form-label">Username</div>
+        <input type="text" id="enrollUser" class="input" placeholder="admin" />
+      </div>
+      <div class="form-group">
+        <div class="form-label">Password</div>
+        <input type="password" id="enrollPass" class="input" placeholder="••••••••" />
+      </div>
+      <div id="enrollLoginError" class="error-text" style="display:none;"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" data-close-modal="modalEnroll">ยกเลิก</button>
+        <button class="btn btn-primary" id="btnEnrollLogin">เข้าสู่ระบบ</button>
+      </div>
+      <div class="mt-10 mini-note">
+        * เพื่อความง่าย UI จะล็อกขั้นตอน แต่ฝั่ง Apps Script ของคุณยังไม่ได้บังคับ token กับ action อื่น ๆ (ถ้าต้องการเพิ่มความปลอดภัยเดี๋ยวผมช่วยต่อได้)
+      </div>
+    </div>
+
+    <div id="enrollStepDo" style="display:none;">
+      <div class="form-group">
+        <div class="form-label">รหัสพนักงาน (code)</div>
+        <input type="text" id="enrollCode" class="input" list="empDatalist" inputmode="numeric" placeholder="เช่น 1011" />
+        <div class="helper">แนะนำ: เปิดกล้องให้เห็นหน้า “ตรง ๆ” แสงพอดี</div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">สถานะกล้อง/โมเดล</div>
+        <div class="mini-note" id="enrollInfo">ยังไม่เริ่มกล้อง</div>
+      </div>
+
+      <div id="enrollDoError" class="error-text" style="display:none;"></div>
+      <div id="enrollDoSuccess" class="success-text" style="display:none;"></div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" data-close-modal="modalEnroll">ปิด</button>
+        <button class="btn btn-secondary" id="btnEnrollStartCam">เปิดกล้อง</button>
+        <button class="btn btn-success" id="btnEnrollCapture">ถ่ายและบันทึกใบหน้า</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- face-api.js (ใช้ models/ ของคุณ) -->
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
 <script>
   /**************************************************
-   * CONFIG & STORAGE
+   * CONFIG
    **************************************************/
   const STORAGE_KEY = 'attendance_api_url_v2';
 
-  function getApiUrl() {
-    return localStorage.getItem(STORAGE_KEY) || '';
-  }
+  // โฟลเดอร์ models อยู่ข้างๆ index.html
+  const MODEL_URL = './models';
 
+  // ค่าระยะจับคู่ใบหน้า (ยิ่งต่ำยิ่งเข้ม)
+  const FACE_MATCH_THRESHOLD = 0.55;
+
+  // ต้องเจอคนเดิมซ้ำกี่รอบก่อน “ล็อกชื่อ”
+  const STABLE_MATCH_COUNT = 3;
+
+  /**************************************************
+   * STORAGE
+   **************************************************/
+  function getApiUrl() { return localStorage.getItem(STORAGE_KEY) || ''; }
   function setApiUrl(url) {
-    if (url) {
-      localStorage.setItem(STORAGE_KEY, url);
-    } else {
-      localStorage.removeItem(STORAGE_KEY);
-    }
+    if (url) localStorage.setItem(STORAGE_KEY, url);
+    else localStorage.removeItem(STORAGE_KEY);
   }
 
   /**************************************************
-   * API CALL HELPER
+   * API HELPER
    **************************************************/
   const api = {
     async call(action, params = {}) {
       const apiUrl = getApiUrl();
-      if (!apiUrl) {
-        throw new Error('ยังไม่ได้ตั้งค่า URL API');
-      }
+      if (!apiUrl) throw new Error('ยังไม่ได้ตั้งค่า URL API');
 
       const body = new URLSearchParams({ action, ...params }).toString();
-
       const res = await fetch(apiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
         body
       });
 
       const text = await res.text();
       let data;
-
-      try {
-        data = JSON.parse(text);
-      } catch (e) {
+      try { data = JSON.parse(text); }
+      catch (e) {
         console.error('API response is not JSON:', text);
         throw new Error('API ส่งผลลัพธ์ไม่ใช่ JSON (ตรวจสอบ URL ว่าถูกตัว exec หรือไม่)');
       }
-
-      if (!data.ok) {
-        throw new Error(data.error || 'ไม่ทราบสาเหตุจากเซิร์ฟเวอร์');
-      }
+      if (!data.ok) throw new Error(data.error || 'ไม่ทราบสาเหตุจากเซิร์ฟเวอร์');
       return data.result;
     }
   };
 
   /**************************************************
-   * GLOBAL STATE
+   * STATE
    **************************************************/
   let employeesCache = [];
+  let faceReady = false;
+  let modelsLoaded = false;
+
+  let camStream = null;
+  let scanning = false;
+
+  let lastBest = { code: '', name: '', distance: 999 };
+  let stableHit = 0;
+  let lockedMatch = null; // {code, fullName, distance}
 
   /**************************************************
-   * DOM UTIL
+   * DOM UTILS
    **************************************************/
-  function $(id) {
-    return document.getElementById(id);
-  }
+  function $(id) { return document.getElementById(id); }
 
-  function showModal(id) {
-    const el = $(id);
-    if (el) el.classList.add('show');
-  }
-
-  function hideModal(id) {
-    const el = $(id);
-    if (el) el.classList.remove('show');
-  }
+  function showModal(id) { const el = $(id); if (el) el.classList.add('show'); }
+  function hideModal(id) { const el = $(id); if (el) el.classList.remove('show'); }
 
   function setConnectionStatus(online, msg) {
     const badge = $('connectionBadge');
     const text  = $('connectionText');
     if (!badge || !text) return;
-
-    if (online) {
-      badge.classList.remove('offline');
-      text.textContent = msg || 'เชื่อมต่อสำเร็จ';
-    } else {
-      badge.classList.add('offline');
-      text.textContent = msg || 'ยังไม่ได้เชื่อมต่อ';
-    }
+    if (online) { badge.classList.remove('offline'); text.textContent = msg || 'เชื่อมต่อสำเร็จ'; }
+    else { badge.classList.add('offline'); text.textContent = msg || 'ยังไม่ได้เชื่อมต่อ'; }
   }
 
   function statusBadgeHtml(status) {
     if (!status) return '<span class="badge-status badge-absent">ขาด</span>';
-
     let cls = 'badge-other';
     if (status === 'ปกติ') cls = 'badge-normal';
     else if (status.includes('สาย')) cls = 'badge-late';
     else if (status === 'ขาด') cls = 'badge-absent';
-
     return '<span class="badge-status ' + cls + '">' + status + '</span>';
   }
 
@@ -1078,7 +909,7 @@
   }
 
   /**************************************************
-   * GEOLOCATION (GPS)
+   * GPS
    **************************************************/
   function getCurrentPositionPromise(options = {}) {
     return new Promise((resolve, reject) => {
@@ -1090,13 +921,9 @@
         pos => resolve(pos),
         err => {
           let msg = 'ไม่สามารถดึงพิกัด GPS ได้';
-          if (err.code === err.PERMISSION_DENIED) {
-            msg = 'ระบบต้องการสิทธิ์เข้าถึงตำแหน่งก่อนบันทึกเวลา กรุณาเปิด Location และกด "อนุญาต" ในเบราว์เซอร์';
-          } else if (err.code === err.POSITION_UNAVAILABLE) {
-            msg = 'ไม่พบสัญญาณตำแหน่ง กรุณาลองใหม่อีกครั้ง หรือออกนอกอาคาร';
-          } else if (err.code === err.TIMEOUT) {
-            msg = 'ดึงพิกัดนานเกินไป กรุณาลองใหม่อีกครั้ง';
-          }
+          if (err.code === err.PERMISSION_DENIED) msg = 'ระบบต้องการสิทธิ์เข้าถึงตำแหน่งก่อนบันทึกเวลา กรุณาเปิด Location และกด "อนุญาต" ในเบราว์เซอร์';
+          else if (err.code === err.POSITION_UNAVAILABLE) msg = 'ไม่พบสัญญาณตำแหน่ง กรุณาลองใหม่อีกครั้ง หรือออกนอกอาคาร';
+          else if (err.code === err.TIMEOUT) msg = 'ดึงพิกัดนานเกินไป กรุณาลองใหม่อีกครั้ง';
           reject(new Error(msg));
         },
         options
@@ -1105,10 +932,293 @@
   }
 
   /**************************************************
-   * LOAD INITIAL DATA
+   * FACE: LOAD MODELS
+   **************************************************/
+  async function ensureModelsLoaded() {
+    if (modelsLoaded) return true;
+    const line = $('faceStatusLine');
+    line.textContent = 'กำลังโหลดโมเดลสแกนใบหน้า (models)...';
+
+    try {
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+      modelsLoaded = true;
+      faceReady = true;
+      line.textContent = 'พร้อมสแกนใบหน้าแล้ว ✅';
+      return true;
+    } catch (err) {
+      console.error(err);
+      line.textContent = 'โหลดโมเดลไม่สำเร็จ ❌ ตรวจสอบโฟลเดอร์ models/ และเปิดผ่าน https';
+      faceReady = false;
+      return false;
+    }
+  }
+
+  /**************************************************
+   * CAMERA
+   **************************************************/
+  async function listCameras() {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cams = devices.filter(d => d.kind === 'videoinput');
+      const sel = $('cameraSelect');
+      sel.innerHTML = '';
+      const opt0 = document.createElement('option');
+      opt0.value = '';
+      opt0.textContent = cams.length ? 'เลือกกล้อง (แนะนำ: กล้องหน้า)' : 'ไม่พบกล้อง';
+      sel.appendChild(opt0);
+
+      cams.forEach((c, idx) => {
+        const opt = document.createElement('option');
+        opt.value = c.deviceId;
+        opt.textContent = c.label || `Camera ${idx + 1}`;
+        sel.appendChild(opt);
+      });
+    } catch (e) {
+      console.warn('enumerateDevices error', e);
+    }
+  }
+
+  async function startCamera(preferDeviceId = '') {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error('อุปกรณ์/เบราว์เซอร์นี้ไม่รองรับกล้อง');
+    }
+
+    // stop old
+    stopCamera();
+
+    const constraints = {
+      audio: false,
+      video: preferDeviceId
+        ? { deviceId: { exact: preferDeviceId }, width: { ideal: 1280 }, height: { ideal: 720 } }
+        : { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
+    };
+
+    camStream = await navigator.mediaDevices.getUserMedia(constraints);
+    const video = $('camVideo');
+    video.srcObject = camStream;
+    await video.play();
+
+    $('cameraPlaceholder').style.display = 'none';
+    video.style.display = 'block';
+    $('camOverlay').style.display = 'block';
+    $('scanHud').style.display = 'flex';
+
+    // refresh camera list with labels (after permission)
+    await listCameras();
+  }
+
+  function stopCamera() {
+    const video = $('camVideo');
+    if (video) {
+      try { video.pause(); } catch(e){}
+      video.srcObject = null;
+      video.style.display = 'none';
+    }
+    const overlay = $('camOverlay');
+    if (overlay) overlay.style.display = 'none';
+
+    $('scanHud').style.display = 'none';
+    $('cameraPlaceholder').style.display = 'flex';
+
+    if (camStream) {
+      camStream.getTracks().forEach(t => t.stop());
+      camStream = null;
+    }
+  }
+
+  /**************************************************
+   * FACE: PARSE & MATCH
+   **************************************************/
+  function safeParseFaceData(faceDataRaw) {
+    if (!faceDataRaw) return null;
+    try {
+      const parsed = typeof faceDataRaw === 'string' ? JSON.parse(faceDataRaw) : faceDataRaw;
+
+      // case A: array(128)
+      if (Array.isArray(parsed) && parsed.length >= 64) return new Float32Array(parsed);
+
+      // case B: { descriptor: [...] } หรือ {0:..} แปลกๆ
+      if (parsed && typeof parsed === 'object') {
+        if (Array.isArray(parsed.descriptor)) return new Float32Array(parsed.descriptor);
+        if (Array.isArray(parsed.data)) return new Float32Array(parsed.data);
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
+  }
+
+  function euclideanDistance(a, b) {
+    if (!a || !b || a.length !== b.length) return 999;
+    let sum = 0;
+    for (let i = 0; i < a.length; i++) {
+      const d = a[i] - b[i];
+      sum += d * d;
+    }
+    return Math.sqrt(sum);
+  }
+
+  function findBestMatch(queryDescriptor) {
+    let best = { code: '', fullName: '', distance: 999 };
+    for (const emp of employeesCache) {
+      const code = String(emp.code || '').trim();
+      const fullName = String(emp.fullName || emp.fullname || '').trim();
+      const desc = safeParseFaceData(emp.faceData);
+      if (!code || !desc) continue;
+      const dist = euclideanDistance(queryDescriptor, desc);
+      if (dist < best.distance) best = { code, fullName, distance: dist };
+    }
+    return best;
+  }
+
+  function setScanPills(statusText, foundText) {
+    $('scanPillLeft').innerHTML = `<strong>สถานะ:</strong> ${statusText}`;
+    $('scanPillRight').innerHTML = `<strong>พบ:</strong> ${foundText}`;
+  }
+
+  function clearOverlay() {
+    const canvas = $('camOverlay');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function drawBox(box) {
+    const canvas = $('camOverlay');
+    const ctx = canvas.getContext('2d');
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(34,197,94,0.95)';
+    ctx.strokeRect(box.x, box.y, box.width, box.height);
+  }
+
+  async function scanTick() {
+    if (!scanning) return;
+    const video = $('camVideo');
+    const canvas = $('camOverlay');
+    if (!video || video.readyState < 2) return;
+
+    // resize overlay to match video
+    const vw = video.videoWidth || 1280;
+    const vh = video.videoHeight || 720;
+    if (canvas.width !== vw || canvas.height !== vh) {
+      canvas.width = vw;
+      canvas.height = vh;
+    }
+
+    const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+
+    try {
+      const result = await faceapi
+        .detectSingleFace(video, opts)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      clearOverlay();
+
+      if (!result) {
+        stableHit = 0;
+        lockedMatch = null;
+        $('btnScanSubmit').disabled = true;
+        setScanPills('กำลังหาใบหน้า...', '-');
+        return;
+      }
+
+      // draw box
+      const resized = faceapi.resizeResults(result, { width: vw, height: vh });
+      drawBox(resized.detection.box);
+
+      // match
+      const best = findBestMatch(result.descriptor);
+
+      if (!best.code || best.distance > FACE_MATCH_THRESHOLD) {
+        stableHit = 0;
+        lockedMatch = null;
+        $('btnScanSubmit').disabled = true;
+
+        const msg = best.code
+          ? `${best.code} ${best.fullName ? '- ' + best.fullName : ''} (ไกลไป: ${best.distance.toFixed(2)})`
+          : 'ยังไม่มีข้อมูลใบหน้าพนักงาน (faceData)';
+
+        setScanPills('พบใบหน้า แต่ยังจับคู่ไม่ได้', msg);
+        return;
+      }
+
+      // stability (ลดการเด้งผิดคน)
+      const sameAsLast = best.code === lastBest.code;
+      lastBest = best;
+
+      if (sameAsLast) stableHit++;
+      else stableHit = 1;
+
+      if (stableHit >= STABLE_MATCH_COUNT) {
+        lockedMatch = best;
+        $('btnScanSubmit').disabled = false;
+        setScanPills('พร้อมบันทึก ✅', `${best.code} - ${best.fullName} (dist ${best.distance.toFixed(2)})`);
+      } else {
+        $('btnScanSubmit').disabled = true;
+        setScanPills(`กำลังยืนยัน... (${stableHit}/${STABLE_MATCH_COUNT})`, `${best.code} - ${best.fullName} (dist ${best.distance.toFixed(2)})`);
+      }
+
+    } catch (err) {
+      console.error(err);
+      setScanPills('สแกนผิดพลาด (ดู console)', '-');
+    }
+  }
+
+  function startScanLoop() {
+    if (scanning) return;
+    scanning = true;
+    stableHit = 0;
+    lockedMatch = null;
+    lastBest = { code:'', name:'', distance: 999 };
+
+    $('btnStopScan').disabled = false;
+    $('btnStartScan').disabled = true;
+    $('btnScanSubmit').disabled = true;
+
+    setScanPills('เริ่มสแกนแล้ว', '-');
+
+    // loop แบบเบาเครื่อง
+    const loop = async () => {
+      if (!scanning) return;
+      await scanTick();
+      setTimeout(loop, 250); // 4 fps พอแล้วสำหรับใช้งานจริง
+    };
+    loop();
+  }
+
+  function stopScanLoop() {
+    scanning = false;
+    $('btnStopScan').disabled = true;
+    $('btnStartScan').disabled = false;
+    $('btnScanSubmit').disabled = true;
+    lockedMatch = null;
+    stableHit = 0;
+    setScanPills('หยุดแล้ว', '-');
+    clearOverlay();
+  }
+
+  function captureFrameBase64() {
+    const video = $('camVideo');
+    const c = document.createElement('canvas');
+    const w = video.videoWidth || 1280;
+    const h = video.videoHeight || 720;
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+
+    // mirror ให้กลับถูกด้าน (เพราะ video flip)
+    ctx.translate(w, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, w, h);
+
+    return c.toDataURL('image/jpeg', 0.85);
+  }
+
+  /**************************************************
+   * INITIAL DATA
    **************************************************/
   async function init() {
-    // แสดง URL ที่ตั้งไว้
     const apiUrl = getApiUrl();
     $('apiUrlDisplay').textContent = apiUrl ? 'API: ' + apiUrl : 'ยังไม่ได้ตั้งค่า URL';
 
@@ -1122,9 +1232,29 @@
       employeesCache = result.employees || [];
       setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
       loadTodaySummaryFromResult(result.todaySummary);
+      rebuildDatalist();
+
+      // preload models แบบไม่บังคับ
+      ensureModelsLoaded();
+
     } catch (err) {
       console.error(err);
       setConnectionStatus(false, err.message);
+    }
+  }
+
+  function rebuildDatalist() {
+    const dl = $('empDatalist');
+    if (!dl) return;
+    dl.innerHTML = '';
+    for (const e of employeesCache) {
+      const code = String(e.code || '').trim();
+      if (!code) continue;
+      const name = String(e.fullName || e.fullname || '').trim();
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.label = name ? `${code} - ${name}` : code;
+      dl.appendChild(opt);
     }
   }
 
@@ -1133,27 +1263,24 @@
     if (!tbody) return;
 
     const rows = Array.isArray(summary) ? summary : [];
-
     if (!rows.length) {
       tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:12px 8px;" class="text-muted">ยังไม่มีข้อมูลของวันนี้</td></tr>';
       return;
     }
 
-    tbody.innerHTML = rows.map(row => {
-      return `
-        <tr>
-          <td>${row.code || ''}</td>
-          <td>${row.fullName || ''}</td>
-          <td>${row.branch || ''}</td>
-          <td>${row.level || ''}</td>
-          <td>${row.t1 || ''}</td>
-          <td>${row.t2 || ''}</td>
-          <td>${row.t3 || ''}</td>
-          <td>${row.t4 || ''}</td>
-          <td>${statusBadgeHtml(row.status || '')}</td>
-        </tr>
-      `;
-    }).join('');
+    tbody.innerHTML = rows.map(row => `
+      <tr>
+        <td>${row.code || ''}</td>
+        <td>${row.fullName || ''}</td>
+        <td>${row.branch || ''}</td>
+        <td>${row.level || ''}</td>
+        <td>${row.t1 || ''}</td>
+        <td>${row.t2 || ''}</td>
+        <td>${row.t3 || ''}</td>
+        <td>${row.t4 || ''}</td>
+        <td>${statusBadgeHtml(row.status || '')}</td>
+      </tr>
+    `).join('');
   }
 
   async function loadTodaySummary() {
@@ -1166,7 +1293,7 @@
   }
 
   /**************************************************
-   * MANUAL MODAL LOGIC
+   * MANUAL MODAL
    **************************************************/
   function findEmployeeByCode(code) {
     return employeesCache.find(e => String(e.code) === String(code));
@@ -1180,11 +1307,8 @@
       return;
     }
     const emp = findEmployeeByCode(code);
-    if (!emp) {
-      infoEl.textContent = 'ไม่พบพนักงานรหัสนี้ในชีต Employees';
-    } else {
-      infoEl.textContent = `${emp.fullName || ''} | แผนก: ${emp.branch || '-'} | ระดับ: ${emp.level || '-'}`;
-    }
+    if (!emp) infoEl.textContent = 'ไม่พบพนักงานรหัสนี้ในชีต Employees';
+    else infoEl.textContent = `${emp.fullName || ''} | แผนก: ${emp.branch || '-'} | ระดับ: ${emp.level || '-'}`;
   }
 
   async function submitManual() {
@@ -1211,25 +1335,13 @@
     resultEl.value = 'กำลังขอสิทธิ์และดึงพิกัด GPS จากอุปกรณ์...';
 
     try {
-      // 1) ขอพิกัด GPS ก่อน
-      const position = await getCurrentPositionPromise({
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      });
+      const position = await getCurrentPositionPromise({ enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
       const { latitude, longitude } = position.coords;
 
-      // 2) เตรียมไฟล์
       const file = fileEl.files[0];
       const base64 = await fileToBase64(file);
 
-      // 3) Payload ส่งไป Apps Script (บังคับมี lat/lng)
-      const payload = {
-        code,
-        lat: latitude,
-        lng: longitude,
-        manualType: type
-      };
+      const payload = { code, lat: latitude, lng: longitude, manualType: type };
       if (base64) {
         payload.evidenceBase64 = base64;
         payload.evidenceName   = file ? file.name : ('evidence-' + code + '.png');
@@ -1237,7 +1349,6 @@
 
       const res = await api.call('saveManualLog', payload);
 
-      // แสดงผลใน textarea
       const lines = [];
       lines.push(`บันทึกสำเร็จ: เวลา ${res.time} (${res.slot})`);
       if (res.employee) {
@@ -1250,9 +1361,7 @@
 
       if (res.location) {
         const loc = res.location;
-        if (loc.locationText) {
-          lines.push(`สถานที่โดยประมาณ: ${loc.locationText}`);
-        }
+        if (loc.locationText) lines.push(`สถานที่โดยประมาณ: ${loc.locationText}`);
         if (loc.lat && loc.lng) {
           lines.push(`พิกัด: ${loc.lat}, ${loc.lng}`);
           lines.push(`แผนที่: https://www.google.com/maps?q=${loc.lat},${loc.lng}`);
@@ -1260,31 +1369,20 @@
       }
 
       if (res.locationZone) {
-        if (res.locationZone === 'IN') {
-          lines.push(`โซนตำแหน่ง: ในเขตบริษัท`);
-        } else if (res.locationZone === 'OUT') {
-          lines.push(`โซนตำแหน่ง: นอกเขตบริษัท (กรุณาตรวจสอบ)`);
-        }
+        if (res.locationZone === 'IN') lines.push(`โซนตำแหน่ง: ในเขตบริษัท`);
+        else if (res.locationZone === 'OUT') lines.push(`โซนตำแหน่ง: นอกเขตบริษัท (กรุณาตรวจสอบ)`);
       }
 
-      if (res.evidenceUrl) {
-        lines.push(`หลักฐาน: ${res.evidenceUrl}`);
-      }
+      if (res.evidenceUrl) lines.push(`หลักฐาน: ${res.evidenceUrl}`);
       resultEl.value = lines.join('\n');
 
       sucEl.textContent = 'บันทึกเรียบร้อยแล้ว';
       sucEl.style.display = 'block';
 
-      // อัปเดตกล่อง "ผลการบันทึกล่าสุด"
       updateLatestFromManual(res);
-
-      // โหลดภาพรวมวันนี้ใหม่
       loadTodaySummary();
 
-      // ปิดหน้าต่างภายใน 2 วิ เพื่อลดความสับสน
-      setTimeout(() => {
-        hideModal('modalManual');
-      }, 2000);
+      setTimeout(() => hideModal('modalManual'), 1500);
 
     } catch (err) {
       console.error(err);
@@ -1341,7 +1439,7 @@
   }
 
   /**************************************************
-   * CHECK TODAY MODAL LOGIC
+   * CHECK TODAY
    **************************************************/
   async function submitCheckToday() {
     const code = $('checkCode').value.trim();
@@ -1380,15 +1478,11 @@
       lines.push(`Extra2: ${log.tExtra2 || '-'}`);
       lines.push('-----------------------------');
       lines.push(`สถานะวันนี้: ${log.status || '-'}`);
-      if (log.evidenceUrl) {
-        lines.push(`หลักฐาน: ${log.evidenceUrl}`);
-      }
+      if (log.evidenceUrl) lines.push(`หลักฐาน: ${log.evidenceUrl}`);
 
       if (log.locationText || (log.lat && log.lng)) {
         lines.push('-----------------------------');
-        if (log.locationText) {
-          lines.push(`สถานที่โดยประมาณ: ${log.locationText}`);
-        }
+        if (log.locationText) lines.push(`สถานที่โดยประมาณ: ${log.locationText}`);
         if (log.lat && log.lng) {
           lines.push(`พิกัด: ${log.lat}, ${log.lng}`);
           lines.push(`แผนที่: https://www.google.com/maps?q=${log.lat},${log.lng}`);
@@ -1405,7 +1499,7 @@
   }
 
   /**************************************************
-   * URL MODAL LOGIC
+   * URL MODAL
    **************************************************/
   function openUrlModal() {
     $('inputApiUrl').value = getApiUrl();
@@ -1425,9 +1519,7 @@
     }
 
     if (!/^https:\/\/script\.google\.com\/macros\/s\//.test(url)) {
-      if (!confirm('URL ดูเหมือนจะไม่ใช่ Web App ของ Apps Script แน่ใจหรือไม่ว่าจะใช้ URL นี้?')) {
-        return;
-      }
+      if (!confirm('URL ดูเหมือนจะไม่ใช่ Web App ของ Apps Script แน่ใจหรือไม่ว่าจะใช้ URL นี้?')) return;
     }
 
     setApiUrl(url);
@@ -1445,34 +1537,194 @@
   }
 
   /**************************************************
+   * FACE: CLOCK-IN FROM SCAN
+   **************************************************/
+  async function submitFromScan() {
+    if (!lockedMatch || !lockedMatch.code) {
+      alert('ยังไม่พบพนักงานจากการสแกน');
+      return;
+    }
+    const code = lockedMatch.code;
+
+    if (!confirm(`ยืนยันบันทึกเวลาให้: ${code} - ${lockedMatch.fullName} ?`)) return;
+
+    try {
+      // GPS
+      const position = await getCurrentPositionPromise({ enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+      const { latitude, longitude } = position.coords;
+
+      // evidence from camera
+      const evidenceBase64 = captureFrameBase64();
+
+      const payload = {
+        code,
+        lat: latitude,
+        lng: longitude,
+        manualType: 'FACE_SCAN',
+        evidenceBase64,
+        evidenceName: `scan-${code}-${Date.now()}.jpg`
+      };
+
+      const res = await api.call('saveManualLog', payload);
+
+      updateLatestFromManual(res);
+      loadTodaySummary();
+
+      alert(`บันทึกสำเร็จ: ${res.time} (${res.slot})\nสถานะ: ${res.status || '-'}`);
+
+      // reset lock after success
+      lockedMatch = null;
+      stableHit = 0;
+      $('btnScanSubmit').disabled = true;
+      setScanPills('สแกนต่อได้', '-');
+
+    } catch (err) {
+      console.error(err);
+      alert('บันทึกจากการสแกนไม่สำเร็จ: ' + err.message);
+    }
+  }
+
+  /**************************************************
+   * ENROLL FACE (HR)
+   **************************************************/
+  let enrollAuthed = false;
+
+  function openEnrollModal() {
+    $('enrollLoginError').style.display = 'none';
+    $('enrollDoError').style.display = 'none';
+    $('enrollDoSuccess').style.display = 'none';
+
+    $('enrollStepLogin').style.display = enrollAuthed ? 'none' : 'block';
+    $('enrollStepDo').style.display = enrollAuthed ? 'block' : 'none';
+
+    $('enrollInfo').textContent = 'ถ้ากล้องยังไม่เปิด ให้กด “เปิดกล้อง”';
+    showModal('modalEnroll');
+  }
+
+  async function enrollLogin() {
+    const u = $('enrollUser').value.trim();
+    const p = $('enrollPass').value.trim();
+    const err = $('enrollLoginError');
+
+    err.style.display = 'none';
+
+    try {
+      const res = await api.call('loginAdmin', { username: u, password: p });
+      if (!res || !res.success) throw new Error('เข้าสู่ระบบไม่สำเร็จ');
+      enrollAuthed = true;
+
+      $('enrollStepLogin').style.display = 'none';
+      $('enrollStepDo').style.display = 'block';
+
+    } catch (e) {
+      err.textContent = e.message || String(e);
+      err.style.display = 'block';
+    }
+  }
+
+  async function enrollStartCamera() {
+    const info = $('enrollInfo');
+    try {
+      await ensureModelsLoaded();
+
+      const deviceId = $('cameraSelect').value;
+      await startCamera(deviceId || '');
+      info.textContent = 'กล้องพร้อมแล้ว ✅ (จัดหน้าตรง ๆ แล้วกด “ถ่ายและบันทึกใบหน้า”)';
+    } catch (e) {
+      console.error(e);
+      info.textContent = 'เปิดกล้องไม่สำเร็จ: ' + e.message;
+    }
+  }
+
+  async function enrollCaptureAndUpload() {
+    const code = $('enrollCode').value.trim();
+    const err = $('enrollDoError');
+    const suc = $('enrollDoSuccess');
+    err.style.display = 'none';
+    suc.style.display = 'none';
+
+    if (!code) {
+      err.textContent = 'กรุณากรอกรหัสพนักงาน';
+      err.style.display = 'block';
+      return;
+    }
+
+    if (!camStream) {
+      err.textContent = 'ยังไม่ได้เปิดกล้อง กรุณากด “เปิดกล้อง”';
+      err.style.display = 'block';
+      return;
+    }
+
+    const ok = await ensureModelsLoaded();
+    if (!ok) {
+      err.textContent = 'โมเดลไม่พร้อม ตรวจสอบโฟลเดอร์ models/';
+      err.style.display = 'block';
+      return;
+    }
+
+    try {
+      const video = $('camVideo');
+      const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+
+      const result = await faceapi
+        .detectSingleFace(video, opts)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      if (!result) {
+        throw new Error('ไม่พบใบหน้าในภาพ กรุณาขยับเข้าใกล้/ปรับแสง แล้วลองใหม่');
+      }
+
+      const faceData = JSON.stringify(Array.from(result.descriptor));
+      const photoBase64 = captureFrameBase64();
+
+      const payload = {
+        code,
+        faceData,
+        photoBase64,
+        fileName: `face-${code}-${Date.now()}.jpg`
+      };
+
+      const res = await api.call('uploadEmployeeFace', payload);
+
+      suc.textContent = `บันทึกใบหน้าสำเร็จ ✅ (${res.code})`;
+      suc.style.display = 'block';
+
+      // reload employees to update cache
+      const fresh = await api.call('getEmployees');
+      employeesCache = fresh || [];
+      rebuildDatalist();
+
+    } catch (e) {
+      console.error(e);
+      err.textContent = e.message || String(e);
+      err.style.display = 'block';
+    }
+  }
+
+  /**************************************************
    * EVENT BINDING
    **************************************************/
   document.addEventListener('DOMContentLoaded', () => {
-    // modal close button
+    // modal close
     document.querySelectorAll('[data-close-modal]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.getAttribute('data-close-modal');
-        hideModal(id);
-      });
+      btn.addEventListener('click', () => hideModal(btn.getAttribute('data-close-modal')));
     });
-
-    // backdrop click (คลิกนอกกล่องเพื่อปิด)
     document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
       backdrop.addEventListener('click', e => {
-        if (e.target === backdrop) {
-          backdrop.classList.remove('show');
-        }
+        if (e.target === backdrop) backdrop.classList.remove('show');
       });
     });
 
-    // buttons
+    // URL
     $('btnSetUrl').addEventListener('click', openUrlModal);
     $('btnSaveUrl').addEventListener('click', saveUrl);
     $('btnResetUrl').addEventListener('click', resetUrl);
-    $('btnGoAdmin').addEventListener('click', () => {
-      window.location.href = 'admin.html';
-    });
 
+    // Admin
+    $('btnGoAdmin').addEventListener('click', () => { window.location.href = 'admin.html'; });
+
+    // Manual
     $('btnOpenManualModal').addEventListener('click', () => {
       $('manualCode').value = '';
       $('manualFile').value = '';
@@ -1483,10 +1735,10 @@
       $('manualEmpInfo').textContent = 'กรอกรหัสแล้วระบบจะแสดงชื่อ-สกุล / แผนก / ระดับ';
       showModal('modalManual');
     });
-
     $('manualCode').addEventListener('input', updateManualEmpInfo);
     $('btnManualSubmit').addEventListener('click', submitManual);
 
+    // Check today
     $('btnOpenCheckToday').addEventListener('click', () => {
       $('checkCode').value = '';
       $('checkResult').value = '';
@@ -1497,11 +1749,51 @@
 
     $('btnRefreshToday').addEventListener('click', loadTodaySummary);
 
-    // กล้องยังไม่ทำอะไร (disabled ไว้ก่อน)
-    $('btnStartScan').addEventListener('click', () => {
-      alert('ฟีเจอร์สแกนใบหน้ายังไม่เปิดใช้งานในเวอร์ชันนี้');
+    // Enroll
+    $('btnEnrollFace').addEventListener('click', openEnrollModal);
+    $('btnEnrollLogin').addEventListener('click', enrollLogin);
+    $('btnEnrollStartCam').addEventListener('click', enrollStartCamera);
+    $('btnEnrollCapture').addEventListener('click', enrollCaptureAndUpload);
+
+    // Camera select change (ถ้าเปิดอยู่ ให้สลับ)
+    $('cameraSelect').addEventListener('change', async () => {
+      if (!camStream) return;
+      try {
+        const id = $('cameraSelect').value;
+        await startCamera(id || '');
+      } catch (e) {
+        console.error(e);
+      }
     });
 
+    // Start scan
+    $('btnStartScan').addEventListener('click', async () => {
+      try {
+        const apiUrl = getApiUrl();
+        if (!apiUrl) return alert('กรุณาตั้งค่า URL API ก่อน');
+
+        const ok = await ensureModelsLoaded();
+        if (!ok) return alert('โหลดโมเดลไม่สำเร็จ ตรวจสอบโฟลเดอร์ models/ และ https');
+
+        const deviceId = $('cameraSelect').value;
+        await startCamera(deviceId || '');
+        startScanLoop();
+      } catch (e) {
+        console.error(e);
+        alert('เริ่มสแกนไม่ได้: ' + (e.message || e));
+      }
+    });
+
+    // Stop scan
+    $('btnStopScan').addEventListener('click', () => {
+      stopScanLoop();
+      stopCamera();
+    });
+
+    // Submit from scan
+    $('btnScanSubmit').addEventListener('click', submitFromScan);
+
+    // Init
     init();
   });
 </script>
