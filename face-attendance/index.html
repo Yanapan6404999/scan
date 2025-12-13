@@ -272,6 +272,7 @@
       inset: 0;
       pointer-events: none;
       display: none;
+      transform: scaleX(-1); /* ✅ ให้กรอบ/overlay กลับด้านเหมือนวิดีโอ */
     }
 
     .scan-hud {
@@ -774,7 +775,7 @@
         <button class="btn btn-primary" id="btnEnrollLogin">เข้าสู่ระบบ</button>
       </div>
       <div class="mt-10 mini-note">
-        * เพื่อความง่าย UI จะล็อกขั้นตอน แต่ฝั่ง Apps Script ของคุณยังไม่ได้บังคับ token กับ action อื่น ๆ (ถ้าต้องการเพิ่มความปลอดภัยเดี๋ยวผมช่วยต่อได้)
+        * เพื่อความง่าย UI จะล็อกขั้นตอน แต่ฝั่ง Apps Script ของคุณยังไม่ได้บังคับ token กับ action อื่น ๆ
       </div>
     </div>
 
@@ -802,7 +803,7 @@
   </div>
 </div>
 
-<!-- face-api.js (ใช้ models/ ของคุณ) -->
+<!-- face-api.js -->
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
 <script>
@@ -810,15 +811,17 @@
    * CONFIG
    **************************************************/
   const STORAGE_KEY = 'attendance_api_url_v2';
-
-  // โฟลเดอร์ models อยู่ข้างๆ index.html
   const MODEL_URL = './models';
 
-  // ค่าระยะจับคู่ใบหน้า (ยิ่งต่ำยิ่งเข้ม)
   const FACE_MATCH_THRESHOLD = 0.55;
-
-  // ต้องเจอคนเดิมซ้ำกี่รอบก่อน “ล็อกชื่อ”
   const STABLE_MATCH_COUNT = 3;
+
+  // ลดขนาดรูปจากกล้องก่อนส่ง (กัน payload ใหญ่เกิน)
+  const SNAP_MAX_W = 640;
+  const SNAP_JPEG_QUALITY = 0.72;
+
+  // timeout กัน fetch ค้าง
+  const API_TIMEOUT_MS = 15000;
 
   /**************************************************
    * STORAGE
@@ -830,29 +833,40 @@
   }
 
   /**************************************************
-   * API HELPER
+   * API HELPER (x-www-form-urlencoded => เลี่ยง CORS preflight)
    **************************************************/
   const api = {
     async call(action, params = {}) {
       const apiUrl = getApiUrl();
       if (!apiUrl) throw new Error('ยังไม่ได้ตั้งค่า URL API');
 
-      const body = new URLSearchParams({ action, ...params }).toString();
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-        body
-      });
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
-      const text = await res.text();
-      let data;
-      try { data = JSON.parse(text); }
-      catch (e) {
-        console.error('API response is not JSON:', text);
-        throw new Error('API ส่งผลลัพธ์ไม่ใช่ JSON (ตรวจสอบ URL ว่าถูกตัว exec หรือไม่)');
+      try {
+        const body = new URLSearchParams({ action, ...params }).toString();
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body,
+          signal: controller.signal
+        });
+
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); }
+        catch (e) {
+          console.error('API response is not JSON:', text);
+          throw new Error('API ส่งผลลัพธ์ไม่ใช่ JSON (ตรวจสอบ URL ว่าถูกตัว exec หรือไม่)');
+        }
+        if (!data.ok) throw new Error(data.error || 'ไม่ทราบสาเหตุจากเซิร์ฟเวอร์');
+        return data.result;
+      } catch (e) {
+        if (e.name === 'AbortError') throw new Error('เรียก API นานเกินไป (timeout) ลองใหม่อีกครั้ง');
+        throw e;
+      } finally {
+        clearTimeout(t);
       }
-      if (!data.ok) throw new Error(data.error || 'ไม่ทราบสาเหตุจากเซิร์ฟเวอร์');
-      return data.result;
     }
   };
 
@@ -866,9 +880,11 @@
   let camStream = null;
   let scanning = false;
 
-  let lastBest = { code: '', name: '', distance: 999 };
+  let lastBest = { code: '', fullName: '', distance: 999 };
   let stableHit = 0;
-  let lockedMatch = null; // {code, fullName, distance}
+  let lockedMatch = null;
+
+  let enrollAuthed = false;
 
   /**************************************************
    * DOM UTILS
@@ -890,7 +906,7 @@
     if (!status) return '<span class="badge-status badge-absent">ขาด</span>';
     let cls = 'badge-other';
     if (status === 'ปกติ') cls = 'badge-normal';
-    else if (status.includes('สาย')) cls = 'badge-late';
+    else if (String(status).includes('สาย')) cls = 'badge-late';
     else if (status === 'ขาด') cls = 'badge-absent';
     return '<span class="badge-status ' + cls + '">' + status + '</span>';
   }
@@ -985,7 +1001,6 @@
       throw new Error('อุปกรณ์/เบราว์เซอร์นี้ไม่รองรับกล้อง');
     }
 
-    // stop old
     stopCamera();
 
     const constraints = {
@@ -1005,7 +1020,6 @@
     $('camOverlay').style.display = 'block';
     $('scanHud').style.display = 'flex';
 
-    // refresh camera list with labels (after permission)
     await listCameras();
   }
 
@@ -1019,8 +1033,11 @@
     const overlay = $('camOverlay');
     if (overlay) overlay.style.display = 'none';
 
-    $('scanHud').style.display = 'none';
-    $('cameraPlaceholder').style.display = 'flex';
+    const hud = $('scanHud');
+    if (hud) hud.style.display = 'none';
+
+    const ph = $('cameraPlaceholder');
+    if (ph) ph.style.display = 'flex';
 
     if (camStream) {
       camStream.getTracks().forEach(t => t.stop());
@@ -1036,17 +1053,12 @@
     try {
       const parsed = typeof faceDataRaw === 'string' ? JSON.parse(faceDataRaw) : faceDataRaw;
 
-      // case A: array(128)
       if (Array.isArray(parsed) && parsed.length >= 64) return new Float32Array(parsed);
-
-      // case B: { descriptor: [...] } หรือ {0:..} แปลกๆ
       if (parsed && typeof parsed === 'object') {
         if (Array.isArray(parsed.descriptor)) return new Float32Array(parsed.descriptor);
         if (Array.isArray(parsed.data)) return new Float32Array(parsed.data);
       }
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
     return null;
   }
 
@@ -1098,7 +1110,6 @@
     const canvas = $('camOverlay');
     if (!video || video.readyState < 2) return;
 
-    // resize overlay to match video
     const vw = video.videoWidth || 1280;
     const vh = video.videoHeight || 720;
     if (canvas.width !== vw || canvas.height !== vh) {
@@ -1124,11 +1135,9 @@
         return;
       }
 
-      // draw box
       const resized = faceapi.resizeResults(result, { width: vw, height: vh });
       drawBox(resized.detection.box);
 
-      // match
       const best = findBestMatch(result.descriptor);
 
       if (!best.code || best.distance > FACE_MATCH_THRESHOLD) {
@@ -1144,7 +1153,6 @@
         return;
       }
 
-      // stability (ลดการเด้งผิดคน)
       const sameAsLast = best.code === lastBest.code;
       lastBest = best;
 
@@ -1171,7 +1179,7 @@
     scanning = true;
     stableHit = 0;
     lockedMatch = null;
-    lastBest = { code:'', name:'', distance: 999 };
+    lastBest = { code:'', fullName:'', distance: 999 };
 
     $('btnStopScan').disabled = false;
     $('btnStartScan').disabled = true;
@@ -1179,11 +1187,10 @@
 
     setScanPills('เริ่มสแกนแล้ว', '-');
 
-    // loop แบบเบาเครื่อง
     const loop = async () => {
       if (!scanning) return;
       await scanTick();
-      setTimeout(loop, 250); // 4 fps พอแล้วสำหรับใช้งานจริง
+      setTimeout(loop, 250);
     };
     loop();
   }
@@ -1199,20 +1206,26 @@
     clearOverlay();
   }
 
-  function captureFrameBase64() {
+  function captureFrameBase64({ maxW = SNAP_MAX_W, quality = SNAP_JPEG_QUALITY } = {}) {
     const video = $('camVideo');
+    const srcW = video.videoWidth || 1280;
+    const srcH = video.videoHeight || 720;
+
+    const scale = Math.min(1, maxW / srcW);
+    const w = Math.round(srcW * scale);
+    const h = Math.round(srcH * scale);
+
     const c = document.createElement('canvas');
-    const w = video.videoWidth || 1280;
-    const h = video.videoHeight || 720;
-    c.width = w; c.height = h;
+    c.width = w;
+    c.height = h;
     const ctx = c.getContext('2d');
 
-    // mirror ให้กลับถูกด้าน (เพราะ video flip)
+    // mirror กลับให้เป็นด้านจริง (เพราะ video flip)
     ctx.translate(w, 0);
     ctx.scale(-1, 1);
     ctx.drawImage(video, 0, 0, w, h);
 
-    return c.toDataURL('image/jpeg', 0.85);
+    return c.toDataURL('image/jpeg', quality);
   }
 
   /**************************************************
@@ -1234,9 +1247,7 @@
       loadTodaySummaryFromResult(result.todaySummary);
       rebuildDatalist();
 
-      // preload models แบบไม่บังคับ
-      ensureModelsLoaded();
-
+      ensureModelsLoaded(); // preload แบบไม่บังคับ
     } catch (err) {
       console.error(err);
       setConnectionStatus(false, err.message);
@@ -1533,6 +1544,10 @@
       setApiUrl('');
       $('apiUrlDisplay').textContent = 'ยังไม่ได้ตั้งค่า URL';
       setConnectionStatus(false, 'ยังไม่ได้ตั้งค่า URL');
+
+      // กันค้างกล้อง/สแกน
+      stopScanLoop();
+      stopCamera();
     }
   }
 
@@ -1549,12 +1564,10 @@
     if (!confirm(`ยืนยันบันทึกเวลาให้: ${code} - ${lockedMatch.fullName} ?`)) return;
 
     try {
-      // GPS
       const position = await getCurrentPositionPromise({ enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
       const { latitude, longitude } = position.coords;
 
-      // evidence from camera
-      const evidenceBase64 = captureFrameBase64();
+      const evidenceBase64 = captureFrameBase64(); // ✅ ย่อรูปแล้ว
 
       const payload = {
         code,
@@ -1572,7 +1585,6 @@
 
       alert(`บันทึกสำเร็จ: ${res.time} (${res.slot})\nสถานะ: ${res.status || '-'}`);
 
-      // reset lock after success
       lockedMatch = null;
       stableHit = 0;
       $('btnScanSubmit').disabled = true;
@@ -1587,8 +1599,6 @@
   /**************************************************
    * ENROLL FACE (HR)
    **************************************************/
-  let enrollAuthed = false;
-
   function openEnrollModal() {
     $('enrollLoginError').style.display = 'none';
     $('enrollDoError').style.display = 'none';
@@ -1625,7 +1635,8 @@
   async function enrollStartCamera() {
     const info = $('enrollInfo');
     try {
-      await ensureModelsLoaded();
+      const ok = await ensureModelsLoaded();
+      if (!ok) throw new Error('โมเดลไม่พร้อม');
 
       const deviceId = $('cameraSelect').value;
       await startCamera(deviceId || '');
@@ -1676,7 +1687,7 @@
       }
 
       const faceData = JSON.stringify(Array.from(result.descriptor));
-      const photoBase64 = captureFrameBase64();
+      const photoBase64 = captureFrameBase64(); // ✅ ย่อรูปแล้ว
 
       const payload = {
         code,
@@ -1690,7 +1701,6 @@
       suc.textContent = `บันทึกใบหน้าสำเร็จ ✅ (${res.code})`;
       suc.style.display = 'block';
 
-      // reload employees to update cache
       const fresh = await api.call('getEmployees');
       employeesCache = fresh || [];
       rebuildDatalist();
@@ -1703,16 +1713,37 @@
   }
 
   /**************************************************
-   * EVENT BINDING
+   * EVENT BINDING + CLEANUP
    **************************************************/
-  document.addEventListener('DOMContentLoaded', () => {
+  function closeAllCameraIfNeeded(modalId) {
+    // ถ้าปิด modalEnroll หรือปิดหน้าทั้งหน้า ให้ดับกล้อง/สแกน กันค้าง
+    if (modalId === 'modalEnroll') {
+      stopScanLoop();
+      stopCamera();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    // preload camera list (labels อาจว่างจนกว่าจะอนุญาต)
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+      await listCameras();
+    }
+
     // modal close
     document.querySelectorAll('[data-close-modal]').forEach(btn => {
-      btn.addEventListener('click', () => hideModal(btn.getAttribute('data-close-modal')));
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-close-modal');
+        hideModal(id);
+        closeAllCameraIfNeeded(id);
+      });
     });
+
     document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
       backdrop.addEventListener('click', e => {
-        if (e.target === backdrop) backdrop.classList.remove('show');
+        if (e.target === backdrop) {
+          backdrop.classList.remove('show');
+          closeAllCameraIfNeeded(backdrop.id);
+        }
       });
     });
 
@@ -1795,6 +1826,12 @@
 
     // Init
     init();
+  });
+
+  // ปิดหน้า/รีเฟรช: ดับกล้องให้ชัวร์
+  window.addEventListener('beforeunload', () => {
+    try { stopScanLoop(); } catch(e){}
+    try { stopCamera(); } catch(e){}
   });
 </script>
 </body>
