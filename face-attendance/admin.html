@@ -34,6 +34,8 @@
       padding: 0;
       width: 100%;
       max-width: 100%;
+      /* ✅ กันหน้า “ล้นจอ” แนวนอน */
+      overflow-x: hidden;
     }
 
     body {
@@ -111,6 +113,8 @@
       display: flex;
       min-height: 100vh;
       width: 100%;
+      max-width: 100%;
+      overflow-x: hidden; /* ✅ กันล้นเพิ่มอีกชั้น */
     }
 
     /* SIDEBAR */
@@ -192,7 +196,14 @@
     .sidebar-footer button { margin-top: 8px; width: 100%; }
 
     /* CONTENT AREA */
-    .content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      max-width: 100%;
+      overflow-x: hidden; /* ✅ กันล้นจากลูก */
+    }
 
     header.topbar {
       padding: 10px 18px;
@@ -206,6 +217,8 @@
       top: 0;
       z-index: 20;
       backdrop-filter: blur(14px);
+      max-width: 100%;
+      overflow-x: hidden;
     }
 
     .topbar-title { font-size: 18px; font-weight: 600; max-width: 100%; }
@@ -233,11 +246,13 @@
       gap: 10px;
       flex-wrap: wrap;
       justify-content: flex-end;
+      min-width: 0;
+      max-width: 100%;
     }
 
-    main.main { padding: 18px 18px 22px; }
+    main.main { padding: 18px 18px 22px; max-width: 100%; overflow-x: hidden; }
 
-    .main-inner { max-width: 1260px; margin: 0 auto; width: 100%; }
+    .main-inner { max-width: 1260px; margin: 0 auto; width: 100%; max-width: 100%; }
 
     /* MOBILE NAV ---------------------------------------------------- */
     .mobile-nav {
@@ -245,13 +260,16 @@
       background: #020617;
       padding: 7px 10px;
       border-bottom: 1px solid #1f2937;
+      max-width: 100%;
+      overflow-x: hidden;
     }
 
     .mobile-nav-inner {
       display: flex;
       gap: 6px;
-      overflow-x: auto;
+      overflow-x: auto; /* ✅ เลื่อนเฉพาะแถบเมนู */
       -webkit-overflow-scrolling: touch;
+      max-width: 100%;
     }
 
     .mobile-nav-item {
@@ -286,6 +304,7 @@
       background: rgba(15, 118, 110, 0.15);
       color: #a5f3fc;
       border: 1px solid rgba(34,197,94,0.8);
+      max-width: 100%;
     }
 
     .badge-connection.offline {
@@ -320,6 +339,7 @@
       backdrop-filter: blur(10px);
       width: 100%;
       max-width: 100%;
+      overflow: hidden; /* ✅ กันลูกล้นการ์ด */
     }
 
     .card-header {
@@ -329,6 +349,7 @@
       margin-bottom: 10px;
       gap: 10px;
       flex-wrap: wrap;
+      max-width: 100%;
     }
 
     .card-title {
@@ -364,6 +385,7 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
+      min-width: 0;
     }
 
     .stat-label { font-size: 12px; color: var(--text-soft); }
@@ -380,7 +402,7 @@
 
     .badge-pill { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: #e5e7eb; color: #374151; }
 
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; max-width: 100%; }
     thead { background: #f3f4f6; }
     th, td { padding: 7px 8px; border-bottom: 1px solid #e5e7eb; text-align: left; white-space: nowrap; }
     th { font-weight: 500; color: #374151; font-size: 12px; }
@@ -390,13 +412,18 @@
     .text-center { text-align: center; }
 
     .scroll-x {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
+      width: 100%;
       max-width: 100%;
+      overflow-x: auto; /* ✅ ให้เลื่อนในกล่อง */
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
 
-    /* บังคับให้ตารางกว้างกว่าจอ เพื่อให้เลื่อนซ้าย–ขวาได้แน่นอนบนมือถือ */
-    .scroll-x > table { min-width: 720px; }
+    /* ✅ เปลี่ยนจาก "บังคับทุกตาราง" → บังคับเฉพาะตารางที่ต้องกว้างจริงๆ */
+    .table-wide {
+      width: max-content;
+      min-width: 720px;
+    }
 
     .scroll-x::-webkit-scrollbar { height: 6px; }
     .scroll-x::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
@@ -406,6 +433,7 @@
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
+      max-width: 100%;
     }
 
     .filters .field {
@@ -414,6 +442,7 @@
       gap: 2px;
       font-size: 11px;
       color: var(--text-soft);
+      min-width: 0;
     }
 
     select,
@@ -426,6 +455,7 @@
       outline: none;
       min-width: 120px;
       background: white;
+      max-width: 100%;
     }
 
     input[type="text"]:focus,
@@ -437,6 +467,7 @@
 
     .input-block {
       width: 100%;
+      max-width: 100%;
       border-radius: 10px;
       border: 1px solid var(--border);
       padding: 6px 9px;
@@ -464,7 +495,7 @@
     .error-text { font-size: 12px; color: var(--danger); margin-top: 4px; }
     .success-text { font-size: 12px; color: #16a34a; margin-top: 4px; }
 
-    .flex { display: flex; gap: 8px; align-items: center; }
+    .flex { display: flex; gap: 8px; align-items: center; min-width: 0; }
 
     /* ✅ ใช้แก้ input+ปุ่ม ในหน้า ตั้งค่า ให้เรียงลงบนมือถือ */
     .flex-stack-mobile {}
@@ -472,18 +503,17 @@
     @media (max-width: 640px) {
       .flex-stack-mobile { flex-direction: column; align-items: stretch; }
       .flex-stack-mobile .btn { width: 100%; justify-content: center; }
-      .scroll-x > table { min-width: 640px; }
     }
 
-    .table-actions { display: flex; gap: 4px; }
+    .table-actions { display: flex; gap: 6px; flex-wrap: wrap; }
     .pill-small { font-size: 10px; padding: 2px 6px; border-radius: 999px; background: #e5e7eb; color: #4b5563; }
 
-    .header-search-box { min-width: 220px; max-width: 280px; width: 100%; }
+    .header-search-box { min-width: 0; max-width: 280px; width: 100%; }
 
     @media (max-width: 640px) {
       .header-search-box { min-width: 100%; max-width: 100%; }
       #empSearch { width: 100%; }
-      .scroll-x > table { min-width: 640px; }
+      .table-actions .btn { flex: 1; } /* ✅ ปุ่มแก้ไข/ลบบนมือถือไม่บีบจนล้น */
     }
 
     /* ✅ (ใหม่) Mobile Segmented Control สำหรับหน้า "สมาชิก" */
@@ -497,6 +527,7 @@
       border: 1px solid rgba(226,232,240,0.9);
       box-shadow: 0 12px 28px rgba(15,23,42,0.06);
       backdrop-filter: blur(10px);
+      max-width: 100%;
     }
     .seg-btn {
       flex: 1;
@@ -512,6 +543,7 @@
       justify-content: center;
       gap: 6px;
       transition: transform .08s ease, box-shadow .08s ease, background .1s ease;
+      max-width: 100%;
     }
     .seg-btn.active {
       background: var(--primary);
@@ -524,6 +556,8 @@
     .emp-table-scroll {
       max-height: 420px;
       overflow-y: auto;
+      overflow-x: hidden; /* ✅ สำคัญ: ตารางรายชื่อไม่ทำให้หน้ากว้าง */
+      max-width: 100%;
     }
 
     /* RESPONSIVE ---------------------------------------------------- */
@@ -573,10 +607,11 @@
     }
 
     @media (max-width: 640px) {
-      #urlCard { left: 12px; right: 12px; bottom: 12px; }
+      #urlCard { left: 12px; right: 12px; bottom: 12px; width: auto; }
     }
   </style>
 </head>
+
 <body>
 <div class="page">
 
@@ -654,6 +689,7 @@
 
     <main class="main">
       <div class="main-inner">
+
         <!-- DASHBOARD ---------------------------------------------->
         <section class="section active" id="section-dashboard">
           <div class="card">
@@ -692,7 +728,8 @@
             <div class="mt-12">
               <div class="card-subtitle">ตัวอย่างข้อมูลวันนี้</div>
               <div class="scroll-x mt-8">
-                <table>
+                <!-- ✅ ใส่ class table-wide เฉพาะตารางกว้าง -->
+                <table class="table-wide">
                   <thead>
                   <tr>
                     <th>รหัส</th>
@@ -722,14 +759,12 @@
         <!-- EMPLOYEES ---------------------------------------------->
         <section class="section" id="section-employees">
 
-          <!-- ✅ (ใหม่) ปุ่มสลับแท็บบนมือถือ -->
           <div class="mobile-segment" id="empSegment">
             <button class="seg-btn active" id="btnEmpTabForm" type="button">👤 ฟอร์ม</button>
             <button class="seg-btn" id="btnEmpTabList" type="button">📋 รายชื่อ</button>
           </div>
 
           <div class="grid-2">
-            <!-- CARD 1: FORM --------------------------------------->
             <div class="card" id="empFormCard">
               <div class="card-header">
                 <div>
@@ -766,7 +801,6 @@
                   <input id="empEmail" class="input-block" placeholder="optional" />
                 </div>
 
-                <!-- ✅ รูปพนักงาน -->
                 <div class="mt-8">
                   <div class="helper">รูปพนักงาน (ใช้ช่วยระบบตรวจจับใบหน้า / ไม่บังคับ)</div>
                   <input type="file" id="empPhoto" accept="image/*" class="input-block" />
@@ -782,7 +816,6 @@
               </div>
             </div>
 
-            <!-- CARD 2: TABLE -------------------------------------->
             <div class="card" id="empListCard">
               <div class="card-header">
                 <div>
@@ -790,7 +823,7 @@
                     <span class="icon">📋</span> รายชื่อพนักงาน
                   </div>
                   <div class="card-subtitle">
-                    เลื่อนตารางเพื่อดูข้อมูลทั้งหมดได้ ทั้งบนคอมและมือถือ
+                    (แก้แล้ว) ตารางนี้จะไม่ทำให้หน้าล้นจอบนมือถือ ✅
                   </div>
                 </div>
                 <div class="header-search-box">
@@ -798,7 +831,8 @@
                 </div>
               </div>
 
-              <div class="scroll-x emp-table-scroll">
+              <!-- ✅ ไม่ครอบ scroll-x เพื่อกันตารางดันหน้ากว้าง -->
+              <div class="emp-table-scroll">
                 <table>
                   <thead>
                   <tr>
@@ -856,7 +890,7 @@
             </div>
 
             <div class="scroll-x mt-10" style="max-height:480px; overflow-y:auto;">
-              <table>
+              <table class="table-wide">
                 <thead>
                 <tr>
                   <th>วันที่</th>
@@ -915,7 +949,7 @@
             </div>
 
             <div class="scroll-x mt-10" style="max-height:480px; overflow-y:auto;">
-              <table>
+              <table class="table-wide">
                 <thead>
                 <tr>
                   <th>รหัส</th>
@@ -936,9 +970,8 @@
           </div>
         </section>
 
-        <!-- SETTINGS (แยกเป็น 2 การ์ด) ---------------------------->
+        <!-- SETTINGS ---------------------------------------------->
         <section class="section" id="section-settings">
-          <!-- การ์ด แผนก -->
           <div class="card">
             <div class="card-header">
               <div>
@@ -969,7 +1002,6 @@
             </div>
           </div>
 
-          <!-- การ์ด ระดับ / ตำแหน่ง -->
           <div class="card">
             <div class="card-header">
               <div>
@@ -1021,6 +1053,7 @@
             <div id="urlError" class="error-text" style="display:none;"></div>
           </div>
         </div>
+
       </div>
     </main>
   </div>
@@ -1073,7 +1106,6 @@
     return document.getElementById(id);
   }
 
-  // ✅ ฟังก์ชันแปลงไฟล์รูปเป็น Base64
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -1160,7 +1192,6 @@
     }).join('');
   }
 
-  // ✅ (ใหม่) เช็คว่าเป็น "เวลาที่ถือว่าเป็นการลงเวลา" จริง ๆ
   function isRealTime(v) {
     if (v == null) return false;
     const s = String(v).trim();
@@ -1169,7 +1200,6 @@
     return true;
   }
 
-  // ✅ (ใหม่) มีการบันทึกวันนี้หรือไม่ (มีอย่างน้อย 1 ช่อง t1..t4)
   function hasAnyLogRow(r) {
     return isRealTime(r.t1) || isRealTime(r.t2) || isRealTime(r.t3) || isRealTime(r.t4);
   }
@@ -1178,8 +1208,6 @@
     $('statTotalEmployees').textContent = employees.length.toString();
 
     const todayRows = todaySummary || [];
-
-    // ✅ (แก้บัค) นับเฉพาะคนที่มีการลงเวลาอย่างน้อย 1 ช่องจริง ๆ
     const loggedRows = todayRows.filter(hasAnyLogRow);
     $('statTodayCount').textContent = loggedRows.length.toString();
 
@@ -1310,7 +1338,6 @@
     $('empFormError').style.display = 'none';
     $('empFormSuccess').style.display = 'none';
 
-    // ✅ บนมือถือ: สลับไปแท็บฟอร์มอัตโนมัติ
     setEmpTab('form');
   };
 
@@ -1370,8 +1397,6 @@
       resetEmpForm(true);
       sucEl.textContent = 'บันทึกข้อมูลสำเร็จ';
       sucEl.style.display = 'block';
-
-      // ✅ บนมือถือ: หลังบันทึกให้เด้งไป "รายชื่อ" เพื่อเช็คผลทันที
       setEmpTab('list');
     } catch (err) {
       errEl.textContent = 'บันทึกไม่สำเร็จ: ' + err.message;
@@ -1697,7 +1722,6 @@
     }
   }
 
-  // ✅ (ใหม่) โหมด “แอป” หน้า employees: สลับ ฟอร์ม/รายชื่อ บนมือถือ
   function isMobileEmployeesMode() {
     return window.matchMedia('(max-width: 800px)').matches;
   }
@@ -1730,14 +1754,8 @@
   }
 
   function applyEmpMobileLayout() {
-    // แสดง/ซ่อนการ์ดตามแท็บ เมื่อเป็นมือถือ
-    if (isMobileEmployeesMode()) {
-      // default: ให้เห็น "ฟอร์ม" ก่อน
-      setEmpTab('form');
-    } else {
-      // desktop ให้เห็น 2 การ์ดพร้อมกัน
-      setEmpTab('form');
-    }
+    if (isMobileEmployeesMode()) setEmpTab('form');
+    else setEmpTab('form');
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -1770,7 +1788,6 @@
     $('btnSaveUrl').addEventListener('click', saveUrl);
     $('btnCancelUrl').addEventListener('click', closeUrlCard);
 
-    // ✅ แตะ API URL เพื่อ copy
     $('apiUrlDisplay').addEventListener('click', async () => {
       const full = $('apiUrlDisplay').dataset.full || '';
       if (!full) return;
@@ -1778,7 +1795,6 @@
         await navigator.clipboard.writeText(full);
         alert('คัดลอก URL แล้ว');
       } catch (e) {
-        // fallback
         prompt('คัดลอก URL นี้:', full);
       }
     });
@@ -1806,7 +1822,6 @@
     $('btnReloadLogs').addEventListener('click', reloadLogs);
     $('logSearch').addEventListener('keydown', e => { if (e.key === 'Enter') reloadLogs(); });
 
-    // ✅ เปลี่ยน filter แล้วโหลดใหม่ทันที (มือถือง่ายขึ้น)
     $('logBranchFilter').addEventListener('change', reloadLogs);
     $('logMonthFilter').addEventListener('change', reloadLogs);
     $('logYearFilter').addEventListener('change', reloadLogs);
@@ -1819,12 +1834,10 @@
     $('btnAddBranch').addEventListener('click', addBranch);
     $('btnAddLevel').addEventListener('click', addLevel);
 
-    // ✅ (ใหม่) ปุ่มสลับแท็บหน้า employees
     $('btnEmpTabForm').addEventListener('click', () => setEmpTab('form'));
     $('btnEmpTabList').addEventListener('click', () => setEmpTab('list'));
 
     window.addEventListener('resize', () => {
-      // ปรับ layout เมื่อสลับแนวจอ/เปลี่ยนขนาด
       if (document.getElementById('section-employees').classList.contains('active')) {
         applyEmpMobileLayout();
       }
