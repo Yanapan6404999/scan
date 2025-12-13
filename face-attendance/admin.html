@@ -34,7 +34,6 @@
       padding: 0;
       width: 100%;
       max-width: 100%;
-      /* ✅ กันหน้า “ล้นจอ” แนวนอน */
       overflow-x: hidden;
     }
 
@@ -114,7 +113,7 @@
       min-height: 100vh;
       width: 100%;
       max-width: 100%;
-      overflow-x: hidden; /* ✅ กันล้นเพิ่มอีกชั้น */
+      overflow-x: hidden;
     }
 
     /* SIDEBAR */
@@ -202,7 +201,7 @@
       flex-direction: column;
       min-width: 0;
       max-width: 100%;
-      overflow-x: hidden; /* ✅ กันล้นจากลูก */
+      overflow-x: hidden;
     }
 
     header.topbar {
@@ -267,7 +266,7 @@
     .mobile-nav-inner {
       display: flex;
       gap: 6px;
-      overflow-x: auto; /* ✅ เลื่อนเฉพาะแถบเมนู */
+      overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       max-width: 100%;
     }
@@ -339,7 +338,7 @@
       backdrop-filter: blur(10px);
       width: 100%;
       max-width: 100%;
-      overflow: hidden; /* ✅ กันลูกล้นการ์ด */
+      overflow: hidden;
     }
 
     .card-header {
@@ -414,12 +413,11 @@
     .scroll-x {
       width: 100%;
       max-width: 100%;
-      overflow-x: auto; /* ✅ ให้เลื่อนในกล่อง */
+      overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
     }
 
-    /* ✅ เปลี่ยนจาก "บังคับทุกตาราง" → บังคับเฉพาะตารางที่ต้องกว้างจริงๆ */
     .table-wide {
       width: max-content;
       min-width: 720px;
@@ -497,9 +495,7 @@
 
     .flex { display: flex; gap: 8px; align-items: center; min-width: 0; }
 
-    /* ✅ ใช้แก้ input+ปุ่ม ในหน้า ตั้งค่า ให้เรียงลงบนมือถือ */
     .flex-stack-mobile {}
-
     @media (max-width: 640px) {
       .flex-stack-mobile { flex-direction: column; align-items: stretch; }
       .flex-stack-mobile .btn { width: 100%; justify-content: center; }
@@ -509,14 +505,13 @@
     .pill-small { font-size: 10px; padding: 2px 6px; border-radius: 999px; background: #e5e7eb; color: #4b5563; }
 
     .header-search-box { min-width: 0; max-width: 280px; width: 100%; }
-
     @media (max-width: 640px) {
       .header-search-box { min-width: 100%; max-width: 100%; }
       #empSearch { width: 100%; }
-      .table-actions .btn { flex: 1; } /* ✅ ปุ่มแก้ไข/ลบบนมือถือไม่บีบจนล้น */
+      .table-actions .btn { flex: 1; }
     }
 
-    /* ✅ (ใหม่) Mobile Segmented Control สำหรับหน้า "สมาชิก" */
+    /* ✅ Mobile Segmented Control */
     .mobile-segment {
       display: none;
       gap: 8px;
@@ -553,11 +548,77 @@
     }
     .emp-hidden { display: none !important; }
 
+    /* ✅ ปรับ: ไม่ซ่อน overflow-x แบบตัดปุ่มทิ้ง (เดสก์ท็อปยังโอเค) */
     .emp-table-scroll {
       max-height: 420px;
       overflow-y: auto;
-      overflow-x: hidden; /* ✅ สำคัญ: ตารางรายชื่อไม่ทำให้หน้ากว้าง */
+      overflow-x: auto; /* ✅ เปลี่ยนจาก hidden -> auto */
+      -webkit-overflow-scrolling: touch;
       max-width: 100%;
+    }
+    .emp-table-scroll table {
+      min-width: 520px; /* กันคอลัมน์ “จัดการ” โดนบีบจนหาย */
+    }
+
+    /* ✅ แยก UI PC vs Mobile “ขาดลอย” (แต่ยังอยู่ไฟล์เดียว) */
+    .emp-desktop-only { display: block; }
+    .emp-mobile-only { display: none; }
+
+    /* ✅ Mobile List (เหมือนแอป) */
+    .emp-mobile-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 6px 2px 2px;
+    }
+    .emp-item {
+      border: 1px solid rgba(226,232,240,0.95);
+      border-radius: 16px;
+      padding: 12px 12px 10px;
+      background: #fff;
+      box-shadow: 0 10px 22px rgba(15,23,42,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .emp-item-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .emp-name {
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 1.25;
+    }
+    .emp-meta {
+      font-size: 12px;
+      color: var(--text-soft);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .emp-code-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(37,99,235,0.12);
+      color: var(--primary);
+      border: 1px solid rgba(37,99,235,0.25);
+      white-space: nowrap;
+      height: fit-content;
+    }
+    .emp-item-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .emp-item-actions .btn {
+      width: 100%;
+      justify-content: center;
+      padding: 10px 12px;
+      font-size: 13px;
     }
 
     /* RESPONSIVE ---------------------------------------------------- */
@@ -572,9 +633,11 @@
       .grid-3 { grid-template-columns: 1fr; }
       .grid-2 { grid-template-columns: 1fr; }
 
-      /* ✅ (ใหม่) โหมดแอป: หน้า "สมาชิก" ให้สลับแท็บ */
       #section-employees .mobile-segment { display: flex; }
-      .emp-table-scroll { max-height: calc(100vh - 360px); }
+
+      /* ✅ “แยก UI” บนมือถือ: ใช้ Card List แทน Table */
+      .emp-desktop-only { display: none; }
+      .emp-mobile-only { display: block; }
     }
 
     @media (max-width: 640px) {
@@ -728,7 +791,6 @@
             <div class="mt-12">
               <div class="card-subtitle">ตัวอย่างข้อมูลวันนี้</div>
               <div class="scroll-x mt-8">
-                <!-- ✅ ใส่ class table-wide เฉพาะตารางกว้าง -->
                 <table class="table-wide">
                   <thead>
                   <tr>
@@ -823,7 +885,7 @@
                     <span class="icon">📋</span> รายชื่อพนักงาน
                   </div>
                   <div class="card-subtitle">
-                    (แก้แล้ว) ตารางนี้จะไม่ทำให้หน้าล้นจอบนมือถือ ✅
+                    PC = ตารางเหมือนเดิม | Mobile = การ์ดแบบแอป (ปุ่มแก้ไข/ลบไม่หายแล้ว) ✅
                   </div>
                 </div>
                 <div class="header-search-box">
@@ -831,23 +893,33 @@
                 </div>
               </div>
 
-              <!-- ✅ ไม่ครอบ scroll-x เพื่อกันตารางดันหน้ากว้าง -->
-              <div class="emp-table-scroll">
-                <table>
-                  <thead>
-                  <tr>
-                    <th>รหัส</th>
-                    <th>ชื่อ</th>
-                    <th>แผนก</th>
-                    <th>ระดับ</th>
-                    <th>จัดการ</th>
-                  </tr>
-                  </thead>
-                  <tbody id="empTableBody">
-                  <tr><td colspan="5" class="text-center">กำลังโหลด...</td></tr>
-                  </tbody>
-                </table>
+              <!-- ✅ PC TABLE -->
+              <div class="emp-desktop-only">
+                <div class="emp-table-scroll">
+                  <table>
+                    <thead>
+                    <tr>
+                      <th>รหัส</th>
+                      <th>ชื่อ</th>
+                      <th>แผนก</th>
+                      <th>ระดับ</th>
+                      <th>จัดการ</th>
+                    </tr>
+                    </thead>
+                    <tbody id="empTableBody">
+                    <tr><td colspan="5" class="text-center">กำลังโหลด...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
+
+              <!-- ✅ MOBILE LIST -->
+              <div class="emp-mobile-only">
+                <div id="empMobileList" class="emp-mobile-list">
+                  <div class="helper">กำลังโหลด...</div>
+                </div>
+              </div>
+
             </div>
           </div>
         </section>
@@ -1099,12 +1171,12 @@
   let employees = [];
   let branches = [];
   let levels = [];
-
   let editingEmpId = null;
 
-  function $(id) {
-    return document.getElementById(id);
-  }
+  // ✅ จำแท็บของหน้า employees (มือถือ)
+  let empTabState = 'form';
+
+  function $(id) { return document.getElementById(id); }
 
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
@@ -1113,6 +1185,16 @@
       reader.onerror = err => reject(err);
       reader.readAsDataURL(file);
     });
+  }
+
+  // ✅ กัน XSS/ตัวอักษรพิเศษใน HTML
+  function escHtml(s) {
+    return String(s ?? '')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#39;");
   }
 
   function setConnectionStatus(online, msg) {
@@ -1134,7 +1216,7 @@
     if (status === 'ปกติ') cls = 'badge-normal';
     else if (String(status).includes('สาย')) cls = 'badge-late';
     else if (status === 'ขาด') cls = 'badge-absent';
-    return '<span class="badge-status ' + cls + '">' + status + '</span>';
+    return '<span class="badge-status ' + cls + '">' + escHtml(status) + '</span>';
   }
 
   function timeToMinutes(t) {
@@ -1158,15 +1240,11 @@
 
   function formatDateThai(dateStr) {
     let d;
-    if (dateStr instanceof Date) {
-      d = dateStr;
-    } else {
+    if (dateStr instanceof Date) d = dateStr;
+    else {
       const parts = String(dateStr).split('-');
-      if (parts.length === 3) {
-        d = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
-      } else {
-        return String(dateStr || '');
-      }
+      if (parts.length === 3) d = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
+      else return String(dateStr || '');
     }
     const dd = d.getDate().toString().padStart(2,'0');
     const mm = (d.getMonth()+1).toString().padStart(2,'0');
@@ -1233,13 +1311,13 @@
     } else {
       tbody.innerHTML = todayRows.map(r => `
         <tr>
-          <td>${r.code || ''}</td>
-          <td>${r.fullName || ''}</td>
-          <td>${(isRealTime(r.t1) ? r.t1 : '-') || '-'}</td>
-          <td>${(isRealTime(r.t2) ? r.t2 : '-') || '-'}</td>
-          <td>${(isRealTime(r.t3) ? r.t3 : '-') || '-'}</td>
-          <td>${(isRealTime(r.t4) ? r.t4 : '-') || '-'}</td>
-          <td>${r.locationText || r.location || '-'}</td>
+          <td>${escHtml(r.code || '')}</td>
+          <td>${escHtml(r.fullName || '')}</td>
+          <td>${escHtml((isRealTime(r.t1) ? r.t1 : '-') || '-')}</td>
+          <td>${escHtml((isRealTime(r.t2) ? r.t2 : '-') || '-')}</td>
+          <td>${escHtml((isRealTime(r.t3) ? r.t3 : '-') || '-')}</td>
+          <td>${escHtml((isRealTime(r.t4) ? r.t4 : '-') || '-')}</td>
+          <td>${escHtml(r.locationText || r.location || '-')}</td>
           <td>${statusBadgeHtml(r.status || '')}</td>
         </tr>
       `).join('');
@@ -1258,7 +1336,7 @@
         locBox.innerHTML = '<span class="helper">วันนี้ยังไม่มีข้อมูลจุดลงเวลา</span>';
       } else {
         locBox.innerHTML = entries.map(([name,count]) =>
-          `<span class="tag">${name} – ${count} คน</span>`
+          `<span class="tag">${escHtml(name)} – ${escHtml(count)} คน</span>`
         ).join(' ');
       }
     }
@@ -1268,22 +1346,24 @@
     const branchSel = $('empBranch');
     const levelSel  = $('empLevel');
     branchSel.innerHTML = branches.length
-      ? branches.map(b => `<option value="${b.name}">${b.name}</option>`).join('')
+      ? branches.map(b => `<option value="${escHtml(b.name)}">${escHtml(b.name)}</option>`).join('')
       : '<option value="">- ยังไม่มีแผนก -</option>';
     levelSel.innerHTML = levels.length
-      ? levels.map(l => `<option value="${l.name}">${l.name}</option>`).join('')
+      ? levels.map(l => `<option value="${escHtml(l.name)}">${escHtml(l.name)}</option>`).join('')
       : '<option value="">- ยังไม่มีระดับ -</option>';
 
     const branchFilter = $('logBranchFilter');
     const branchFilter2 = $('sumBranchFilter');
     const opts = ['<option value="ALL">ทุกสาขา</option>']
-      .concat(branches.map(b => `<option value="${b.name}">${b.name}</option>`));
+      .concat(branches.map(b => `<option value="${escHtml(b.name)}">${escHtml(b.name)}</option>`));
     branchFilter.innerHTML = opts.join('');
     branchFilter2.innerHTML = opts.join('');
   }
 
+  // ✅ เรนเดอร์ “ทั้ง PC table” และ “Mobile card list”
   function renderEmployeesTable() {
     const tb = $('empTableBody');
+    const mobileList = $('empMobileList');
     const q = $('empSearch').value.trim().toLowerCase();
 
     let list = employees;
@@ -1293,24 +1373,53 @@
         return text.includes(q);
       });
     }
+
+    // PC table
     if (!list.length) {
-      tb.innerHTML = '<tr><td colspan="5" class="text-center">ไม่พบข้อมูล</td></tr>';
-      return;
+      if (tb) tb.innerHTML = '<tr><td colspan="5" class="text-center">ไม่พบข้อมูล</td></tr>';
+    } else {
+      if (tb) tb.innerHTML = list.map(e => `
+        <tr>
+          <td>${escHtml(e.code || '')}</td>
+          <td>${escHtml(e.fullName || '')}</td>
+          <td>${escHtml(e.branch || '')}</td>
+          <td>${escHtml(e.level || '')}</td>
+          <td>
+            <div class="table-actions">
+              <button class="btn btn-secondary btn-small" onclick="editEmployee('${escHtml(e.id || '')}')">แก้ไข</button>
+              <button class="btn btn-danger btn-small" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">ลบ</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
     }
-    tb.innerHTML = list.map(e => `
-      <tr>
-        <td>${e.code || ''}</td>
-        <td>${e.fullName || ''}</td>
-        <td>${e.branch || ''}</td>
-        <td>${e.level || ''}</td>
-        <td>
-          <div class="table-actions">
-            <button class="btn btn-secondary btn-small" onclick="editEmployee('${e.id || ''}')">แก้ไข</button>
-            <button class="btn btn-danger btn-small" onclick="deleteEmployeeConfirm('${e.id || ''}','${e.code || ''}','${(e.fullName || '').replace(/'/g,'')}')">ลบ</button>
+
+    // Mobile cards
+    if (mobileList) {
+      if (!list.length) {
+        mobileList.innerHTML = '<div class="helper">ไม่พบข้อมูล</div>';
+      } else {
+        mobileList.innerHTML = list.map(e => `
+          <div class="emp-item">
+            <div class="emp-item-top">
+              <div style="min-width:0;">
+                <div class="emp-name">${escHtml(e.fullName || '-')}</div>
+                <div class="emp-meta">
+                  <span class="pill-small">แผนก: ${escHtml(e.branch || '-')}</span>
+                  <span class="pill-small">ระดับ: ${escHtml(e.level || '-')}</span>
+                </div>
+              </div>
+              <div class="emp-code-badge">รหัส ${escHtml(e.code || '-')}</div>
+            </div>
+
+            <div class="emp-item-actions">
+              <button class="btn btn-secondary" onclick="editEmployee('${escHtml(e.id || '')}')">✏️ แก้ไข</button>
+              <button class="btn btn-danger" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">🗑️ ลบ</button>
+            </div>
           </div>
-        </td>
-      </tr>
-    `).join('');
+        `).join('');
+      }
+    }
   }
 
   window.editEmployee = function(id) {
@@ -1341,8 +1450,13 @@
     setEmpTab('form');
   };
 
-  window.deleteEmployeeConfirm = async function(id, code, name) {
+  window.deleteEmployeeConfirm = async function(id) {
+    const emp = employees.find(e => String(e.id) === String(id));
+    if (!emp) return;
+    const code = emp.code || '';
+    const name = emp.fullName || '';
     if (!confirm(`ต้องการลบพนักงานรหัส ${code} (${name}) หรือไม่?`)) return;
+
     try {
       await api.call('deleteEmployee', { id });
       employees = await api.call('getEmployees');
@@ -1433,18 +1547,18 @@
     tb.innerHTML = rows.map(r => {
       const total = calcTotalHours(r.t1, r.t4);
       const locText = r.locationText || '';
-      const locCell = locText ? `<span class="pill-small">${locText}</span>` : '-';
+      const locCell = locText ? `<span class="pill-small">${escHtml(locText)}</span>` : '-';
       const evidence = r.evidenceUrl
-        ? `<a href="${r.evidenceUrl}" target="_blank" rel="noopener">เปิดรูป</a>`
+        ? `<a href="${escHtml(r.evidenceUrl)}" target="_blank" rel="noopener">เปิดรูป</a>`
         : '-';
       return `
         <tr>
-          <td>${formatDateThai(r.date)}</td>
-          <td>${r.code || ''}</td>
-          <td>${r.fullName || ''}</td>
-          <td>${r.t1 || '-'}</td>
-          <td>${r.t4 || '-'}</td>
-          <td>${total}</td>
+          <td>${escHtml(formatDateThai(r.date))}</td>
+          <td>${escHtml(r.code || '')}</td>
+          <td>${escHtml(r.fullName || '')}</td>
+          <td>${escHtml(r.t1 || '-')}</td>
+          <td>${escHtml(r.t4 || '-')}</td>
+          <td>${escHtml(total)}</td>
           <td>${statusBadgeHtml(r.status || '')}</td>
           <td>${locCell}</td>
           <td>${evidence}</td>
@@ -1476,14 +1590,14 @@
     }
     tb.innerHTML = rows.map(r => `
       <tr>
-        <td>${r.code || ''}</td>
-        <td>${r.fullName || ''}</td>
-        <td>${r.branch || ''}</td>
-        <td>${r.level || ''}</td>
-        <td>${r.days || 0}</td>
-        <td>${r.normalCount || 0}</td>
-        <td>${r.lateCount || 0}</td>
-        <td>${r.absentCount || 0}</td>
+        <td>${escHtml(r.code || '')}</td>
+        <td>${escHtml(r.fullName || '')}</td>
+        <td>${escHtml(r.branch || '')}</td>
+        <td>${escHtml(r.level || '')}</td>
+        <td>${escHtml(r.days || 0)}</td>
+        <td>${escHtml(r.normalCount || 0)}</td>
+        <td>${escHtml(r.lateCount || 0)}</td>
+        <td>${escHtml(r.absentCount || 0)}</td>
       </tr>
     `).join('');
   }
@@ -1509,8 +1623,8 @@
     } else {
       bt.innerHTML = branches.map(b => `
         <tr>
-          <td>${b.name}</td>
-          <td><button class="btn btn-danger btn-small" onclick="deleteBranch('${b.name.replace(/'/g,'')}')">ลบ</button></td>
+          <td>${escHtml(b.name)}</td>
+          <td><button class="btn btn-danger btn-small" onclick="deleteBranch('${escHtml(b.name)}')">ลบ</button></td>
         </tr>
       `).join('');
     }
@@ -1520,8 +1634,8 @@
     } else {
       lt.innerHTML = levels.map(l => `
         <tr>
-          <td>${l.name}</td>
-          <td><button class="btn btn-danger btn-small" onclick="deleteLevel('${l.name.replace(/'/g,'')}')">ลบ</button></td>
+          <td>${escHtml(l.name)}</td>
+          <td><button class="btn btn-danger btn-small" onclick="deleteLevel('${escHtml(l.name)}')">ลบ</button></td>
         </tr>
       `).join('');
     }
@@ -1625,9 +1739,7 @@
     $('urlError').style.display = 'none';
   }
 
-  function closeUrlCard() {
-    $('urlCard').style.display = 'none';
-  }
+  function closeUrlCard() { $('urlCard').style.display = 'none'; }
 
   function saveUrl() {
     const url = $('inputApiUrl').value.trim();
@@ -1645,19 +1757,11 @@
   }
 
   function switchSection(section) {
-    document.querySelectorAll('.nav-item').forEach(el => {
-      el.classList.toggle('active', el.dataset.section === section);
-    });
-    document.querySelectorAll('.mobile-nav-item').forEach(el => {
-      el.classList.toggle('active', el.dataset.section === section);
-    });
-    document.querySelectorAll('.section').forEach(el => {
-      el.classList.toggle('active', el.id === 'section-' + section);
-    });
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
+    document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
+    document.querySelectorAll('.section').forEach(el => el.classList.toggle('active', el.id === 'section-' + section));
 
-    if (section === 'employees') {
-      applyEmpMobileLayout();
-    }
+    if (section === 'employees') applyEmpMobileLayout();
   }
 
   function ellipsizeUrl(url) {
@@ -1703,7 +1807,7 @@
       setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
 
       renderBranchLevelSelects();
-      renderEmployeesTable();
+      renderEmployeesTable();   // ✅ ยิงทั้ง table + mobile list
       renderBranchesLevelsTables();
       renderDashboard(todaySummary, monthSummary);
 
@@ -1727,6 +1831,8 @@
   }
 
   function setEmpTab(tab) {
+    empTabState = tab;
+
     const formCard = $('empFormCard');
     const listCard = $('empListCard');
     const bForm = $('btnEmpTabForm');
@@ -1754,28 +1860,15 @@
   }
 
   function applyEmpMobileLayout() {
-    if (isMobileEmployeesMode()) setEmpTab('form');
+    if (isMobileEmployeesMode()) setEmpTab(empTabState || 'form');
     else setEmpTab('form');
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.nav-item').forEach(el => {
-      el.addEventListener('click', () => {
-        const sec = el.getAttribute('data-section');
-        switchSection(sec);
-      });
-    });
+    document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => switchSection(el.getAttribute('data-section'))));
+    document.querySelectorAll('.mobile-nav-item').forEach(el => el.addEventListener('click', () => switchSection(el.getAttribute('data-section'))));
 
-    document.querySelectorAll('.mobile-nav-item').forEach(el => {
-      el.addEventListener('click', () => {
-        const sec = el.getAttribute('data-section');
-        switchSection(sec);
-      });
-    });
-
-    $('btnBackToFront').addEventListener('click', () => {
-      window.location.href = 'index.html';
-    });
+    $('btnBackToFront').addEventListener('click', () => { window.location.href = 'index.html'; });
 
     $('btnLogout').addEventListener('click', () => {
       if (confirm('ต้องการออกจากระบบ (ลบ URL API ที่บันทึกไว้) หรือไม่?')) {
