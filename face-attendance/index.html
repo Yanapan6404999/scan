@@ -2,987 +2,576 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>ระบบลงเวลาพนักงาน</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- ฟอนต์ -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
-  <style>
-    :root{
-      --bg: #eef2f7;
-      --card: rgba(255,255,255,.85);
-      --card-solid: #ffffff;
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: rgba(148,163,184,.35);
-      --shadow: 0 18px 45px rgba(2, 6, 23, .12);
-      --shadow-soft: 0 10px 28px rgba(2, 6, 23, .08);
-      --primary: #2563eb;
-      --primary-soft: rgba(37,99,235,.12);
-      --good: #16a34a;
-      --bad: #ef4444;
-      --warn: #f59e0b;
-      --radius-xl: 26px;
-      --radius-lg: 20px;
-      --radius-md: 14px;
-
-      --safe-top: env(safe-area-inset-top);
-      --safe-bottom: env(safe-area-inset-bottom);
-      --safe-left: env(safe-area-inset-left);
-      --safe-right: env(safe-area-inset-right);
-    }
-
-    @media (prefers-color-scheme: dark){
-      :root{
-        --bg: #0b1220;
-        --card: rgba(17, 24, 39, .65);
-        --card-solid: #0f172a;
-        --text: #e5e7eb;
-        --muted: #9ca3af;
-        --border: rgba(148,163,184,.18);
-        --shadow: 0 18px 45px rgba(0,0,0,.35);
-        --shadow-soft: 0 10px 28px rgba(0,0,0,.22);
-        --primary-soft: rgba(59,130,246,.18);
-      }
-    }
-
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      font-family: "Prompt", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(1200px 500px at 15% 10%, rgba(37,99,235,.18), transparent 60%),
-        radial-gradient(900px 400px at 90% 20%, rgba(34,197,94,.14), transparent 55%),
-        radial-gradient(900px 500px at 55% 100%, rgba(245,158,11,.10), transparent 55%),
-        var(--bg);
-      padding: calc(14px + var(--safe-top)) calc(14px + var(--safe-right)) calc(90px + var(--safe-bottom)) calc(14px + var(--safe-left));
-    }
-
-    /* Mobile App Shell */
-    .app{
-      max-width: 980px;
-      margin: 0 auto;
-      display:flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .topbar{
-      position: sticky;
-      top: calc(0px + var(--safe-top));
-      z-index: 30;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid var(--border);
-      background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.35));
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-soft);
-      overflow:hidden;
-    }
-    @media (prefers-color-scheme: dark){
-      .topbar{
-        background: linear-gradient(180deg, rgba(15,23,42,.70), rgba(15,23,42,.40));
-      }
-    }
-
-    .topbar-inner{
-      padding: 16px 16px 14px;
-      position: relative;
-    }
-
-    .title-row{
-      display:flex;
-      align-items:flex-start;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .title{
-      display:flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .title h1{
-      margin:0;
-      font-size: 20px;
-      line-height: 1.2;
-      letter-spacing: .2px;
-    }
-    .subtitle{
-      margin:0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    /* Hamburger: show on mobile, hide on desktop (ตามที่สั่ง) */
-    .hamburger{
-      width: 44px;
-      height: 44px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.55);
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      user-select:none;
-      box-shadow: 0 8px 18px rgba(2,6,23,.10);
-    }
-    @media (prefers-color-scheme: dark){
-      .hamburger{ background: rgba(15,23,42,.55); }
-    }
-
-    .hamburger svg{ opacity:.9; }
-
-    .api-line{
-      margin-top: 10px;
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-      color: var(--muted);
-      font-size: 12.5px;
-    }
-    .api-pill{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 8px 10px;
-      border: 1px dashed var(--border);
-      border-radius: 999px;
-      background: rgba(255,255,255,.45);
-      max-width: 100%;
-    }
-    @media (prefers-color-scheme: dark){
-      .api-pill{ background: rgba(15,23,42,.45); }
-    }
-    .api-url{
-      color: var(--text);
-      font-weight: 500;
-      overflow:hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: min(700px, 72vw);
-    }
-
-    .actions{
-      margin-top: 12px;
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .btn{
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.6);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 999px;
-      cursor:pointer;
-      font-size: 13px;
-      font-weight: 600;
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      box-shadow: 0 10px 20px rgba(2,6,23,.10);
-      user-select:none;
-      transition: transform .08s ease, filter .2s ease;
-    }
-    @media (prefers-color-scheme: dark){
-      .btn{ background: rgba(15,23,42,.55); }
-    }
-    .btn:active{ transform: scale(.98); }
-    .btn-primary{
-      background: linear-gradient(180deg, rgba(37,99,235,.95), rgba(37,99,235,.85));
-      color: #fff;
-      border-color: rgba(37,99,235,.6);
-    }
-    .btn-danger{
-      background: linear-gradient(180deg, rgba(239,68,68,.95), rgba(239,68,68,.85));
-      color:#fff;
-      border-color: rgba(239,68,68,.55);
-    }
-    .btn-warm{
-      background: linear-gradient(180deg, rgba(245,158,11,.95), rgba(245,158,11,.85));
-      color:#111827;
-      border-color: rgba(245,158,11,.55);
-    }
-
-    /* Connection badge (PC ต้องอยู่ขวาล่างสุดของการ์ดหัวบน) */
-    .conn-badge{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 9px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.55);
-      font-weight: 700;
-      font-size: 12.5px;
-      box-shadow: 0 10px 20px rgba(2,6,23,.10);
-      user-select:none;
-    }
-    @media (prefers-color-scheme: dark){
-      .conn-badge{ background: rgba(15,23,42,.55); }
-    }
-    .dot{
-      width: 9px;
-      height: 9px;
-      border-radius: 999px;
-      background: var(--warn);
-      box-shadow: 0 0 0 4px rgba(245,158,11,.15);
-    }
-    .conn-badge.connected .dot{
-      background: var(--good);
-      box-shadow: 0 0 0 4px rgba(22,163,74,.18);
-    }
-    .conn-badge.disconnected .dot{
-      background: var(--bad);
-      box-shadow: 0 0 0 4px rgba(239,68,68,.16);
-    }
-
-    /* Desktop layout */
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-      align-items:start;
-    }
-
-    .card{
-      border: 1px solid var(--border);
-      background: var(--card);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      overflow:hidden;
-    }
-    .card-header{
-      padding: 14px 16px 10px;
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-      border-bottom: 1px solid rgba(148,163,184,.18);
-    }
-    .card-title{
-      margin:0;
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: .2px;
-      display:flex;
-      align-items:center;
-      gap: 8px;
-    }
-    .card-sub{
-      margin: 0;
-      padding: 0 16px 14px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .card-body{ padding: 14px 16px 16px; }
-
-    .pill{
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.45);
-      border-radius: 999px;
-      padding: 8px 10px;
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      font-size: 12.5px;
-      color: var(--muted);
-    }
-    @media (prefers-color-scheme: dark){
-      .pill{ background: rgba(15,23,42,.45); }
-    }
-
-    .camera-box{
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      border-radius: 22px;
-      border: 1px dashed rgba(148,163,184,.45);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,.18));
-      display:grid;
-      place-items:center;
-      text-align:center;
-      padding: 16px;
-      overflow:hidden;
-      position: relative;
-    }
-    @media (prefers-color-scheme: dark){
-      .camera-box{
-        background: linear-gradient(180deg, rgba(15,23,42,.55), rgba(15,23,42,.25));
-      }
-    }
-    .camera-icon{
-      font-size: 34px;
-      margin-bottom: 10px;
-    }
-    .camera-text{
-      margin:0;
-      font-weight: 800;
-      font-size: 14.5px;
-    }
-    .camera-hint{
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.45;
-    }
-
-    .row{
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 12px;
-    }
-
-    .input{
-      width: 100%;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.55);
-      padding: 12px 12px;
-      font-size: 14px;
-      outline:none;
-      color: var(--text);
-    }
-    @media (prefers-color-scheme: dark){
-      .input{ background: rgba(15,23,42,.55); }
-    }
-
-    .split{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-
-    .mini{
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      background: rgba(255,255,255,.48);
-      padding: 12px 12px;
-    }
-    @media (prefers-color-scheme: dark){
-      .mini{ background: rgba(15,23,42,.48); }
-    }
-    .mini h3{
-      margin:0 0 8px;
-      font-size: 13.5px;
-      font-weight: 900;
-    }
-    .mini ul{
-      margin: 0;
-      padding-left: 18px;
-      color: var(--muted);
-      font-size: 12.8px;
-      line-height: 1.6;
-    }
-
-    /* Bottom bar (mobile app feel) */
-    .bottombar{
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      padding: 10px calc(14px + var(--safe-right)) calc(10px + var(--safe-bottom)) calc(14px + var(--safe-left));
-      background: linear-gradient(180deg, transparent, rgba(0,0,0,.06));
-      pointer-events: none; /* allow scroll */
-      z-index: 50;
-    }
-    @media (prefers-color-scheme: dark){
-      .bottombar{
-        background: linear-gradient(180deg, transparent, rgba(0,0,0,.28));
-      }
-    }
-    .bottombar-inner{
-      pointer-events: auto;
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      background: rgba(255,255,255,.70);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      box-shadow: var(--shadow);
-      display:flex;
-      justify-content: space-around;
-      gap: 10px;
-      padding: 10px;
-    }
-    @media (prefers-color-scheme: dark){
-      .bottombar-inner{ background: rgba(15,23,42,.70); }
-    }
-    .tab{
-      flex: 1;
-      border-radius: 18px;
-      padding: 10px 10px;
-      border: 1px solid transparent;
-      background: transparent;
-      cursor:pointer;
-      text-align:center;
-      color: var(--text);
-      font-weight: 800;
-      font-size: 12.5px;
-      user-select:none;
-    }
-    .tab:hover{ filter: brightness(1.02); }
-    .tab.primary{
-      background: var(--primary-soft);
-      border-color: rgba(37,99,235,.25);
-    }
-
-    /* MODAL */
-    .modal{
-      position: fixed;
-      inset: 0;
-      display:none;
-      place-items:center;
-      padding: 18px;
-      z-index: 999;
-      background: rgba(2,6,23,.55);
-    }
-    .modal.show{ display:grid; }
-    .modal-card{
-      width: min(620px, 96vw);
-      border-radius: 26px;
-      border: 1px solid rgba(148,163,184,.25);
-      background: var(--card-solid);
-      box-shadow: 0 30px 90px rgba(0,0,0,.35);
-      overflow:hidden;
-    }
-    .modal-head{
-      padding: 14px 16px;
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      border-bottom: 1px solid rgba(148,163,184,.18);
-    }
-    .modal-head h2{
-      margin:0;
-      font-size: 16px;
-      font-weight: 900;
-    }
-    .close{
-      width: 42px;
-      height: 42px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.8);
-      cursor:pointer;
-      display:grid;
-      place-items:center;
-    }
-    @media (prefers-color-scheme: dark){
-      .close{ background: rgba(15,23,42,.85); }
-    }
-    .modal-body{ padding: 14px 16px 16px; }
-
-    .note{
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 12.8px;
-      line-height: 1.5;
-    }
-
-    /* RESPONSIVE: Desktop split + PC badge positioning */
-    @media (min-width: 980px){
-      body{ padding-bottom: 22px; } /* no need huge bottom */
-      .bottombar{ display:none; } /* bottom bar only mobile */
-
-      .grid{
-        grid-template-columns: 1.35fr .85fr;
-      }
-      .split{
-        grid-template-columns: 1.1fr .9fr;
-      }
-
-      /* hide hamburger on PC ตามที่สั่ง */
-      .hamburger{ display:none; }
-
-      /* วาง badge สถานะไปมุมขวาล่างของ topbar การ์ด */
-      .topbar-inner{
-        padding-bottom: 22px;
-      }
-      .conn-desktop-anchor{
-        position: absolute;
-        right: 16px;
-        bottom: 14px;
-      }
-      /* บน PC ให้ API pill ไม่ยาวเกิน */
-      .api-url{ max-width: 760px; }
-    }
-
-    /* Small screens polish */
-    @media (max-width: 420px){
-      .title h1{ font-size: 18px; }
-      .btn{ width: 100%; justify-content: center; }
-      .api-url{ max-width: 78vw; }
-    }
-  </style>
+  <!-- CSS แยกไฟล์ -->
+  <link rel="stylesheet" href="./assets/app.css" />
 </head>
 
-<body>
-  <div class="app">
+<body data-tab="scan">
+<div class="page-shell">
+  <div class="app-container">
 
-    <!-- TOP BAR (เหมือนแอป) -->
-    <section class="topbar" aria-label="หัวข้อระบบ">
-      <div class="topbar-inner">
-        <div class="title-row">
-          <div class="title">
-            <h1>🕒 ระบบลงเวลาพนักงาน</h1>
-            <p class="subtitle">เวอร์ชันทดลองใช้ (บันทึกได้ 4 ช่วง + สแกนใบหน้า)</p>
+    <!-- HEADER CARD -->
+    <header class="app-header">
+      <div class="header-card">
+        <div class="header-main">
+          <div class="header-left">
+            <div class="header-title">ระบบลงเวลาพนักงาน</div>
+            <div class="header-sub">
+              เวอร์ชันทดลองใช้ (บันทึกได้ 4 ช่วง + สแกนใบหน้า)
+              <span class="api" id="apiUrlDisplay">ยังไม่ได้ตั้งค่า URL</span>
+            </div>
           </div>
 
-          <!-- 3 ขีด: แสดงเฉพาะมือถือ (PC ซ่อนตาม media query) -->
-          <button class="hamburger" id="menuBtn" type="button" aria-label="เมนู">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-        </div>
+          <div class="header-right">
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <div id="connectionBadge" class="badge-connection offline">
+                <span class="dot"></span>
+                <span id="connectionText">ยังไม่ได้เชื่อมต่อ</span>
+              </div>
 
-        <div class="api-line">
-          <div class="api-pill">
-            <span>🔌 API:</span>
-            <span class="api-url" id="apiUrlText">ยังไม่ได้ตั้งค่า URL</span>
+              <!-- มือถือ: ปุ่มเมนู 3 ขีด -->
+              <button class="btn btn-outline only-mobile" id="btnHamburger" title="เมนู">☰</button>
+            </div>
+
+            <!-- PC: ปุ่มเดิมครบ -->
+            <div class="header-actions only-desktop">
+              <button class="btn btn-outline" id="btnSetUrl">ตั้งค่า URL</button>
+              <button class="btn btn-danger-outline" id="btnResetUrl">Reset URL</button>
+              <button class="btn btn-warning" id="btnEnrollFace">ลงทะเบียนใบหน้า (HR)</button>
+              <button class="btn btn-primary" id="btnGoAdmin">เจ้าหน้าที่ / HR</button>
+            </div>
           </div>
-
-          <!-- สถานะเชื่อมต่อ: มือถือจะเห็น inline / PC จะย้ายไปขวาล่างของการ์ด -->
-          <div class="conn-badge disconnected" id="connBadge" title="สถานะการเชื่อมต่อ">
-            <span class="dot"></span>
-            <span id="connText">ยังไม่เชื่อมต่อ</span>
-          </div>
-        </div>
-
-        <!-- anchor เพื่อย้าย badge ไปมุมขวาล่างใน PC -->
-        <div class="conn-desktop-anchor" aria-hidden="true">
-          <!-- เราจะย้ายตัวจริงด้วย JS ตอน desktop -->
-        </div>
-
-        <div class="actions">
-          <button class="btn btn-primary" id="btnOpenUrl" type="button">⚙️ ตั้งค่า URL</button>
-          <button class="btn btn-danger" id="btnResetUrl" type="button">🧹 Reset URL</button>
-          <button class="btn btn-warm" id="btnRegisterFace" type="button">🧑‍💼 ลงทะเบียนใบหน้า (HR)</button>
-          <button class="btn" id="btnAdmin" type="button">🗂️ เจ้าหน้าที่ / HR</button>
-          <button class="btn" id="btnTestConn" type="button">✅ ทดสอบเชื่อมต่อ</button>
         </div>
       </div>
-    </section>
+    </header>
 
-    <!-- MAIN -->
-    <div class="grid">
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <div class="layout">
 
-      <!-- LEFT: Scan / Manual -->
-      <section class="card" aria-label="ลงเวลาผ่านสแกนใบหน้า">
-        <div class="card-header">
-          <h2 class="card-title">📷 ลงเวลาผ่านสแกนใบหน้า</h2>
-          <span class="pill" id="scanStatusPill">พร้อมสแกน ✅</span>
-        </div>
-        <p class="card-sub">ถ้ากล้องไม่ขึ้น ให้ตรวจสอบสิทธิ์กล้อง/HTTPS และโฟลเดอร์โมเดล</p>
+        <!-- LEFT COLUMN -->
+        <div>
+          <!-- Camera / Main action card -->
+          <div class="card camera-card card-scan">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <span class="icon">📷</span>
+                  <span>ลงเวลาผ่านสแกนใบหน้า</span>
+                </div>
+                <div class="card-subtitle" id="faceStatusLine">
+                  พร้อมใช้งานเมื่อ: ตั้งค่า URL + อนุญาตกล้อง + โหลด models สำเร็จ
+                </div>
+              </div>
 
-        <div class="card-body">
-          <div class="camera-box" id="cameraBox">
-            <div>
-              <div class="camera-icon">📸</div>
-              <p class="camera-text">กล้องปิดอยู่</p>
-              <p class="camera-hint">กด “เริ่มสแกน” เพื่อเปิดกล้อง<br>หรือใช้ “บันทึกด้วยมือ” ได้ทันที</p>
-            </div>
-          </div>
-
-          <div class="row">
-            <button class="btn btn-primary" id="btnStartScan" type="button">▶️ เริ่มสแกน</button>
-            <button class="btn" id="btnStopScan" type="button">⏹️ ปิดกล้อง</button>
-            <button class="btn" id="btnManual" type="button">✍️ บันทึกด้วยมือ</button>
-            <button class="btn" id="btnToday" type="button">🧾 ตรวจสอบเวลาวันนี้</button>
-          </div>
-
-          <div style="margin-top:12px;">
-            <input class="input" id="empCode" placeholder="🪪 กรอกรหัสพนักงาน (ถ้าต้องการตรวจสอบ/บันทึกมือ)" autocomplete="off" />
-            <p class="note" id="hintText">Tip: ถ้าคุณใช้สแกนหน้า ระบบจะใส่ชื่อ/รหัสให้อัตโนมัติได้เมื่อเชื่อม API เรียบร้อย</p>
-          </div>
-
-          <div class="split" style="margin-top:12px;">
-            <div class="mini">
-              <h3>🧠 ผลลัพธ์ล่าสุด</h3>
-              <div id="latestResult" style="color:var(--muted); font-size:13px; line-height:1.6;">
-                ยังไม่มีรายการ
+              <div class="flex gap-6" style="flex-wrap:wrap;">
+                <button class="btn btn-success" id="btnOpenManualModal">บันทึกด้วยมือ</button>
+                <button class="btn btn-secondary" id="btnOpenCheckToday">ตรวจสอบเวลาวันนี้</button>
               </div>
             </div>
-            <div class="mini">
-              <h3>📍 สถานะวันนี้</h3>
-              <div id="todaySummary" style="color:var(--muted); font-size:13px; line-height:1.6;">
-                กด “ตรวจสอบเวลาวันนี้” เพื่อดูสรุป
+
+            <div class="camera-box">
+              <video id="camVideo" class="cam-video" autoplay muted playsinline></video>
+              <canvas id="camOverlay" class="cam-overlay"></canvas>
+
+              <div id="scanHud" class="scan-hud">
+                <div class="scan-pill" id="scanPillLeft"><strong>สถานะ:</strong> ยังไม่เริ่ม</div>
+                <div class="scan-pill" id="scanPillRight"><strong>พบ:</strong> -</div>
               </div>
+
+              <div id="cameraPlaceholder" class="camera-placeholder">
+                <div class="icon">📸</div>
+                <div>กล้องปิดอยู่</div>
+                <div class="text-muted text-sm">กด “เริ่มสแกน” เพื่อเปิดกล้อง</div>
+              </div>
+            </div>
+
+            <div class="camera-footer">
+              <div class="flex gap-6" style="align-items:center; flex-wrap:wrap; width:100%;">
+                <select id="cameraSelect">
+                  <option value="">เลือกกล้อง (เปิดกล้องก่อนเพื่อให้เห็นรายการ)</option>
+                </select>
+
+                <button class="btn btn-primary" id="btnStartScan">เริ่มสแกน</button>
+                <button class="btn btn-secondary" id="btnStopScan" disabled>หยุด</button>
+                <button class="btn btn-success" id="btnScanSubmit" disabled>บันทึกจากการสแกน</button>
+              </div>
+
+              <div class="pill">
+                กติกาเวลา: <strong>เข้าเช้าก่อน 08:00</strong> | พักเที่ยงไม่เกิน <strong>1 ชม.</strong> | เลิกงานหลัง <strong>17:00</strong>
+              </div>
+            </div>
+
+            <div class="mt-10 mini-note">
+              <strong>หมายเหตุ:</strong> ถ้ายังไม่เคยลงทะเบียนใบหน้า ให้กดปุ่ม <strong>“ลงทะเบียนใบหน้า (HR)”</strong> ก่อน แล้วค่อยสแกนเข้า-ออก
+            </div>
+          </div>
+
+          <!-- Today summary -->
+          <div class="card card-today">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <span class="icon">📊</span>
+                  ภาพรวมวันนี้ (ย่อ)
+                </div>
+                <div class="card-subtitle">
+                  แสดงเวลาทั้ง 4 ช่วงของพนักงานที่มีบันทึกในวันนี้
+                </div>
+              </div>
+              <button class="btn btn-secondary" id="btnRefreshToday">รีเฟรชข้อมูล</button>
+            </div>
+
+            <div class="scroll-x">
+              <table>
+                <thead>
+                <tr>
+                  <th>รหัส</th>
+                  <th>ชื่อ</th>
+                  <th>แผนก</th>
+                  <th>ระดับ</th>
+                  <th>เข้าเช้า</th>
+                  <th>ออกเที่ยง</th>
+                  <th>เข้าเที่ยง</th>
+                  <th>ออกเย็น</th>
+                  <th>สถานะ</th>
+                </tr>
+                </thead>
+                <tbody id="todaySummaryBody">
+                <tr>
+                  <td colspan="9" class="text-center text-muted" style="padding:12px 8px;">
+                    ยังไม่มีข้อมูลของวันนี้
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mt-8 text-sm text-muted">
+              * ข้อมูลนี้อ่านจากชีต <strong>Logs</strong> โดยตรง ถ้าบันทึกใหม่แล้วไม่ขึ้น ให้ลองกดปุ่ม "รีเฟรชข้อมูล"
             </div>
           </div>
         </div>
-      </section>
 
-      <!-- RIGHT: Help / Checklist (แทน contact card ที่ถูกลบ) -->
-      <aside class="card" aria-label="เช็คก่อนกล้องไม่ขึ้น">
-        <div class="card-header">
-          <h2 class="card-title">🧩 เช็คก่อนกล้องไม่ขึ้น</h2>
-          <span class="pill">แก้ไว ✅</span>
-        </div>
-        <div class="card-body">
-          <ul style="margin:0; padding-left:18px; color:var(--muted); font-size:13px; line-height:1.7;">
-            <li>เปิดผ่าน <b>HTTPS</b> (จำเป็นกับกล้อง)</li>
-            <li>อนุญาต <b>กล้อง</b> + <b>ตำแหน่ง</b> (Location)</li>
-            <li>ต้องมีโฟลเดอร์ <b>models/</b> อยู่ระดับเดียวกับไฟล์</li>
-            <li>ถ้า API ยังไม่พร้อม ให้ใช้ <b>บันทึกด้วยมือ</b> แทนชั่วคราว</li>
-          </ul>
+        <!-- RIGHT COLUMN -->
+        <div>
 
-          <div style="margin-top:14px;" class="mini">
-            <h3>🧷 โหมดมือถือ (ฟีลแอป)</h3>
-            <ul>
-              <li>มี Bottom Bar สำหรับกดเร็ว</li>
-              <li>การ์ดโค้ง + เงานุ่มเหมือน iOS/Android</li>
-              <li>ใส่ emoji ให้ดูเป็นมิตร ใช้งานง่าย</li>
+          <!-- ✅ การ์ดที่อยู่/ติดต่อ (ย้ายมาฝั่งขวาสำหรับ PC) -->
+          <div class="card only-desktop">
+            <div class="card-title">
+              <span class="icon">🏪</span>
+              ที่อยู่ / ติดต่อร้าน
+            </div>
+            <div class="card-subtitle">
+              สำหรับลูกค้า / HR ใช้ติดต่อสอบถาม และยืนยันข้อมูล
+            </div>
+
+            <div class="contact-grid">
+              <div class="contact-item">
+                <div class="k">ร้าน</div>
+                <div class="v">ต.แสงชัย MAMA HOMEMART <small>• อ.ชุมแพ จ.ขอนแก่น</small></div>
+              </div>
+              <div class="contact-item">
+                <div class="k">โทร</div>
+                <div class="v"><a href="tel:0802474454">080-247-4454</a></div>
+              </div>
+              <div class="contact-item">
+                <div class="k">LINE</div>
+                <div class="v">@torsaengchai</div>
+              </div>
+              <div class="contact-item">
+                <div class="k">Facebook</div>
+                <div class="v">ต.แสงชัย MAMA HOMEMART</div>
+              </div>
+              <div class="contact-item">
+                <div class="k">แผนที่</div>
+                <div class="v">
+                  <a target="_blank" href="https://www.google.com/maps/search/?api=1&query=%E0%B8%95.%E0%B9%81%E0%B8%AA%E0%B8%87%E0%B8%8A%E0%B8%B1%E0%B8%A2%20MAMA%20HOMEMART%20%E0%B8%8A%E0%B8%B8%E0%B8%A1%E0%B9%81%E0%B8%9E">
+                    เปิด Google Maps
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-10 mini-note">
+              * ถ้าต้องการเปลี่ยน “ที่อยู่/แผนที่” ให้ตรงเป๊ะ แจ้งผมชื่อพิกัดใน Google Maps เดี๋ยวผมใส่ลิงก์แบบตรงจุดให้
+            </div>
+          </div>
+
+          <!-- Latest log -->
+          <div class="card card-latest" style="margin-top:16px;">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="icon">⏱</span>
+                ผลการบันทึกล่าสุด
+              </div>
+            </div>
+
+            <div id="latestBox" class="latest-box">
+              <div class="latest-label">
+                ข้อมูลนี้แสดงจากอุปกรณ์เครื่องนี้เท่านั้น (ช่วยยืนยันว่ากดบันทึกแล้ว)
+              </div>
+              <div class="latest-content" id="latestContent">
+                <div class="text-muted text-sm">ยังไม่มีการบันทึกในหน้านี้</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Helper -->
+          <div class="card card-help" style="margin-top:16px;">
+            <div class="card-title">
+              <span class="icon">💡</span>
+              วิธีใช้ง่าย ๆ
+            </div>
+            <ul class="helper-list">
+              <li>ตั้งค่า URL API ให้ถูกต้อง (ผ่านเมนู 3 ขีดด้านบน)</li>
+              <li>ถ้าจะสแกนใบหน้า: กด “เริ่มสแกน” → ให้กล้องเห็นหน้า → ระบบจะจับคู่ → กด “บันทึกจากการสแกน”</li>
+              <li>ก่อนใช้งานครั้งแรก: HR ต้อง “ลงทะเบียนใบหน้า” ให้พนักงานก่อน</li>
+              <li>บันทึกด้วยมือยังใช้ได้เหมือนเดิม (มี GPS + แนบรูปหลักฐาน)</li>
             </ul>
           </div>
-        </div>
-      </aside>
 
-    </div>
-  </div>
-
-  <!-- BOTTOM BAR (mobile only) -->
-  <div class="bottombar" aria-label="แถบล่าง">
-    <div class="bottombar-inner">
-      <button class="tab primary" id="tabScan" type="button">📷 สแกน</button>
-      <button class="tab" id="tabManual" type="button">✍️ บันทึกมือ</button>
-      <button class="tab" id="tabToday" type="button">🧾 วันนี้</button>
-    </div>
-  </div>
-
-  <!-- MODAL: ตั้งค่า URL -->
-  <div class="modal" id="urlModal" role="dialog" aria-modal="true" aria-label="ตั้งค่า URL">
-    <div class="modal-card">
-      <div class="modal-head">
-        <h2>⚙️ ตั้งค่า URL (Apps Script Web App)</h2>
-        <button class="close" id="closeUrlModal" type="button" aria-label="ปิด">✖</button>
-      </div>
-      <div class="modal-body">
-        <input class="input" id="apiUrlInput" placeholder="วาง URL ที่ลงท้ายด้วย /exec" />
-        <p class="note">
-          • ตัวอย่าง: https://script.google.com/macros/s/xxxxx/exec<br>
-          • ระบบจะเก็บไว้ใน localStorage ชื่อ <b>attendance_api_url_v2</b>
-        </p>
-        <div class="row">
-          <button class="btn btn-primary" id="saveUrlBtn" type="button">💾 บันทึก</button>
-          <button class="btn" id="cancelUrlBtn" type="button">ยกเลิก</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: บันทึกด้วยมือ (UI พร้อม แต่ logic ต่อ API ทีหลังได้) -->
-  <div class="modal" id="manualModal" role="dialog" aria-modal="true" aria-label="บันทึกด้วยมือ">
-    <div class="modal-card">
-      <div class="modal-head">
-        <h2>✍️ บันทึกด้วยมือ</h2>
-        <button class="close" id="closeManualModal" type="button" aria-label="ปิด">✖</button>
-      </div>
-      <div class="modal-body">
-        <input class="input" id="manualEmpCode" placeholder="🪪 รหัสพนักงาน" autocomplete="off" />
-        <input class="input" id="manualNote" placeholder="📝 หมายเหตุ (ถ้ามี)" autocomplete="off" style="margin-top:10px;" />
-
-        <div class="row" style="margin-top:12px;">
-          <button class="btn btn-primary" id="saveManualBtn" type="button">✅ บันทึก</button>
-          <button class="btn" id="cancelManualBtn" type="button">ยกเลิก</button>
-        </div>
-
-        <p class="note" id="manualHint">
-          ตอนนี้เป็น UI พร้อมใช้งาน — ฝั่ง API/GS ค่อยต่อทีหลังได้ครับ (ไม่ทำให้หน้า error)
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    (function(){
-      "use strict";
-
-      const LS_KEY = "attendance_api_url_v2";
-
-      // Elements
-      const apiUrlText = document.getElementById("apiUrlText");
-      const connBadge = document.getElementById("connBadge");
-      const connText  = document.getElementById("connText");
-      const connAnchor = document.querySelector(".conn-desktop-anchor");
-
-      const urlModal = document.getElementById("urlModal");
-      const apiUrlInput = document.getElementById("apiUrlInput");
-
-      const manualModal = document.getElementById("manualModal");
-      const manualEmpCode = document.getElementById("manualEmpCode");
-
-      const latestResult = document.getElementById("latestResult");
-      const todaySummary = document.getElementById("todaySummary");
-      const empCode = document.getElementById("empCode");
-
-      const scanStatusPill = document.getElementById("scanStatusPill");
-      const cameraBox = document.getElementById("cameraBox");
-
-      // Buttons
-      const btnOpenUrl = document.getElementById("btnOpenUrl");
-      const btnResetUrl = document.getElementById("btnResetUrl");
-      const btnRegisterFace = document.getElementById("btnRegisterFace");
-      const btnAdmin = document.getElementById("btnAdmin");
-      const btnTestConn = document.getElementById("btnTestConn");
-
-      const btnStartScan = document.getElementById("btnStartScan");
-      const btnStopScan = document.getElementById("btnStopScan");
-      const btnManual = document.getElementById("btnManual");
-      const btnToday = document.getElementById("btnToday");
-
-      // bottom tabs
-      const tabScan = document.getElementById("tabScan");
-      const tabManual = document.getElementById("tabManual");
-      const tabToday = document.getElementById("tabToday");
-
-      // modal buttons
-      const closeUrlModal = document.getElementById("closeUrlModal");
-      const saveUrlBtn = document.getElementById("saveUrlBtn");
-      const cancelUrlBtn = document.getElementById("cancelUrlBtn");
-
-      const closeManualModal = document.getElementById("closeManualModal");
-      const saveManualBtn = document.getElementById("saveManualBtn");
-      const cancelManualBtn = document.getElementById("cancelManualBtn");
-
-      function isDesktop(){
-        return window.matchMedia("(min-width: 980px)").matches;
-      }
-
-      function normalizeUrl(u){
-        if(!u) return "";
-        u = String(u).trim();
-        // remove spaces
-        u = u.replace(/\s+/g,"");
-        return u;
-      }
-
-      function setConn(state, text){
-        connBadge.classList.remove("connected","disconnected");
-        connBadge.classList.add(state);
-        connText.textContent = text;
-      }
-
-      function getApiUrl(){
-        try{
-          return normalizeUrl(localStorage.getItem(LS_KEY) || "");
-        }catch(e){
-          return "";
-        }
-      }
-
-      function setApiUrl(u){
-        try{
-          localStorage.setItem(LS_KEY, normalizeUrl(u));
-        }catch(e){}
-      }
-
-      function renderApi(){
-        const url = getApiUrl();
-        apiUrlText.textContent = url ? url : "ยังไม่ได้ตั้งค่า URL";
-        apiUrlText.title = url || "";
-      }
-
-      // Move connection badge to bottom-right on desktop (ตามที่สั่ง)
-      function placeConnBadge(){
-        try{
-          if(isDesktop() && connAnchor && connBadge){
-            connAnchor.innerHTML = "";
-            connAnchor.appendChild(connBadge);
-          }else{
-            // place back inline in api-line if not desktop
-            const apiLine = document.querySelector(".api-line");
-            if(apiLine && connBadge && connBadge.parentElement !== apiLine){
-              apiLine.appendChild(connBadge);
-            }
-          }
-        }catch(e){}
-      }
-
-      function openModal(el){
-        if(!el) return;
-        el.classList.add("show");
-      }
-      function closeModal(el){
-        if(!el) return;
-        el.classList.remove("show");
-      }
-
-      function toastResult(msg){
-        latestResult.innerHTML = "• " + escapeHtml(msg) + "<br><span style='color:var(--muted)'>(" + new Date().toLocaleString("th-TH") + ")</span>";
-      }
-
-      function escapeHtml(s){
-        return String(s)
-          .replaceAll("&","&amp;")
-          .replaceAll("<","&lt;")
-          .replaceAll(">","&gt;")
-          .replaceAll('"',"&quot;")
-          .replaceAll("'","&#039;");
-      }
-
-      async function testConnection(){
-        const url = getApiUrl();
-        if(!url){
-          setConn("disconnected","ยังไม่เชื่อมต่อ");
-          toastResult("ยังไม่ได้ตั้งค่า URL");
-          return;
-        }
-        setConn("disconnected","กำลังทดสอบ...");
-        try{
-          const ctrl = new AbortController();
-          const t = setTimeout(()=>ctrl.abort(), 6000);
-
-          // ยิงแบบปลอดภัย: ต่อได้ก็ดี ต่อไม่ได้ก็ไม่ทำให้พัง
-          const pingUrl = url + (url.includes("?") ? "&" : "?") + "ping=1&t=" + Date.now();
-          const res = await fetch(pingUrl, { method:"GET", signal: ctrl.signal, cache:"no-store" });
-
-          clearTimeout(t);
-
-          if(res && res.ok){
-            setConn("connected","เชื่อมต่อสำเร็จ");
-            toastResult("ทดสอบเชื่อมต่อสำเร็จ ✅");
-          }else{
-            setConn("disconnected","ยังไม่เชื่อมต่อ");
-            toastResult("เชื่อมต่อไม่สำเร็จ (HTTP " + (res ? res.status : "?") + ")");
-          }
-        }catch(err){
-          setConn("disconnected","ยังไม่เชื่อมต่อ");
-          toastResult("เชื่อมต่อไม่สำเร็จ (อาจติด CORS/URL ผิด/เน็ต) ❌");
-        }
-      }
-
-      // ---- UI actions (ยังไม่ผูก logic จริงเพื่อไม่ให้บัค) ----
-      function startScanMock(){
-        scanStatusPill.textContent = "กำลังสแกน... 🟢";
-        cameraBox.innerHTML = `
-          <div>
-            <div class="camera-icon">🟢</div>
-            <p class="camera-text">โหมดสแกนทำงาน</p>
-            <p class="camera-hint">ตอนนี้เป็น UI Demo — เดี๋ยวค่อยต่อกล้อง/face-api กับโค้ดเดิมได้</p>
+          <div class="card card-help" style="margin-top:16px;">
+            <div class="card-title"><span class="icon">🧩</span>เช็คก่อนถ้ากล้องไม่ขึ้น</div>
+            <ul class="helper-list">
+              <li>เปิดผ่าน <strong>HTTPS</strong> (มือถือบังคับ)</li>
+              <li>อนุญาตกล้อง + อนุญาตตำแหน่ง (Location)</li>
+              <li>มีโฟลเดอร์ <strong>models/</strong> อยู่ระดับเดียวกับไฟล์นี้</li>
+            </ul>
           </div>
-        `;
-        toastResult("เริ่มสแกน (UI) แล้ว");
-      }
-      function stopScanMock(){
-        scanStatusPill.textContent = "พร้อมสแกน ✅";
-        cameraBox.innerHTML = `
-          <div>
-            <div class="camera-icon">📸</div>
-            <p class="camera-text">กล้องปิดอยู่</p>
-            <p class="camera-hint">กด “เริ่มสแกน” เพื่อเปิดกล้อง<br>หรือใช้ “บันทึกด้วยมือ” ได้ทันที</p>
+
+          <!-- ✅ มือถือ: ที่อยู่/ติดต่อ ย้ายมาอยู่แท็บ “ช่วยเหลือ” (ไม่รกหน้าอื่น) -->
+          <div class="card card-help only-mobile" style="margin-top:16px; display:block !important;">
+            <div class="card-title">
+              <span class="icon">🏪</span>
+              ที่อยู่ / ติดต่อร้าน
+            </div>
+            <div class="contact-grid">
+              <div class="contact-item">
+                <div class="k">ร้าน</div>
+                <div class="v">ต.แสงชัย MAMA HOMEMART <small>• อ.ชุมแพ จ.ขอนแก่น</small></div>
+              </div>
+              <div class="contact-item">
+                <div class="k">โทร</div>
+                <div class="v"><a href="tel:0802474454">080-247-4454</a></div>
+              </div>
+              <div class="contact-item">
+                <div class="k">LINE</div>
+                <div class="v">@torsaengchai</div>
+              </div>
+              <div class="contact-item">
+                <div class="k">Facebook</div>
+                <div class="v">ต.แสงชัย MAMA HOMEMART</div>
+              </div>
+              <div class="contact-item">
+                <div class="k">แผนที่</div>
+                <div class="v">
+                  <a target="_blank" href="https://www.google.com/maps/search/?api=1&query=%E0%B8%95.%E0%B9%81%E0%B8%AA%E0%B8%87%E0%B8%8A%E0%B8%B1%E0%B8%A2%20MAMA%20HOMEMART%20%E0%B8%8A%E0%B8%B8%E0%B8%A1%E0%B9%81%E0%B8%9E">
+                    เปิด Google Maps
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
-        `;
-        toastResult("ปิดกล้อง (UI) แล้ว");
-      }
 
-      function openManual(){
-        manualEmpCode.value = empCode.value || "";
-        openModal(manualModal);
-        setTimeout(()=>manualEmpCode.focus(), 30);
-      }
+        </div>
 
-      function fakeToday(){
-        const code = (empCode.value || "").trim();
-        todaySummary.innerHTML = code
-          ? "กำลังรอ API เพื่อดึงข้อมูลของรหัส: <b>" + escapeHtml(code) + "</b><br><span style='color:var(--muted)'>ตอนนี้เป็นหน้าตา UI พร้อมแล้ว</span>"
-          : "กรุณากรอกรหัสพนักงานก่อน แล้วกดตรวจสอบ";
-        toastResult("ตรวจสอบเวลาวันนี้ (UI)");
-      }
+      </div>
+    </main>
+  </div>
+</div>
 
-      function saveManualMock(){
-        const code = (manualEmpCode.value || "").trim();
-        if(!code){
-          toastResult("กรุณากรอกรหัสพนักงานก่อน");
-          return;
-        }
-        closeModal(manualModal);
-        empCode.value = code;
-        toastResult("บันทึกด้วยมือ (UI) สำเร็จ: " + code);
-      }
+<!-- datalist ช่วยพิมพ์ง่ายบนมือถือ -->
+<datalist id="empDatalist"></datalist>
 
-      // ---- EVENTS ----
-      btnOpenUrl.addEventListener("click", ()=>{
-        apiUrlInput.value = getApiUrl();
-        openModal(urlModal);
-        setTimeout(()=>apiUrlInput.focus(), 30);
-      });
+<!-- =========================
+     MOBILE: Bottom Nav (มือถือเท่านั้น)
+     ========================= -->
+<nav class="mobile-bottom-nav only-mobile" id="mobileBottomNav" aria-label="Bottom Navigation">
+  <div class="nav-item active" data-tab="scan">
+    <div class="nav-ico">📷</div>
+    <div>สแกน</div>
+  </div>
+  <div class="nav-item" data-tab="today">
+    <div class="nav-ico">📊</div>
+    <div>วันนี้</div>
+  </div>
+  <div class="nav-item" data-tab="latest">
+    <div class="nav-ico">⏱</div>
+    <div>ล่าสุด</div>
+  </div>
+  <div class="nav-item" data-tab="help">
+    <div class="nav-ico">💡</div>
+    <div>ช่วยเหลือ</div>
+  </div>
+</nav>
 
-      btnResetUrl.addEventListener("click", ()=>{
-        try{ localStorage.removeItem(LS_KEY); }catch(e){}
-        renderApi();
-        setConn("disconnected","ยังไม่เชื่อมต่อ");
-        toastResult("ล้าง URL แล้ว");
-      });
+<!-- =========================
+     MOBILE: Sheet Menu (เมนู 3 ขีด)
+     ========================= -->
+<div class="sheet-backdrop" id="menuSheetBackdrop">
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div class="sheet-title">
+      <div>เมนู</div>
+      <button class="sheet-close" id="btnCloseMenuSheet" aria-label="ปิด">✕</button>
+    </div>
 
-      saveUrlBtn.addEventListener("click", ()=>{
-        const u = normalizeUrl(apiUrlInput.value);
-        setApiUrl(u);
-        renderApi();
-        closeModal(urlModal);
-        toastResult("บันทึก URL แล้ว");
-      });
+    <div class="sheet-actions">
+      <button class="sheet-btn" id="mBtnSetUrl">
+        <div>
+          <div style="font-weight:800;">ตั้งค่า URL</div>
+          <div class="sub">ใส่ URL Web App ของ Apps Script</div>
+        </div>
+        <div>›</div>
+      </button>
 
-      cancelUrlBtn.addEventListener("click", ()=>closeModal(urlModal));
-      closeUrlModal.addEventListener("click", ()=>closeModal(urlModal));
-      urlModal.addEventListener("click", (e)=>{ if(e.target === urlModal) closeModal(urlModal); });
+      <button class="sheet-btn" id="mBtnResetUrl">
+        <div>
+          <div style="font-weight:800; color:#b91c1c;">Reset URL</div>
+          <div class="sub">ล้าง URL ที่บันทึกไว้ในเครื่องนี้</div>
+        </div>
+        <div>›</div>
+      </button>
 
-      btnTestConn.addEventListener("click", testConnection);
+      <button class="sheet-btn" id="mBtnEnrollFace">
+        <div>
+          <div style="font-weight:800;">ลงทะเบียนใบหน้า (HR)</div>
+          <div class="sub">เปิดกล้อง แล้วถ่ายบันทึกใบหน้า</div>
+        </div>
+        <div>›</div>
+      </button>
 
-      btnRegisterFace.addEventListener("click", ()=>{
-        toastResult("ไปหน้าลงทะเบียนใบหน้า (HR) — ยังไม่ผูกลิงก์ในไฟล์นี้");
-      });
+      <button class="sheet-btn" id="mBtnGoAdmin">
+        <div>
+          <div style="font-weight:800;">เจ้าหน้าที่ / HR</div>
+          <div class="sub">ไปหน้า admin.html</div>
+        </div>
+        <div>›</div>
+      </button>
+    </div>
+  </div>
+</div>
 
-      btnAdmin.addEventListener("click", ()=>{
-        toastResult("ไปหน้าเจ้าหน้าที่/HR — ยังไม่ผูกลิงก์ในไฟล์นี้");
-      });
+<!-- =========================
+     MOBILE: Enroll Sheet (ไม่บังกล้อง)
+     ========================= -->
+<div class="sheet-backdrop" id="enrollSheetBackdrop">
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div class="sheet-title">
+      <div>ลงทะเบียนใบหน้า (HR)</div>
+      <button class="sheet-close" id="btnCloseEnrollSheet" aria-label="ปิด">✕</button>
+    </div>
 
-      btnStartScan.addEventListener("click", startScanMock);
-      btnStopScan.addEventListener("click", stopScanMock);
-      btnManual.addEventListener("click", openManual);
-      btnToday.addEventListener("click", fakeToday);
+    <!-- Step: Login -->
+    <div id="mEnrollStepLogin">
+      <div class="form-group">
+        <div class="form-label">Username</div>
+        <input type="text" id="mEnrollUser" class="input" placeholder="admin" />
+      </div>
+      <div class="form-group">
+        <div class="form-label">Password</div>
+        <input type="password" id="mEnrollPass" class="input" placeholder="••••••••" />
+      </div>
+      <div id="mEnrollLoginError" class="error-text" style="display:none;"></div>
+      <div class="sheet-actions-inline">
+        <button class="btn btn-secondary btn-wide" id="mBtnEnrollCancelLogin">ปิด</button>
+        <button class="btn btn-primary btn-wide" id="mBtnEnrollLogin">เข้าสู่ระบบ</button>
+      </div>
+      <div class="enroll-hint">
+        * มือถือจะใช้แบบ Bottom Sheet เพื่อไม่บังกล้อง (เห็นหน้าชัด)
+      </div>
+    </div>
 
-      tabScan.addEventListener("click", ()=>{ window.scrollTo({ top: 0, behavior: "smooth" }); });
-      tabManual.addEventListener("click", openManual);
-      tabToday.addEventListener("click", fakeToday);
+    <!-- Step: Do -->
+    <div id="mEnrollStepDo" style="display:none;">
+      <div class="form-group">
+        <div class="form-label">รหัสพนักงาน (code)</div>
+        <input type="text" id="mEnrollCode" class="input" list="empDatalist" inputmode="numeric" placeholder="เช่น 1011" />
+        <div class="enroll-hint">แนะนำ: สลับแท็บไป “สแกน” แล้วจัดหน้าตรง ๆ แสงพอดี</div>
+      </div>
 
-      closeManualModal.addEventListener("click", ()=>closeModal(manualModal));
-      cancelManualBtn.addEventListener("click", ()=>closeModal(manualModal));
-      manualModal.addEventListener("click", (e)=>{ if(e.target === manualModal) closeModal(manualModal); });
-      saveManualBtn.addEventListener("click", saveManualMock);
+      <div class="form-group">
+        <div class="form-label">สถานะกล้อง/โมเดล</div>
+        <div class="mini-note" id="mEnrollInfo">ยังไม่เริ่มกล้อง</div>
+      </div>
 
-      // Escape to close modals
-      window.addEventListener("keydown", (e)=>{
-        if(e.key === "Escape"){
-          closeModal(urlModal);
-          closeModal(manualModal);
-        }
-      });
+      <div id="mEnrollDoError" class="error-text" style="display:none;"></div>
+      <div id="mEnrollDoSuccess" class="success-text" style="display:none;"></div>
 
-      // Initial render
-      renderApi();
-      placeConnBadge();
-      window.addEventListener("resize", placeConnBadge);
+      <div class="row2">
+        <button class="btn btn-secondary btn-wide" id="mBtnEnrollClose">ปิด</button>
+        <button class="btn btn-secondary btn-wide" id="mBtnEnrollStartCam">เปิดกล้อง</button>
+      </div>
 
-      // Optional: auto-test if URL exists
-      if(getApiUrl()){
-        // ไม่ auto-test แรงเกินไป กันรำคาญ/กัน CORS error spam
-        setConn("disconnected","ยังไม่เชื่อมต่อ");
-      }else{
-        setConn("disconnected","ยังไม่เชื่อมต่อ");
-      }
+      <div style="margin-top:10px;">
+        <button class="btn btn-success btn-wide" id="mBtnEnrollCapture" style="width:100%;">ถ่ายและบันทึกใบหน้า</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-    })();
-  </script>
+<!-- =========================
+     PC: MODALS เดิม (URL / Manual / Check / Enroll)
+     ========================= -->
+
+<!-- MODAL: ตั้งค่า URL -->
+<div class="modal-backdrop" id="modalUrl">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">ตั้งค่า URL ของระบบ</div>
+      <button class="modal-close" data-close-modal="modalUrl">&times;</button>
+    </div>
+    <div class="form-group">
+      <div class="form-label">URL จาก Apps Script Web App</div>
+      <input type="text" id="inputApiUrl" class="input" placeholder="เช่น https://script.google.com/macros/s/XXXXX/exec" />
+      <div class="helper">
+        คัดลอก URL จากเมนู <strong>Deploy &gt; Web app</strong> ใน Apps Script แล้ววางลงที่นี่
+      </div>
+    </div>
+    <div id="urlError" class="error-text" style="display:none;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" data-close-modal="modalUrl">ยกเลิก</button>
+      <button class="btn btn-primary" id="btnSaveUrl">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: บันทึกด้วยมือ -->
+<div class="modal-backdrop" id="modalManual">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">บันทึกเวลาด้วยมือ</div>
+      <button class="modal-close" data-close-modal="modalManual">&times;</button>
+    </div>
+    <div class="form-group">
+      <div class="form-label">รหัสพนักงาน</div>
+      <input type="text" id="manualCode" class="input" list="empDatalist" inputmode="numeric" placeholder="เช่น 1011" />
+      <div id="manualEmpInfo" class="helper">กรอกรหัสแล้วระบบจะแสดงชื่อ-สกุล / แผนก / ระดับ</div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">ประเภทการบันทึก (เพื่อความเข้าใจเท่านั้น)</div>
+      <select id="manualType" class="input">
+        <option value="AUTO">ให้ระบบตัดสินใจอัตโนมัติ</option>
+        <option value="MORNING_IN">เข้าเช้า</option>
+        <option value="NOON_OUT">ออกเที่ยง</option>
+        <option value="NOON_IN">เข้าเที่ยง</option>
+        <option value="EVENING_OUT">ออกเย็น</option>
+        <option value="EXTRA">อื่น ๆ / พิเศษ</option>
+      </select>
+      <div class="helper">
+        ระบบยังคงตัดสินใจช่อง t1–t4, tExtra1–tExtra2 ให้เองอยู่ดี ช่องนี้เอาไว้บันทึกบริบทเฉย ๆ
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">รูปหลักฐาน (เช่น รูปหน้าจอ, รูปกล้องวงจรปิด ฯลฯ)</div>
+      <input type="file" id="manualFile" accept="image/*" />
+      <div class="helper">
+        ถ้าไม่สะดวกสามารถเว้นว่างไว้ก่อนได้ ภาพจะถูกเก็บในโฟลเดอร์ Drive ตามที่ตั้งค่าใน Apps Script
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">ผลการทำงาน</div>
+      <textarea id="manualResult" readonly placeholder="ระบบจะแจ้งผลการบันทึกที่นี่"></textarea>
+    </div>
+
+    <div id="manualError" class="error-text" style="display:none;"></div>
+    <div id="manualSuccess" class="success-text" style="display:none;"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" data-close-modal="modalManual">ยกเลิก</button>
+      <button class="btn btn-primary" id="btnManualSubmit">ยืนยันบันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ตรวจสอบเวลาวันนี้ -->
+<div class="modal-backdrop" id="modalCheckToday">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">ตรวจสอบเวลาวันนี้</div>
+      <button class="modal-close" data-close-modal="modalCheckToday">&times;</button>
+    </div>
+    <div class="form-group">
+      <div class="form-label">รหัสพนักงาน</div>
+      <input type="text" id="checkCode" class="input" list="empDatalist" inputmode="numeric" placeholder="เช่น 1011" />
+    </div>
+    <div class="form-group">
+      <div class="form-label">ผลการตรวจสอบ</div>
+      <textarea id="checkResult" readonly placeholder="ระบบจะแสดงเวลาทั้ง 4 ช่วงของวันนี้"></textarea>
+    </div>
+    <div id="checkError" class="error-text" style="display:none;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" data-close-modal="modalCheckToday">ปิด</button>
+      <button class="btn btn-primary" id="btnCheckTodaySubmit">ตรวจสอบ</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ลงทะเบียนใบหน้า (HR) - ใช้บน PC -->
+<div class="modal-backdrop" id="modalEnroll">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">ลงทะเบียนใบหน้า (HR)</div>
+      <button class="modal-close" data-close-modal="modalEnroll">&times;</button>
+    </div>
+
+    <div id="enrollStepLogin">
+      <div class="form-group">
+        <div class="form-label">Username</div>
+        <input type="text" id="enrollUser" class="input" placeholder="admin" />
+      </div>
+      <div class="form-group">
+        <div class="form-label">Password</div>
+        <input type="password" id="enrollPass" class="input" placeholder="••••••••" />
+      </div>
+      <div id="enrollLoginError" class="error-text" style="display:none;"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" data-close-modal="modalEnroll">ยกเลิก</button>
+        <button class="btn btn-primary" id="btnEnrollLogin">เข้าสู่ระบบ</button>
+      </div>
+      <div class="mt-10 mini-note">
+        * PC ใช้ modal เดิม / มือถือใช้ Bottom Sheet เพื่อไม่บังกล้อง
+      </div>
+    </div>
+
+    <div id="enrollStepDo" style="display:none;">
+      <div class="form-group">
+        <div class="form-label">รหัสพนักงาน (code)</div>
+        <input type="text" id="enrollCode" class="input" list="empDatalist" inputmode="numeric" placeholder="เช่น 1011" />
+        <div class="helper">แนะนำ: เปิดกล้องให้เห็นหน้า “ตรง ๆ” แสงพอดี</div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">สถานะกล้อง/โมเดล</div>
+        <div class="mini-note" id="enrollInfo">ยังไม่เริ่มกล้อง</div>
+      </div>
+
+      <div id="enrollDoError" class="error-text" style="display:none;"></div>
+      <div id="enrollDoSuccess" class="success-text" style="display:none;"></div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" data-close-modal="modalEnroll">ปิด</button>
+        <button class="btn btn-secondary" id="btnEnrollStartCam">เปิดกล้อง</button>
+        <button class="btn btn-success" id="btnEnrollCapture">ถ่ายและบันทึกใบหน้า</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- face-api.js (ต้องมาก่อน app.js) -->
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+<!-- JS แยกไฟล์ -->
+<script src="./assets/app.js" defer></script>
+
 </body>
 </html>
