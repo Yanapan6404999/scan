@@ -1,1196 +1,708 @@
-/**************************************************
- * CONFIG
- **************************************************/
-const STORAGE_KEY = 'attendance_api_url_v2';
-const MODEL_URL = './models';
+/* =========================
+   Face Attendance - app.js
+   - แยก Mobile/PC ชัด
+   - Mobile มี 3 ขีด + Drawer + Bottom Nav
+   - PC ไม่มี 3 ขีด, มี status pill ชิดขวาล่าง hero card
+   - ฟีเจอร์ครบ: scan/manual/check/summary/hr login/upload face
+========================= */
 
-const FACE_MATCH_THRESHOLD = 0.55;
-const STABLE_MATCH_COUNT = 3;
+(() => {
+  "use strict";
 
-const SNAP_MAX_W = 640;
-const SNAP_JPEG_QUALITY = 0.72;
+  // ===== LocalStorage Keys =====
+  const LS_API = "attendance_api_url_v2";
+  const LS_ADMIN_TOKEN = "attendance_admin_token_v1";
+  const LS_LAST_RESULT = "attendance_last_result_v1";
 
-const API_TIMEOUT_MS = 15000;
+  // ===== State =====
+  let stream = null;
+  let lastCapturedBlob = null;
+  let lastCapturedInfo = null;
+  let busy = false;
 
-/**************************************************
- * STORAGE
- **************************************************/
-function getApiUrl() { return localStorage.getItem(STORAGE_KEY) || ''; }
-function setApiUrl(url) {
-  if (url) localStorage.setItem(STORAGE_KEY, url);
-  else localStorage.removeItem(STORAGE_KEY);
-}
+  // ===== Helpers =====
+  const $ = (id) => document.getElementById(id);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  const isMobile = () => window.matchMedia("(max-width: 979px)").matches;
 
-/**************************************************
- * API HELPER (เพิ่มความทนทาน: รองรับ response หลายรูปแบบ)
- **************************************************/
-const api = {
-  async call(action, params = {}) {
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const fmtDT = (d = new Date()) => {
+    return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear() + 543} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+  };
+
+  function escapeHtml(str) {
+    return String(str ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  // ===== Toast =====
+  function toast(msg) {
+    const el = $("toast");
+    const msgEl = $("toastMsg");
+    if (!el || !msgEl) return alert(msg);
+    msgEl.textContent = msg;
+    el.style.display = "block";
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => (el.style.display = "none"), 3200);
+  }
+  $("toastClose")?.addEventListener("click", () => ($("toast").style.display = "none"));
+
+  // ===== Busy Lock =====
+  function setBusy(v) {
+    busy = v;
+    const ids = [
+      "btnStartCam","btnStopCam","btnCapture",
+      "btnSubmitScan","btnQuickCheck",
+      "btnSubmitManual",
+      "btnCheckByCode","btnTodaySummary",
+      "btnLogin","btnUploadFace",
+      "btnSaveUrl","btnResetUrl",
+      "btnPingPC","btnPingSide","btnPingDrawer",
+      "btnClearPC","btnClearSide","btnClearLocal"
+    ];
+    ids.forEach(id => {
+      const b = $(id);
+      if (b && b.tagName === "BUTTON") b.disabled = !!v;
+    });
+  }
+
+  // ===== API URL =====
+  function getApiUrl() {
+    return (localStorage.getItem(LS_API) || "").trim();
+  }
+  function setApiUrl(url) {
+    localStorage.setItem(LS_API, (url || "").trim());
+    refreshApiStatus();
+  }
+  function shortUrl(url) {
+    if (!url) return "ยังไม่ได้ตั้งค่า";
+    try {
+      const u = new URL(url);
+      return u.hostname + u.pathname.replace(/\/macros\/s\//, "/s/");
+    } catch {
+      return url.length > 42 ? url.slice(0, 42) + "…" : url;
+    }
+  }
+
+  function setDotText(dotEl, textEl, okState) {
+    if (!dotEl || !textEl) return;
+    dotEl.classList.remove("ok", "warn");
+    if (okState === "ok") dotEl.classList.add("ok");
+    else if (okState === "warn") dotEl.classList.add("warn");
+    // default red is base .dot
+    textEl.textContent = okState === "ok" ? "พร้อมใช้งาน" : "ยังไม่ได้ตั้งค่า URL";
+  }
+
+  function refreshApiStatus() {
+    const url = getApiUrl();
+
+    // Mobile
+    const mDot = $("mApiDot");
+    const mText = $("mApiText");
+
+    // PC
+    const pcDot = $("pcApiDot");
+    const pcText = $("pcApiText");
+
+    // PC Meta
+    $("pcApiUrlShort") && ($("pcApiUrlShort").textContent = shortUrl(url));
+
+    if (!url) {
+      setDotText(mDot, mText, "warn");
+      setDotText(pcDot, pcText, "warn");
+      $("pcApiUrlShort") && ($("pcApiUrlShort").textContent = "ยังไม่ได้ตั้งค่า");
+      return;
+    }
+
+    // มี URL แล้ว => แสดงเป็น ok (การทดสอบจริงใช้ปุ่มทดสอบ API)
+    if (mDot && mText) { mDot.className = "dot ok"; mText.textContent = "พร้อมใช้งาน"; }
+    if (pcDot && pcText) { pcDot.className = "dot ok"; pcText.textContent = "พร้อมใช้งาน"; }
+  }
+
+  // ===== Drawer =====
+  function openDrawer() {
+    $("drawerBackdrop").style.display = "block";
+    $("drawer").classList.add("open");
+    $("apiUrlInput").value = getApiUrl();
+  }
+  function closeDrawer() {
+    $("drawerBackdrop").style.display = "none";
+    $("drawer").classList.remove("open");
+  }
+
+  $("btnMobileMenu")?.addEventListener("click", openDrawer);
+  $("btnOpenDrawerPC")?.addEventListener("click", openDrawer);
+  $("btnOpenDrawerSide")?.addEventListener("click", openDrawer);
+  $("btnCloseDrawer")?.addEventListener("click", closeDrawer);
+  $("drawerBackdrop")?.addEventListener("click", closeDrawer);
+
+  $("btnSaveUrl")?.addEventListener("click", () => {
+    const url = $("apiUrlInput").value.trim();
+    if (!url) return toast("กรุณาวาง URL ที่ลงท้ายด้วย /exec");
+    setApiUrl(url);
+    toast("บันทึก URL แล้ว ✅");
+    closeDrawer();
+  });
+
+  $("btnResetUrl")?.addEventListener("click", () => {
+    localStorage.removeItem(LS_API);
+    refreshApiStatus();
+    toast("Reset URL แล้ว ✅");
+  });
+
+  // ===== Navigation =====
+  function showSection(id) {
+    ["secScan","secManual","secCheck","secHR"].forEach(s => {
+      $(s)?.classList.toggle("active", s === id);
+    });
+
+    // desktop tabs
+    $$("#desktopTabs .tab").forEach(t => {
+      t.classList.toggle("active", t.dataset.target === id);
+    });
+
+    // mobile bottom nav
+    $$("#bottomNav .bnBtn").forEach(b => {
+      b.classList.toggle("active", b.dataset.target === id);
+    });
+
+    // adjust title (ช่วยให้เหมือนแอปบนมือถือ)
+    const titleMap = {
+      secScan: "📷 สแกนเข้า-ออก",
+      secManual: "📝 บันทึกด้วยมือ",
+      secCheck: "🔎 ตรวจสอบวันนี้",
+      secHR: "🧰 HR / แอดมิน"
+    };
+    $("mainTitle") && ($("mainTitle").textContent = titleMap[id] || "📷 โหมดสแกน / บันทึก / ตรวจสอบ");
+  }
+
+  $$("#desktopTabs .tab").forEach(t => t.addEventListener("click", () => showSection(t.dataset.target)));
+  $$("#bottomNav .bnBtn").forEach(b => b.addEventListener("click", () => showSection(b.dataset.target)));
+
+  // ===== Now / Device badges =====
+  function initBadges() {
+    $("nowBadge") && ($("nowBadge").textContent = fmtDT());
+    $("pcNowText") && ($("pcNowText").textContent = fmtDT());
+    $("pcDeviceText") && ($("pcDeviceText").textContent = isMobile() ? "Mobile" : "Desktop");
+    $("deviceBadge") && ($("deviceBadge").textContent = isMobile() ? "Mobile" : "Desktop");
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = pad2(today.getMonth() + 1);
+    const dd = pad2(today.getDate());
+    $("cDate") && ($("cDate").value = `${yyyy}-${mm}-${dd}`);
+  }
+
+  // ===== Last Result =====
+  function saveLastResult(obj) {
+    localStorage.setItem(LS_LAST_RESULT, JSON.stringify(obj));
+    renderLastResult();
+  }
+
+  function renderLastResult() {
+    const raw = localStorage.getItem(LS_LAST_RESULT);
+    if (!raw) return;
+    try {
+      const obj = JSON.parse(raw);
+      $("lastBadge") && ($("lastBadge").textContent = obj.time || "—");
+      if ($("lastBox")) {
+        $("lastBox").innerHTML = `
+          <div class="strong">${escapeHtml(obj.title || "บันทึกสำเร็จ")}</div>
+          <div class="smallmuted mt10">${escapeHtml(obj.detail || "")}</div>
+        `;
+      }
+    } catch {}
+  }
+
+  // ===== Clear Local =====
+  function clearLocal() {
+    localStorage.removeItem(LS_ADMIN_TOKEN);
+    localStorage.removeItem(LS_LAST_RESULT);
+    toast("ล้างค่าเครื่องนี้แล้ว ✅");
+    renderLastResult();
+    if ($("btnGoAdmin")) {
+      $("btnGoAdmin").style.pointerEvents = "none";
+      $("btnGoAdmin").style.opacity = ".55";
+    }
+  }
+  $("btnClearPC")?.addEventListener("click", clearLocal);
+  $("btnClearSide")?.addEventListener("click", clearLocal);
+  $("btnClearLocal")?.addEventListener("click", clearLocal);
+
+  // ===== API Post =====
+  async function apiPost(action, payload = {}, fileMap = null) {
     const apiUrl = getApiUrl();
-    if (!apiUrl) throw new Error('ยังไม่ได้ตั้งค่า URL API');
+    if (!apiUrl) throw new Error("ยังไม่ได้ตั้งค่า URL (Apps Script)");
 
-    const controller = new AbortController();
-    const t = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+    let body;
+    let headers = {};
 
-    try {
-      const body = new URLSearchParams({ action, ...params }).toString();
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-        body,
-        signal: controller.signal
+    if (fileMap) {
+      body = new FormData();
+      body.append("action", action);
+      Object.entries(payload || {}).forEach(([k, v]) => {
+        if (v === undefined || v === null) return;
+        body.append(k, typeof v === "object" ? JSON.stringify(v) : String(v));
       });
-
-      const text = await res.text();
-      let data;
-      try { data = JSON.parse(text); }
-      catch (e) {
-        console.error('API response is not JSON:', text);
-        throw new Error('API ส่งผลลัพธ์ไม่ใช่ JSON (ตรวจสอบ URL ว่าถูกตัว exec หรือไม่)');
-      }
-
-      const ok = (data.ok ?? data.success ?? (data.status === 'success') ?? false);
-      if (!ok) throw new Error(data.error || data.message || 'ไม่ทราบสาเหตุจากเซิร์ฟเวอร์');
-
-      return (data.result ?? data.data ?? data.payload ?? data);
-    } catch (e) {
-      if (e.name === 'AbortError') throw new Error('เรียก API นานเกินไป (timeout) ลองใหม่อีกครั้ง');
-      throw e;
-    } finally {
-      clearTimeout(t);
-    }
-  }
-};
-
-/**************************************************
- * STATE
- **************************************************/
-let employeesCache = [];
-let faceReady = false;
-let modelsLoaded = false;
-
-let camStream = null;
-let scanning = false;
-
-let lastBest = { code: '', fullName: '', distance: 999 };
-let stableHit = 0;
-let lockedMatch = null;
-
-let enrollAuthed = false;
-
-/**************************************************
- * DOM UTILS
- **************************************************/
-function $(id) { return document.getElementById(id); }
-function isMobile() { return window.matchMedia('(max-width: 768px)').matches; }
-
-function showModal(id) { const el = $(id); if (el) el.classList.add('show'); }
-function hideModal(id) { const el = $(id); if (el) el.classList.remove('show'); }
-
-function showSheet(id){ const el = $(id); if(el) el.classList.add('show'); }
-function hideSheet(id){ const el = $(id); if(el) el.classList.remove('show'); }
-
-function setConnectionStatus(online, msg) {
-  const badge = $('connectionBadge');
-  const text  = $('connectionText');
-  if (!badge || !text) return;
-  if (online) { badge.classList.remove('offline'); text.textContent = msg || 'เชื่อมต่อสำเร็จ'; }
-  else { badge.classList.add('offline'); text.textContent = msg || 'ยังไม่ได้เชื่อมต่อ'; }
-}
-
-function statusBadgeHtml(status) {
-  if (!status) return '<span class="badge-status badge-absent">ขาด</span>';
-  let cls = 'badge-other';
-  if (status === 'ปกติ') cls = 'badge-normal';
-  else if (String(status).includes('สาย')) cls = 'badge-late';
-  else if (status === 'ขาด') cls = 'badge-absent';
-  return '<span class="badge-status ' + cls + '">' + status + '</span>';
-}
-
-/**************************************************
- * FILE → BASE64
- **************************************************/
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) return resolve(null);
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(reader.error || new Error('อ่านไฟล์ไม่สำเร็จ'));
-    reader.readAsDataURL(file);
-  });
-}
-
-/**************************************************
- * GPS
- **************************************************/
-function getCurrentPositionPromise(options = {}) {
-  return new Promise((resolve, reject) => {
-    if (!('geolocation' in navigator)) {
-      reject(new Error('เบราว์เซอร์นี้ไม่รองรับการระบุตำแหน่ง (GPS) กรุณาเปิดจากมือถือหรือใช้ Chrome / Edge'));
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      pos => resolve(pos),
-      err => {
-        let msg = 'ไม่สามารถดึงพิกัด GPS ได้';
-        if (err.code === err.PERMISSION_DENIED) msg = 'ระบบต้องการสิทธิ์เข้าถึงตำแหน่งก่อนบันทึกเวลา กรุณาเปิด Location และกด "อนุญาต" ในเบราว์เซอร์';
-        else if (err.code === err.POSITION_UNAVAILABLE) msg = 'ไม่พบสัญญาณตำแหน่ง กรุณาลองใหม่อีกครั้ง หรือออกนอกอาคาร';
-        else if (err.code === err.TIMEOUT) msg = 'ดึงพิกัดนานเกินไป กรุณาลองใหม่อีกครั้ง';
-        reject(new Error(msg));
-      },
-      options
-    );
-  });
-}
-
-/**************************************************
- * FACE: LOAD MODELS
- **************************************************/
-async function ensureModelsLoaded() {
-  if (modelsLoaded) return true;
-  const line = $('faceStatusLine');
-  line.textContent = 'กำลังโหลดโมเดลสแกนใบหน้า (models)...';
-
-  try {
-    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-    modelsLoaded = true;
-    faceReady = true;
-    line.textContent = 'พร้อมสแกนใบหน้าแล้ว ✅';
-    return true;
-  } catch (err) {
-    console.error(err);
-    line.textContent = 'โหลดโมเดลไม่สำเร็จ ❌ ตรวจสอบโฟลเดอร์ models/ และเปิดผ่าน https';
-    faceReady = false;
-    return false;
-  }
-}
-
-/**************************************************
- * CAMERA
- **************************************************/
-async function listCameras() {
-  try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const cams = devices.filter(d => d.kind === 'videoinput');
-    const sel = $('cameraSelect');
-    sel.innerHTML = '';
-    const opt0 = document.createElement('option');
-    opt0.value = '';
-    opt0.textContent = cams.length ? 'เลือกกล้อง (แนะนำ: กล้องหน้า)' : 'ไม่พบกล้อง';
-    sel.appendChild(opt0);
-
-    cams.forEach((c, idx) => {
-      const opt = document.createElement('option');
-      opt.value = c.deviceId;
-      opt.textContent = c.label || `Camera ${idx + 1}`;
-      sel.appendChild(opt);
-    });
-  } catch (e) {
-    console.warn('enumerateDevices error', e);
-  }
-}
-
-async function startCamera(preferDeviceId = '') {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    throw new Error('อุปกรณ์/เบราว์เซอร์นี้ไม่รองรับกล้อง');
-  }
-
-  stopCamera();
-
-  const constraints = {
-    audio: false,
-    video: preferDeviceId
-      ? { deviceId: { exact: preferDeviceId }, width: { ideal: 1280 }, height: { ideal: 720 } }
-      : { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
-  };
-
-  camStream = await navigator.mediaDevices.getUserMedia(constraints);
-  const video = $('camVideo');
-  video.srcObject = camStream;
-  await video.play();
-
-  $('cameraPlaceholder').style.display = 'none';
-  video.style.display = 'block';
-  $('camOverlay').style.display = 'block';
-  $('scanHud').style.display = 'flex';
-
-  await listCameras();
-}
-
-function stopCamera() {
-  const video = $('camVideo');
-  if (video) {
-    try { video.pause(); } catch(e){}
-    video.srcObject = null;
-    video.style.display = 'none';
-  }
-  const overlay = $('camOverlay');
-  if (overlay) overlay.style.display = 'none';
-
-  const hud = $('scanHud');
-  if (hud) hud.style.display = 'none';
-
-  const ph = $('cameraPlaceholder');
-  if (ph) ph.style.display = 'flex';
-
-  if (camStream) {
-    camStream.getTracks().forEach(t => t.stop());
-    camStream = null;
-  }
-}
-
-/**************************************************
- * FACE: PARSE & MATCH
- **************************************************/
-function safeParseFaceData(faceDataRaw) {
-  if (!faceDataRaw) return null;
-  try {
-    const parsed = typeof faceDataRaw === 'string' ? JSON.parse(faceDataRaw) : faceDataRaw;
-    if (Array.isArray(parsed) && parsed.length >= 64) return new Float32Array(parsed);
-    if (parsed && typeof parsed === 'object') {
-      if (Array.isArray(parsed.descriptor)) return new Float32Array(parsed.descriptor);
-      if (Array.isArray(parsed.data)) return new Float32Array(parsed.data);
-    }
-  } catch (e) {}
-  return null;
-}
-
-function euclideanDistance(a, b) {
-  if (!a || !b || a.length !== b.length) return 999;
-  let sum = 0;
-  for (let i = 0; i < a.length; i++) {
-    const d = a[i] - b[i];
-    sum += d * d;
-  }
-  return Math.sqrt(sum);
-}
-
-function findBestMatch(queryDescriptor) {
-  let best = { code: '', fullName: '', distance: 999 };
-  for (const emp of employeesCache) {
-    const code = String(emp.code || '').trim();
-    const fullName = String(emp.fullName || emp.fullname || '').trim();
-    const desc = safeParseFaceData(emp.faceData);
-    if (!code || !desc) continue;
-    const dist = euclideanDistance(queryDescriptor, desc);
-    if (dist < best.distance) best = { code, fullName, distance: dist };
-  }
-  return best;
-}
-
-function setScanPills(statusText, foundText) {
-  $('scanPillLeft').innerHTML = `<strong>สถานะ:</strong> ${statusText}`;
-  $('scanPillRight').innerHTML = `<strong>พบ:</strong> ${foundText}`;
-}
-
-function clearOverlay() {
-  const canvas = $('camOverlay');
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function drawBox(box) {
-  const canvas = $('camOverlay');
-  const ctx = canvas.getContext('2d');
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = 'rgba(34,197,94,0.95)';
-  ctx.strokeRect(box.x, box.y, box.width, box.height);
-}
-
-async function scanTick() {
-  if (!scanning) return;
-  const video = $('camVideo');
-  const canvas = $('camOverlay');
-  if (!video || video.readyState < 2) return;
-
-  const vw = video.videoWidth || 1280;
-  const vh = video.videoHeight || 720;
-  if (canvas.width !== vw || canvas.height !== vh) {
-    canvas.width = vw;
-    canvas.height = vh;
-  }
-
-  const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
-
-  try {
-    const result = await faceapi
-      .detectSingleFace(video, opts)
-      .withFaceLandmarks()
-      .withFaceDescriptor();
-
-    clearOverlay();
-
-    if (!result) {
-      stableHit = 0;
-      lockedMatch = null;
-      $('btnScanSubmit').disabled = true;
-      setScanPills('กำลังหาใบหน้า...', '-');
-      return;
-    }
-
-    const resized = faceapi.resizeResults(result, { width: vw, height: vh });
-    drawBox(resized.detection.box);
-
-    const best = findBestMatch(result.descriptor);
-
-    if (!best.code || best.distance > FACE_MATCH_THRESHOLD) {
-      stableHit = 0;
-      lockedMatch = null;
-      $('btnScanSubmit').disabled = true;
-
-      const msg = best.code
-        ? `${best.code} ${best.fullName ? '- ' + best.fullName : ''} (ไกลไป: ${best.distance.toFixed(2)})`
-        : 'ยังไม่มีข้อมูลใบหน้าพนักงาน (faceData)';
-
-      setScanPills('พบใบหน้า แต่ยังจับคู่ไม่ได้', msg);
-      return;
-    }
-
-    const sameAsLast = best.code === lastBest.code;
-    lastBest = best;
-
-    if (sameAsLast) stableHit++;
-    else stableHit = 1;
-
-    if (stableHit >= STABLE_MATCH_COUNT) {
-      lockedMatch = best;
-      $('btnScanSubmit').disabled = false;
-      setScanPills('พร้อมบันทึก ✅', `${best.code} - ${best.fullName} (dist ${best.distance.toFixed(2)})`);
+      Object.entries(fileMap).forEach(([k, file]) => {
+        if (file) body.append(k, file);
+      });
     } else {
-      $('btnScanSubmit').disabled = true;
-      setScanPills(`กำลังยืนยัน... (${stableHit}/${STABLE_MATCH_COUNT})`, `${best.code} - ${best.fullName} (dist ${best.distance.toFixed(2)})`);
+      headers["Content-Type"] = "application/json";
+      body = JSON.stringify({ action, ...payload });
     }
 
-  } catch (err) {
-    console.error(err);
-    setScanPills('สแกนผิดพลาด (ดู console)', '-');
-  }
-}
+    const res = await fetch(apiUrl, { method: "POST", headers, body });
+    const text = await res.text();
 
-function startScanLoop() {
-  if (scanning) return;
-  scanning = true;
-  stableHit = 0;
-  lockedMatch = null;
-  lastBest = { code:'', fullName:'', distance: 999 };
+    let data;
+    try { data = JSON.parse(text); }
+    catch { data = { ok: res.ok, raw: text }; }
 
-  $('btnStopScan').disabled = false;
-  $('btnStartScan').disabled = true;
-  $('btnScanSubmit').disabled = true;
-
-  setScanPills('เริ่มสแกนแล้ว', '-');
-
-  const loop = async () => {
-    if (!scanning) return;
-    await scanTick();
-    setTimeout(loop, 250);
-  };
-  loop();
-}
-
-function stopScanLoop() {
-  scanning = false;
-  $('btnStopScan').disabled = true;
-  $('btnStartScan').disabled = false;
-  $('btnScanSubmit').disabled = true;
-  lockedMatch = null;
-  stableHit = 0;
-  setScanPills('หยุดแล้ว', '-');
-  clearOverlay();
-}
-
-function captureFrameBase64({ maxW = SNAP_MAX_W, quality = SNAP_JPEG_QUALITY } = {}) {
-  const video = $('camVideo');
-  const srcW = video.videoWidth || 1280;
-  const srcH = video.videoHeight || 720;
-
-  const scale = Math.min(1, maxW / srcW);
-  const w = Math.round(srcW * scale);
-  const h = Math.round(srcH * scale);
-
-  const c = document.createElement('canvas');
-  c.width = w;
-  c.height = h;
-  const ctx = c.getContext('2d');
-
-  ctx.translate(w, 0);
-  ctx.scale(-1, 1);
-  ctx.drawImage(video, 0, 0, w, h);
-
-  return c.toDataURL('image/jpeg', quality);
-}
-
-/**************************************************
- * INITIAL DATA (เพิ่ม fallback)
- **************************************************/
-async function init() {
-  const apiUrl = getApiUrl();
-  $('apiUrlDisplay').textContent = apiUrl ? 'API: ' + apiUrl : 'ยังไม่ได้ตั้งค่า URL';
-
-  if (!apiUrl) {
-    setConnectionStatus(false, 'ยังไม่ได้ตั้งค่า URL');
-    return;
+    if (!res.ok) {
+      const msg = (data && (data.message || data.error)) ? (data.message || data.error) : `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+    return data;
   }
 
-  try {
-    let result = null;
+  // ===== Ping API =====
+  async function pingApi() {
+    try {
+      setBusy(true);
+      await apiPost("getTodaySummary", { ts: Date.now() });
+      toast("API ใช้งานได้ ✅");
+    } catch (e) {
+      toast("ทดสอบไม่ผ่าน: " + e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  $("btnPingPC")?.addEventListener("click", pingApi);
+  $("btnPingSide")?.addEventListener("click", pingApi);
+  $("btnPingDrawer")?.addEventListener("click", pingApi);
+
+  // ===== GPS =====
+  function getGPS() {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) return resolve(null);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy }),
+        () => resolve(null),
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      );
+    });
+  }
+
+  // ===== Camera =====
+  async function loadCameras() {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cams = devices.filter((d) => d.kind === "videoinput");
+
+      const sel = $("cameraSelect");
+      if (!sel) return;
+
+      sel.innerHTML = cams
+        .map((c, i) => `<option value="${c.deviceId}">${escapeHtml(c.label || `Camera ${i + 1}`)}</option>`)
+        .join("");
+
+      if (cams.length && !sel.value) sel.value = cams[0].deviceId;
+    } catch {}
+  }
+
+  async function startCamera() {
+    if (busy) return;
+    stopCamera();
+
+    const sel = $("cameraSelect");
+    const deviceId = sel?.value || undefined;
 
     try {
-      result = await api.call('getInitialData');
-    } catch (e) {
-      console.warn('getInitialData failed -> fallback to getEmployees/getTodaySummary', e);
+      setBusy(true);
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: "user" },
+        audio: false
+      });
 
-      const [emps, today] = await Promise.allSettled([
-        api.call('getEmployees'),
-        api.call('getTodaySummary'),
-      ]);
+      const v = $("video");
+      if (!v) return;
 
-      result = {
-        employees: emps.status === 'fulfilled' ? emps.value : [],
-        todaySummary: today.status === 'fulfilled' ? today.value : []
-      };
+      v.srcObject = stream;
+      await v.play();
+      v.style.display = "block";
+      $("camHint") && ($("camHint").style.display = "none");
+      toast("เปิดกล้องแล้ว ✅");
+    } catch (err) {
+      stopCamera();
+      toast("เปิดกล้องไม่สำเร็จ: " + (err?.message || "unknown"));
+    } finally {
+      setBusy(false);
     }
-
-    employeesCache = result.employees || [];
-    setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
-    loadTodaySummaryFromResult(result.todaySummary);
-    rebuildDatalist();
-
-    ensureModelsLoaded();
-  } catch (err) {
-    console.error(err);
-    setConnectionStatus(false, err.message);
-  }
-}
-
-function rebuildDatalist() {
-  const dl = $('empDatalist');
-  if (!dl) return;
-  dl.innerHTML = '';
-  for (const e of employeesCache) {
-    const code = String(e.code || '').trim();
-    if (!code) continue;
-    const name = String(e.fullName || e.fullname || '').trim();
-    const opt = document.createElement('option');
-    opt.value = code;
-    opt.label = name ? `${code} - ${name}` : code;
-    dl.appendChild(opt);
-  }
-}
-
-function loadTodaySummaryFromResult(summary) {
-  const tbody = $('todaySummaryBody');
-  if (!tbody) return;
-
-  const rows = Array.isArray(summary) ? summary : [];
-  if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:12px 8px;" class="text-muted">ยังไม่มีข้อมูลของวันนี้</td></tr>';
-    return;
   }
 
-  tbody.innerHTML = rows.map(row => `
-    <tr>
-      <td>${row.code || ''}</td>
-      <td>${row.fullName || ''}</td>
-      <td>${row.branch || ''}</td>
-      <td>${row.level || ''}</td>
-      <td>${row.t1 || ''}</td>
-      <td>${row.t2 || ''}</td>
-      <td>${row.t3 || ''}</td>
-      <td>${row.t4 || ''}</td>
-      <td>${statusBadgeHtml(row.status || '')}</td>
-    </tr>
-  `).join('');
-}
-
-async function loadTodaySummary() {
-  try {
-    const result = await api.call('getTodaySummary');
-    loadTodaySummaryFromResult(result);
-  } catch (err) {
-    alert('โหลดภาพรวมวันนี้ไม่สำเร็จ: ' + err.message);
-  }
-}
-
-/**************************************************
- * MANUAL MODAL
- **************************************************/
-function findEmployeeByCode(code) {
-  return employeesCache.find(e => String(e.code) === String(code));
-}
-
-function updateManualEmpInfo() {
-  const code = $('manualCode').value.trim();
-  const infoEl = $('manualEmpInfo');
-  if (!code) {
-    infoEl.textContent = 'กรอกรหัสแล้วระบบจะแสดงชื่อ-สกุล / แผนก / ระดับ';
-    return;
-  }
-  const emp = findEmployeeByCode(code);
-  if (!emp) infoEl.textContent = 'ไม่พบพนักงานรหัสนี้ในชีต Employees';
-  else infoEl.textContent = `${emp.fullName || ''} | แผนก: ${emp.branch || '-'} | ระดับ: ${emp.level || '-'}`;
-}
-
-async function submitManual() {
-  const code   = $('manualCode').value.trim();
-  const type   = $('manualType').value;
-  const fileEl = $('manualFile');
-  const resultEl = $('manualResult');
-  const errEl = $('manualError');
-  const sucEl = $('manualSuccess');
-  const submitBtn = $('btnManualSubmit');
-
-  errEl.style.display = 'none';
-  sucEl.style.display = 'none';
-  resultEl.value = '';
-
-  if (!code) {
-    errEl.textContent = 'กรุณากรอกรหัสพนักงาน';
-    errEl.style.display = 'block';
-    return;
-  }
-
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'กำลังบันทึก...';
-  resultEl.value = 'กำลังขอสิทธิ์และดึงพิกัด GPS จากอุปกรณ์...';
-
-  try {
-    const position = await getCurrentPositionPromise({ enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
-    const { latitude, longitude } = position.coords;
-
-    const file = fileEl.files[0];
-    const base64 = await fileToBase64(file);
-
-    const payload = { code, lat: latitude, lng: longitude, manualType: type };
-    if (base64) {
-      payload.evidenceBase64 = base64;
-      payload.evidenceName   = file ? file.name : ('evidence-' + code + '.png');
+  function stopCamera() {
+    const v = $("video");
+    if (stream) {
+      stream.getTracks().forEach((t) => t.stop());
+      stream = null;
     }
-
-    const res = await api.call('saveManualLog', payload);
-
-    const lines = [];
-    lines.push(`บันทึกสำเร็จ: เวลา ${res.time} (${res.slot})`);
-    if (res.employee) {
-      lines.push(`รหัส: ${res.employee.code}`);
-      lines.push(`ชื่อ: ${res.employee.fullName || ''}`);
-      lines.push(`แผนก: ${res.employee.branch || ''}`);
-      lines.push(`ระดับ: ${res.employee.level || ''}`);
+    if (v) {
+      v.pause();
+      v.srcObject = null;
+      v.style.display = "none";
     }
-    lines.push(`สถานะวันนี้: ${res.status || ''}`);
-
-    if (res.location) {
-      const loc = res.location;
-      if (loc.locationText) lines.push(`สถานที่โดยประมาณ: ${loc.locationText}`);
-      if (loc.lat && loc.lng) {
-        lines.push(`พิกัด: ${loc.lat}, ${loc.lng}`);
-        lines.push(`แผนที่: https://www.google.com/maps?q=${loc.lat},${loc.lng}`);
-      }
-    }
-
-    if (res.locationZone) {
-      if (res.locationZone === 'IN') lines.push(`โซนตำแหน่ง: ในเขตบริษัท`);
-      else if (res.locationZone === 'OUT') lines.push(`โซนตำแหน่ง: นอกเขตบริษัท (กรุณาตรวจสอบ)`);
-    }
-
-    if (res.evidenceUrl) lines.push(`หลักฐาน: ${res.evidenceUrl}`);
-    resultEl.value = lines.join('\n');
-
-    sucEl.textContent = 'บันทึกเรียบร้อยแล้ว';
-    sucEl.style.display = 'block';
-
-    updateLatestFromManual(res);
-    loadTodaySummary();
-
-    setTimeout(() => hideModal('modalManual'), 1500);
-
-  } catch (err) {
-    console.error(err);
-    errEl.textContent = 'บันทึกไม่สำเร็จ: ' + err.message;
-    errEl.style.display = 'block';
-    resultEl.value = '';
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'ยืนยันบันทึก';
-  }
-}
-
-function updateLatestFromManual(res) {
-  const box = $('latestContent');
-  if (!box) return;
-  const emp = res.employee || {};
-  const statusHtml = statusBadgeHtml(res.status || '');
-  const loc = res.location || {};
-  let zoneText = '';
-  if (res.locationZone === 'IN') zoneText = ' (ในเขตบริษัท)';
-  else if (res.locationZone === 'OUT') zoneText = ' (นอกเขตบริษัท - กรุณาตรวจสอบ)';
-
-  let locationHtml = '';
-  if (loc.lat && loc.lng) {
-    const mapUrl = 'https://www.google.com/maps?q=' + encodeURIComponent(loc.lat + ',' + loc.lng);
-    const locText = loc.locationText ? loc.locationText + '<br>' : '';
-    locationHtml = `
-      <div class="latest-row mt-8">
-        <span class="label">สถานที่</span>
-        <span>${locText}<a href="${mapUrl}" target="_blank">เปิดแผนที่ (Google Maps)</a>${zoneText}</span>
-      </div>`;
+    $("camHint") && ($("camHint").style.display = "block");
   }
 
-  box.innerHTML = `
-    <div class="latest-row">
-      <span class="label">พนักงาน</span>
-      <span>${emp.code || ''} - ${emp.fullName || ''}</span>
-    </div>
-    <div class="latest-row mt-8">
-      <span class="label">เวลา</span>
-      <span>${res.time || ''} (ลงช่อง ${res.slot || '-'})</span>
-    </div>
-    <div class="latest-row mt-8">
-      <span class="label">สถานะวันนี้</span>
-      <span>${statusHtml}</span>
-    </div>
-    ${locationHtml}
-    ${res.evidenceUrl ? `
-    <div class="latest-row mt-8">
-      <span class="label">หลักฐาน</span>
-      <span><a href="${res.evidenceUrl}" target="_blank">เปิดรูปหลักฐาน</a></span>
-    </div>` : ''}
-  `;
-}
-
-/**************************************************
- * CHECK TODAY
- **************************************************/
-async function submitCheckToday() {
-  const code = $('checkCode').value.trim();
-  const resultEl = $('checkResult');
-  const errEl = $('checkError');
-
-  errEl.style.display = 'none';
-  resultEl.value = '';
-
-  if (!code) {
-    errEl.textContent = 'กรุณากรอกรหัสพนักงาน';
-    errEl.style.display = 'block';
-    return;
-  }
-
-  try {
-    const res = await api.call('checkTodayByCode', { code });
-    if (!res.found) {
-      resultEl.value = res.message || 'วันนี้ยังไม่มีการบันทึกเวลา';
+  function capture() {
+    const v = $("video");
+    if (!stream || !v || v.readyState < 2) {
+      toast("กล้องยังไม่พร้อม");
       return;
     }
 
-    const emp = res.employee || {};
-    const log = res.log || {};
-    const lines = [];
-    lines.push(`รหัส: ${emp.code || ''}`);
-    lines.push(`ชื่อ: ${emp.fullName || ''}`);
-    lines.push(`แผนก: ${emp.branch || ''}`);
-    lines.push(`ระดับ: ${emp.level || ''}`);
-    lines.push('-----------------------------');
-    lines.push(`เข้าเช้า (t1): ${log.t1 || '-'}`);
-    lines.push(`ออกเที่ยง (t2): ${log.t2 || '-'}`);
-    lines.push(`เข้าเที่ยง (t3): ${log.t3 || '-'}`);
-    lines.push(`ออกเย็น (t4): ${log.t4 || '-'}`);
-    lines.push(`Extra1: ${log.tExtra1 || '-'}`);
-    lines.push(`Extra2: ${log.tExtra2 || '-'}`);
-    lines.push('-----------------------------');
-    lines.push(`สถานะวันนี้: ${log.status || '-'}`);
-    if (log.evidenceUrl) lines.push(`หลักฐาน: ${log.evidenceUrl}`);
+    const canvas = document.createElement("canvas");
+    const w = v.videoWidth || 1280;
+    const h = v.videoHeight || 720;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(v, 0, 0, w, h);
 
-    if (log.locationText || (log.lat && log.lng)) {
-      lines.push('-----------------------------');
-      if (log.locationText) lines.push(`สถานที่โดยประมาณ: ${log.locationText}`);
-      if (log.lat && log.lng) {
-        lines.push(`พิกัด: ${log.lat}, ${log.lng}`);
-        lines.push(`แผนที่: https://www.google.com/maps?q=${log.lat},${log.lng}`);
-      }
-    }
+    canvas.toBlob((blob) => {
+      if (!blob) return toast("ถ่ายรูปไม่สำเร็จ");
+      lastCapturedBlob = blob;
+      lastCapturedInfo = { w, h, size: blob.size, time: new Date().toISOString() };
 
-    resultEl.value = lines.join('\n');
+      const thumb = $("thumb");
+      const info = $("previewInfo");
+      const row = $("previewRow");
 
-  } catch (err) {
-    console.error(err);
-    errEl.textContent = 'ตรวจสอบไม่สำเร็จ: ' + err.message;
-    errEl.style.display = 'block';
-  }
-}
+      if (thumb) thumb.src = URL.createObjectURL(blob);
+      if (info) info.textContent = `ขนาด ${w}×${h} | ${(blob.size / 1024).toFixed(0)} KB`;
+      if (row) row.style.display = "flex";
 
-/**************************************************
- * URL MODAL
- **************************************************/
-function openUrlModal() {
-  $('inputApiUrl').value = getApiUrl();
-  $('urlError').style.display = 'none';
-  showModal('modalUrl');
-}
-
-function saveUrl() {
-  const url = $('inputApiUrl').value.trim();
-  const errEl = $('urlError');
-  errEl.style.display = 'none';
-
-  if (!url) {
-    errEl.textContent = 'กรุณากรอก URL';
-    errEl.style.display = 'block';
-    return;
+      toast("ถ่ายรูปแล้ว ✅");
+    }, "image/jpeg", 0.85);
   }
 
-  if (!/^https:\/\/script\.google\.com\/macros\/s\//.test(url)) {
-    if (!confirm('URL ดูเหมือนจะไม่ใช่ Web App ของ Apps Script แน่ใจหรือไม่ว่าจะใช้ URL นี้?')) return;
-  }
-
-  setApiUrl(url);
-  $('apiUrlDisplay').textContent = 'API: ' + url;
-  hideModal('modalUrl');
-  init();
-}
-
-function resetUrl() {
-  if (confirm('ต้องการลบ URL ที่ตั้งค่าไว้หรือไม่?')) {
-    setApiUrl('');
-    $('apiUrlDisplay').textContent = 'ยังไม่ได้ตั้งค่า URL';
-    setConnectionStatus(false, 'ยังไม่ได้ตั้งค่า URL');
-
-    stopScanLoop();
-    stopCamera();
-  }
-}
-
-/**************************************************
- * FACE: CLOCK-IN FROM SCAN
- **************************************************/
-async function submitFromScan() {
-  if (!lockedMatch || !lockedMatch.code) {
-    alert('ยังไม่พบพนักงานจากการสแกน');
-    return;
-  }
-  const code = lockedMatch.code;
-
-  if (!confirm(`ยืนยันบันทึกเวลาให้: ${code} - ${lockedMatch.fullName} ?`)) return;
-
-  try {
-    const position = await getCurrentPositionPromise({ enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
-    const { latitude, longitude } = position.coords;
-
-    const evidenceBase64 = captureFrameBase64();
-
-    const payload = {
-      code,
-      lat: latitude,
-      lng: longitude,
-      manualType: 'FACE_SCAN',
-      evidenceBase64,
-      evidenceName: `scan-${code}-${Date.now()}.jpg`
-    };
-
-    const res = await api.call('saveManualLog', payload);
-
-    updateLatestFromManual(res);
-    loadTodaySummary();
-
-    alert(`บันทึกสำเร็จ: ${res.time} (${res.slot})\nสถานะ: ${res.status || '-'}`);
-
-    lockedMatch = null;
-    stableHit = 0;
-    $('btnScanSubmit').disabled = true;
-    setScanPills('สแกนต่อได้', '-');
-
-  } catch (err) {
-    console.error(err);
-    alert('บันทึกจากการสแกนไม่สำเร็จ: ' + err.message);
-  }
-}
-
-/**************************************************
- * ENROLL FACE (PC modal)
- **************************************************/
-function openEnrollModalPC() {
-  $('enrollLoginError').style.display = 'none';
-  $('enrollDoError').style.display = 'none';
-  $('enrollDoSuccess').style.display = 'none';
-
-  $('enrollStepLogin').style.display = enrollAuthed ? 'none' : 'block';
-  $('enrollStepDo').style.display = enrollAuthed ? 'block' : 'none';
-
-  $('enrollInfo').textContent = 'ถ้ากล้องยังไม่เปิด ให้กด “เปิดกล้อง”';
-  showModal('modalEnroll');
-}
-
-async function enrollLoginPC() {
-  const u = $('enrollUser').value.trim();
-  const p = $('enrollPass').value.trim();
-  const err = $('enrollLoginError');
-
-  err.style.display = 'none';
-
-  try {
-    const res = await api.call('loginAdmin', { username: u, password: p });
-    if (!res || !res.success) throw new Error('เข้าสู่ระบบไม่สำเร็จ');
-    enrollAuthed = true;
-
-    $('enrollStepLogin').style.display = 'none';
-    $('enrollStepDo').style.display = 'block';
-
-  } catch (e) {
-    err.textContent = e.message || String(e);
-    err.style.display = 'block';
-  }
-}
-
-async function enrollStartCameraPC() {
-  const info = $('enrollInfo');
-  try {
-    const ok = await ensureModelsLoaded();
-    if (!ok) throw new Error('โมเดลไม่พร้อม');
-
-    const deviceId = $('cameraSelect').value;
-    await startCamera(deviceId || '');
-    info.textContent = 'กล้องพร้อมแล้ว ✅ (จัดหน้าตรง ๆ แล้วกด “ถ่ายและบันทึกใบหน้า”)';
-  } catch (e) {
-    console.error(e);
-    info.textContent = 'เปิดกล้องไม่สำเร็จ: ' + e.message;
-  }
-}
-
-async function enrollCaptureAndUploadPC() {
-  const code = $('enrollCode').value.trim();
-  const err = $('enrollDoError');
-  const suc = $('enrollDoSuccess');
-  err.style.display = 'none';
-  suc.style.display = 'none';
-
-  if (!code) {
-    err.textContent = 'กรุณากรอกรหัสพนักงาน';
-    err.style.display = 'block';
-    return;
-  }
-
-  if (!camStream) {
-    err.textContent = 'ยังไม่ได้เปิดกล้อง กรุณากด “เปิดกล้อง”';
-    err.style.display = 'block';
-    return;
-  }
-
-  const ok = await ensureModelsLoaded();
-  if (!ok) {
-    err.textContent = 'โมเดลไม่พร้อม ตรวจสอบโฟลเดอร์ models/';
-    err.style.display = 'block';
-    return;
-  }
-
-  try {
-    const video = $('camVideo');
-    const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
-
-    const result = await faceapi
-      .detectSingleFace(video, opts)
-      .withFaceLandmarks()
-      .withFaceDescriptor();
-
-    if (!result) {
-      throw new Error('ไม่พบใบหน้าในภาพ กรุณาขยับเข้าใกล้/ปรับแสง แล้วลองใหม่');
-    }
-
-    const faceData = JSON.stringify(Array.from(result.descriptor));
-    const photoBase64 = captureFrameBase64();
-
-    const payload = {
-      code,
-      faceData,
-      photoBase64,
-      fileName: `face-${code}-${Date.now()}.jpg`
-    };
-
-    const res = await api.call('uploadEmployeeFace', payload);
-
-    suc.textContent = `บันทึกใบหน้าสำเร็จ ✅ (${res.code})`;
-    suc.style.display = 'block';
-
-    const fresh = await api.call('getEmployees');
-    employeesCache = fresh || [];
-    rebuildDatalist();
-
-  } catch (e) {
-    console.error(e);
-    err.textContent = e.message || String(e);
-    err.style.display = 'block';
-  }
-}
-
-/**************************************************
- * ENROLL FACE (Mobile Sheet)
- **************************************************/
-function openEnrollMobileSheet() {
-  setTab('scan');
-
-  $('mEnrollLoginError').style.display = 'none';
-  $('mEnrollDoError').style.display = 'none';
-  $('mEnrollDoSuccess').style.display = 'none';
-
-  $('mEnrollStepLogin').style.display = enrollAuthed ? 'none' : 'block';
-  $('mEnrollStepDo').style.display = enrollAuthed ? 'block' : 'none';
-
-  $('mEnrollInfo').textContent = 'ถ้ากล้องยังไม่เปิด ให้กด “เปิดกล้อง”';
-  showSheet('enrollSheetBackdrop');
-}
-
-async function enrollLoginMobile() {
-  const u = $('mEnrollUser').value.trim();
-  const p = $('mEnrollPass').value.trim();
-  const err = $('mEnrollLoginError');
-  err.style.display = 'none';
-
-  try {
-    const res = await api.call('loginAdmin', { username: u, password: p });
-    if (!res || !res.success) throw new Error('เข้าสู่ระบบไม่สำเร็จ');
-    enrollAuthed = true;
-
-    $('mEnrollStepLogin').style.display = 'none';
-    $('mEnrollStepDo').style.display = 'block';
-
-  } catch (e) {
-    err.textContent = e.message || String(e);
-    err.style.display = 'block';
-  }
-}
-
-async function enrollStartCameraMobile() {
-  const info = $('mEnrollInfo');
-  try {
-    const ok = await ensureModelsLoaded();
-    if (!ok) throw new Error('โมเดลไม่พร้อม');
-
-    const deviceId = $('cameraSelect').value;
-    await startCamera(deviceId || '');
-    info.textContent = 'กล้องพร้อมแล้ว ✅ (ดูหน้าคุณบนการ์ดกล้องด้านบน แล้วกด “ถ่ายและบันทึกใบหน้า”)';
-  } catch (e) {
-    console.error(e);
-    info.textContent = 'เปิดกล้องไม่สำเร็จ: ' + e.message;
-  }
-}
-
-async function enrollCaptureAndUploadMobile() {
-  const code = $('mEnrollCode').value.trim();
-  const err = $('mEnrollDoError');
-  const suc = $('mEnrollDoSuccess');
-  err.style.display = 'none';
-  suc.style.display = 'none';
-
-  if (!code) {
-    err.textContent = 'กรุณากรอกรหัสพนักงาน';
-    err.style.display = 'block';
-    return;
-  }
-
-  if (!camStream) {
-    err.textContent = 'ยังไม่ได้เปิดกล้อง กรุณากด “เปิดกล้อง”';
-    err.style.display = 'block';
-    return;
-  }
-
-  const ok = await ensureModelsLoaded();
-  if (!ok) {
-    err.textContent = 'โมเดลไม่พร้อม ตรวจสอบโฟลเดอร์ models/';
-    err.style.display = 'block';
-    return;
-  }
-
-  try {
-    const video = $('camVideo');
-    const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
-
-    const result = await faceapi
-      .detectSingleFace(video, opts)
-      .withFaceLandmarks()
-      .withFaceDescriptor();
-
-    if (!result) throw new Error('ไม่พบใบหน้าในภาพ กรุณาจัดหน้าตรง/ปรับแสง แล้วลองใหม่');
-
-    const faceData = JSON.stringify(Array.from(result.descriptor));
-    const photoBase64 = captureFrameBase64();
-
-    const payload = {
-      code,
-      faceData,
-      photoBase64,
-      fileName: `face-${code}-${Date.now()}.jpg`
-    };
-
-    const res = await api.call('uploadEmployeeFace', payload);
-
-    suc.textContent = `บันทึกใบหน้าสำเร็จ ✅ (${res.code})`;
-    suc.style.display = 'block';
-
-    const fresh = await api.call('getEmployees');
-    employeesCache = fresh || [];
-    rebuildDatalist();
-
-  } catch (e) {
-    console.error(e);
-    err.textContent = e.message || String(e);
-    err.style.display = 'block';
-  }
-}
-
-/**************************************************
- * TAB CONTROL (Mobile)
- **************************************************/
-function setTab(tabName){
-  document.body.dataset.tab = tabName;
-  const nav = $('mobileBottomNav');
-  if(!nav) return;
-  nav.querySelectorAll('.nav-item').forEach(item=>{
-    item.classList.toggle('active', item.getAttribute('data-tab') === tabName);
-  });
-}
-
-/**************************************************
- * MENU SHEET (Mobile)
- **************************************************/
-function openMenuSheet(){ showSheet('menuSheetBackdrop'); }
-function closeMenuSheet(){ hideSheet('menuSheetBackdrop'); }
-function closeEnrollSheet(){ hideSheet('enrollSheetBackdrop'); }
-
-/**************************************************
- * EVENT BINDING + CLEANUP
- **************************************************/
-document.addEventListener('DOMContentLoaded', async () => {
-  if (isMobile()) setTab('scan');
-
-  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-    await listCameras();
-  }
-
-  document.querySelectorAll('[data-close-modal]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-close-modal');
-      hideModal(id);
-      if (id === 'modalEnroll') { stopScanLoop(); stopCamera(); }
-    });
-  });
-
-  document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
-    backdrop.addEventListener('click', e => {
-      if (e.target === backdrop) {
-        backdrop.classList.remove('show');
-        if (backdrop.id === 'modalEnroll') { stopScanLoop(); stopCamera(); }
-      }
-    });
-  });
-
-  $('menuSheetBackdrop').addEventListener('click', (e)=>{
-    if(e.target === $('menuSheetBackdrop')) closeMenuSheet();
-  });
-  $('enrollSheetBackdrop').addEventListener('click', (e)=>{
-    if(e.target === $('enrollSheetBackdrop')) closeEnrollSheet();
-  });
-
-  $('btnSetUrl').addEventListener('click', openUrlModal);
-  $('btnSaveUrl').addEventListener('click', saveUrl);
-  $('btnResetUrl').addEventListener('click', resetUrl);
-
-  $('btnGoAdmin').addEventListener('click', () => { window.location.href = 'admin.html'; });
-
-  $('btnOpenManualModal').addEventListener('click', () => {
-    $('manualCode').value = '';
-    $('manualFile').value = '';
-    $('manualType').value = 'AUTO';
-    $('manualResult').value = '';
-    $('manualError').style.display = 'none';
-    $('manualSuccess').style.display = 'none';
-    $('manualEmpInfo').textContent = 'กรอกรหัสแล้วระบบจะแสดงชื่อ-สกุล / แผนก / ระดับ';
-    showModal('modalManual');
-  });
-  $('manualCode').addEventListener('input', updateManualEmpInfo);
-  $('btnManualSubmit').addEventListener('click', submitManual);
-
-  $('btnOpenCheckToday').addEventListener('click', () => {
-    $('checkCode').value = '';
-    $('checkResult').value = '';
-    $('checkError').style.display = 'none';
-    showModal('modalCheckToday');
-  });
-  $('btnCheckTodaySubmit').addEventListener('click', submitCheckToday);
-
-  $('btnRefreshToday').addEventListener('click', loadTodaySummary);
-
-  $('btnEnrollFace').addEventListener('click', () => {
-    if (isMobile()) openEnrollMobileSheet();
-    else openEnrollModalPC();
-  });
-
-  $('btnEnrollLogin').addEventListener('click', enrollLoginPC);
-  $('btnEnrollStartCam').addEventListener('click', enrollStartCameraPC);
-  $('btnEnrollCapture').addEventListener('click', enrollCaptureAndUploadPC);
-
-  $('cameraSelect').addEventListener('change', async () => {
-    if (!camStream) return;
+  $("btnStartCam")?.addEventListener("click", startCamera);
+  $("btnStopCam")?.addEventListener("click", () => { stopCamera(); toast("ปิดกล้องแล้ว"); });
+  $("btnCapture")?.addEventListener("click", capture);
+
+  // ===== Actions: Submit Scan =====
+  $("btnSubmitScan")?.addEventListener("click", async () => {
     try {
-      const id = $('cameraSelect').value;
-      await startCamera(id || '');
-    } catch (e) {
-      console.error(e);
-    }
-  });
+      if (busy) return;
+      setBusy(true);
 
-  $('btnStartScan').addEventListener('click', async () => {
-    try {
-      const apiUrl = getApiUrl();
-      if (!apiUrl) return alert('กรุณาตั้งค่า URL API ก่อน');
+      const code = $("scanCode")?.value.trim();
+      const type = $("scanType")?.value || "IN";
+      const note = $("scanNote")?.value.trim() || "";
 
-      const ok = await ensureModelsLoaded();
-      if (!ok) return alert('โหลดโมเดลไม่สำเร็จ ตรวจสอบโฟลเดอร์ models/ และ https');
+      if (!code) { toast("กรุณากรอกรหัสพนักงาน"); return; }
 
-      const deviceId = $('cameraSelect').value;
-      await startCamera(deviceId || '');
-      startScanLoop();
-    } catch (e) {
-      console.error(e);
-      alert('เริ่มสแกนไม่ได้: ' + (e.message || e));
-    }
-  });
+      const gps = ($("useGps")?.value === "1") ? await getGPS() : null;
 
-  $('btnStopScan').addEventListener('click', () => {
-    stopScanLoop();
-    stopCamera();
-  });
+      const payload = {
+        employeeCode: code,
+        type,
+        note,
+        gps,
+        source: "scan",
+        device: isMobile() ? "mobile" : "desktop",
+        captured: lastCapturedInfo || null,
+        clientTime: new Date().toISOString()
+      };
 
-  $('btnScanSubmit').addEventListener('click', submitFromScan);
+      const evidenceFile = $("scanEvidence")?.files?.[0] || null;
+      const photoFile = lastCapturedBlob
+        ? new File([lastCapturedBlob], `capture_${Date.now()}.jpg`, { type: "image/jpeg" })
+        : null;
 
-  const nav = $('mobileBottomNav');
-  if(nav){
-    nav.querySelectorAll('.nav-item').forEach(item=>{
-      item.addEventListener('click', ()=>{
-        const tab = item.getAttribute('data-tab');
-        setTab(tab);
+      const res = await apiPost("saveManualLog", payload, { photo: photoFile, evidence: evidenceFile });
+
+      $("resultBadge") && ($("resultBadge").textContent = "สำเร็จ");
+      if ($("resultBox")) {
+        $("resultBox").innerHTML = `
+          <div class="strong">✅ บันทึกสำเร็จ</div>
+          <div class="smallmuted mt10">${escapeHtml(JSON.stringify(res))}</div>
+        `;
+      }
+
+      saveLastResult({
+        time: fmtDT(),
+        title: `📌 บันทึก${type === "IN" ? "เข้า" : "ออก"} • รหัส ${code}`,
+        detail: note ? `หมายเหตุ: ${note}` : "—"
       });
-    });
+
+      toast("บันทึกสำเร็จ ✅");
+    } catch (e) {
+      $("resultBadge") && ($("resultBadge").textContent = "ผิดพลาด");
+      if ($("resultBox")) {
+        $("resultBox").innerHTML = `
+          <div class="strong" style="color: var(--bad)">เกิดข้อผิดพลาด</div>
+          <div class="smallmuted mt10">${escapeHtml(e.message)}</div>
+        `;
+      }
+      toast("ผิดพลาด: " + e.message);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  $("btnQuickCheck")?.addEventListener("click", () => {
+    showSection("secCheck");
+    const v = $("scanCode")?.value.trim() || "";
+    $("cCode") && ($("cCode").value = v);
+    setTimeout(() => $("btnCheckByCode")?.click(), 60);
+  });
+
+  // ===== Actions: Manual =====
+  $("btnSubmitManual")?.addEventListener("click", async () => {
+    try {
+      if (busy) return;
+      setBusy(true);
+
+      const code = $("mCode")?.value.trim();
+      const type = $("mType")?.value || "IN";
+      const reason = $("mReason")?.value.trim();
+
+      if (!code) { toast("กรุณากรอกรหัสพนักงาน"); return; }
+      if (!reason) { toast("กรุณากรอกเหตุผล/หมายเหตุ"); return; }
+
+      const gps = ($("mUseGps")?.value === "1") ? await getGPS() : null;
+      const evidenceFile = $("mEvidence")?.files?.[0] || null;
+
+      const payload = {
+        employeeCode: code,
+        type,
+        note: reason,
+        gps,
+        source: "manual",
+        device: isMobile() ? "mobile" : "desktop",
+        clientTime: new Date().toISOString()
+      };
+
+      const res = await apiPost("saveManualLog", payload, { evidence: evidenceFile });
+
+      $("resultBadge") && ($("resultBadge").textContent = "สำเร็จ");
+      if ($("resultBox")) {
+        $("resultBox").innerHTML = `
+          <div class="strong">✅ บันทึกด้วยมือสำเร็จ</div>
+          <div class="smallmuted mt10">${escapeHtml(JSON.stringify(res))}</div>
+        `;
+      }
+
+      saveLastResult({
+        time: fmtDT(),
+        title: `📝 บันทึกด้วยมือ • ${type === "IN" ? "เข้า" : "ออก"} • รหัส ${code}`,
+        detail: reason
+      });
+
+      toast("บันทึกด้วยมือสำเร็จ ✅");
+      showSection("secCheck");
+    } catch (e) {
+      toast("ผิดพลาด: " + e.message);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  // ===== Actions: Check By Code =====
+  $("btnCheckByCode")?.addEventListener("click", async () => {
+    try {
+      if (busy) return;
+      setBusy(true);
+
+      const code = $("cCode")?.value.trim();
+      const date = $("cDate")?.value;
+
+      if (!code) { toast("กรุณากรอกรหัสพนักงาน"); return; }
+
+      const res = await apiPost("getTodayByCode", { employeeCode: code, date });
+
+      $("resultBadge") && ($("resultBadge").textContent = "โหลดแล้ว");
+      if ($("resultBox")) {
+        $("resultBox").innerHTML = `
+          <div class="strong">🧾 ผลการเช็ค • รหัส ${escapeHtml(code)}</div>
+          <pre class="preBox">${escapeHtml(JSON.stringify(res, null, 2))}</pre>
+        `;
+      }
+      toast("ดึงข้อมูลสำเร็จ ✅");
+    } catch (e) {
+      $("resultBadge") && ($("resultBadge").textContent = "ผิดพลาด");
+      if ($("resultBox")) {
+        $("resultBox").innerHTML = `
+          <div class="strong" style="color: var(--bad)">เกิดข้อผิดพลาด</div>
+          <div class="smallmuted mt10">${escapeHtml(e.message)}</div>
+        `;
+      }
+      toast("ผิดพลาด: " + e.message);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  // ===== Actions: Today Summary =====
+  $("btnTodaySummary")?.addEventListener("click", async () => {
+    try {
+      if (busy) return;
+      setBusy(true);
+
+      const res = await apiPost("getTodaySummary", { date: $("cDate")?.value });
+
+      $("resultBadge") && ($("resultBadge").textContent = "สรุปแล้ว");
+      if ($("resultBox")) {
+        $("resultBox").innerHTML = `
+          <div class="strong">📊 สรุปภาพรวมวันนี้</div>
+          <pre class="preBox">${escapeHtml(JSON.stringify(res, null, 2))}</pre>
+        `;
+      }
+      toast("โหลดสรุปสำเร็จ ✅");
+    } catch (e) {
+      toast("ผิดพลาด: " + e.message);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  // ===== HR: Login =====
+  $("btnLogin")?.addEventListener("click", async () => {
+    try {
+      if (busy) return;
+      setBusy(true);
+
+      const username = $("hrUser")?.value.trim();
+      const password = $("hrPass")?.value;
+
+      if (!username || !password) { toast("กรุณากรอก Username/Password"); return; }
+
+      const res = await apiPost("loginAdmin", { username, password });
+
+      const token = res?.token || res?.data?.token || "ok";
+      localStorage.setItem(LS_ADMIN_TOKEN, token);
+
+      if ($("btnGoAdmin")) {
+        $("btnGoAdmin").style.pointerEvents = "auto";
+        $("btnGoAdmin").style.opacity = "1";
+      }
+      toast("เข้าสู่ระบบสำเร็จ ✅");
+    } catch (e) {
+      toast("เข้าสู่ระบบไม่สำเร็จ: " + e.message);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  // ===== HR: Upload Face =====
+  $("btnUploadFace")?.addEventListener("click", async () => {
+    try {
+      if (busy) return;
+      setBusy(true);
+
+      const code = $("regCode")?.value.trim();
+      const file = $("regFace")?.files?.[0] || null;
+
+      if (!code) { toast("กรุณากรอกรหัสพนักงาน"); return; }
+      if (!file) { toast("กรุณาเลือกรูปใบหน้า"); return; }
+
+      const res = await apiPost("uploadEmployeeFace", { employeeCode: code }, { face: file });
+
+      saveLastResult({
+        time: fmtDT(),
+        title: `🙂 อัปโหลดใบหน้า • รหัส ${code}`,
+        detail: file.name
+      });
+
+      toast("อัปโหลดใบหน้าสำเร็จ ✅");
+      // แสดงผลไว้ใน result box ด้วย
+      $("resultBadge") && ($("resultBadge").textContent = "HR OK");
+      if ($("resultBox")) {
+        $("resultBox").innerHTML = `
+          <div class="strong">🙂 อัปโหลดใบหน้าสำเร็จ</div>
+          <pre class="preBox">${escapeHtml(JSON.stringify(res, null, 2))}</pre>
+        `;
+      }
+    } catch (e) {
+      toast("อัปโหลดไม่สำเร็จ: " + e.message);
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  // ===== Add style for preBox via JS (กันลืม) =====
+  function injectPreStyle() {
+    const style = document.createElement("style");
+    style.textContent = `
+      .preBox{
+        margin-top:10px;
+        background:#0b1220;
+        color:#e5e7eb;
+        padding:12px;
+        border-radius:14px;
+        overflow:auto;
+        border:1px solid rgba(255,255,255,.10);
+        font-size:12px;
+        line-height:1.5;
+        white-space:pre-wrap;
+        word-break:break-word;
+      }
+    `;
+    document.head.appendChild(style);
   }
 
-  $('btnHamburger').addEventListener('click', openMenuSheet);
-  $('btnCloseMenuSheet').addEventListener('click', closeMenuSheet);
+  // ===== Init =====
+  async function init() {
+    injectPreStyle();
+    refreshApiStatus();
+    initBadges();
+    renderLastResult();
 
-  $('mBtnSetUrl').addEventListener('click', ()=>{ closeMenuSheet(); openUrlModal(); });
-  $('mBtnResetUrl').addEventListener('click', ()=>{ closeMenuSheet(); resetUrl(); });
-  $('mBtnEnrollFace').addEventListener('click', ()=>{ closeMenuSheet(); openEnrollMobileSheet(); });
-  $('mBtnGoAdmin').addEventListener('click', ()=>{ closeMenuSheet(); window.location.href='admin.html'; });
+    // set admin link state
+    if (localStorage.getItem(LS_ADMIN_TOKEN) && $("btnGoAdmin")) {
+      $("btnGoAdmin").style.pointerEvents = "auto";
+      $("btnGoAdmin").style.opacity = "1";
+    }
 
-  $('btnCloseEnrollSheet').addEventListener('click', closeEnrollSheet);
-  $('mBtnEnrollCancelLogin').addEventListener('click', closeEnrollSheet);
-  $('mBtnEnrollLogin').addEventListener('click', enrollLoginMobile);
-  $('mBtnEnrollClose').addEventListener('click', closeEnrollSheet);
-  $('mBtnEnrollStartCam').addEventListener('click', enrollStartCameraMobile);
-  $('mBtnEnrollCapture').addEventListener('click', enrollCaptureAndUploadMobile);
+    // camera permission soft request (เพื่อให้ชื่อกล้องโชว์)
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        tmp.getTracks().forEach(t => t.stop());
+      } catch {
+        // ไม่บังคับ
+      }
+      await loadCameras();
+    } else {
+      toast("เบราว์เซอร์นี้ไม่รองรับกล้อง");
+    }
 
-  init();
-});
+    // refresh time periodically
+    setInterval(() => {
+      $("nowBadge") && ($("nowBadge").textContent = fmtDT());
+      $("pcNowText") && ($("pcNowText").textContent = fmtDT());
+    }, 10000);
 
-window.addEventListener('beforeunload', () => {
-  try { stopScanLoop(); } catch(e){}
-  try { stopCamera(); } catch(e){}
-});
+    // sync device badge
+    const syncDevice = () => {
+      $("deviceBadge") && ($("deviceBadge").textContent = isMobile() ? "Mobile" : "Desktop");
+      $("pcDeviceText") && ($("pcDeviceText").textContent = isMobile() ? "Mobile" : "Desktop");
+    };
+    window.addEventListener("resize", syncDevice);
+
+    // quick open drawer buttons in PC
+    // (ป้องกัน null)
+    $("btnOpenDrawerPC") && $("btnOpenDrawerPC").addEventListener("click", openDrawer);
+
+    // default section
+    showSection("secScan");
+  }
+
+  init().catch(e => toast("Init error: " + e.message));
+})();
