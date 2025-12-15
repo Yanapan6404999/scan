@@ -7,7 +7,11 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- ✅ ลดความหนาตามที่ไม่ชอบ: ใช้ 300-600 -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- ✅ face-api.js (CDN) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
   <style>
     :root{
@@ -20,7 +24,6 @@
       --blue:#2563eb;
       --blue2:#1d4ed8;
       --green:#16a34a;
-      --green2:#15803d;
       --warn:#f59e0b;
       --red:#ef4444;
 
@@ -40,6 +43,7 @@
     body{
       margin:0;
       font-family:"Prompt",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+      font-weight: 400;
       color:var(--text);
       background:
         radial-gradient(1000px 520px at 15% 0%, rgba(37,99,235,.14) 0%, transparent 60%),
@@ -49,12 +53,10 @@
     a{color:var(--blue);text-decoration:none}
     button,input,select,textarea{font-family:inherit}
 
-    /* ====== helpers ====== */
     .wrap{max-width:1180px;margin:0 auto;padding:16px 14px 20px}
     .muted{color:var(--muted)}
     .small{font-size:12px}
     .tiny{font-size:11px}
-    .bold{font-weight:900}
     .mt8{margin-top:8px}
     .mt10{margin-top:10px}
     .mt12{margin-top:12px}
@@ -65,7 +67,6 @@
     .hide{display:none!important}
     .hr{height:1px;background:rgba(229,231,235,.95);margin:14px 0}
 
-    /* ====== responsive visibility ====== */
     .mOnly{display:block}
     .dOnly{display:none}
     @media(min-width: 980px){
@@ -73,44 +74,7 @@
       .dOnly{display:block}
     }
 
-    /* ====== top (PC) ====== */
-    .topbar{
-      position:sticky;top:0;z-index:50;
-      background: rgba(246,248,251,.84);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(229,231,235,.85);
-    }
-    .topbarIn{
-      max-width:1180px;margin:0 auto;
-      padding: 10px 14px;
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
-    }
-    .brand{
-      display:flex;align-items:center;gap:10px;
-    }
-    .logo{
-      width:42px;height:42px;border-radius:16px;
-      display:flex;align-items:center;justify-content:center;
-      background: rgba(22,163,74,.10);
-      border: 1px solid rgba(22,163,74,.20);
-      box-shadow: var(--shadow2);
-      font-size:18px;
-    }
-    .brandTitle{
-      font-weight:950;
-      font-size:16px;
-      letter-spacing:.2px;
-      margin:0;
-    }
-    .brandSub{
-      margin:2px 0 0;
-      font-size:12px;
-      color:var(--muted);
-    }
-
-    .topActions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
-
-    /* ====== mobile app header ====== */
+    /* ===== Mobile Header ===== */
     .mHeader{
       position: sticky; top: 0; z-index: 60;
       padding-top: var(--safeT);
@@ -136,9 +100,8 @@
       box-shadow: var(--shadow2);
       font-size:18px;
     }
-    .mTitle{font-weight:950;font-size:16px;margin:0}
+    .mTitle{font-weight:600;font-size:16px;margin:0}
     .mSub{font-size:12px;color:var(--muted);margin-top:2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-
     .mMenuBtn{
       border:1px solid rgba(229,231,235,.95);
       background: rgba(255,255,255,.92);
@@ -147,12 +110,42 @@
       display:flex;align-items:center;gap:8px;
       box-shadow: var(--shadow2);
       cursor:pointer;
-      font-weight:950;
+      font-weight:600;
     }
     .mHamb{font-size:18px;line-height:1}
     .mMenuTxt{font-size:14px}
 
-    /* ====== cards ====== */
+    /* ===== PC Topbar ===== */
+    .topbar{
+      position:sticky;top:0;z-index:50;
+      background: rgba(246,248,251,.84);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(229,231,235,.85);
+    }
+    .topbarIn{
+      max-width:1180px;margin:0 auto;
+      padding: 10px 14px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .brand{display:flex;align-items:center;gap:10px;}
+    .logo{
+      width:42px;height:42px;border-radius:16px;
+      display:flex;align-items:center;justify-content:center;
+      background: rgba(22,163,74,.10);
+      border: 1px solid rgba(22,163,74,.20);
+      box-shadow: var(--shadow2);
+      font-size:18px;
+    }
+    .brandTitle{
+      font-weight:600;
+      font-size:16px;
+      letter-spacing:.2px;
+      margin:0;
+    }
+    .brandSub{margin:2px 0 0;font-size:12px;color:var(--muted);}
+    .topActions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+
+    /* ===== Layout ===== */
     .grid{
       display:grid;
       grid-template-columns: 1fr;
@@ -177,32 +170,10 @@
       display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
       background: linear-gradient(to bottom, rgba(255,255,255,.98), rgba(255,255,255,.86));
     }
-    .cardTitle{
-      margin:0;
-      font-weight:950;
-      font-size:15px;
-      letter-spacing:.2px;
-      display:flex;align-items:center;gap:8px;
-    }
+    .cardTitle{margin:0;font-weight:600;font-size:15px;letter-spacing:.2px;display:flex;align-items:center;gap:8px;}
     .cardB{padding:14px}
 
-    /* ====== hero (PC) ====== */
-    .hero{
-      border-radius: 22px;
-      overflow:hidden;
-      background:
-        radial-gradient(1100px 520px at 25% 0%, rgba(37,99,235,.18) 0%, transparent 60%),
-        radial-gradient(900px 520px at 95% 10%, rgba(22,163,74,.16) 0%, transparent 62%),
-        #fff;
-      border:1px solid rgba(229,231,235,.95);
-      box-shadow: var(--shadow);
-      padding: 18px;
-      position: relative;
-    }
-    .heroTop{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
-    .heroTitle{font-weight:980;font-size:22px;margin:0}
-    .heroSub{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.6}
-    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    /* ===== chips / dots ===== */
     .chip{
       display:inline-flex;align-items:center;gap:8px;
       padding: 7px 10px;
@@ -212,22 +183,8 @@
       box-shadow: var(--shadow2);
       font-size:12px;
       color: var(--muted);
-      font-weight:900;
+      font-weight:500;
     }
-
-    .pillStatus{
-      position:absolute;
-      right: 16px; bottom: 16px;
-      padding: 10px 12px;
-      border-radius: 999px;
-      border:1px solid rgba(229,231,235,.95);
-      background: rgba(255,255,255,.92);
-      box-shadow: var(--shadow);
-      display:flex;align-items:center;gap:10px;
-      font-weight:950;color:var(--muted);
-    }
-
-    /* ====== dot status ====== */
     .dot{
       width:10px;height:10px;border-radius:999px;
       background: var(--red);
@@ -238,10 +195,10 @@
     .dot.warn{background:var(--warn); box-shadow: 0 0 0 4px rgba(245,158,11,.18)}
     .dot.bad{background:var(--red); box-shadow: 0 0 0 4px rgba(239,68,68,.15)}
 
-    /* ====== form ====== */
+    /* ===== form ===== */
     .row{display:flex;gap:10px;flex-wrap:wrap}
     .col{flex:1;min-width:180px}
-    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500}
     input,select,textarea{
       width:100%;
       border:1px solid rgba(229,231,235,.98);
@@ -250,10 +207,11 @@
       border-radius: 14px;
       outline:none;
       font-size: 14px;
+      font-weight: 400;
     }
     textarea{min-height:92px;resize:vertical}
 
-    /* ====== buttons ====== */
+    /* ===== buttons ===== */
     .btnbar{display:flex;gap:10px;flex-wrap:wrap}
     .btn{
       cursor:pointer;
@@ -261,7 +219,7 @@
       background: rgba(255,255,255,.96);
       padding: 11px 12px;
       border-radius: 14px;
-      font-weight:950;
+      font-weight:600;
       font-size: 14px;
       display:inline-flex;align-items:center;justify-content:center;gap:8px;
       box-shadow: var(--shadow2);
@@ -296,7 +254,7 @@
     .btn.ghost{background: rgba(255,255,255,.88)}
     .btn[disabled]{opacity:.6;cursor:not-allowed;transform:none}
 
-    /* ====== tabs (PC) ====== */
+    /* ===== tabs ===== */
     .tabs{
       display:flex;gap:8px;flex-wrap:wrap;
       padding: 10px 0 2px;
@@ -308,7 +266,7 @@
       padding: 9px 12px;
       border-radius: 999px;
       cursor:pointer;
-      font-weight:950;
+      font-weight:600;
       font-size: 12px;
       color: var(--muted);
       box-shadow: var(--shadow2);
@@ -320,31 +278,10 @@
       color: var(--blue2);
     }
 
-    /* ====== sections ====== */
     .section{display:none}
     .section.active{display:block}
 
-    .sectionHead.mOnly{
-      border:1px solid rgba(229,231,235,.90);
-      border-radius: 18px;
-      background: rgba(255,255,255,.92);
-      box-shadow: var(--shadow2);
-      padding: 10px 10px;
-      display:flex;gap:10px;align-items:flex-start;
-      margin-bottom: 12px;
-    }
-    .secIcon{
-      width:42px;height:42px;border-radius:16px;
-      display:flex;align-items:center;justify-content:center;
-      background: rgba(37,99,235,.10);
-      border:1px solid rgba(37,99,235,.16);
-      font-size:18px;
-      box-shadow: var(--shadow2);
-    }
-    .secTitle{font-weight:980}
-    .secHint{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5}
-
-    /* ====== camera block ====== */
+    /* ===== camera ===== */
     .cam{
       border: 1px dashed rgba(148,163,184,.60);
       border-radius: 18px;
@@ -370,22 +307,13 @@
       color: rgba(255,255,255,.82);
       font-size: 13px;
       line-height: 1.55;
+      font-weight: 400;
     }
-    .previewRow{
-      display:none;
-      margin-top:10px;
-      gap:10px;
-      align-items:center;
-    }
-    .thumb{
-      width: 110px; height: 82px;
-      border-radius: 14px;
-      object-fit:cover;
-      border:1px solid rgba(229,231,235,.98);
-      background:#fff;
+    .camOverlay{
+      position:absolute; inset:0;
+      pointer-events:none;
     }
 
-    /* ====== info boxes ====== */
     .info{
       border:1px solid rgba(229,231,235,.90);
       border-radius: 18px;
@@ -393,21 +321,22 @@
       background: rgba(255,255,255,.92);
       box-shadow: var(--shadow2);
     }
-    .kpi{
-      display:flex;gap:10px;flex-wrap:wrap;
-    }
-    .kpiItem{
-      flex:1;min-width:140px;
-      border:1px solid rgba(229,231,235,.95);
-      border-radius: 18px;
-      padding: 12px;
-      background:#fff;
-      box-shadow: var(--shadow2);
-    }
-    .kpiLabel{font-size:12px;color:var(--muted)}
-    .kpiValue{font-weight:980;font-size:18px;margin-top:4px}
 
-    /* ====== tables ====== */
+    .statusChip{
+      display:inline-flex;align-items:center;gap:8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(229,231,235,.95);
+      background: rgba(255,255,255,.92);
+      font-weight:600;
+      font-size:12px;
+      color: var(--muted);
+      white-space:nowrap;
+    }
+    .statusChip.ok{border-color: rgba(22,163,74,.22); background: rgba(22,163,74,.08); color: #166534}
+    .statusChip.bad{border-color: rgba(239,68,68,.22); background: rgba(239,68,68,.08); color: #b91c1c}
+    .statusChip.warn{border-color: rgba(245,158,11,.22); background: rgba(245,158,11,.10); color: #a16207}
+
     .tableWrap{
       border:1px solid rgba(229,231,235,.95);
       border-radius: 18px;
@@ -422,49 +351,19 @@
       font-size: 13px;
       text-align:left;
       vertical-align:top;
+      font-weight: 400;
     }
     th{
       background: linear-gradient(to bottom, rgba(255,255,255,.98), rgba(255,255,255,.86));
-      font-weight:980;
+      font-weight:600;
       color: #0f172a;
       position: sticky;
       top: 0;
       z-index: 1;
     }
     tr:hover td{background: rgba(37,99,235,.04)}
-    .statusChip{
-      display:inline-flex;align-items:center;gap:8px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(229,231,235,.95);
-      background: rgba(255,255,255,.92);
-      font-weight:950;
-      font-size:12px;
-      color: var(--muted);
-      white-space:nowrap;
-    }
-    .statusChip.ok{border-color: rgba(22,163,74,.22); background: rgba(22,163,74,.08); color: var(--green2)}
-    .statusChip.bad{border-color: rgba(239,68,68,.22); background: rgba(239,68,68,.08); color: #b91c1c}
-    .statusChip.warn{border-color: rgba(245,158,11,.22); background: rgba(245,158,11,.10); color: #a16207}
 
-    /* ====== code/pre box ====== */
-    .preBox{
-      margin-top:10px;
-      border-radius: 18px;
-      padding: 12px;
-      background:#0b1220;
-      color:#e5e7eb;
-      border:1px solid rgba(255,255,255,.10);
-      font-family: var(--mono);
-      font-size: 12px;
-      line-height: 1.55;
-      white-space: pre-wrap;
-      word-break: break-word;
-      max-height: 340px;
-      overflow:auto;
-    }
-
-    /* ====== bottom nav (Mobile) ====== */
+    /* ===== bottom nav mobile ===== */
     .bottomNav{
       position: fixed;
       left:0; right:0; bottom:0;
@@ -484,7 +383,7 @@
       cursor:pointer;
       box-shadow: var(--shadow2);
       display:flex;flex-direction:column;align-items:center;gap:3px;
-      font-weight:980;
+      font-weight:600;
       color: var(--muted);
     }
     .bnBtn.active{
@@ -499,7 +398,7 @@
       .wrap{padding-bottom: calc(96px + var(--safeB))}
     }
 
-    /* ====== drawer ====== */
+    /* ===== drawer ===== */
     .backdrop{
       position: fixed; inset:0;
       background: rgba(15,23,42,.38);
@@ -525,7 +424,7 @@
       border-bottom: 1px solid rgba(229,231,235,.95);
       display:flex;align-items:center;justify-content:space-between;gap:10px;
     }
-    .drawerTitle{font-weight:980}
+    .drawerTitle{font-weight:600}
     .drawerB{padding:14px;overflow:auto}
     .block{
       border:1px solid rgba(229,231,235,.95);
@@ -534,9 +433,9 @@
       box-shadow: var(--shadow2);
       padding: 12px;
     }
-    .blockTitle{font-weight:980;margin-bottom:10px}
+    .blockTitle{font-weight:600;margin-bottom:10px}
 
-    /* ====== toast ====== */
+    /* ===== toast ===== */
     .toast{
       position: fixed;
       left: 14px; right: 14px;
@@ -567,7 +466,6 @@
       cursor:pointer;font-size:16px;padding:2px 6px;
     }
 
-    /* ====== footer ====== */
     .footer{
       margin-top: 14px;
       color: var(--muted);
@@ -575,6 +473,26 @@
       text-align:center;
       padding: 8px 0 2px;
     }
+
+    /* small face result card */
+    .faceCard{
+      border:1px solid rgba(229,231,235,.95);
+      border-radius: 18px;
+      padding: 12px;
+      background:#fff;
+      box-shadow: var(--shadow2);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .faceWho{font-weight:600}
+    .faceMeta{font-size:12px;color:var(--muted);line-height:1.6;margin-top:4px}
+    .faceScore{font-size:12px;color:var(--muted)}
+    .faceScore b{font-weight:600;color:var(--text)}
+    .faceOk{color:#166534;font-weight:600}
+    .faceBad{color:#b91c1c;font-weight:600}
   </style>
 </head>
 
@@ -599,7 +517,7 @@
 
       <button class="mMenuBtn" id="btnOpenDrawerMobile" type="button">
         <span class="mHamb">≡</span>
-        <span>⚙️🧩</span>
+        <span>⚙️</span>
         <span class="mMenuTxt">เมนู</span>
       </button>
     </div>
@@ -612,7 +530,7 @@
         <div class="logo">🕒</div>
         <div>
           <div class="brandTitle">ระบบเช็คอินพนักงาน</div>
-          <div class="brandSub">โหมดเว็บหรู (PC) • โทนขาว/น้ำเงิน/เขียว • ฟีเจอร์ครบตาม GS</div>
+          <div class="brandSub">สแกนใบหน้า • บันทึกมือ • เช็ควันนี้ • สรุปวันนี้ • HR</div>
         </div>
       </div>
 
@@ -625,46 +543,15 @@
   </div>
 
   <div class="wrap">
-
-    <!-- ===== Hero (PC) ===== -->
-    <div class="hero dOnly">
-      <div class="heroTop">
-        <div>
-          <h1 class="heroTitle">เว็บเช็คอินพนักงาน • Luxury UI ✅</h1>
-          <div class="heroSub">
-            ✅ ใช้ได้ทั้งมือถือ/คอม • มือถือเหมือนแอป (เมนู 3 ขีด + แถบล่าง) • PC เป็นเว็บหรู • ส่งค่าตรงกับ Apps Script ที่คุณให้มา
-          </div>
-          <div class="chips">
-            <span class="chip">🕘 เวลา: <span id="pcNow">—</span></span>
-            <span class="chip">🖥️ โหมด: Desktop</span>
-            <span class="chip">🔗 API: <span id="pcApiShort">ยังไม่ได้ตั้งค่า</span></span>
-            <span class="chip">📍 GPS: <span id="pcGpsText">ยังไม่ขอสิทธิ์</span></span>
-          </div>
-        </div>
-
-        <div class="btnbar">
-          <button class="btn primary" id="btnAskGpsPC" type="button">📍 ขอ GPS</button>
-          <button class="btn good" id="btnGoScanPC" type="button">📷 ไปสแกน</button>
-          <button class="btn" id="btnGoSummaryPC" type="button">📊 ไปสรุปวันนี้</button>
-        </div>
-      </div>
-
-      <!-- สถานะชิดขวาล่างตามที่สั่ง -->
-      <div class="pillStatus" id="pcPill">
-        <span class="dot warn" id="pcDot"></span>
-        <span id="pcApiText">ยังไม่ได้ตั้งค่า URL</span>
-      </div>
-    </div>
-
     <div class="grid mt12">
 
       <!-- ===== MAIN ===== -->
       <div class="card">
         <div class="cardH">
           <div>
-            <div class="cardTitle" id="mainTitle">📷 สแกนเข้า-ออก (ใช้ GS: saveManualLog)</div>
+            <div class="cardTitle" id="mainTitle">📷 สแกนใบหน้า (ระบุชื่อ → กดยืนยัน → เช็คอิน)</div>
             <div class="small muted" id="mainHint">
-              หมายเหตุ: GS ของคุณ “บังคับ GPS” เวลาเซฟ (lat/lng ต้องมา) — หน้าเว็บนี้จะขอ Location ให้อัตโนมัติ
+              แนะนำ: ตั้งค่า URL /exec → ทดสอบ API → ขอ GPS (เพราะ GS บังคับ lat/lng ตอนบันทึก)
             </div>
           </div>
 
@@ -677,7 +564,7 @@
 
           <!-- Tabs (PC) -->
           <div class="tabs dOnly" id="tabs">
-            <button class="tab active" data-sec="secScan" type="button">📷 สแกน</button>
+            <button class="tab active" data-sec="secFace" type="button">📷 สแกนใบหน้า</button>
             <button class="tab" data-sec="secManual" type="button">📝 บันทึกมือ</button>
             <button class="tab" data-sec="secCheck" type="button">🔎 ตรวจสอบวันนี้</button>
             <button class="tab" data-sec="secSummary" type="button">📊 สรุปวันนี้</button>
@@ -685,144 +572,125 @@
             <button class="tab" data-sec="secHelp" type="button">📘 วิธีใช้</button>
           </div>
 
-          <!-- ===== SECTION: SCAN ===== -->
-          <section class="section active" id="secScan">
-            <div class="sectionHead mOnly">
-              <div class="secIcon">📷</div>
-              <div>
-                <div class="secTitle">สแกนเข้า-ออก</div>
-                <div class="secHint">ถ่ายรูปเป็นหลักฐาน + ขอ GPS + ส่งไป Apps Script (saveManualLog)</div>
-              </div>
-            </div>
-
+          <!-- ===== SECTION: FACE SCAN ===== -->
+          <section class="section active" id="secFace">
             <div class="cam">
               <div class="camBox">
-                <video id="video" playsinline muted></video>
-                <div class="camHint" id="camHint">
+                <video id="videoFace" playsinline muted></video>
+                <canvas class="camOverlay" id="overlayFace"></canvas>
+                <div class="camHint" id="camHintFace">
                   กล้องยังไม่เปิด<br>
-                  กด “เริ่มกล้อง” → “ถ่ายรูป” ก่อนบันทึก ✅
+                  กด “เริ่มสแกนใบหน้า” แล้วหันหน้าตรงกล้อง ✅
                 </div>
               </div>
 
               <div class="row mt12">
                 <div class="col">
                   <label>🎥 เลือกกล้อง</label>
-                  <select id="cameraSelect">
-                    <option value="">—</option>
-                  </select>
+                  <select id="cameraSelectFace"><option value="">—</option></select>
                 </div>
                 <div class="col">
                   <label>🔁 กล้องหน้า/หลัง</label>
-                  <select id="facingMode">
-                    <option value="user">กล้องหน้า (user)</option>
-                    <option value="environment">กล้องหลัง (environment)</option>
+                  <select id="facingModeFace">
+                    <option value="user">กล้องหน้า</option>
+                    <option value="environment">กล้องหลัง</option>
                   </select>
                 </div>
               </div>
 
               <div class="btnbar mt12">
-                <button class="btn primary" id="btnStartCam" type="button">▶️ เริ่มกล้อง</button>
-                <button class="btn danger" id="btnStopCam" type="button">⏹️ ปิดกล้อง</button>
-                <button class="btn" id="btnCapture" type="button">📸 ถ่ายรูป</button>
-                <button class="btn" id="btnAskGps" type="button">📍 ขอ GPS</button>
-              </div>
-
-              <div class="previewRow" id="previewRow">
-                <img id="thumb" class="thumb" alt="preview">
-                <div>
-                  <div class="bold">✅ มีรูปหลักฐานพร้อมส่ง</div>
-                  <div class="small muted" id="previewInfo">—</div>
-                </div>
+                <button class="btn primary" id="btnStartFace" type="button">▶️ เริ่มสแกนใบหน้า</button>
+                <button class="btn danger" id="btnStopFace" type="button">⏹️ ปิดกล้อง</button>
+                <button class="btn" id="btnAskGpsFace" type="button">📍 ขอ GPS</button>
+                <button class="btn" id="btnLoadInitFace" type="button">📥 โหลดรายชื่อ</button>
               </div>
 
               <div class="info mt12">
-                <div class="bold">📍 สถานะ GPS</div>
-                <div class="small muted" id="gpsLine">ยังไม่ได้ขอสิทธิ์ Location</div>
-                <div class="small muted mt8">ถ้า GPS ไม่มา → GS จะไม่ให้บันทึก (ตามโค้ดของคุณ)</div>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between">
+                  <div>
+                    <div style="font-weight:600">📍 สถานะ GPS</div>
+                    <div class="small muted" id="gpsLine">ยังไม่ได้ขอสิทธิ์ Location</div>
+                  </div>
+                  <span class="statusChip" id="modelChip"><span class="dot warn" id="modelDot"></span><span id="modelText">Face Model: ยังไม่โหลด</span></span>
+                </div>
+                <div class="small muted mt8">
+                  ถ้า GPS ไม่มา → GS ของคุณจะไม่ให้บันทึก (ตามกติกาที่คุณตั้งไว้)
+                </div>
               </div>
-            </div>
 
-            <div class="row mt14">
-              <div class="col">
-                <label>🆔 รหัสพนักงาน (code)</label>
-                <input id="scanCode" inputmode="numeric" placeholder="เช่น 1001" list="dlCodes">
-                <datalist id="dlCodes"></datalist>
-              </div>
-              <div class="col">
-                <label>🧾 แนบรูปหลักฐานเพิ่ม (ไม่บังคับ)</label>
-                <input id="scanEvidenceFile" type="file" accept="image/*">
-              </div>
-            </div>
+              <div class="hr"></div>
 
-            <div class="row mt12">
-              <div class="col">
-                <label>🧠 ประเภทการบันทึก (manualType ส่งเข้า GS)</label>
-                <select id="scanManualType">
-                  <option value="SCAN" selected>SCAN (สแกน/ถ่ายรูป)</option>
-                  <option value="AUTO">AUTO</option>
-                  <option value="FACE">FACE</option>
-                </select>
+              <div class="row">
+                <div class="col">
+                  <label>🧠 โหมดบันทึก (เลือกได้ตามที่ขอ)</label>
+                  <select id="slotMode">
+                    <option value="AUTO" selected>AUTO (ให้ระบบตัดสินใจ)</option>
+                    <option value="T1">บังคับลง t1</option>
+                    <option value="T2">บังคับลง t2</option>
+                    <option value="T3">บังคับลง t3</option>
+                    <option value="T4">บังคับลง t4</option>
+                    <option value="EXTRA1">บังคับลง tExtra1</option>
+                    <option value="EXTRA2">บังคับลง tExtra2</option>
+                  </select>
+                </div>
+                <div class="col">
+                  <label>🆔 สำรอง: กรอกรหัสเอง (ถ้าหน้าไม่ชัด)</label>
+                  <input id="fallbackCode" inputmode="numeric" placeholder="เช่น 1011" list="dlCodes">
+                </div>
               </div>
-              <div class="col">
-                <label>📝 หมายเหตุ (แสดงในหน้าเว็บเท่านั้น)</label>
-                <input id="scanNote" placeholder="เช่น เข้างาน/ออกงาน/ลืมสแกน (GS ของคุณไม่เก็บ note ช่องนี้)">
+
+              <div class="mt14 faceCard" id="faceResultCard">
+                <div>
+                  <div class="faceWho" id="faceWho">ยังไม่พบใบหน้า</div>
+                  <div class="faceMeta" id="faceMeta">ยืนหน้ากล้องให้ชัด ๆ แล้วรอสักครู่</div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+                  <div class="faceScore" id="faceScore">ความมั่นใจ: —</div>
+                  <button class="btn good" id="btnConfirmFace" type="button" disabled>✅ ยืนยันแล้วเช็คอิน</button>
+                </div>
               </div>
-            </div>
 
-            <div class="btnbar mt14">
-              <button class="btn good" id="btnSubmitScan" type="button">✅ บันทึกการสแกน</button>
-              <button class="btn" id="btnGoCheckFromScan" type="button">🔎 ไปตรวจสอบวันนี้</button>
-              <button class="btn" id="btnGoSummaryFromScan" type="button">📊 ไปสรุปวันนี้</button>
-            </div>
-
-            <div class="info mt14">
-              <div class="bold">✅ ส่งเข้า GS แบบไหน?</div>
-              <div class="small muted mt8">
-                ส่งไป action=<b>saveManualLog</b> โดยส่งพารามิเตอร์:
-                <b>code, lat, lng, evidenceBase64, evidenceName, manualType</b>
+              <div class="small muted mt10">
+                เกณฑ์จับคู่ (threshold) ตั้งไว้แบบปลอดภัย: ถ้า “คล้ายไม่พอ” จะขึ้นว่า Unknown เพื่อกันสลับคน
               </div>
             </div>
           </section>
 
           <!-- ===== SECTION: MANUAL ===== -->
           <section class="section" id="secManual">
-            <div class="sectionHead mOnly">
-              <div class="secIcon">📝</div>
-              <div>
-                <div class="secTitle">บันทึกด้วยมือ</div>
-                <div class="secHint">ใช้เมื่อ “ลืมสแกน / ระบบมีปัญหา” (GS ใช้ saveManualLog เหมือนกัน)</div>
-              </div>
-            </div>
-
             <div class="info">
-              <div class="bold">⚠️ สำคัญ</div>
+              <div style="font-weight:600">📝 บันทึกด้วยมือ</div>
               <div class="small muted mt8">
-                โค้ด GS ของคุณ “บังคับ GPS” ทุกครั้งที่บันทึก (lat/lng ต้องมา) — กรุณากด “ขอ GPS” ก่อนบันทึก ✅
+                ใช้เมื่อ “ลืมสแกน” หรือ “กล้องจับหน้าไม่ได้” (ยังคงบังคับ GPS ตาม GS)
               </div>
             </div>
 
             <div class="row mt14">
               <div class="col">
-                <label>🆔 รหัสพนักงาน (code)</label>
-                <input id="mCode" inputmode="numeric" placeholder="เช่น 1001" list="dlCodes">
+                <label>🆔 รหัสพนักงาน</label>
+                <input id="mCode" inputmode="numeric" placeholder="เช่น 1011" list="dlCodes">
               </div>
               <div class="col">
-                <label>📍 สถานะ GPS</label>
-                <input id="mGpsView" readonly placeholder="ยังไม่ได้ขอสิทธิ์ Location">
+                <label>🧠 โหมดบันทึก</label>
+                <select id="mSlotMode">
+                  <option value="AUTO" selected>AUTO (ให้ระบบตัดสินใจ)</option>
+                  <option value="T1">บังคับลง t1</option>
+                  <option value="T2">บังคับลง t2</option>
+                  <option value="T3">บังคับลง t3</option>
+                  <option value="T4">บังคับลง t4</option>
+                  <option value="EXTRA1">บังคับลง tExtra1</option>
+                  <option value="EXTRA2">บังคับลง tExtra2</option>
+                </select>
               </div>
             </div>
 
             <div class="row mt12">
               <div class="col">
-                <label>🧠 manualType (เก็บลง Logs.method ใน GS)</label>
-                <select id="mType">
-                  <option value="MANUAL" selected>MANUAL</option>
-                  <option value="MANUAL:FORGOT">MANUAL:FORGOT</option>
-                  <option value="MANUAL:SYSTEM">MANUAL:SYSTEM</option>
-                </select>
+                <label>📍 สถานะ GPS</label>
+                <input id="mGpsView" readonly placeholder="ยังไม่ได้ขอสิทธิ์ Location">
               </div>
               <div class="col">
-                <label>🧾 แนบหลักฐาน (ไม่บังคับ)</label>
+                <label>🧾 แนบหลักฐาน (ถ้ามี)</label>
                 <input id="mEvidenceFile" type="file" accept="image/*">
               </div>
             </div>
@@ -832,14 +700,13 @@
                 <label>📝 เหตุผล/หมายเหตุ</label>
                 <textarea id="mReason" placeholder="เช่น ลืมสแกนตอนเช้า / ระบบล่ม / ขออนุมัติหัวหน้าแล้ว"></textarea>
                 <div class="small muted mt8">
-                  หมายเหตุ: GS ของคุณตอนนี้ใช้ note เก็บ “โซน GPS (IN/OUT/UNKNOWN)” ดังนั้นเหตุผลจะไม่ได้ลง note โดยตรง
-                  — ผมจะผูกเหตุผลไว้ใน <b>manualType</b> ให้อัตโนมัติ (MANUAL:เหตุผล...) เพื่อไม่หาย ✅
+                  (เหตุผลจะถูกแนบไปกับ manualType เพื่อให้ไม่หาย)
                 </div>
               </div>
             </div>
 
             <div class="btnbar mt14">
-              <button class="btn" id="btnAskGps2" type="button">📍 ขอ GPS</button>
+              <button class="btn" id="btnAskGpsManual" type="button">📍 ขอ GPS</button>
               <button class="btn good" id="btnSubmitManual" type="button">✅ บันทึกด้วยมือ</button>
               <button class="btn" id="btnGoCheckFromManual" type="button">🔎 ไปตรวจสอบวันนี้</button>
             </div>
@@ -847,21 +714,18 @@
 
           <!-- ===== SECTION: CHECK ===== -->
           <section class="section" id="secCheck">
-            <div class="sectionHead mOnly">
-              <div class="secIcon">🔎</div>
-              <div>
-                <div class="secTitle">ตรวจสอบวันนี้</div>
-                <div class="secHint">ใช้ action: getTodayByCode (ใน GS ชื่อ checkTodayByCode/getTodayByCode ใช้ได้ทั้งคู่)</div>
-              </div>
+            <div class="info">
+              <div style="font-weight:600">🔎 ตรวจสอบวันนี้</div>
+              <div class="small muted mt8">ใส่รหัส → กดเช็ค แล้วระบบจะแสดงเวลาเข้า-ออก + สถานะ แบบอ่านง่าย</div>
             </div>
 
-            <div class="row">
+            <div class="row mt14">
               <div class="col">
-                <label>🆔 รหัสพนักงาน (code)</label>
-                <input id="cCode" inputmode="numeric" placeholder="เช่น 1001" list="dlCodes">
+                <label>🆔 รหัสพนักงาน</label>
+                <input id="cCode" inputmode="numeric" placeholder="เช่น 1011" list="dlCodes">
               </div>
               <div class="col">
-                <label>📌 วันที่ (GS นี้เช็ค “วันนี้เท่านั้น”)</label>
+                <label>📌 วันที่</label>
                 <input id="cDate" readonly>
               </div>
             </div>
@@ -873,46 +737,30 @@
 
             <div class="hr"></div>
 
-            <div class="info">
-              <div class="bold">🧾 ผลลัพธ์</div>
-              <div class="small muted mt8" id="checkHint">กด “เช็คของวันนี้” เพื่อดึงข้อมูล</div>
-              <div class="preBox" id="checkBox" style="display:none"></div>
+            <div class="info" id="checkCard">
+              <div style="font-weight:600">ผลลัพธ์</div>
+              <div class="small muted mt8" id="checkMsg">ยังไม่ได้เช็ค</div>
+              <div class="mt12" id="checkUi"></div>
+            </div>
+
+            <div class="small muted mt12">
+              (มีปุ่ม debug เผื่ออยากดู JSON)
+              <button class="btn" id="btnToggleDebug" type="button">🧪 แสดง/ซ่อน Debug</button>
+              <pre id="checkDebug" class="hide" style="margin-top:10px;padding:12px;border-radius:16px;background:#0b1220;color:#e5e7eb;overflow:auto;max-height:280px"></pre>
             </div>
           </section>
 
           <!-- ===== SECTION: SUMMARY ===== -->
           <section class="section" id="secSummary">
-            <div class="sectionHead mOnly">
-              <div class="secIcon">📊</div>
-              <div>
-                <div class="secTitle">สรุปวันนี้</div>
-                <div class="secHint">ใช้ action: getTodaySummary แล้วแสดงตาราง + ค้นหา</div>
-              </div>
-            </div>
-
-            <div class="kpi">
-              <div class="kpiItem">
-                <div class="kpiLabel">👥 ทั้งหมด</div>
-                <div class="kpiValue" id="kAll">—</div>
-              </div>
-              <div class="kpiItem">
-                <div class="kpiLabel">✅ ปกติ</div>
-                <div class="kpiValue" id="kOk">—</div>
-              </div>
-              <div class="kpiItem">
-                <div class="kpiLabel">⚠️ มีปัญหา</div>
-                <div class="kpiValue" id="kWarn">—</div>
-              </div>
-              <div class="kpiItem">
-                <div class="kpiLabel">❌ ขาด</div>
-                <div class="kpiValue" id="kAbsent">—</div>
-              </div>
+            <div class="info">
+              <div style="font-weight:600">📊 สรุปวันนี้</div>
+              <div class="small muted mt8">โหลดสรุป → ค้นหาได้ → Export CSV ได้</div>
             </div>
 
             <div class="row mt14">
               <div class="col">
                 <label>🔎 ค้นหา (รหัส/ชื่อ/แผนก)</label>
-                <input id="sumSearch" placeholder="เช่น 1001 หรือ ชื่อ หรือ แผนก">
+                <input id="sumSearch" placeholder="เช่น 1011 หรือ ชื่อ หรือ แผนก">
               </div>
               <div class="col">
                 <label>⚡ คำสั่ง</label>
@@ -923,7 +771,7 @@
               </div>
             </div>
 
-            <div class="tableWrap mt14" style="max-height: 520px; overflow:auto">
+            <div class="tableWrap mt14" style="max-height: 560px; overflow:auto">
               <table>
                 <thead>
                   <tr>
@@ -944,115 +792,116 @@
 
           <!-- ===== SECTION: HR ===== -->
           <section class="section" id="secHR">
-            <div class="sectionHead mOnly">
-              <div class="secIcon">🧩</div>
-              <div>
-                <div class="secTitle">HR / แอดมิน</div>
-                <div class="secHint">ล็อกอิน + อัปโหลดรูปใบหน้า (uploadEmployeeFace)</div>
+            <div class="info">
+              <div style="font-weight:600">🧩 HR</div>
+              <div class="small muted mt8">
+                1) ล็อกอินก่อน → 2) ไปหน้าแอดมินได้ → 3) ลงทะเบียนใบหน้า (ใช้กล้องจับหน้าเหมือนหน้าสแกน)
               </div>
             </div>
 
-            <div class="info">
-              <div class="bold">🔐 HR Login</div>
-              <div class="small muted mt8">ใช้ action: <b>loginAdmin</b> (username/password)</div>
-
-              <div class="row mt12">
-                <div class="col">
-                  <label>👤 Username</label>
-                  <input id="hrUser" placeholder="admin">
-                </div>
-                <div class="col">
-                  <label>🔒 Password</label>
-                  <input id="hrPass" type="password" placeholder="••••••••••">
-                </div>
+            <div class="row mt14">
+              <div class="col">
+                <label>👤 Username</label>
+                <input id="hrUser" placeholder="admin">
               </div>
-
-              <div class="btnbar mt12">
-                <button class="btn primary" id="btnLogin" type="button">🔐 เข้าสู่ระบบ</button>
-                <span class="statusChip" id="hrState"><span class="dot warn" id="hrDot"></span><span id="hrText">ยังไม่ล็อกอิน</span></span>
+              <div class="col">
+                <label>🔒 Password</label>
+                <input id="hrPass" type="password" placeholder="••••••••••">
               </div>
+            </div>
+
+            <div class="btnbar mt12">
+              <button class="btn primary" id="btnLogin" type="button">🔐 เข้าสู่ระบบ</button>
+              <span class="statusChip" id="hrState"><span class="dot warn" id="hrDot"></span><span id="hrText">ยังไม่ล็อกอิน</span></span>
+              <button class="btn" id="btnGoAdmin" type="button" disabled>🧑‍💼 ไปหน้า Admin</button>
+              <button class="btn" id="btnLogout" type="button" disabled>ออกจากระบบ</button>
             </div>
 
             <div class="hr"></div>
 
             <div class="info">
-              <div class="bold">🙂 บันทึกใบหน้า (HR)</div>
+              <div style="font-weight:600">🙂 ลงทะเบียนใบหน้า (HR)</div>
               <div class="small muted mt8">
-                ใช้ action: <b>uploadEmployeeFace</b> โดยส่ง <b>code, photoBase64, fileName</b><br>
-                ✅ หน้าเว็บนี้จะแปลงรูปเป็น Base64 ให้เอง แล้วส่งตรงตาม GS ของคุณ
+                กดเริ่มกล้อง → ให้หน้าอยู่ในกรอบ → กด “จับภาพ+บันทึกใบหน้า”  
+                (ระบบจะคำนวณ faceData ให้เอง แล้วส่งไป GS: uploadEmployeeFace)
               </div>
 
               <div class="row mt12">
                 <div class="col">
-                  <label>🆔 รหัสพนักงาน (code)</label>
-                  <input id="faceCode" inputmode="numeric" placeholder="เช่น 1001" list="dlCodes">
+                  <label>🆔 รหัสพนักงาน</label>
+                  <input id="regCode" inputmode="numeric" placeholder="เช่น 1011" list="dlCodes">
                 </div>
                 <div class="col">
-                  <label>📷 รูปใบหน้า</label>
-                  <input id="faceFile" type="file" accept="image/*">
+                  <label>📝 หมายเหตุ</label>
+                  <input id="regNote" placeholder="เช่น ถ่ายใหม่ให้ชัดขึ้น / เปลี่ยนคน / อัปเดตใบหน้า">
                 </div>
               </div>
 
-              <div class="row mt12">
-                <div class="col">
-                  <label>🧠 faceData (optional / ถ้ายังไม่มีข้ามได้)</label>
-                  <textarea id="faceData" placeholder='ถ้ามี descriptor JSON ค่อยวาง (ไม่มีก็ปล่อยว่าง)'></textarea>
+              <div class="cam mt12">
+                <div class="camBox">
+                  <video id="videoReg" playsinline muted></video>
+                  <canvas class="camOverlay" id="overlayReg"></canvas>
+                  <div class="camHint" id="camHintReg">กด “เริ่มกล้อง HR” เพื่อถ่ายใบหน้า</div>
                 </div>
+
+                <div class="btnbar mt12">
+                  <button class="btn primary" id="btnStartReg" type="button">▶️ เริ่มกล้อง HR</button>
+                  <button class="btn danger" id="btnStopReg" type="button">⏹️ ปิดกล้อง</button>
+                  <button class="btn good" id="btnCaptureReg" type="button" disabled>⬆️ จับภาพ+บันทึกใบหน้า</button>
+                </div>
+
+                <div class="small muted mt10" id="regHint">รอให้ระบบขึ้นว่า “พบใบหน้า” แล้วค่อยกดบันทึก</div>
               </div>
 
-              <div class="btnbar mt12">
-                <button class="btn good" id="btnUploadFace" type="button">⬆️ อัปโหลดใบหน้า</button>
+              <div class="mt12" id="hrDebugWrap" style="display:none">
+                <div class="small muted">ผลจากระบบ:</div>
+                <pre id="hrDebug" style="margin-top:8px;padding:12px;border-radius:16px;background:#0b1220;color:#e5e7eb;overflow:auto;max-height:280px"></pre>
               </div>
 
-              <div class="preBox" id="hrBox" style="display:none"></div>
             </div>
           </section>
 
           <!-- ===== SECTION: HELP ===== -->
           <section class="section" id="secHelp">
-            <div class="sectionHead mOnly">
-              <div class="secIcon">📘</div>
-              <div>
-                <div class="secTitle">วิธีใช้งาน (สรุปสำหรับพนักงาน)</div>
-                <div class="secHint">อ่านง่าย • ใช้จริง • ลดบัคจากการกดผิด</div>
-              </div>
-            </div>
-
             <div class="info">
-              <div class="bold">✅ ขั้นตอนเริ่มต้น (ทำครั้งแรกครั้งเดียว)</div>
-              <ol class="mt10 small muted" style="line-height:1.7;margin:0;padding-left:18px">
+              <div style="font-weight:600">📘 วิธีใช้งาน (แบบภาษาคน)</div>
+              <div class="small muted mt8">อ่านสั้น ๆ แล้วทำตามได้เลย</div>
+            </div>
+
+            <div class="info mt14">
+              <div style="font-weight:600">A) ทำครั้งแรก (ครั้งเดียว)</div>
+              <ol class="mt10 small muted" style="line-height:1.8;margin:0;padding-left:18px">
                 <li>กดเมนู ⚙️ → วางลิงก์ Apps Script ที่ลงท้ายด้วย <b>/exec</b> → บันทึก</li>
-                <li>กด 📡 “ทดสอบ API” ถ้าขึ้น pong = พร้อมใช้งาน</li>
-                <li>มือถือแนะนำกด 📍 “ขอ GPS” ไว้ก่อน (GS บังคับ lat/lng ตอนเซฟ)</li>
+                <li>กด “ทดสอบ API” ถ้าขึ้น pong = พร้อมใช้งาน</li>
+                <li>กด “ขอ GPS” ให้ขึ้นพร้อมใช้งาน (สำคัญมาก)</li>
+                <li>กด “โหลดรายชื่อ” เพื่อให้ระบบรู้จักพนักงาน (และ faceData)</li>
               </ol>
             </div>
 
             <div class="info mt14">
-              <div class="bold">📷 สแกน (แนะนำ)</div>
-              <ol class="mt10 small muted" style="line-height:1.7;margin:0;padding-left:18px">
-                <li>กด ▶️ เริ่มกล้อง → 📸 ถ่ายรูป</li>
-                <li>กด 📍 ขอ GPS (ถ้ายังไม่มา)</li>
-                <li>กรอกรหัส → กด ✅ บันทึกการสแกน</li>
+              <div style="font-weight:600">B) สแกนใบหน้า (วิธีหลัก)</div>
+              <ol class="mt10 small muted" style="line-height:1.8;margin:0;padding-left:18px">
+                <li>ไปแท็บ “สแกนใบหน้า” → กด “เริ่มสแกนใบหน้า”</li>
+                <li>ยืนหน้ากล้องให้ชัด → ระบบจะขึ้นชื่อ/รหัสให้เอง</li>
+                <li>เลือกโหมดบันทึก (AUTO หรือบังคับลง t1-t4)</li>
+                <li>กด “ยืนยันแล้วเช็คอิน” → เสร็จ ✅</li>
               </ol>
             </div>
 
             <div class="info mt14">
-              <div class="bold">📝 บันทึกด้วยมือ</div>
-              <ol class="mt10 small muted" style="line-height:1.7;margin:0;padding-left:18px">
-                <li>กด 📍 ขอ GPS ก่อน</li>
-                <li>กรอกรหัส + เหตุผล → ✅ บันทึกด้วยมือ</li>
+              <div style="font-weight:600">C) บันทึกมือ (กรณีฉุกเฉิน)</div>
+              <ol class="mt10 small muted" style="line-height:1.8;margin:0;padding-left:18px">
+                <li>ไปแท็บ “บันทึกมือ”</li>
+                <li>กด “ขอ GPS” ให้ขึ้นพร้อมใช้งาน</li>
+                <li>กรอกรหัส + เหตุผล + เลือกโหมด → กดบันทึก</li>
               </ol>
-              <div class="small muted mt10">
-                หมายเหตุ: GS เวอร์ชันนี้จะเก็บ note เป็นโซน GPS (IN/OUT/UNKNOWN)
-                — เหตุผลจะถูก “แนบไว้ใน manualType” เพื่อไม่หาย
-              </div>
             </div>
 
             <div class="info mt14">
-              <div class="bold">🧩 HR</div>
-              <ol class="mt10 small muted" style="line-height:1.7;margin:0;padding-left:18px">
-                <li>ล็อกอิน (admin/password ตาม GS)</li>
-                <li>อัปโหลดรูปใบหน้า: ใส่รหัส → เลือกรูป → ⬆️ อัปโหลด</li>
+              <div style="font-weight:600">D) HR / Admin</div>
+              <ol class="mt10 small muted" style="line-height:1.8;margin:0;padding-left:18px">
+                <li>HR ต้องล็อกอินก่อนถึงจะเข้า admin.html ได้</li>
+                <li>ลงทะเบียนใบหน้า: เปิดกล้อง HR → ให้หน้าชัด → กด “จับภาพ+บันทึกใบหน้า”</li>
               </ol>
             </div>
           </section>
@@ -1066,7 +915,7 @@
           <div class="cardH">
             <div>
               <div class="cardTitle">⚡ แผงควบคุม (PC)</div>
-              <div class="small muted">ปุ่มสำคัญรวมไว้ตรงนี้ ไม่รก</div>
+              <div class="small muted">รวมปุ่มสำคัญ ไม่รก</div>
             </div>
             <span class="chip">🖥️ Desktop</span>
           </div>
@@ -1074,10 +923,9 @@
           <div class="cardB">
 
             <div class="info">
-              <div class="bold">🔗 สถานะระบบ</div>
+              <div style="font-weight:600">🔗 สถานะระบบ</div>
               <div class="small muted mt8" id="sideApi">API: ยังไม่ได้ตั้งค่า</div>
               <div class="small muted mt8" id="sideGps">GPS: ยังไม่ขอสิทธิ์</div>
-
               <div class="btnbar mt12">
                 <button class="btn" id="btnOpenDrawerSide" type="button">⚙️ ตั้งค่า URL</button>
                 <button class="btn" id="btnAskGpsSide" type="button">📍 ขอ GPS</button>
@@ -1086,18 +934,16 @@
             </div>
 
             <div class="info mt14">
-              <div class="bold">📥 ข้อมูล (optional)</div>
-              <div class="small muted mt8">
-                ปุ่มนี้จะเรียก <b>getInitialData</b> เพื่อดึงรายชื่อ (Employees) มาช่วยเลือก code ให้เร็วขึ้น
-              </div>
+              <div style="font-weight:600">📥 รายชื่อพนักงาน</div>
+              <div class="small muted mt8">โหลดรายชื่อเพื่อช่วยเลือก code และใช้ faceData สำหรับสแกนใบหน้า</div>
               <div class="btnbar mt12">
                 <button class="btn primary" id="btnLoadInitSide" type="button">📥 โหลดรายชื่อ</button>
-                <button class="btn" id="btnClearLocal" type="button">🧹 ล้างค่าหน้านี้</button>
+                <button class="btn" id="btnClearLocal" type="button">🧹 ล้างสถานะ</button>
               </div>
             </div>
 
             <div class="info mt14">
-              <div class="bold">🧾 Log ล่าสุด</div>
+              <div style="font-weight:600">🧾 ล่าสุด</div>
               <div class="small muted mt8" id="lastLine">ยังไม่มี</div>
             </div>
 
@@ -1108,13 +954,13 @@
     </div>
 
     <div class="footer">
-      © ระบบเช็คอินพนักงาน • UI: White/Blue/Green • Designed for PC+Mobile ✅
+      © ระบบเช็คอินพนักงาน • Face/Manual/HR ✅
     </div>
   </div>
 
   <!-- ===== Mobile Bottom Nav ===== -->
   <nav class="bottomNav mOnly">
-    <button class="bnBtn active" data-sec="secScan" type="button"><div class="bnIcon">📷</div><div class="bnText">สแกน</div></button>
+    <button class="bnBtn active" data-sec="secFace" type="button"><div class="bnIcon">📷</div><div class="bnText">สแกน</div></button>
     <button class="bnBtn" data-sec="secManual" type="button"><div class="bnIcon">📝</div><div class="bnText">บันทึก</div></button>
     <button class="bnBtn" data-sec="secCheck" type="button"><div class="bnIcon">🔎</div><div class="bnText">เช็ค</div></button>
     <button class="bnBtn" data-sec="secSummary" type="button"><div class="bnIcon">📊</div><div class="bnText">สรุป</div></button>
@@ -1140,14 +986,14 @@
           <button class="btn" id="btnResetUrl" type="button">♻️ Reset URL</button>
         </div>
         <div class="small muted mt10">
-          แนะนำ: เปิดเว็บผ่าน HTTPS (GitHub Pages) เพื่อให้กล้อง/GPS ทำงานได้
+          แนะนำ: เปิดเว็บผ่าน HTTPS เพื่อให้กล้อง/GPS ทำงานได้
         </div>
       </div>
 
       <div class="hr"></div>
 
       <div class="block">
-        <div class="blockTitle">📡 เครื่องมือ</div>
+        <div class="blockTitle">🧰 เครื่องมือ</div>
         <div class="btnbar">
           <button class="btn" id="btnPingDrawer" type="button">📡 ทดสอบ API</button>
           <button class="btn" id="btnAskGpsDrawer" type="button">📍 ขอ GPS</button>
@@ -1158,13 +1004,11 @@
       <div class="hr"></div>
 
       <div class="block">
-        <div class="blockTitle">📘 คู่มือพนักงาน (อ่านเร็ว)</div>
-        <ol class="small muted" style="line-height:1.7;margin:0;padding-left:18px">
-          <li>ตั้งค่า URL /exec ก่อน (ครั้งแรกครั้งเดียว)</li>
-          <li>กด 📍 ขอ GPS (GS บังคับ lat/lng ตอนเซฟ)</li>
-          <li>ไป 📷 สแกน → เริ่มกล้อง → ถ่ายรูป → ใส่รหัส → บันทึก</li>
-          <li>ลืมสแกน: ไป 📝 บันทึกมือ → ใส่เหตุผล → บันทึก</li>
-          <li>เช็ค: ไป 🔎 ตรวจสอบวันนี้ หรือ 📊 สรุปวันนี้</li>
+        <div class="blockTitle">📌 ทริคกันพลาด</div>
+        <ol class="small muted" style="line-height:1.8;margin:0;padding-left:18px">
+          <li>ก่อนบันทึก: ให้ GPS ขึ้น “พร้อมใช้งาน”</li>
+          <li>สแกนหน้า: ให้หน้าชัด/แสงพอดี/ไม่ไกลเกิน</li>
+          <li>Unknown บ่อย: HR ควรถ่ายใบหน้าใหม่ให้ชัดขึ้น</li>
         </ol>
       </div>
 
@@ -1179,37 +1023,50 @@
     </div>
   </div>
 
+  <datalist id="dlCodes"></datalist>
+
   <script>
     ;(() => {
       "use strict";
 
       // =========================
-      // Storage Keys (คงเดิม)
+      // Storage Keys
       // =========================
       const LS_API = "attendance_api_url_v2";
       const LS_LAST = "attendance_last_ui_log_v1";
-      const LS_HR = "attendance_hr_token_v1"; // เก็บ token เผื่อใช้ต่อ (แม้ GS ตอนนี้ไม่บังคับ)
+      const LS_HR = "attendance_hr_token_v1";      // token จาก GS
+      const LS_HR_OK = "attendance_hr_logged_v1";  // flag กันเข้า admin
 
       // =========================
       // DOM helpers
       // =========================
       const $ = (id) => document.getElementById(id);
       const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-      const isMobile = () => window.matchMedia("(max-width: 979px)").matches;
 
       // =========================
       // State
       // =========================
-      let stream = null;
-      let lastCaptureDataUrl = "";  // evidenceBase64
-      let lastCaptureName = "";
-      let lastGps = null;          // {lat,lng,acc}
       let busy = false;
-      let lastSummary = [];        // cached summary rows
-      let employeesCache = [];     // from getInitialData
+
+      // GPS
+      let lastGps = null; // {lat,lng,acc}
+
+      // Employees & Face
+      let employeesCache = [];
+      let faceMatcher = null;
+      let modelsReady = false;
+      let scanLoopTimer = null;
+      let lastFaceMatch = null; // { employee, label, distance, ok }
+
+      // Streams
+      let streamFace = null;
+      let streamReg = null;
+
+      // Summary cache
+      let lastSummary = [];
 
       // =========================
-      // Time helpers
+      // Time
       // =========================
       const pad2 = (n) => String(n).padStart(2, "0");
       function nowTH() {
@@ -1242,15 +1099,14 @@
       function setBusy(v) {
         busy = v;
         const ids = [
-          "btnStartCam","btnStopCam","btnCapture",
-          "btnAskGps","btnAskGps2","btnAskGpsPC","btnAskGpsSide","btnAskGpsDrawer",
-          "btnSubmitScan","btnSubmitManual",
-          "btnCheck","btnLoadSummary",
-          "btnPing","btnPingSide","btnPingDrawer",
+          "btnStartFace","btnStopFace","btnAskGpsFace","btnLoadInitFace","btnConfirmFace",
+          "btnAskGpsManual","btnSubmitManual",
+          "btnCheck","btnLoadSummary","btnExportCsv",
+          "btnPing","btnPingDrawer","btnPingSide",
           "btnSaveUrl","btnResetUrl",
-          "btnLoadInit","btnLoadInitSide","btnLoadInitDrawer",
-          "btnLogin","btnUploadFace",
-          "btnExportCsv"
+          "btnLoadInit","btnLoadInitDrawer","btnLoadInitSide",
+          "btnLogin","btnGoAdmin","btnLogout",
+          "btnStartReg","btnStopReg","btnCaptureReg",
         ];
         ids.forEach(id => {
           const b = $(id);
@@ -1261,17 +1117,9 @@
       // =========================
       // API URL
       // =========================
-      function getApiUrl() {
-        return (localStorage.getItem(LS_API) || "").trim();
-      }
-      function setApiUrl(url) {
-        localStorage.setItem(LS_API, (url || "").trim());
-        refreshApiUI();
-      }
-      function resetApiUrl() {
-        localStorage.removeItem(LS_API);
-        refreshApiUI();
-      }
+      function getApiUrl() { return (localStorage.getItem(LS_API) || "").trim(); }
+      function setApiUrl(url) { localStorage.setItem(LS_API, (url || "").trim()); refreshApiUI(); }
+      function resetApiUrl() { localStorage.removeItem(LS_API); refreshApiUI(); }
       function shortUrl(url) {
         if (!url) return "ยังไม่ได้ตั้งค่า";
         try {
@@ -1282,36 +1130,22 @@
         }
       }
       function setApiState(state, text) {
-        // state: ok | warn | bad
-        const mDot = $("mDot"), pcDot = $("pcDot");
-        const mTxt = $("mApiText"), pcTxt = $("pcApiText");
+        const mDot = $("mDot"), mTxt = $("mApiText");
         const sideApi = $("sideApi");
-        const pcApiShort = $("pcApiShort");
-
-        if (pcApiShort) pcApiShort.textContent = shortUrl(getApiUrl());
-
         function apply(dot, txt) {
           if (!dot || !txt) return;
           dot.classList.remove("ok","warn","bad");
           dot.classList.add(state === "ok" ? "ok" : state === "bad" ? "bad" : "warn");
           txt.textContent = text;
         }
-
         apply(mDot, mTxt);
-        apply(pcDot, pcTxt);
-
-        if (sideApi) sideApi.textContent = "API: " + (text || "");
+        if (sideApi) sideApi.textContent = "API: " + text;
       }
-
       function refreshApiUI() {
         const url = getApiUrl();
-        $("apiUrlInput") && ($("apiUrlInput").value = url);
+        if ($("apiUrlInput")) $("apiUrlInput").value = url;
 
-        if (!url) {
-          setApiState("warn", "ยังไม่ได้ตั้งค่า URL");
-          $("pcApiShort") && ($("pcApiShort").textContent = "ยังไม่ได้ตั้งค่า");
-          return;
-        }
+        if (!url) return setApiState("warn", "ยังไม่ได้ตั้งค่า URL");
         setApiState("ok", "พร้อมใช้งาน (ยังไม่ได้ทดสอบ)");
       }
 
@@ -1327,7 +1161,6 @@
         $("backdrop").style.display = "none";
         $("drawer").classList.remove("open");
       }
-
       $("btnOpenDrawerMobile")?.addEventListener("click", openDrawer);
       $("btnOpenDrawerPC")?.addEventListener("click", openDrawer);
       $("btnOpenDrawerSide")?.addEventListener("click", openDrawer);
@@ -1347,44 +1180,34 @@
       });
 
       // =========================
-      // Navigation: sections
+      // Navigation
       // =========================
       const titleMap = {
-        secScan: "📷 สแกนเข้า-ออก (ใช้ GS: saveManualLog)",
-        secManual: "📝 บันทึกด้วยมือ (saveManualLog)",
-        secCheck: "🔎 ตรวจสอบวันนี้ (getTodayByCode)",
-        secSummary: "📊 สรุปวันนี้ (getTodaySummary)",
-        secHR: "🧩 HR (loginAdmin + uploadEmployeeFace)",
-        secHelp: "📘 วิธีใช้งาน"
+        secFace: "📷 สแกนใบหน้า (ระบุชื่อ → กดยืนยัน → เช็คอิน)",
+        secManual: "📝 บันทึกมือ (เลือก AUTO หรือ t1-t4 ได้)",
+        secCheck: "🔎 ตรวจสอบวันนี้ (ดูเป็นการ์ด อ่านง่าย)",
+        secSummary: "📊 สรุปวันนี้",
+        secHR: "🧩 HR (ล็อกอิน + ลงทะเบียนใบหน้า + ไปหน้า Admin)",
+        secHelp: "📘 วิธีใช้"
       };
 
       function showSection(id) {
-        ["secScan","secManual","secCheck","secSummary","secHR","secHelp"].forEach(s => {
+        ["secFace","secManual","secCheck","secSummary","secHR","secHelp"].forEach(s => {
           $(s)?.classList.toggle("active", s === id);
         });
-
-        // PC tabs
         $$("#tabs .tab").forEach(t => t.classList.toggle("active", t.dataset.sec === id));
-
-        // Mobile bottom nav
         $$(".bottomNav .bnBtn").forEach(b => b.classList.toggle("active", b.dataset.sec === id));
-
         $("mainTitle").textContent = titleMap[id] || "ระบบเช็คอินพนักงาน";
       }
 
       $$("#tabs .tab").forEach(t => t.addEventListener("click", () => showSection(t.dataset.sec)));
       $$(".bottomNav .bnBtn").forEach(b => b.addEventListener("click", () => showSection(b.dataset.sec)));
 
-      // quick nav buttons
-      $("btnGoScanPC")?.addEventListener("click", () => showSection("secScan"));
-      $("btnGoSummaryPC")?.addEventListener("click", () => showSection("secSummary"));
-      $("btnGoCheckFromScan")?.addEventListener("click", () => showSection("secCheck"));
-      $("btnGoSummaryFromScan")?.addEventListener("click", () => showSection("secSummary"));
       $("btnGoCheckFromManual")?.addEventListener("click", () => showSection("secCheck"));
       $("btnToSummary")?.addEventListener("click", () => showSection("secSummary"));
 
       // =========================
-      // API calls (GS รองรับ e.parameter → ใช้ x-www-form-urlencoded)
+      // API Calls (POST x-www-form-urlencoded)
       // =========================
       async function postAction(action, params = {}) {
         const url = getApiUrl();
@@ -1397,19 +1220,14 @@
           body.set(k, String(v));
         });
 
-        const res = await fetch(url, {
-          method: "POST",
-          body
-        });
-
+        const res = await fetch(url, { method: "POST", body });
         const text = await res.text();
+
         let json;
         try { json = JSON.parse(text); } catch { json = { ok:false, raw:text }; }
 
         if (!res.ok) throw new Error("HTTP " + res.status);
-        if (!json || json.ok !== true) {
-          throw new Error((json && json.error) ? json.error : "ตอบกลับไม่ถูกต้อง");
-        }
+        if (!json || json.ok !== true) throw new Error(json?.error || "ตอบกลับไม่ถูกต้อง");
         return json.result;
       }
 
@@ -1449,20 +1267,18 @@
       $("btnPingDrawer")?.addEventListener("click", pingApi);
 
       // =========================
-      // GPS (GS บังคับ lat/lng ตอน saveManualLog)
+      // GPS
       // =========================
       function setGpsUI(gps) {
         if (!gps) {
           $("gpsLine").textContent = "ยังไม่ได้ขอสิทธิ์ Location";
           $("mGpsView").value = "ยังไม่ได้ขอสิทธิ์ Location";
-          $("pcGpsText") && ($("pcGpsText").textContent = "ยังไม่ขอสิทธิ์");
           $("sideGps") && ($("sideGps").textContent = "GPS: ยังไม่ขอสิทธิ์");
           return;
         }
         const s = `lat=${gps.lat.toFixed(6)}, lng=${gps.lng.toFixed(6)} (±${Math.round(gps.acc)}m)`;
         $("gpsLine").textContent = "พร้อมใช้งาน ✅ " + s;
         $("mGpsView").value = "พร้อมใช้งาน ✅ " + s;
-        $("pcGpsText") && ($("pcGpsText").textContent = "พร้อมใช้งาน ✅");
         $("sideGps") && ($("sideGps").textContent = "GPS: พร้อมใช้งาน ✅");
       }
 
@@ -1495,97 +1311,28 @@
         }
       }
 
-      $("btnAskGps")?.addEventListener("click", askGps);
-      $("btnAskGps2")?.addEventListener("click", askGps);
-      $("btnAskGpsPC")?.addEventListener("click", askGps);
+      $("btnAskGpsFace")?.addEventListener("click", askGps);
+      $("btnAskGpsManual")?.addEventListener("click", askGps);
       $("btnAskGpsSide")?.addEventListener("click", askGps);
       $("btnAskGpsDrawer")?.addEventListener("click", askGps);
 
       // =========================
-      // Camera
+      // Load Cameras helpers
       // =========================
-      async function loadCameras() {
+      async function loadCameras(selectEl) {
         try {
           const devices = await navigator.mediaDevices.enumerateDevices();
           const cams = devices.filter(d => d.kind === "videoinput");
-          const sel = $("cameraSelect");
-          if (!sel) return;
-          sel.innerHTML = cams.map((c,i) =>
-            `<option value="${c.deviceId}">${(c.label || ("Camera " + (i+1))).replaceAll("<","&lt;")}</option>`
+          if (!selectEl) return;
+          selectEl.innerHTML = cams.map((c,i) =>
+            `<option value="${c.deviceId}">${escapeHtml(c.label || ("Camera " + (i+1)))}</option>`
           ).join("");
-          if (cams.length && !sel.value) sel.value = cams[0].deviceId;
+          if (cams.length && !selectEl.value) selectEl.value = cams[0].deviceId;
         } catch {}
       }
 
-      function stopCam() {
-        const v = $("video");
-        if (stream) {
-          stream.getTracks().forEach(t => t.stop());
-          stream = null;
-        }
-        if (v) {
-          v.pause();
-          v.srcObject = null;
-          v.style.display = "none";
-        }
-        $("camHint").style.display = "flex";
-      }
-
-      async function startCam() {
-        stopCam();
-        try {
-          setBusy(true);
-
-          const deviceId = $("cameraSelect").value || null;
-          const facing = $("facingMode").value || "user";
-
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: deviceId ? { deviceId:{ exact: deviceId } } : { facingMode: facing },
-            audio:false
-          });
-
-          const v = $("video");
-          v.srcObject = stream;
-          await v.play();
-
-          v.style.display = "block";
-          $("camHint").style.display = "none";
-          toast("เปิดกล้องแล้ว ✅");
-        } catch (e) {
-          stopCam();
-          toast("เปิดกล้องไม่สำเร็จ: " + (e.message || "unknown"));
-        } finally {
-          setBusy(false);
-        }
-      }
-
-      function capture() {
-        const v = $("video");
-        if (!stream || !v || v.readyState < 2) return toast("กล้องยังไม่พร้อม");
-        const canvas = document.createElement("canvas");
-        const w = v.videoWidth || 1280;
-        const h = v.videoHeight || 720;
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(v, 0, 0, w, h);
-
-        // JPEG ลดขนาด
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.86);
-        lastCaptureDataUrl = dataUrl;
-        lastCaptureName = `evidence-capture-${Date.now()}.jpg`;
-
-        $("thumb").src = dataUrl;
-        $("previewInfo").textContent = `ถ่ายแล้ว ✅ ${w}×${h}`;
-        $("previewRow").style.display = "flex";
-        toast("ถ่ายรูปแล้ว ✅");
-      }
-
-      $("btnStartCam")?.addEventListener("click", startCam);
-      $("btnStopCam")?.addEventListener("click", () => { stopCam(); toast("ปิดกล้องแล้ว"); });
-      $("btnCapture")?.addEventListener("click", capture);
-
       // =========================
-      // File → Base64 (DataURL)
+      // File/Base64 + Capture frame
       // =========================
       function fileToDataURL(file) {
         return new Promise((resolve, reject) => {
@@ -1596,104 +1343,353 @@
         });
       }
 
-      // =========================
-      // Save Scan (saveManualLog)
-      // =========================
-      async function submitScan() {
-        if (busy) return;
+      function captureFrameToJpegDataUrl(video, quality=0.82) {
+        const canvas = document.createElement("canvas");
+        const w = video.videoWidth || 1280;
+        const h = video.videoHeight || 720;
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, w, h);
+        return canvas.toDataURL("image/jpeg", quality);
+      }
 
-        const code = ($("scanCode").value || "").trim();
-        if (!code) return toast("กรุณากรอกรหัสพนักงาน");
+      // =========================
+      // Face Models
+      // =========================
+      function setModelState(ok, msg){
+        const dot = $("modelDot");
+        const txt = $("modelText");
+        dot.classList.remove("ok","warn","bad");
+        dot.classList.add(ok ? "ok" : "warn");
+        txt.textContent = msg;
+      }
 
-        // GPS required by GS
-        if (!lastGps) {
-          toast("ต้องมี GPS ก่อนบันทึก (GS บังคับ) — กด “ขอ GPS”");
-          return;
+      async function loadFaceModels() {
+        if (modelsReady) return true;
+        if (!window.faceapi) {
+          setModelState(false, "Face Model: ยังไม่โหลด (face-api.js)");
+          return false;
+        }
+        try{
+          setModelState(false, "Face Model: กำลังโหลด...");
+          // ✅ ต้องมีโฟลเดอร์ ./models/
+          const MODEL_URL = "./models";
+          await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+          await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+          await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+          modelsReady = true;
+          setModelState(true, "Face Model: พร้อมใช้งาน ✅");
+          return true;
+        } catch(e){
+          setModelState(false, "Face Model: โหลดไม่สำเร็จ");
+          toast("โหลด face model ไม่สำเร็จ: ตรวจสอบโฟลเดอร์ ./models/");
+          return false;
+        }
+      }
+
+      // =========================
+      // Employees -> FaceMatcher
+      // faceData รองรับ 2 แบบ:
+      // 1) "[0.1,0.2,...]"  (128 ตัว)
+      // 2) {"descriptors":[[...],[...]]} หรือ [[...],[...]]
+      // =========================
+      function parseFaceData(faceDataRaw){
+        if (!faceDataRaw) return [];
+        let obj = faceDataRaw;
+        if (typeof obj === "string") {
+          const s = obj.trim();
+          if (!s) return [];
+          try { obj = JSON.parse(s); } catch { return []; }
         }
 
-        setBusy(true);
-        try {
-          // evidenceBase64: priority file input > captured
-          let evidenceBase64 = "";
-          let evidenceName = "";
+        // if it's array of numbers -> single descriptor
+        if (Array.isArray(obj) && obj.length && typeof obj[0] === "number") {
+          return [ new Float32Array(obj) ];
+        }
 
-          const file = $("scanEvidenceFile").files?.[0] || null;
-          if (file) {
-            evidenceBase64 = await fileToDataURL(file);
-            evidenceName = file.name || `evidence-${code}-${Date.now()}.jpg`;
-          } else if (lastCaptureDataUrl) {
-            evidenceBase64 = lastCaptureDataUrl;
-            evidenceName = lastCaptureName || `evidence-${code}-${Date.now()}.jpg`;
-          } else {
-            // allowed (GS evidence optional) แต่แนะนำให้มี
-            evidenceBase64 = "";
-            evidenceName = "";
+        // if array of arrays
+        if (Array.isArray(obj) && obj.length && Array.isArray(obj[0])) {
+          return obj.map(a => new Float32Array(a));
+        }
+
+        // if {descriptors:[...]}
+        if (obj && Array.isArray(obj.descriptors)) {
+          return obj.descriptors.map(a => new Float32Array(a));
+        }
+
+        return [];
+      }
+
+      function rebuildFaceMatcher(){
+        if (!employeesCache.length) {
+          faceMatcher = null;
+          return;
+        }
+        const labeled = [];
+        for (const e of employeesCache) {
+          const code = String(e.code ?? "").trim();
+          if (!code) continue;
+          const label = code; // ใช้ code เป็น label เพื่อกันชื่อซ้ำ
+          const descs = parseFaceData(e.faceData);
+          if (!descs.length) continue;
+          labeled.push(new faceapi.LabeledFaceDescriptors(label, descs));
+        }
+        if (!labeled.length) {
+          faceMatcher = null;
+          return;
+        }
+        // threshold ยิ่งต่ำยิ่งเข้ม (0.55 ปลอดภัย)
+        faceMatcher = new faceapi.FaceMatcher(labeled, 0.55);
+      }
+
+      // =========================
+      // getInitialData -> cache employees
+      // =========================
+      function fillCodes(emps){
+        const dl = $("dlCodes");
+        if (!dl) return;
+        const list = (emps || [])
+          .map(e => ({ code: String(e.code || "").trim(), name: String(e.fullName || e.fullname || "").trim() }))
+          .filter(x => x.code);
+        dl.innerHTML = list.map(x => `<option value="${escapeHtml(x.code)}">${escapeHtml(x.name)}</option>`).join("");
+      }
+
+      async function loadInitial(){
+        try{
+          setBusy(true);
+          const res = await postAction("getInitialData", {});
+          employeesCache = res?.employees || [];
+          fillCodes(employeesCache);
+
+          // rebuild face matcher if models loaded
+          if (await loadFaceModels()) {
+            rebuildFaceMatcher();
           }
 
-          const manualType = ($("scanManualType").value || "SCAN").trim();
-
-          const result = await postAction("saveManualLog", {
-            code,
-            lat: lastGps.lat,
-            lng: lastGps.lng,
-            evidenceBase64,
-            evidenceName,
-            manualType
-          });
-
-          // UI log
-          localStorage.setItem(LS_LAST, JSON.stringify({
-            at: nowTH(),
-            title: `✅ บันทึกสำเร็จ (SCAN) • รหัส ${code}`,
-            detail: result?.status ? ("สถานะ: " + result.status) : "—"
-          }));
-          renderLast();
-
-          toast("บันทึกสำเร็จ ✅");
-          showSection("secCheck");
-          $("cCode").value = code;
-          await checkToday();
-        } catch (e) {
-          toast("บันทึกไม่สำเร็จ: " + e.message);
-        } finally {
+          toast("โหลดรายชื่อแล้ว ✅");
+        }catch(e){
+          toast("โหลดรายชื่อไม่สำเร็จ: " + e.message);
+        }finally{
           setBusy(false);
         }
       }
 
-      $("btnSubmitScan")?.addEventListener("click", submitScan);
+      $("btnLoadInit")?.addEventListener("click", loadInitial);
+      $("btnLoadInitSide")?.addEventListener("click", loadInitial);
+      $("btnLoadInitDrawer")?.addEventListener("click", loadInitial);
+      $("btnLoadInitFace")?.addEventListener("click", loadInitial);
 
       // =========================
-      // Save Manual (saveManualLog)
-      // - GS note ถูกใช้เป็น zone -> เราแนบเหตุผลไปกับ manualType เพื่อไม่หาย
+      // Face Scan Camera
       // =========================
-      async function submitManual() {
-        if (busy) return;
+      function stopStream(stream){
+        if (!stream) return;
+        try { stream.getTracks().forEach(t => t.stop()); } catch {}
+      }
 
-        const code = ($("mCode").value || "").trim();
-        const reason = ($("mReason").value || "").trim();
-        if (!code) return toast("กรุณากรอกรหัสพนักงาน");
-        if (!reason) return toast("กรุณากรอกเหตุผล");
+      function stopFace(){
+        stopStream(streamFace);
+        streamFace = null;
+        const v = $("videoFace");
+        if (v) { v.pause(); v.srcObject = null; v.style.display = "none"; }
+        $("camHintFace").style.display = "flex";
+        clearInterval(scanLoopTimer);
+        scanLoopTimer = null;
+        setFaceResult(null);
+        clearOverlay($("overlayFace"));
+      }
 
-        if (!lastGps) {
-          toast("ต้องมี GPS ก่อนบันทึก (GS บังคับ) — กด “ขอ GPS”");
+      async function startFace(){
+        stopFace();
+        const okModels = await loadFaceModels();
+        if (!okModels) return;
+
+        try{
+          setBusy(true);
+          const sel = $("cameraSelectFace");
+          const deviceId = sel?.value || null;
+          const facing = $("facingModeFace")?.value || "user";
+
+          streamFace = await navigator.mediaDevices.getUserMedia({
+            video: deviceId ? { deviceId:{ exact: deviceId } } : { facingMode: facing },
+            audio:false
+          });
+
+          const v = $("videoFace");
+          v.srcObject = streamFace;
+          await v.play();
+          v.style.display = "block";
+          $("camHintFace").style.display = "none";
+
+          // if not loaded employees yet -> suggest
+          if (!employeesCache.length) toast("แนะนำกด “โหลดรายชื่อ” ก่อน เพื่อให้ระบบจำหน้าได้");
+
+          // init overlay size
+          resizeOverlayToVideo($("overlayFace"), v);
+
+          // start scan loop
+          scanLoopTimer = setInterval(() => scanFaceFrame(), 550);
+
+          toast("เริ่มสแกนแล้ว ✅");
+        }catch(e){
+          stopFace();
+          toast("เปิดกล้องไม่สำเร็จ: " + (e.message || "unknown"));
+        }finally{
+          setBusy(false);
+        }
+      }
+
+      $("btnStartFace")?.addEventListener("click", startFace);
+      $("btnStopFace")?.addEventListener("click", () => { stopFace(); toast("ปิดกล้องแล้ว"); });
+
+      // =========================
+      // Overlay draw helpers
+      // =========================
+      function resizeOverlayToVideo(canvas, video){
+        if (!canvas || !video) return;
+        const rect = video.getBoundingClientRect();
+        // set canvas to video actual pixels for better draw
+        canvas.width = video.videoWidth || 1280;
+        canvas.height = video.videoHeight || 720;
+      }
+      function clearOverlay(canvas){
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+      }
+      function drawBox(canvas, box, ok=true){
+        if (!canvas || !box) return;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = ok ? "rgba(34,197,94,.95)" : "rgba(239,68,68,.95)";
+        ctx.fillStyle = ok ? "rgba(34,197,94,.12)" : "rgba(239,68,68,.12)";
+        ctx.beginPath();
+        ctx.rect(box.x, box.y, box.width, box.height);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // =========================
+      // Face scan logic
+      // =========================
+      function findEmployeeByCode(code){
+        const c = String(code||"").trim();
+        return employeesCache.find(e => String(e.code||"").trim() === c) || null;
+      }
+
+      function setFaceResult(match){
+        lastFaceMatch = match;
+        const who = $("faceWho");
+        const meta = $("faceMeta");
+        const score = $("faceScore");
+        const btn = $("btnConfirmFace");
+
+        if (!match) {
+          who.textContent = "ยังไม่พบใบหน้า";
+          meta.textContent = "ยืนหน้ากล้องให้ชัด ๆ แล้วรอสักครู่";
+          score.innerHTML = "ความมั่นใจ: —";
+          btn.disabled = true;
           return;
         }
 
-        setBusy(true);
-        try {
-          // evidence optional
-          let evidenceBase64 = "";
-          let evidenceName = "";
-          const file = $("mEvidenceFile").files?.[0] || null;
-          if (file) {
-            evidenceBase64 = await fileToDataURL(file);
-            evidenceName = file.name || `manual-${code}-${Date.now()}.jpg`;
+        const e = match.employee;
+        if (match.ok && e) {
+          who.innerHTML = `<span class="faceOk">พบ: ${escapeHtml(e.fullName || "")}</span> (รหัส ${escapeHtml(e.code)})`;
+          meta.innerHTML = `แผนก: ${escapeHtml(e.branch||"-")} • ระดับ: ${escapeHtml(e.level||"-")}`;
+          score.innerHTML = `ความมั่นใจ: <b>${Math.max(0, (1 - match.distance)).toFixed(2)}</b> • ระยะห่าง: <b>${match.distance.toFixed(3)}</b>`;
+          btn.disabled = false;
+        } else {
+          who.innerHTML = `<span class="faceBad">Unknown</span> (ยังจับคู่ไม่ได้)`;
+          meta.textContent = "ลองขยับใกล้ขึ้น / แสงสว่างขึ้น / หรือให้ HR ถ่ายใบหน้าใหม่";
+          score.innerHTML = `ความมั่นใจ: <b>${match.distance != null ? (Math.max(0, (1 - match.distance)).toFixed(2)) : "-"}</b>`;
+          btn.disabled = false; // ให้ใช้ fallback code ได้
+        }
+      }
+
+      async function scanFaceFrame(){
+        try{
+          const v = $("videoFace");
+          if (!streamFace || !v || v.readyState < 2) return;
+
+          // keep overlay sized
+          resizeOverlayToVideo($("overlayFace"), v);
+
+          const detection = await faceapi
+            .detectSingleFace(v, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+          if (!detection) {
+            clearOverlay($("overlayFace"));
+            setFaceResult(null);
+            return;
           }
 
-          // manualType store reason to avoid loss
-          const baseType = ($("mType").value || "MANUAL").trim();
-          const safeReason = reason.replace(/\s+/g," ").slice(0, 80);
-          const manualType = `${baseType}:${safeReason}`;
+          drawBox($("overlayFace"), detection.detection.box, true);
+
+          // If matcher not ready -> just show "found face"
+          if (!faceMatcher) {
+            setFaceResult({ ok:false, distance:null, employee:null });
+            return;
+          }
+
+          const best = faceMatcher.findBestMatch(detection.descriptor);
+          const label = best.label; // code or "unknown"
+          const distance = best.distance;
+
+          if (label && label !== "unknown") {
+            const emp = findEmployeeByCode(label);
+            setFaceResult({ ok:true, employee: emp, label, distance });
+          } else {
+            setFaceResult({ ok:false, employee:null, label:"unknown", distance });
+          }
+        } catch {
+          // ignore scan loop errors
+        }
+      }
+
+      // =========================
+      // Confirm Face -> saveManualLog
+      // =========================
+      async function confirmFaceAndSave(){
+        if (busy) return;
+
+        // require GPS (ตาม GS)
+        if (!lastGps) {
+          toast("ต้องมี GPS ก่อนบันทึก — กด “ขอ GPS”");
+          return;
+        }
+
+        const slot = ($("slotMode").value || "AUTO").trim();
+
+        // determine code
+        let code = "";
+        if (lastFaceMatch?.ok && lastFaceMatch.employee?.code) {
+          code = String(lastFaceMatch.employee.code).trim();
+        } else {
+          // fallback code
+          code = ($("fallbackCode").value || "").trim();
+          if (!code) {
+            toast("ยังจับคู่ไม่ได้ — กรุณากรอกรหัสในช่องสำรอง");
+            return;
+          }
+        }
+
+        // capture evidence from current frame (เหมือนระบบเดิมที่ต้องมีหลักฐาน)
+        const v = $("videoFace");
+        if (!v || v.readyState < 2) {
+          toast("กล้องยังไม่พร้อม");
+          return;
+        }
+        const evidenceBase64 = captureFrameToJpegDataUrl(v, 0.82);
+        const evidenceName = `face-${code}-${Date.now()}.jpg`;
+
+        // manualType: FACE:AUTO / FACE:T1 ...
+        const manualType = `FACE:${slot}`;
+
+        try{
+          setBusy(true);
 
           const result = await postAction("saveManualLog", {
             code,
@@ -1706,7 +1702,65 @@
 
           localStorage.setItem(LS_LAST, JSON.stringify({
             at: nowTH(),
-            title: `📝 บันทึกมือสำเร็จ • รหัส ${code}`,
+            title: `✅ เช็คอินสำเร็จ (FACE:${slot}) • รหัส ${code}`,
+            detail: result?.status ? ("สถานะ: " + result.status) : "-"
+          }));
+          renderLast();
+
+          toast("เช็คอินสำเร็จ ✅");
+          showSection("secCheck");
+          $("cCode").value = code;
+          await checkToday();
+        }catch(e){
+          toast("เช็คอินไม่สำเร็จ: " + e.message);
+        }finally{
+          setBusy(false);
+        }
+      }
+
+      $("btnConfirmFace")?.addEventListener("click", confirmFaceAndSave);
+
+      // =========================
+      // Manual save -> saveManualLog
+      // =========================
+      async function submitManual(){
+        if (busy) return;
+
+        const code = ($("mCode").value || "").trim();
+        const reason = ($("mReason").value || "").trim();
+        const slot = ($("mSlotMode").value || "AUTO").trim();
+
+        if (!code) return toast("กรุณากรอกรหัสพนักงาน");
+        if (!reason) return toast("กรุณากรอกเหตุผล");
+        if (!lastGps) return toast("ต้องมี GPS ก่อนบันทึก — กด “ขอ GPS”");
+
+        // evidence optional
+        let evidenceBase64 = "";
+        let evidenceName = "";
+        const file = $("mEvidenceFile").files?.[0] || null;
+        if (file) {
+          evidenceBase64 = await fileToDataURL(file);
+          evidenceName = file.name || `manual-${code}-${Date.now()}.jpg`;
+        }
+
+        // manualType: MANUAL:AUTO:reason...
+        const safeReason = reason.replace(/\s+/g," ").slice(0, 80);
+        const manualType = `MANUAL:${slot}:${safeReason}`;
+
+        try{
+          setBusy(true);
+          const result = await postAction("saveManualLog", {
+            code,
+            lat: lastGps.lat,
+            lng: lastGps.lng,
+            evidenceBase64,
+            evidenceName,
+            manualType
+          });
+
+          localStorage.setItem(LS_LAST, JSON.stringify({
+            at: nowTH(),
+            title: `📝 บันทึกมือสำเร็จ (MANUAL:${slot}) • รหัส ${code}`,
             detail: safeReason
           }));
           renderLast();
@@ -1715,45 +1769,16 @@
           showSection("secCheck");
           $("cCode").value = code;
           await checkToday();
-        } catch (e) {
+        }catch(e){
           toast("บันทึกไม่สำเร็จ: " + e.message);
-        } finally {
+        }finally{
           setBusy(false);
         }
       }
-
       $("btnSubmitManual")?.addEventListener("click", submitManual);
 
       // =========================
-      // Check Today (getTodayByCode)
-      // =========================
-      async function checkToday() {
-        const code = ($("cCode").value || "").trim();
-        if (!code) return toast("กรุณากรอกรหัสพนักงาน");
-
-        setBusy(true);
-        try {
-          // GS รองรับ action getTodayByCode/checkTodayByCode
-          const result = await postAction("getTodayByCode", { code });
-
-          $("checkBox").style.display = "block";
-          $("checkHint").textContent = "ดึงข้อมูลแล้ว ✅";
-          $("checkBox").textContent = JSON.stringify(result, null, 2);
-
-          toast("เช็คสำเร็จ ✅");
-        } catch (e) {
-          $("checkBox").style.display = "block";
-          $("checkHint").textContent = "เกิดข้อผิดพลาด ❌";
-          $("checkBox").textContent = e.message;
-          toast("เช็คไม่สำเร็จ: " + e.message);
-        } finally {
-          setBusy(false);
-        }
-      }
-      $("btnCheck")?.addEventListener("click", checkToday);
-
-      // =========================
-      // Summary Today (getTodaySummary)
+      // Check today -> UI card
       // =========================
       function classifyStatus(st) {
         const s = String(st || "");
@@ -1762,6 +1787,88 @@
         return "warn";
       }
 
+      function buildTimesRow(log){
+        if (!log) return "-";
+        const t = [];
+        if (log.t1) t.push(`t1: ${log.t1}`);
+        if (log.t2) t.push(`t2: ${log.t2}`);
+        if (log.t3) t.push(`t3: ${log.t3}`);
+        if (log.t4) t.push(`t4: ${log.t4}`);
+        if (log.tExtra1) t.push(`extra1: ${log.tExtra1}`);
+        if (log.tExtra2) t.push(`extra2: ${log.tExtra2}`);
+        return t.length ? t.join(" • ") : "-";
+      }
+
+      function renderCheckUI(result){
+        const wrap = $("checkUi");
+        const msg = $("checkMsg");
+        const dbg = $("checkDebug");
+
+        wrap.innerHTML = "";
+        if (!result) {
+          msg.textContent = "ไม่พบข้อมูล";
+          return;
+        }
+
+        // GS ของคุณเคยคืน {found, message, employee, log}
+        const found = !!result.found;
+        msg.textContent = found ? "พบข้อมูล ✅" : (result.message || "ไม่พบข้อมูล");
+
+        if (!found) return;
+
+        const emp = result.employee || {};
+        const log = result.log || {};
+        const cls = classifyStatus(log.status);
+        const chipClass = cls==="ok" ? "ok" : cls==="bad" ? "bad" : "warn";
+
+        const evidence = log.evidenceUrl ? `<a href="${escapeHtml(log.evidenceUrl)}" target="_blank" rel="noopener">เปิดหลักฐาน</a>` : "-";
+
+        wrap.innerHTML = `
+          <div class="info mt12">
+            <div style="font-weight:600">${escapeHtml(emp.fullName || "-")} (รหัส ${escapeHtml(emp.code || "-")})</div>
+            <div class="small muted mt8">แผนก: ${escapeHtml(emp.branch || "-")} • ระดับ: ${escapeHtml(emp.level || "-")}</div>
+            <div class="mt10">
+              <span class="statusChip ${chipClass}">สถานะ: ${escapeHtml(log.status || "-")}</span>
+            </div>
+            <div class="small muted mt10">เวลา: ${escapeHtml(buildTimesRow(log))}</div>
+            <div class="small muted mt10">หลักฐาน: ${evidence}</div>
+          </div>
+        `;
+
+        if (dbg) dbg.textContent = JSON.stringify(result, null, 2);
+      }
+
+      async function checkToday(){
+        const code = ($("cCode").value || "").trim();
+        if (!code) return toast("กรุณากรอกรหัสพนักงาน");
+
+        try{
+          setBusy(true);
+          // ใช้ getTodayByCode (ถ้า GS ของคุณใช้ชื่ออื่น คุณเปลี่ยนตรงนี้ได้)
+          const result = await postAction("getTodayByCode", { code });
+          renderCheckUI(result);
+          toast("เช็คสำเร็จ ✅");
+        }catch(e){
+          $("checkMsg").textContent = "เกิดข้อผิดพลาด";
+          $("checkUi").innerHTML = `<div class="small muted mt8">❌ ${escapeHtml(e.message)}</div>`;
+          $("checkDebug").textContent = e.message;
+          toast("เช็คไม่สำเร็จ: " + e.message);
+        }finally{
+          setBusy(false);
+        }
+      }
+
+      $("btnCheck")?.addEventListener("click", checkToday);
+
+      let debugOn = false;
+      $("btnToggleDebug")?.addEventListener("click", () => {
+        debugOn = !debugOn;
+        $("checkDebug").classList.toggle("hide", !debugOn);
+      });
+
+      // =========================
+      // Summary today
+      // =========================
       function renderSummary(rows, filterText="") {
         const q = String(filterText || "").trim().toLowerCase();
         const body = $("sumBody");
@@ -1772,22 +1879,8 @@
           return t.includes(q);
         });
 
-        // KPI
-        const all = filtered.length;
-        let ok=0, bad=0, warn=0;
-        filtered.forEach(r => {
-          const k = classifyStatus(r.status);
-          if (k==="ok") ok++;
-          else if (k==="bad") bad++;
-          else warn++;
-        });
-        $("kAll").textContent = all;
-        $("kOk").textContent = ok;
-        $("kAbsent").textContent = bad;
-        $("kWarn").textContent = warn;
-
         if (!filtered.length) {
-          body.innerHTML = `<tr><td colspan="6" class="muted">ไม่พบข้อมูลจากคำค้น</td></tr>`;
+          body.innerHTML = `<tr><td colspan="6" class="muted">ไม่พบข้อมูล</td></tr>`;
           return;
         }
 
@@ -1797,7 +1890,7 @@
           const chipClass = cls==="ok" ? "ok" : cls==="bad" ? "bad" : "warn";
           return `
             <tr>
-              <td class="bold">${escapeHtml(r.code)}</td>
+              <td style="font-weight:600">${escapeHtml(r.code)}</td>
               <td>${escapeHtml(r.fullName || "")}</td>
               <td>${escapeHtml(r.branch || "")}</td>
               <td>${escapeHtml(r.level || "")}</td>
@@ -1808,26 +1901,16 @@
         }).join("");
       }
 
-      function escapeHtml(s){
-        return String(s ?? "")
-          .replaceAll("&","&amp;")
-          .replaceAll("<","&lt;")
-          .replaceAll(">","&gt;")
-          .replaceAll('"',"&quot;")
-          .replaceAll("'","&#039;");
-      }
-
-      async function loadSummary() {
-        setBusy(true);
-        try {
+      async function loadSummary(){
+        try{
+          setBusy(true);
           const rows = await postAction("getTodaySummary", {});
-          // rows is array (GS returns array)
           lastSummary = Array.isArray(rows) ? rows : (rows.rows || []);
           renderSummary(lastSummary, $("sumSearch").value);
           toast("โหลดสรุปวันนี้แล้ว ✅");
-        } catch (e) {
+        }catch(e){
           toast("โหลดสรุปไม่สำเร็จ: " + e.message);
-        } finally {
+        }finally{
           setBusy(false);
         }
       }
@@ -1835,9 +1918,8 @@
       $("btnLoadSummary")?.addEventListener("click", loadSummary);
       $("sumSearch")?.addEventListener("input", () => renderSummary(lastSummary, $("sumSearch").value));
 
-      // Export CSV
       function toCSV(rows){
-        const headers = ["date","code","fullName","branch","level","t1","t2","t3","t4","tExtra1","tExtra2","status","evidenceUrl","locationText","lat","lng"];
+        const headers = ["date","code","fullName","branch","level","t1","t2","t3","t4","tExtra1","tExtra2","status","evidenceUrl","locationText","lat","lng","rawType","method","note","updatedAt"];
         const esc = (v) => {
           const s = String(v ?? "");
           const needs = /[",\n]/.test(s);
@@ -1846,9 +1928,7 @@
         };
         const lines = [];
         lines.push(headers.join(","));
-        rows.forEach(r => {
-          lines.push(headers.map(h => esc(r[h])).join(","));
-        });
+        rows.forEach(r => lines.push(headers.map(h => esc(r[h])).join(",")));
         return lines.join("\n");
       }
       function download(name, text){
@@ -1864,12 +1944,11 @@
       }
       $("btnExportCsv")?.addEventListener("click", () => {
         if (!lastSummary.length) return toast("ยังไม่มีข้อมูล — โหลดสรุปก่อน");
-        const csv = toCSV(lastSummary);
-        download(`today_summary_${todayISO()}.csv`, csv);
+        download(`today_summary_${todayISO()}.csv`, toCSV(lastSummary));
       });
 
       // =========================
-      // HR Login + Upload Face
+      // HR: login + gate admin.html
       // =========================
       function setHrState(ok, msg){
         const dot = $("hrDot");
@@ -1877,161 +1956,296 @@
         dot.classList.remove("ok","warn","bad");
         dot.classList.add(ok ? "ok" : "warn");
         txt.textContent = msg;
+        $("btnGoAdmin").disabled = !ok;
+        $("btnLogout").disabled = !ok;
+        $("btnCaptureReg").disabled = !ok;
       }
-      setHrState(false, "ยังไม่ล็อกอิน");
+
+      function isHrLoggedIn(){
+        return localStorage.getItem(LS_HR_OK) === "1";
+      }
+
+      function applyHrUI(){
+        if (isHrLoggedIn()) setHrState(true, "ล็อกอินแล้ว ✅");
+        else setHrState(false, "ยังไม่ล็อกอิน");
+      }
 
       async function loginHR(){
         const username = ($("hrUser").value || "").trim();
         const password = ($("hrPass").value || "").trim();
         if (!username || !password) return toast("กรุณากรอก Username/Password");
 
-        setBusy(true);
         try{
+          setBusy(true);
           const res = await postAction("loginAdmin", { username, password });
           const token = res?.token || "";
           localStorage.setItem(LS_HR, token);
-          setHrState(true, "ล็อกอินแล้ว ✅");
+          localStorage.setItem(LS_HR_OK, "1");
+          applyHrUI();
           toast("ล็อกอินสำเร็จ ✅");
         }catch(e){
-          setHrState(false, "ล็อกอินไม่ผ่าน");
+          localStorage.removeItem(LS_HR);
+          localStorage.removeItem(LS_HR_OK);
+          applyHrUI();
           toast("ล็อกอินไม่สำเร็จ: " + e.message);
         }finally{
           setBusy(false);
         }
       }
+
+      function logoutHR(){
+        localStorage.removeItem(LS_HR);
+        localStorage.removeItem(LS_HR_OK);
+        applyHrUI();
+        toast("ออกจากระบบแล้ว");
+      }
+
       $("btnLogin")?.addEventListener("click", loginHR);
+      $("btnLogout")?.addEventListener("click", logoutHR);
 
-      async function uploadFace(){
-        const code = ($("faceCode").value || "").trim();
-        const file = $("faceFile").files?.[0] || null;
-        const faceData = ($("faceData").value || "").trim();
+      $("btnGoAdmin")?.addEventListener("click", () => {
+        if (!isHrLoggedIn()) return toast("ต้องล็อกอิน HR ก่อน");
+        // ✅ ไปหน้า admin.html (หน้า admin จะตรวจเองอีกชั้น)
+        location.href = "./admin.html";
+      });
 
-        if (!code) return toast("กรุณากรอกรหัสพนักงาน");
-        if (!file) return toast("กรุณาเลือกไฟล์รูปใบหน้า");
+      // =========================
+      // HR Registration: camera + compute descriptor + uploadEmployeeFace
+      // =========================
+      function stopReg(){
+        stopStream(streamReg);
+        streamReg = null;
+        const v = $("videoReg");
+        if (v) { v.pause(); v.srcObject = null; v.style.display = "none"; }
+        $("camHintReg").style.display = "flex";
+        clearOverlay($("overlayReg"));
+        $("btnCaptureReg").disabled = true;
+        $("regHint").textContent = "รอให้ระบบขึ้นว่า “พบใบหน้า” แล้วค่อยกดบันทึก";
+      }
 
-        setBusy(true);
+      async function startReg(){
+        if (!isHrLoggedIn()) return toast("ต้องล็อกอิน HR ก่อน");
+        stopReg();
+        const okModels = await loadFaceModels();
+        if (!okModels) return;
+
         try{
-          const photoBase64 = await fileToDataURL(file);
-          const fileName = file.name || `face-${code}-${Date.now()}.jpg`;
+          setBusy(true);
+          streamReg = await navigator.mediaDevices.getUserMedia({ video: { facingMode:"user" }, audio:false });
+          const v = $("videoReg");
+          v.srcObject = streamReg;
+          await v.play();
+          v.style.display = "block";
+          $("camHintReg").style.display = "none";
+          resizeOverlayToVideo($("overlayReg"), v);
 
-          const res = await postAction("uploadEmployeeFace", {
+          toast("เปิดกล้อง HR แล้ว ✅");
+
+          // loop detect for hint
+          const loop = async () => {
+            if (!streamReg) return;
+            try{
+              const det = await faceapi
+                .detectSingleFace(v, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+              if (!det) {
+                clearOverlay($("overlayReg"));
+                $("regHint").textContent = "ยังไม่พบใบหน้า — ขยับหน้าให้ชัด/แสงพอดี";
+                $("btnCaptureReg").disabled = true;
+              } else {
+                drawBox($("overlayReg"), det.detection.box, true);
+                $("regHint").textContent = "พบใบหน้า ✅ กด “จับภาพ+บันทึกใบหน้า” ได้เลย";
+                $("btnCaptureReg").disabled = false;
+                // stash latest detection for capture
+                window.__lastRegDet = det;
+              }
+            }catch{}
+            requestAnimationFrame(loop);
+          };
+          requestAnimationFrame(loop);
+
+        }catch(e){
+          stopReg();
+          toast("เปิดกล้อง HR ไม่สำเร็จ: " + e.message);
+        }finally{
+          setBusy(false);
+        }
+      }
+            async function startReg(){
+        if (!isHrLoggedIn()) return toast("ต้องล็อกอิน HR ก่อน");
+        stopReg();
+        const okModels = await loadFaceModels();
+        if (!okModels) return;
+
+        try{
+          setBusy(true);
+          streamReg = await navigator.mediaDevices.getUserMedia({ video: { facingMode:"user" }, audio:false });
+          const v = $("videoReg");
+          v.srcObject = streamReg;
+          await v.play();
+          v.style.display = "block";
+          $("camHintReg").style.display = "none";
+          resizeOverlayToVideo($("overlayReg"), v);
+
+          toast("เปิดกล้อง HR แล้ว ✅");
+
+          // loop detect for hint
+          const loop = async () => {
+            if (!streamReg) return;
+            try{
+              const det = await faceapi
+                .detectSingleFace(v, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+              if (!det) {
+                clearOverlay($("overlayReg"));
+                $("regHint").textContent = "ยังไม่พบใบหน้า — ขยับหน้าให้ชัด/แสงพอดี";
+                $("btnCaptureReg").disabled = true;
+              } else {
+                drawBox($("overlayReg"), det.detection.box, true);
+                $("regHint").textContent = "พบใบหน้า ✅ กด “จับภาพ+บันทึกใบหน้า” ได้เลย";
+                $("btnCaptureReg").disabled = false;
+                // stash latest detection for capture
+                window.__lastRegDet = det;
+              }
+            }catch{}
+            requestAnimationFrame(loop);
+          };
+          requestAnimationFrame(loop);
+
+        }catch(e){
+          stopReg();
+          toast("เปิดกล้อง HR ไม่สำเร็จ: " + e.message);
+        }finally{
+          setBusy(false);
+        }
+      }
+
+      $("btnStartReg")?.addEventListener("click", startReg);
+      $("btnStopReg")?.addEventListener("click", () => { stopReg(); toast("ปิดกล้อง HR แล้ว"); });
+
+      async function captureAndUploadReg(){
+        if (busy) return;
+        if (!isHrLoggedIn()) return toast("ต้องล็อกอิน HR ก่อน");
+        const code = ($("regCode").value || "").trim();
+        const note = ($("regNote").value || "").trim();
+        if (!code) return toast("กรุณากรอกรหัสพนักงาน");
+
+        const det = window.__lastRegDet;
+        if (!det || !det.descriptor) return toast("ยังไม่พบใบหน้า — ให้หน้าอยู่ในกรอบก่อน");
+
+        // convert descriptor -> JSON
+        const descriptorArr = Array.from(det.descriptor);
+        const faceData = JSON.stringify({ descriptors: [descriptorArr] });
+
+        // token เผื่อ GS ต้องใช้ (ถ้า GS ไม่ต้องใช้ ก็ปล่อยส่งไปได้ ไม่กระทบ)
+        const token = localStorage.getItem(LS_HR) || "";
+
+        // capture evidence (ภาพ) เผื่ออยากเก็บรูปไว้ใน Drive (ถ้า GS รองรับ)
+        const v = $("videoReg");
+        const evidenceBase64 = (v && v.readyState >= 2) ? captureFrameToJpegDataUrl(v, 0.82) : "";
+        const evidenceName = `hr-face-${code}-${Date.now()}.jpg`;
+
+        try{
+          setBusy(true);
+
+          const result = await postAction("uploadEmployeeFace", {
             code,
-            photoBase64,
-            fileName,
-            faceData
+            faceData,
+            note,
+            token,
+            evidenceBase64,
+            evidenceName
           });
 
-          $("hrBox").style.display = "block";
-          $("hrBox").textContent = JSON.stringify(res, null, 2);
+          // รีโหลดรายชื่อเพื่อให้สแกนหน้าใช้ได้ทันที
+          await loadInitial();
 
-          localStorage.setItem(LS_LAST, JSON.stringify({
-            at: nowTH(),
-            title: `🙂 อัปโหลดใบหน้า • รหัส ${code}`,
-            detail: fileName
-          }));
-          renderLast();
+          $("hrDebugWrap").style.display = "block";
+          $("hrDebug").textContent = JSON.stringify({ ok:true, result }, null, 2);
 
-          toast("อัปโหลดใบหน้าสำเร็จ ✅");
+          toast("บันทึกใบหน้าแล้ว ✅");
         }catch(e){
-          $("hrBox").style.display = "block";
-          $("hrBox").textContent = e.message;
-          toast("อัปโหลดไม่สำเร็จ: " + e.message);
+          $("hrDebugWrap").style.display = "block";
+          $("hrDebug").textContent = JSON.stringify({ ok:false, error: e.message }, null, 2);
+          toast("บันทึกใบหน้าไม่สำเร็จ: " + e.message);
         }finally{
           setBusy(false);
         }
       }
-      $("btnUploadFace")?.addEventListener("click", uploadFace);
+
+      $("btnCaptureReg")?.addEventListener("click", captureAndUploadReg);
 
       // =========================
-      // getInitialData -> เติม datalist code
-      // =========================
-      function fillCodes(emps){
-        const dl = $("dlCodes");
-        if (!dl) return;
-        const list = (emps || [])
-          .map(e => ({
-            code: String(e.code || "").trim(),
-            name: String(e.fullName || e.fullname || "").trim()
-          }))
-          .filter(x => x.code);
-
-        dl.innerHTML = list.map(x => `<option value="${escapeHtml(x.code)}">${escapeHtml(x.name)}</option>`).join("");
-      }
-
-      async function loadInitial(){
-        setBusy(true);
-        try{
-          const res = await postAction("getInitialData", {});
-          employeesCache = res?.employees || [];
-          fillCodes(employeesCache);
-          toast("โหลดรายชื่อแล้ว ✅");
-        }catch(e){
-          toast("โหลดรายชื่อไม่สำเร็จ: " + e.message);
-        }finally{
-          setBusy(false);
-        }
-      }
-      $("btnLoadInit")?.addEventListener("click", loadInitial);
-      $("btnLoadInitSide")?.addEventListener("click", loadInitial);
-      $("btnLoadInitDrawer")?.addEventListener("click", loadInitial);
-
-      // =========================
-      // UI last log
+      // Last UI log
       // =========================
       function renderLast(){
-        const raw = localStorage.getItem(LS_LAST);
         const el = $("lastLine");
         if (!el) return;
+        const raw = localStorage.getItem(LS_LAST);
         if (!raw) { el.textContent = "ยังไม่มี"; return; }
         try{
           const o = JSON.parse(raw);
-          el.textContent = `${o.at} • ${o.title}`;
+          el.textContent = `${o.at || "-"} • ${o.title || "-"} ${o.detail ? "• " + o.detail : ""}`;
         }catch{
           el.textContent = "ยังไม่มี";
         }
       }
+
+      // =========================
+      // Clear Local
+      // =========================
       $("btnClearLocal")?.addEventListener("click", () => {
         localStorage.removeItem(LS_LAST);
-        toast("ล้าง log ล่าสุดแล้ว ✅");
+        // (ไม่ลบ URL โดยตั้งใจ) ถ้าต้องลบ URL ใช้ปุ่ม Reset URL
+        toast("ล้างสถานะล่าสุดแล้ว ✅");
         renderLast();
       });
 
       // =========================
+      // Utilities
+      // =========================
+      function escapeHtml(s){
+        return String(s ?? "")
+          .replaceAll("&","&amp;")
+          .replaceAll("<","&lt;")
+          .replaceAll(">","&gt;")
+          .replaceAll('"',"&quot;")
+          .replaceAll("'","&#39;");
+      }
+
+      // =========================
       // Init
       // =========================
-      function initDateUI(){
-        $("nowBadge").textContent = nowTH();
-        $("pcNow") && ($("pcNow").textContent = nowTH());
-        $("cDate").value = todayISO();
+      function tickNow(){
+        const el = $("nowBadge");
+        if (el) el.textContent = nowTH();
+        requestAnimationFrame(() => {});
+      }
+      setInterval(tickNow, 1000 * 20);
+      tickNow();
 
-        setInterval(() => {
-          $("nowBadge").textContent = nowTH();
-          $("pcNow") && ($("pcNow").textContent = nowTH());
-        }, 10000);
+      // set date
+      $("cDate") && ($("cDate").value = todayISO());
+
+      // initial UI
+      refreshApiUI();
+      applyHrUI();
+      setGpsUI(lastGps);
+      renderLast();
+
+      // load cameras list (labels อาจว่างถ้ายังไม่อนุญาตกล้อง)
+      if (navigator.mediaDevices?.enumerateDevices) {
+        loadCameras($("cameraSelectFace"));
       }
 
-      async function initCameraList(){
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+      // prevent camera leak on leave
+      window.addEventListener("beforeunload", () => {
+        try { stopFace(); } catch {}
+        try { stopReg(); } catch {}
+      });
 
-        // ขอ permission เบาๆ เพื่อให้ label กล้องโชว์
-        try{
-          const tmp = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
-          tmp.getTracks().forEach(t => t.stop());
-        }catch{}
-
-        await loadCameras();
-      }
-
-      function init(){
-        initDateUI();
-        refreshApiUI();
-        setGpsUI(null);
-        renderLast();
-        showSection("secScan");
-        initCameraList();
-      }
-
-      init();
     })();
   </script>
 
