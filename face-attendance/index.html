@@ -3,496 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Face Attendance – Check-in</title>
-
+  <title>ระบบเช็คอินพนักงาน • Attendance</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-  <style>
-    :root{
-      --bg:#f6f7fb;
-      --card:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --border:#e5e7eb;
-      --primary:#2563eb;
-      --primary2:#1d4ed8;
-      --good:#16a34a;
-      --warn:#f59e0b;
-      --bad:#ef4444;
-      --shadow: 0 10px 30px rgba(15, 23, 42, .08);
-      --radius: 18px;
-      --radius2: 14px;
-      --pad: 14px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: "Prompt", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
-      background: radial-gradient(1000px 600px at 20% 0%, #eef2ff 0%, transparent 70%) , var(--bg);
-    }
-    a{color:var(--primary); text-decoration:none}
-    .wrap{
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 14px 14px calc(84px + env(safe-area-inset-bottom));
-    }
-
-    /* ✅ emoji: เฉพาะมือถือเท่านั้น */
-    .m-emoji{display:inline}
-    @media (min-width: 980px){
-      .m-emoji{display:none}
-    }
-
-    /* Header */
-    .topbar{
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      padding: 10px 0;
-      background: linear-gradient(to bottom, rgba(246,247,251,.92), rgba(246,247,251,.70), rgba(246,247,251,0));
-      backdrop-filter: blur(10px);
-    }
-    .topbar-row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      padding: 6px 2px;
-      position: relative; /* ✅ ใช้ย้ายสถานะไปขวาล่างบน PC */
-    }
-    .brand{
-      display:flex; flex-direction:column; gap:2px;
-    }
-    .brand .t1{font-weight:700; font-size:16px; letter-spacing:.2px}
-    .brand .t2{font-size:12px; color:var(--muted); display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
-
-    .iconbtn{
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.75);
-      border-radius: 14px;
-      padding: 10px 12px;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      cursor:pointer;
-      transition:.15s ease;
-      box-shadow: 0 6px 18px rgba(15,23,42,.06);
-    }
-    .iconbtn:hover{transform: translateY(-1px)}
-    .dot{
-      width:10px; height:10px; border-radius:999px; background: var(--bad);
-      box-shadow: 0 0 0 4px rgba(239,68,68,.15);
-    }
-    .dot.ok{background:var(--good); box-shadow: 0 0 0 4px rgba(22,163,74,.15)}
-    .dot.warn{background:var(--warn); box-shadow: 0 0 0 4px rgba(245,158,11,.18)}
-
-    /* ✅ สถานะเชื่อมต่อ (ชิดขวาล่างของการ์ดบน เฉพาะ PC) */
-    .apiStatus{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.85);
-      border-radius: 999px;
-      padding: 8px 10px;
-      box-shadow: 0 6px 18px rgba(15,23,42,.06);
-      white-space: nowrap;
-    }
-    @media (min-width: 980px){
-      .apiStatus{
-        position:absolute;
-        right: 0;
-        bottom: -6px; /* ชิดขวาล่างของการ์ดบน/แถวหัว */
-      }
-    }
-
-    /* ✅ ปุ่ม 3 ขีด: แสดงเฉพาะมือถือ / PC ซ่อน */
-    .hambico{font-size:16px; line-height:1}
-    @media (min-width: 980px){
-      .hambico{display:none;}
-    }
-
-    /* Layout */
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      margin-top: 10px;
-    }
-    @media (min-width: 980px){
-      .wrap{padding-bottom: 20px}
-      .grid{
-        grid-template-columns: 1.2fr .8fr;
-        align-items:start;
-      }
-    }
-
-    .card{
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .card-h{
-      padding: 14px 14px 10px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-      border-bottom: 1px solid rgba(229,231,235,.75);
-      background: linear-gradient(to bottom, rgba(255,255,255,.92), rgba(255,255,255,.70));
-    }
-    .card-h .title{
-      font-weight: 700;
-      font-size: 15px;
-      margin:0;
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-    .badge{
-      font-size: 11px;
-      color: var(--muted);
-      border: 1px solid var(--border);
-      background: #fff;
-      padding: 4px 8px;
-      border-radius: 999px;
-      white-space:nowrap;
-    }
-    .card-b{padding: 14px}
-
-    /* Tabs */
-    .tabs{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-    .tab{
-      border:1px solid var(--border);
-      background:#fff;
-      padding: 8px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      cursor:pointer;
-      transition:.15s ease;
-      user-select:none;
-    }
-    .tab.active{
-      border-color: rgba(37,99,235,.45);
-      background: rgba(37,99,235,.08);
-      color: var(--primary2);
-      font-weight: 600;
-    }
-
-    /* Form */
-    .row{display:flex; gap:10px; flex-wrap:wrap}
-    .col{flex:1; min-width: 140px}
-    label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px}
-    input, select, textarea{
-      width:100%;
-      border:1px solid var(--border);
-      border-radius: 12px;
-      padding: 11px 12px;
-      background:#fff;
-      outline:none;
-      font-family: inherit;
-      font-size: 14px;
-    }
-    textarea{min-height: 88px; resize: vertical}
-
-    .btnbar{display:flex; gap:10px; flex-wrap:wrap}
-    .btn{
-      border:1px solid var(--border);
-      background:#fff;
-      border-radius: 14px;
-      padding: 11px 12px;
-      cursor:pointer;
-      font-weight:600;
-      font-size: 14px;
-      transition:.15s ease;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      user-select:none;
-    }
-    .btn:hover{transform: translateY(-1px)}
-    .btn.primary{
-      background: linear-gradient(180deg, rgba(37,99,235,.98), rgba(29,78,216,.98));
-      border-color: rgba(29,78,216,.55);
-      color:#fff;
-      box-shadow: 0 10px 22px rgba(37,99,235,.22);
-    }
-    .btn.good{
-      background: linear-gradient(180deg, rgba(22,163,74,.98), rgba(21,128,61,.98));
-      border-color: rgba(21,128,61,.55);
-      color:#fff;
-      box-shadow: 0 10px 22px rgba(22,163,74,.20);
-    }
-    .btn.danger{
-      background: linear-gradient(180deg, rgba(239,68,68,.98), rgba(220,38,38,.98));
-      border-color: rgba(220,38,38,.55);
-      color:#fff;
-      box-shadow: 0 10px 22px rgba(239,68,68,.18);
-    }
-    .btn.ghost{
-      background: rgba(255,255,255,.85);
-    }
-    .help{
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.45;
-      margin-top: 10px;
-    }
-
-    /* Camera */
-    .cam{
-      border:1px dashed rgba(148,163,184,.65);
-      border-radius: 16px;
-      background: linear-gradient(180deg, #f8fafc, #ffffff);
-      padding: 12px;
-    }
-    .cambox{
-      position: relative;
-      aspect-ratio: 16/9;
-      width: 100%;
-      border-radius: 14px;
-      overflow:hidden;
-      border:1px solid rgba(226,232,240,.9);
-      background: #0b1220;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    video{
-      width:100%;
-      height:100%;
-      object-fit: cover;
-      display:none;
-    }
-    .camhint{
-      color: rgba(255,255,255,.78);
-      text-align:center;
-      padding: 18px;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    .preview{
-      margin-top: 10px;
-      display:none;
-      gap:10px;
-      align-items:center;
-    }
-    .thumb{
-      width: 96px;
-      height: 72px;
-      border-radius: 12px;
-      border:1px solid var(--border);
-      object-fit: cover;
-      background:#fff;
-    }
-    .smallmuted{font-size:12px; color:var(--muted)}
-
-    /* Toast */
-    .toast{
-      position: fixed;
-      left: 14px; right: 14px;
-      bottom: calc(14px + 70px + env(safe-area-inset-bottom));
-      z-index: 50;
-      display:none;
-    }
-    @media (min-width: 980px){
-      .toast{
-        left: 50%;
-        transform: translateX(-50%);
-        width: 520px;
-        bottom: 18px;
-      }
-    }
-    .toast-in{
-      background: rgba(15,23,42,.92);
-      color:#fff;
-      padding: 12px 14px;
-      border-radius: 16px;
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow: 0 18px 40px rgba(15,23,42,.25);
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      justify-content:space-between;
-    }
-    .toast .tmsg{font-size:13px; line-height:1.45}
-    .toast .tclose{
-      background: transparent;
-      border: none;
-      color: rgba(255,255,255,.8);
-      cursor:pointer;
-      font-size: 16px;
-      padding: 2px 6px;
-    }
-
-    /* Bottom nav (Mobile) */
-    .bottomnav{
-      position: fixed;
-      left: 0; right: 0;
-      bottom: 0;
-      z-index: 25;
-      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-      background: rgba(246,247,251,.85);
-      backdrop-filter: blur(10px);
-      border-top: 1px solid rgba(229,231,235,.85);
-      display:flex;
-      gap:10px;
-      justify-content:space-between;
-    }
-    .bn-btn{
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:3px;
-      padding: 10px 8px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.85);
-      font-size: 11px;
-      color: var(--muted);
-      cursor:pointer;
-      user-select:none;
-    }
-    .bn-btn.active{
-      color: var(--primary2);
-      border-color: rgba(37,99,235,.35);
-      background: rgba(37,99,235,.08);
-      font-weight: 600;
-    }
-    .bn-ico{font-size: 16px; line-height:1}
-    @media (min-width: 980px){
-      .bottomnav{display:none}
-    }
-
-    /* Drawer */
-    .drawer-backdrop{
-      position: fixed;
-      inset: 0;
-      background: rgba(15,23,42,.35);
-      z-index: 40;
-      display:none;
-    }
-    .drawer{
-      position: fixed;
-      top: 0; right: 0;
-      width: min(420px, 92vw);
-      height: 100%;
-      background: #fff;
-      border-left: 1px solid var(--border);
-      box-shadow: -20px 0 60px rgba(15,23,42,.20);
-      z-index: 41;
-      transform: translateX(110%);
-      transition: .18s ease;
-      display:flex;
-      flex-direction:column;
-    }
-    .drawer.open{transform: translateX(0)}
-    .drawer-h{
-      padding: 14px;
-      border-bottom: 1px solid var(--border);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .drawer-h .dtitle{font-weight: 800}
-    .drawer-b{padding: 14px; overflow:auto}
-    .divider{height:1px; background: rgba(229,231,235,.9); margin: 14px 0}
-    .mini{
-      font-size:12px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    /* Sections show/hide */
-    .section{display:none}
-    .section.active{display:block}
-  </style>
+  <link rel="stylesheet" href="./app.css" />
 </head>
 
 <body>
-  <div class="topbar">
-    <div class="wrap">
-      <div class="topbar-row">
-        <div class="brand">
-          <div class="t1"><span class="m-emoji">🕒 </span>ระบบเช็คอินพนักงาน</div>
+  <!-- ===== Mobile App Header (เหมือนแอป) ===== -->
+  <div class="mHeader mOnly" id="mobileHeader">
+    <div class="mHeaderCard">
+      <div class="mHeaderLeft">
+        <div class="mTitleRow">
+          <div class="mLogo">🕒</div>
+          <div>
+            <div class="mTitle">ระบบเช็คอินพนักงาน</div>
+            <div class="mSub">
+              <span>สถานะ API:</span>
+              <span class="statusChip" id="mStatusChip">
+                <span class="dot warn" id="mApiDot"></span>
+                <span class="chipText" id="mApiText">ยังไม่ได้ตั้งค่า URL</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          <!-- ✅ มือถือยังเห็นข้อความเดิม / PC จะลอยไปขวาล่างด้วย .apiStatus -->
-          <div class="t2">
-            <span><span class="m-emoji">🔌 </span>สถานะ API:</span>
+      <button class="mMenuBtn" id="btnMobileMenu" type="button" aria-label="menu">
+        <span class="mHamburger">≡</span>
+        <span class="mMenuIcons">⚙️ 🧩</span>
+        <span class="mMenuText">เมนู</span>
+      </button>
+    </div>
+  </div>
 
-            <!-- ✅ ตัวนี้คือ “ยังไม่เชื่อมต่อ/เชื่อมต่อแล้ว” (เขียว/แดง) -->
-            <span class="apiStatus" id="apiStatus">
-              <span id="apiDot" class="dot warn"></span>
-              <span id="apiText" style="font-weight:700;">ยังไม่เชื่อมต่อ</span>
-            </span>
+  <!-- ===== Desktop Top Hero (เว็บหรู) ===== -->
+  <div class="wrap dOnly">
+    <div class="heroCard" id="pcHero">
+      <div class="heroTop">
+        <div>
+          <div class="heroTitle">ระบบเช็คอินพนักงาน</div>
+          <div class="heroSub">
+            📌 โหมดเว็บ (PC) • ฟีเจอร์ครบ • โทนขาว-น้ำเงิน-เขียว • ใช้สำหรับ HR/หัวหน้า/พนักงานได้
+          </div>
+          <div class="heroMeta" id="pcMetaLine">
+            <span class="metaItem">🕘 เวลา: <span id="pcNowText">—</span></span>
+            <span class="metaSep">•</span>
+            <span class="metaItem">🖥️ อุปกรณ์: <span id="pcDeviceText">Desktop</span></span>
+            <span class="metaSep">•</span>
+            <span class="metaItem">🔗 API: <span id="pcApiUrlShort">ยังไม่ได้ตั้งค่า</span></span>
           </div>
         </div>
 
-        <!-- ✅ ปุ่มเมนู (มี 3 ขีดเฉพาะมือถือ / PC ซ่อน 3 ขีด) -->
-        <button class="iconbtn" id="btnOpenDrawer" type="button" title="เมนู/ตั้งค่า">
-          <span class="hambico">☰</span>
-          <span style="font-size:16px">⚙️</span>
-          <span style="font-weight:700"><span class="m-emoji">🧩 </span>เมนู</span>
-        </button>
+        <div class="heroActions">
+          <button class="btn ghost" type="button" id="btnOpenDrawerPC">⚙️ ตั้งค่า URL</button>
+          <button class="btn" type="button" id="btnPingPC">📡 ทดสอบ API</button>
+          <button class="btn" type="button" id="btnClearPC">🧹 ล้างค่าเครื่องนี้</button>
+        </div>
+      </div>
+
+      <!-- ✅ สถานะเชื่อมต่อ/ยังไม่เชื่อมต่อ (ชิดขวาล่างของการ์ด PC ตามที่สั่ง) -->
+      <div class="pcConnPill" id="pcConnPill">
+        <span class="dot warn" id="pcApiDot"></span>
+        <span id="pcApiText">ยังไม่ได้ตั้งค่า URL</span>
       </div>
     </div>
   </div>
 
   <div class="wrap">
     <div class="grid">
-      <!-- LEFT: Main -->
+      <!-- ===== MAIN CARD ===== -->
       <div class="card">
         <div class="card-h">
           <div>
-            <p class="title"><span class="m-emoji">📷 </span>เช็คอิน/เช็คเอาท์ (มือถือเป็นหลัก)</p>
-            <div class="smallmuted"><span class="m-emoji">🧾 </span>ถ่ายรูปเป็นหลักฐาน + (ถ้ามี) GPS + ส่งไปที่ Apps Script</div>
+            <p class="title" id="mainTitle">📷 โหมดสแกน / บันทึก / ตรวจสอบ</p>
+            <div class="smallmuted" id="mainSub">มือถือจะเหมือนแอป (มีเมนู 3 ขีด + แถบล่าง) • PC จะเป็นเว็บหรู (ไม่มี 3 ขีด)</div>
           </div>
           <div class="badge" id="nowBadge">—</div>
         </div>
 
         <div class="card-b">
-          <!-- Tabs (Desktop) -->
-          <div class="tabs" style="display:none" id="desktopTabs">
-            <div class="tab active" data-target="secScan">สแกนเข้า-ออก</div>
-            <div class="tab" data-target="secManual">บันทึกด้วยมือ</div>
-            <div class="tab" data-target="secCheck">ตรวจสอบวันนี้</div>
-            <div class="tab" data-target="secHR">เจ้าหน้าที่/HR</div>
+          <!-- Desktop Tabs -->
+          <div class="tabs dOnly" id="desktopTabs">
+            <button class="tab active" data-target="secScan" type="button">📷 สแกนเข้า-ออก</button>
+            <button class="tab" data-target="secManual" type="button">📝 บันทึกด้วยมือ</button>
+            <button class="tab" data-target="secCheck" type="button">🔎 ตรวจสอบวันนี้</button>
+            <button class="tab" data-target="secHR" type="button">🧰 HR / แอดมิน</button>
           </div>
 
-          <!-- SECTION: Scan -->
-          <div class="section active" id="secScan">
+          <!-- SECTION: SCAN -->
+          <section class="section active" id="secScan">
+            <div class="sectionHead mOnly">
+              <div class="sectionEmoji">📷</div>
+              <div>
+                <div class="sectionTitle">สแกนเข้า-ออก</div>
+                <div class="sectionHint">ถ่ายรูปเป็นหลักฐาน + (ถ้ามี) GPS + ส่งไป Apps Script</div>
+              </div>
+            </div>
+
             <div class="cam">
               <div class="cambox">
                 <video id="video" playsinline muted></video>
                 <div class="camhint" id="camHint">
                   กล้องปิดอยู่<br>
-                  กด “เริ่มกล้อง” แล้วถ่ายรูปก่อนบันทึก
+                  กด “เริ่มกล้อง” → “ถ่ายรูป” ก่อนบันทึก (แนะนำ)
                 </div>
               </div>
 
-              <div style="margin-top:12px" class="row">
+              <div class="row mt12">
                 <div class="col">
-                  <label><span class="m-emoji">🎥 </span>เลือกกล้อง</label>
+                  <label>🎥 เลือกกล้อง</label>
                   <select id="cameraSelect">
                     <option value="">—</option>
                   </select>
                 </div>
-                <div class="col" style="min-width: 160px;">
-                  <label><span class="m-emoji">🧭 </span>ประเภท</label>
+                <div class="col">
+                  <label>🔁 ประเภท</label>
                   <select id="scanType">
                     <option value="IN">เข้า</option>
                     <option value="OUT">ออก</option>
@@ -500,69 +127,73 @@
                 </div>
               </div>
 
-              <div class="btnbar" style="margin-top:10px">
-                <button class="btn primary" id="btnStartCam" type="button"><span class="m-emoji">▶️ </span>เริ่มกล้อง</button>
-                <button class="btn danger" id="btnStopCam" type="button"><span class="m-emoji">⏹️ </span>ปิดกล้อง</button>
-                <button class="btn" id="btnCapture" type="button"><span class="m-emoji">📸 </span>ถ่ายรูป</button>
+              <div class="btnbar mt10">
+                <button class="btn primary" id="btnStartCam" type="button">▶️ เริ่มกล้อง</button>
+                <button class="btn danger" id="btnStopCam" type="button">⏹️ ปิดกล้อง</button>
+                <button class="btn" id="btnCapture" type="button">📸 ถ่ายรูป</button>
               </div>
 
               <div class="preview" id="previewRow">
                 <img id="thumb" class="thumb" alt="preview">
                 <div>
-                  <div style="font-weight:800"><span class="m-emoji">✅ </span>มีรูปพร้อมส่งแล้ว</div>
+                  <div class="strong">✅ มีรูปพร้อมส่งแล้ว</div>
                   <div class="smallmuted" id="previewInfo">—</div>
                 </div>
               </div>
 
               <div class="help">
-                หมายเหตุ: ถ้าต้องการ “รูปเป็นหลักฐาน” แนะนำให้ถ่ายรูปก่อนกดบันทึกทุกครั้ง
+                ✅ แนะนำ: ถ่ายรูปทุกครั้งก่อน “บันทึกการสแกน” เพื่อเป็นหลักฐานชัดเจน
               </div>
             </div>
 
-            <div style="margin-top:14px" class="row">
+            <div class="row mt14">
               <div class="col">
-                <label><span class="m-emoji">🆔 </span>รหัสพนักงาน</label>
+                <label>🆔 รหัสพนักงาน</label>
                 <input id="scanCode" inputmode="numeric" placeholder="เช่น 1001" />
               </div>
               <div class="col">
-                <label><span class="m-emoji">📝 </span>หมายเหตุ (ถ้ามี)</label>
+                <label>🗒️ หมายเหตุ (ถ้ามี)</label>
                 <input id="scanNote" placeholder="เช่น ลืมบัตร / เข้ากะเช้า" />
               </div>
             </div>
 
-            <div class="row" style="margin-top:12px">
+            <div class="row mt12">
               <div class="col">
-                <label><span class="m-emoji">📍 </span>ใช้ GPS (แนะนำบนมือถือ)</label>
+                <label>📍 ใช้ GPS (แนะนำบนมือถือ)</label>
                 <select id="useGps">
                   <option value="1" selected>เปิด</option>
                   <option value="0">ปิด</option>
                 </select>
               </div>
               <div class="col">
-                <label><span class="m-emoji">📎 </span>แนบไฟล์เพิ่ม (ถ้ามี)</label>
+                <label>🧾 แนบหลักฐานเพิ่ม (ถ้ามี)</label>
                 <input id="scanEvidence" type="file" accept="image/*" />
               </div>
             </div>
 
-            <div class="btnbar" style="margin-top:14px">
-              <button class="btn good" id="btnSubmitScan" type="button"><span class="m-emoji">✅ </span>บันทึกการสแกน</button>
-              <button class="btn ghost" id="btnQuickCheck" type="button"><span class="m-emoji">🔎 </span>ตรวจสอบวันนี้</button>
+            <div class="btnbar mt14">
+              <button class="btn good" id="btnSubmitScan" type="button">✅ บันทึกการสแกน</button>
+              <button class="btn ghost" id="btnQuickCheck" type="button">🔎 ไปหน้าเช็ควันนี้</button>
+            </div>
+          </section>
+
+          <!-- SECTION: MANUAL -->
+          <section class="section" id="secManual">
+            <div class="sectionHead mOnly">
+              <div class="sectionEmoji">📝</div>
+              <div>
+                <div class="sectionTitle">บันทึกด้วยมือ</div>
+                <div class="sectionHint">ใช้เมื่อ “ลืมสแกน/ระบบมีปัญหา” (HR/หัวหน้าแนะนำ)</div>
+              </div>
             </div>
 
-            <div class="help">
-              กติกาเวลา (ตัวอย่าง): เข้าไม่เกิน 08:00 / ทำงาน 1 ชม. / เลิกงานหลัง 17:00 (ปรับใน GS ได้)
-            </div>
-          </div>
-
-          <!-- SECTION: Manual -->
-          <div class="section" id="secManual">
             <div class="row">
               <div class="col">
-                <label><span class="m-emoji">🆔 </span>รหัสพนักงาน</label>
+                <label>🆔 รหัสพนักงาน</label>
                 <input id="mCode" inputmode="numeric" placeholder="เช่น 1001" />
               </div>
               <div class="col">
-                <label><span class="m-emoji">🧭 </span>ประเภท</label>
+                <label>🔁 ประเภท</label>
                 <select id="mType">
                   <option value="IN">เข้า</option>
                   <option value="OUT">ออก</option>
@@ -570,690 +201,251 @@
               </div>
             </div>
 
-            <div class="row" style="margin-top:12px">
+            <div class="row mt12">
               <div class="col">
-                <label><span class="m-emoji">📝 </span>เหตุผล/หมายเหตุ</label>
+                <label>🗒️ เหตุผล/หมายเหตุ</label>
                 <textarea id="mReason" placeholder="เช่น ลืมสแกนตอนเช้า / ระบบล่ม / ขออนุมัติหัวหน้าแล้ว"></textarea>
               </div>
             </div>
 
-            <div class="row" style="margin-top:12px">
+            <div class="row mt12">
               <div class="col">
-                <label><span class="m-emoji">📍 </span>ใช้ GPS</label>
+                <label>📍 ใช้ GPS</label>
                 <select id="mUseGps">
                   <option value="1" selected>เปิด</option>
                   <option value="0">ปิด</option>
                 </select>
               </div>
               <div class="col">
-                <label><span class="m-emoji">📎 </span>แนบหลักฐาน (ถ้ามี)</label>
+                <label>🧾 แนบหลักฐาน (ถ้ามี)</label>
                 <input id="mEvidence" type="file" accept="image/*" />
               </div>
             </div>
 
-            <div class="btnbar" style="margin-top:14px">
-              <button class="btn good" id="btnSubmitManual" type="button"><span class="m-emoji">✅ </span>บันทึกด้วยมือ</button>
+            <div class="btnbar mt14">
+              <button class="btn good" id="btnSubmitManual" type="button">✅ บันทึกด้วยมือ</button>
+            </div>
+          </section>
+
+          <!-- SECTION: CHECK -->
+          <section class="section" id="secCheck">
+            <div class="sectionHead mOnly">
+              <div class="sectionEmoji">🔎</div>
+              <div>
+                <div class="sectionTitle">ตรวจสอบวันนี้</div>
+                <div class="sectionHint">เช็คข้อมูลของรหัสพนักงาน หรือดูภาพรวมวันนี้</div>
+              </div>
             </div>
 
-            <div class="help">
-              แนะนำให้ HR ใช้หน้านี้ตอน “แก้ไข/เติม log” เท่านั้น เพื่อความถูกต้องของระบบ
-            </div>
-          </div>
-
-          <!-- SECTION: Check -->
-          <div class="section" id="secCheck">
             <div class="row">
               <div class="col">
-                <label><span class="m-emoji">🆔 </span>รหัสพนักงาน</label>
+                <label>🆔 รหัสพนักงาน</label>
                 <input id="cCode" inputmode="numeric" placeholder="เช่น 1001" />
               </div>
               <div class="col">
-                <label><span class="m-emoji">📅 </span>วันที่</label>
+                <label>📅 วันที่</label>
                 <input id="cDate" type="date" />
               </div>
             </div>
 
-            <div class="btnbar" style="margin-top:14px">
-              <button class="btn primary" id="btnCheckByCode" type="button"><span class="m-emoji">🔎 </span>เช็คของวันนี้</button>
-              <button class="btn" id="btnTodaySummary" type="button"><span class="m-emoji">📊 </span>ภาพรวมวันนี้</button>
+            <div class="btnbar mt14">
+              <button class="btn primary" id="btnCheckByCode" type="button">🔎 เช็คของวันนี้</button>
+              <button class="btn" id="btnTodaySummary" type="button">📊 ภาพรวมวันนี้</button>
             </div>
 
-            <div class="card" style="margin-top:14px; box-shadow:none">
-              <div class="card-h">
-                <p class="title"><span class="m-emoji">🧾 </span>ผลลัพธ์</p>
+            <div class="innerCard mt14">
+              <div class="innerHead">
+                <div class="innerTitle">🧾 ผลลัพธ์</div>
                 <div class="badge" id="resultBadge">—</div>
               </div>
-              <div class="card-b" id="resultBox" style="min-height: 120px;">
-                <div class="smallmuted">ยังไม่มีข้อมูล แนะนำให้กด “เช็คของวันนี้”</div>
+              <div class="innerBody" id="resultBox">
+                <div class="smallmuted">ยังไม่มีข้อมูล — แนะนำให้กด “เช็คของวันนี้”</div>
               </div>
             </div>
-          </div>
+          </section>
 
           <!-- SECTION: HR -->
-          <div class="section" id="secHR">
+          <section class="section" id="secHR">
+            <div class="sectionHead mOnly">
+              <div class="sectionEmoji">🧰</div>
+              <div>
+                <div class="sectionTitle">HR / แอดมิน</div>
+                <div class="sectionHint">ล็อกอิน + อัปโหลดใบหน้า + ปุ่มไปหน้า admin.html (ถ้ามี)</div>
+              </div>
+            </div>
+
             <div class="row">
               <div class="col">
-                <label>Username</label>
+                <label>👤 Username</label>
                 <input id="hrUser" placeholder="admin" />
               </div>
               <div class="col">
-                <label>Password</label>
+                <label>🔒 Password</label>
                 <input id="hrPass" type="password" placeholder="••••••••" />
               </div>
             </div>
 
-            <div class="btnbar" style="margin-top:14px">
-              <button class="btn primary" id="btnLogin" type="button"><span class="m-emoji">🔐 </span>เข้าสู่ระบบ</button>
-              <a class="btn" id="btnGoAdmin" href="./admin.html" target="_blank" rel="noopener" style="pointer-events:none; opacity:.55">
-                <span class="m-emoji">🧰 </span>ไปหน้า admin.html
-              </a>
+            <div class="btnbar mt14">
+              <button class="btn primary" id="btnLogin" type="button">🔐 เข้าสู่ระบบ</button>
+              <a class="btn" id="btnGoAdmin" href="./admin.html" target="_blank" rel="noopener"
+                 style="pointer-events:none; opacity:.55">🧩 ไปหน้า admin.html</a>
             </div>
 
             <div class="divider"></div>
 
             <div class="row">
               <div class="col">
-                <label><span class="m-emoji">🧑‍💼 </span>ลงทะเบียนใบหน้า (HR) – รหัสพนักงาน</label>
+                <label>🆔 ลงทะเบียนใบหน้า (HR) – รหัสพนักงาน</label>
                 <input id="regCode" inputmode="numeric" placeholder="เช่น 1001" />
               </div>
               <div class="col">
-                <label><span class="m-emoji">🖼️ </span>อัปโหลดรูปใบหน้า (ถ่าย/เลือกไฟล์)</label>
+                <label>🙂 อัปโหลดรูปใบหน้า (ถ่าย/เลือกไฟล์)</label>
                 <input id="regFace" type="file" accept="image/*" />
               </div>
             </div>
 
-            <div class="btnbar" style="margin-top:14px">
-              <button class="btn good" id="btnUploadFace" type="button"><span class="m-emoji">⬆️ </span>อัปโหลดใบหน้า</button>
+            <div class="btnbar mt14">
+              <button class="btn good" id="btnUploadFace" type="button">⬆️ อัปโหลดใบหน้า</button>
             </div>
 
             <div class="help">
-              * ปุ่มนี้เรียก action: <b>uploadEmployeeFace</b> (ฝั่ง Apps Script ค่อยปรับให้รับไฟล์และผูกกับพนักงาน)
+              ✅ ใช้ action: <b>uploadEmployeeFace</b> (ไฟล์ field ชื่อ <b>face</b>)<br>
+              ถ้าอัปโหลดไม่เข้า ให้เช็ค Apps Script ว่ารับไฟล์ได้ + permission Drive/Folder ครบ
             </div>
-          </div>
+          </section>
         </div>
       </div>
 
-      <!-- RIGHT: Compact status only (ไม่มีการ์ดติดต่อร้านแล้ว) -->
-      <div class="card">
-        <div class="card-h">
-          <p class="title"><span class="m-emoji">📌 </span>สถานะล่าสุด</p>
-          <div class="badge" id="deviceBadge">—</div>
-        </div>
-        <div class="card-b">
-          <div style="display:flex; flex-direction:column; gap:10px">
-            <div class="card" style="box-shadow:none">
-              <div class="card-h">
-                <p class="title"><span class="m-emoji">✅ </span>บันทึกล่าสุด</p>
+      <!-- ===== SIDE CARD (PC เท่านั้น / Mobile ซ่อนเพื่อไม่รก) ===== -->
+      <aside class="side dOnly">
+        <div class="card">
+          <div class="card-h">
+            <div>
+              <p class="title">📌 สถานะล่าสุด</p>
+              <div class="smallmuted">โซนนี้สำหรับ PC เพื่อดูเร็ว ๆ ไม่รก</div>
+            </div>
+            <div class="badge" id="deviceBadge">Desktop</div>
+          </div>
+          <div class="card-b">
+            <div class="innerCard">
+              <div class="innerHead">
+                <div class="innerTitle">✅ บันทึกล่าสุด</div>
                 <div class="badge" id="lastBadge">—</div>
               </div>
-              <div class="card-b" id="lastBox">
+              <div class="innerBody" id="lastBox">
                 <div class="smallmuted">ยังไม่มีรายการ</div>
               </div>
             </div>
 
-            <div class="card" style="box-shadow:none">
-              <div class="card-h">
-                <p class="title"><span class="m-emoji">⚡ </span>ปุ่มลัด</p>
+            <div class="innerCard mt12">
+              <div class="innerHead">
+                <div class="innerTitle">⚡ ปุ่มลัด</div>
                 <div class="badge">ไม่รก</div>
               </div>
-              <div class="card-b">
+              <div class="innerBody">
                 <div class="btnbar">
-                  <button class="btn" type="button" id="btnOpenUrl"><span class="m-emoji">🔗 </span>ตั้งค่า URL</button>
-                  <button class="btn" type="button" id="btnPing"><span class="m-emoji">📡 </span>ทดสอบ API</button>
-                  <button class="btn" type="button" id="btnClearLocal"><span class="m-emoji">🧹 </span>ล้างค่าเครื่องนี้</button>
+                  <button class="btn" type="button" id="btnOpenDrawerSide">⚙️ ตั้งค่า URL</button>
+                  <button class="btn" type="button" id="btnPingSide">📡 ทดสอบ API</button>
+                  <button class="btn" type="button" id="btnClearSide">🧹 ล้างค่า</button>
                 </div>
                 <div class="help">
-                  ระบบนี้เน้นเช็คอินพนักงานเท่านั้น — เลยตัด “ที่อยู่/ติดต่อร้าน” ออกทั้งหมดตามที่ขอ
+                  📌 หมายเหตุ: ระบบนี้ “ตัดการ์ดที่อยู่/ติดต่อร้าน” ออกเรียบร้อยแล้ว (ตามที่สั่ง)
                 </div>
               </div>
             </div>
 
+            <div class="innerCard mt12">
+              <div class="innerHead">
+                <div class="innerTitle">📘 วิธีใช้งานสั้นๆ</div>
+                <div class="badge">พนักงานอ่าน</div>
+              </div>
+              <div class="innerBody">
+                <ol class="miniList">
+                  <li>กด ⚙️ ตั้งค่า URL → วางลิงก์ <b>.../exec</b> → บันทึก</li>
+                  <li>ไปแท็บ 📷 สแกน → กด ▶️ เริ่มกล้อง → 📸 ถ่ายรูป</li>
+                  <li>กรอกรหัส → ✅ บันทึกการสแกน</li>
+                  <li>เช็คย้อนหลัง: ไป 🔎 ตรวจสอบวันนี้</li>
+                </ol>
+              </div>
+            </div>
           </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ===== Mobile Bottom Nav (เหมือนแอป) ===== -->
+  <nav class="bottomNav mOnly" id="bottomNav">
+    <button class="bnBtn active" data-target="secScan" type="button">
+      <div class="bnIco">📷</div><div class="bnTxt">สแกน</div>
+    </button>
+    <button class="bnBtn" data-target="secManual" type="button">
+      <div class="bnIco">📝</div><div class="bnTxt">บันทึก</div>
+    </button>
+    <button class="bnBtn" data-target="secCheck" type="button">
+      <div class="bnIco">🔎</div><div class="bnTxt">เช็ค</div>
+    </button>
+    <button class="bnBtn" data-target="secHR" type="button">
+      <div class="bnIco">🧰</div><div class="bnTxt">HR</div>
+    </button>
+  </nav>
+
+  <!-- ===== Drawer (Mobile/PC ใช้ได้ แต่เปิดจากปุ่ม ไม่ใช่ 3 ขีดบน PC) ===== -->
+  <div class="drawerBackdrop" id="drawerBackdrop"></div>
+  <aside class="drawer" id="drawer">
+    <div class="drawerHead">
+      <div class="drawerTitle">⚙️ เมนู / ตั้งค่า</div>
+      <button class="btn" type="button" id="btnCloseDrawer">ปิด</button>
+    </div>
+
+    <div class="drawerBody">
+      <div class="drawerBlock">
+        <div class="drawerBlockTitle">🔗 ตั้งค่า URL (Apps Script Web App)</div>
+        <label>URL /exec</label>
+        <input id="apiUrlInput" placeholder="วางลิงก์ .../exec" />
+        <div class="btnbar mt12">
+          <button class="btn primary" id="btnSaveUrl" type="button">💾 บันทึก URL</button>
+          <button class="btn" id="btnResetUrl" type="button">♻️ Reset URL</button>
+        </div>
+        <div class="help">
+          ถ้ากล้อง/GPS ใช้ไม่ได้: ต้องเปิดผ่าน <b>HTTPS</b> และอนุญาต Permission
         </div>
       </div>
 
-    </div>
-  </div>
+      <div class="divider"></div>
 
-  <!-- Bottom nav (mobile) -->
-  <div class="bottomnav" id="bottomNav">
-    <div class="bn-btn active" data-target="secScan"><div class="bn-ico">📷</div>สแกน</div>
-    <div class="bn-btn" data-target="secManual"><div class="bn-ico">📝</div>บันทึก</div>
-    <div class="bn-btn" data-target="secCheck"><div class="bn-ico">🔎</div>เช็ค</div>
-    <div class="bn-btn" data-target="secHR"><div class="bn-ico">🧰</div>HR</div>
-  </div>
-
-  <!-- Drawer -->
-  <div class="drawer-backdrop" id="drawerBackdrop"></div>
-  <div class="drawer" id="drawer">
-    <div class="drawer-h">
-      <div class="dtitle">เมนู / ตั้งค่า</div>
-      <button class="btn" type="button" id="btnCloseDrawer">ปิด</button>
-    </div>
-    <div class="drawer-b">
-      <label>URL Web App (Apps Script)</label>
-      <input id="apiUrlInput" placeholder="วางลิงก์ .../exec" />
-      <div class="btnbar" style="margin-top:12px">
-        <button class="btn primary" id="btnSaveUrl" type="button">💾 บันทึก URL</button>
-        <button class="btn" id="btnResetUrl" type="button">♻️ Reset URL</button>
+      <div class="drawerBlock">
+        <div class="drawerBlockTitle">🧠 คู่มือพนักงาน (อ่านเร็ว)</div>
+        <ol class="miniList">
+          <li>เปิดเมนู → ตั้งค่า URL ให้เรียบร้อย (ทำครั้งแรกครั้งเดียว)</li>
+          <li>แท็บ 📷 สแกน → เริ่มกล้อง → ถ่ายรูป → กรอกรหัส → บันทึก</li>
+          <li>แท็บ 📝 บันทึก → ใช้กรณีลืมสแกน (ต้องใส่เหตุผล)</li>
+          <li>แท็บ 🔎 เช็ค → เช็คของวันนี้/ดูภาพรวม</li>
+          <li>แท็บ 🧰 HR → ล็อกอิน + อัปโหลดใบหน้า (ถ้าระบบเปิดใช้งาน)</li>
+        </ol>
       </div>
 
       <div class="divider"></div>
 
-      <div class="mini">
-        <b>แนวทาง Action ที่หน้าเว็บเรียก (ปรับฝั่ง GS ได้ภายหลัง)</b><br>
-        - loginAdmin<br>
-        - saveManualLog (ใช้ได้ทั้งสแกน + บันทึกด้วยมือ)<br>
-        - getTodayByCode<br>
-        - getTodaySummary<br>
-        - uploadEmployeeFace
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="btnbar">
-        <a class="btn" href="./admin.html" target="_blank" rel="noopener">เปิด admin.html</a>
+      <div class="drawerBlock">
+        <div class="drawerBlockTitle">⚡ เครื่องมือ</div>
+        <div class="btnbar">
+          <button class="btn" type="button" id="btnPingDrawer">📡 ทดสอบ API</button>
+          <button class="btn" type="button" id="btnClearLocal">🧹 ล้างค่าเครื่องนี้</button>
+          <a class="btn" href="./admin.html" target="_blank" rel="noopener">🧩 เปิด admin.html</a>
+        </div>
       </div>
     </div>
-  </div>
+  </aside>
 
-  <!-- Toast -->
+  <!-- ===== Toast ===== -->
   <div class="toast" id="toast">
-    <div class="toast-in">
-      <div class="tmsg" id="toastMsg">—</div>
-      <button class="tclose" id="toastClose" aria-label="close">✕</button>
+    <div class="toastIn">
+      <div class="toastMsg" id="toastMsg">—</div>
+      <button class="toastClose" id="toastClose" aria-label="close">✕</button>
     </div>
   </div>
 
-  <script>
-    // =========================
-    // CONFIG / STATE
-    // =========================
-    const LS_API = "attendance_api_url_v2";
-    const LS_ADMIN_TOKEN = "attendance_admin_token_v1";
-    const LS_LAST_RESULT = "attendance_last_result_v1";
-
-    let stream = null;
-    let lastCapturedBlob = null;
-    let lastCapturedInfo = null;
-
-    // =========================
-    // UTIL
-    // =========================
-    const $ = (id) => document.getElementById(id);
-    const fmtDT = (d=new Date()) => {
-      const pad = (n) => String(n).padStart(2,"0");
-      return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()+543} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    };
-    const isMobile = () => window.matchMedia("(max-width: 979px)").matches;
-
-    function toast(msg){
-      $("toastMsg").textContent = msg;
-      $("toast").style.display = "block";
-      clearTimeout(window.__toastTimer);
-      window.__toastTimer = setTimeout(()=>{$("toast").style.display="none"}, 3500);
-    }
-    $("toastClose").addEventListener("click", ()=> $("toast").style.display="none");
-
-    // ✅ ปรับสถานะให้เป็น “ยังไม่เชื่อมต่อ / เชื่อมต่อแล้ว”
-    function setApiStatus(state){
-      const dot = $("apiDot");
-      const text = $("apiText");
-
-      if(state === "ok"){
-        dot.className = "dot ok";
-        text.textContent = "เชื่อมต่อแล้ว";
-        return;
-      }
-      if(state === "bad"){
-        dot.className = "dot";
-        text.textContent = "ยังไม่เชื่อมต่อ";
-        return;
-      }
-      // warn = มี URL แต่ยังไม่ทดสอบ
-      dot.className = "dot warn";
-      text.textContent = "พร้อมทดสอบ";
-    }
-
-    function getApiUrl(){
-      return (localStorage.getItem(LS_API) || "").trim();
-    }
-    function setApiUrl(url){
-      localStorage.setItem(LS_API, (url||"").trim());
-      // มี URL แล้ว -> พร้อมทดสอบ
-      setApiStatus(getApiUrl() ? "warn" : "bad");
-    }
-
-    function setNowBadges(){
-      $("nowBadge").textContent = fmtDT();
-      $("deviceBadge").textContent = isMobile() ? "Mobile" : "Desktop";
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth()+1).padStart(2,"0");
-      const dd = String(today.getDate()).padStart(2,"0");
-      $("cDate").value = `${yyyy}-${mm}-${dd}`;
-    }
-
-    function saveLastResult(obj){
-      localStorage.setItem(LS_LAST_RESULT, JSON.stringify(obj));
-      renderLastResult();
-    }
-    function renderLastResult(){
-      const raw = localStorage.getItem(LS_LAST_RESULT);
-      if(!raw){ return; }
-      try{
-        const obj = JSON.parse(raw);
-        $("lastBadge").textContent = obj.time || "—";
-        $("lastBox").innerHTML = `
-          <div style="font-weight:800">${escapeHtml(obj.title || "บันทึกสำเร็จ")}</div>
-          <div class="smallmuted" style="margin-top:6px">${escapeHtml(obj.detail || "")}</div>
-        `;
-      }catch(e){}
-    }
-    function escapeHtml(str){
-      return String(str||"")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    // =========================
-    // API
-    // =========================
-    async function apiPost(action, payload={}, fileMap=null){
-      const apiUrl = getApiUrl();
-      if(!apiUrl) throw new Error("ยังไม่ได้ตั้งค่า URL (Apps Script)");
-
-      let body;
-      let headers = {};
-
-      if(fileMap){
-        body = new FormData();
-        body.append("action", action);
-        Object.entries(payload||{}).forEach(([k,v])=>{
-          if(v === undefined || v === null) return;
-          body.append(k, typeof v === "object" ? JSON.stringify(v) : String(v));
-        });
-        Object.entries(fileMap).forEach(([k,file])=>{
-          if(file) body.append(k, file);
-        });
-      }else{
-        headers["Content-Type"] = "application/json";
-        body = JSON.stringify({ action, ...payload });
-      }
-
-      const res = await fetch(apiUrl, { method:"POST", headers, body });
-      const text = await res.text();
-      let data = null;
-      try{ data = JSON.parse(text); }catch(e){ data = { ok: res.ok, raw: text }; }
-      if(!res.ok) throw new Error((data && (data.message || data.error)) || `HTTP ${res.status}`);
-      return data;
-    }
-
-    // =========================
-    // GPS
-    // =========================
-    function getGPS(){
-      return new Promise((resolve)=>{
-        if(!navigator.geolocation) return resolve(null);
-        navigator.geolocation.getCurrentPosition(
-          (pos)=> resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy }),
-          ()=> resolve(null),
-          { enableHighAccuracy:true, timeout:8000, maximumAge: 0 }
-        );
-      });
-    }
-
-    // =========================
-    // CAMERA
-    // =========================
-    async function loadCameras(){
-      try{
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const cams = devices.filter(d=>d.kind==="videoinput");
-        $("cameraSelect").innerHTML = cams.map((c,i)=>`<option value="${c.deviceId}">${c.label || ("Camera " + (i+1))}</option>`).join("");
-        if(cams.length && !$("cameraSelect").value) $("cameraSelect").value = cams[0].deviceId;
-      }catch(e){}
-    }
-
-    async function startCamera(){
-      stopCamera();
-      const deviceId = $("cameraSelect").value || undefined;
-      try{
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: "user" },
-          audio: false
-        });
-        const v = $("video");
-        v.srcObject = stream;
-        await v.play();
-        v.style.display = "block";
-        $("camHint").style.display = "none";
-        toast("เปิดกล้องแล้ว");
-      }catch(err){
-        stopCamera();
-        toast("เปิดกล้องไม่สำเร็จ: " + err.message);
-      }
-    }
-
-    function stopCamera(){
-      const v = $("video");
-      if(stream){
-        stream.getTracks().forEach(t=>t.stop());
-        stream = null;
-      }
-      v.pause();
-      v.srcObject = null;
-      v.style.display = "none";
-      $("camHint").style.display = "block";
-    }
-
-    function capture(){
-      const v = $("video");
-      if(!stream || v.readyState < 2){
-        toast("กล้องยังไม่พร้อม");
-        return;
-      }
-      const canvas = document.createElement("canvas");
-      const w = v.videoWidth || 1280;
-      const h = v.videoHeight || 720;
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(v, 0, 0, w, h);
-
-      canvas.toBlob((blob)=>{
-        if(!blob){ toast("ถ่ายรูปไม่สำเร็จ"); return; }
-        lastCapturedBlob = blob;
-        lastCapturedInfo = { w, h, size: blob.size, time: new Date().toISOString() };
-        $("thumb").src = URL.createObjectURL(blob);
-        $("previewInfo").textContent = `ขนาด ${w}×${h} | ${(blob.size/1024).toFixed(0)} KB`;
-        $("previewRow").style.display = "flex";
-        toast("ถ่ายรูปแล้ว ✅");
-      }, "image/jpeg", 0.85);
-    }
-
-    // =========================
-    // UI NAV
-    // =========================
-    function showSection(id){
-      ["secScan","secManual","secCheck","secHR"].forEach(s=>{
-        $(s).classList.toggle("active", s===id);
-      });
-
-      document.querySelectorAll("#desktopTabs .tab").forEach(t=>{
-        t.classList.toggle("active", t.dataset.target === id);
-      });
-      document.querySelectorAll("#bottomNav .bn-btn").forEach(b=>{
-        b.classList.toggle("active", b.dataset.target === id);
-      });
-    }
-
-    function syncNavMode(){
-      $("desktopTabs").style.display = isMobile() ? "none" : "flex";
-    }
-    window.addEventListener("resize", syncNavMode);
-
-    document.querySelectorAll("#desktopTabs .tab").forEach(t=>{
-      t.addEventListener("click", ()=> showSection(t.dataset.target));
-    });
-    document.querySelectorAll("#bottomNav .bn-btn").forEach(b=>{
-      b.addEventListener("click", ()=> showSection(b.dataset.target));
-    });
-
-    // =========================
-    // DRAWER
-    // =========================
-    function openDrawer(){
-      $("drawerBackdrop").style.display = "block";
-      $("drawer").classList.add("open");
-      $("apiUrlInput").value = getApiUrl();
-    }
-    function closeDrawer(){
-      $("drawerBackdrop").style.display = "none";
-      $("drawer").classList.remove("open");
-    }
-    $("btnOpenDrawer").addEventListener("click", openDrawer);
-    $("btnCloseDrawer").addEventListener("click", closeDrawer);
-    $("drawerBackdrop").addEventListener("click", closeDrawer);
-
-    $("btnSaveUrl").addEventListener("click", ()=>{
-      const url = $("apiUrlInput").value.trim();
-      if(!url){ toast("กรุณาวาง URL /exec"); return; }
-      setApiUrl(url);
-      toast("บันทึก URL แล้ว");
-      closeDrawer();
-    });
-    $("btnResetUrl").addEventListener("click", ()=>{
-      localStorage.removeItem(LS_API);
-      setApiStatus("bad");
-      toast("Reset URL แล้ว");
-    });
-
-    // Quick buttons
-    $("btnOpenUrl").addEventListener("click", openDrawer);
-    $("btnClearLocal").addEventListener("click", ()=>{
-      localStorage.removeItem(LS_ADMIN_TOKEN);
-      localStorage.removeItem(LS_LAST_RESULT);
-      toast("ล้างค่าเครื่องนี้แล้ว");
-      renderLastResult();
-      $("btnGoAdmin").style.pointerEvents = "none";
-      $("btnGoAdmin").style.opacity = ".55";
-    });
-
-    // ✅ ทดสอบ API แล้วอัปเดตสถานะ เขียว/แดง
-    $("btnPing").addEventListener("click", async ()=>{
-      try{
-        await apiPost("getTodaySummary", { ts: Date.now() });
-        setApiStatus("ok");
-        toast("เชื่อมต่อแล้ว ✅");
-      }catch(e){
-        setApiStatus(getApiUrl() ? "bad" : "bad");
-        toast("ยังไม่เชื่อมต่อ: " + e.message);
-      }
-    });
-
-    // =========================
-    // ACTIONS
-    // =========================
-    $("btnStartCam").addEventListener("click", startCamera);
-    $("btnStopCam").addEventListener("click", ()=>{ stopCamera(); toast("ปิดกล้องแล้ว"); });
-    $("btnCapture").addEventListener("click", capture);
-
-    $("btnSubmitScan").addEventListener("click", async ()=>{
-      try{
-        const code = $("scanCode").value.trim();
-        const type = $("scanType").value;
-        const note = $("scanNote").value.trim();
-
-        if(!code) return toast("กรุณากรอกรหัสพนักงาน");
-        const gps = ($("useGps").value === "1") ? await getGPS() : null;
-
-        const payload = {
-          employeeCode: code,
-          type,
-          note,
-          gps,
-          source: "scan",
-          device: isMobile() ? "mobile" : "desktop",
-          captured: lastCapturedInfo || null,
-          clientTime: new Date().toISOString()
-        };
-
-        const evidenceFile = $("scanEvidence").files && $("scanEvidence").files[0] ? $("scanEvidence").files[0] : null;
-        const photoFile = lastCapturedBlob ? new File([lastCapturedBlob], `capture_${Date.now()}.jpg`, { type: "image/jpeg" }) : null;
-
-        const res = await apiPost("saveManualLog", payload, { photo: photoFile, evidence: evidenceFile });
-
-        $("resultBadge").textContent = "สำเร็จ";
-        $("resultBox").innerHTML = `<div style="font-weight:800">บันทึกสำเร็จ ✅</div><div class="smallmuted" style="margin-top:6px">${escapeHtml(JSON.stringify(res))}</div>`;
-        saveLastResult({
-          time: fmtDT(),
-          title: `บันทึก${type==="IN"?"เข้า":"ออก"} – รหัส ${code}`,
-          detail: note ? ("หมายเหตุ: " + note) : "—"
-        });
-        toast("บันทึกสำเร็จ ✅");
-        setApiStatus("ok");
-
-      }catch(e){
-        $("resultBadge").textContent = "ผิดพลาด";
-        $("resultBox").innerHTML = `<div style="font-weight:800; color: var(--bad)">เกิดข้อผิดพลาด</div><div class="smallmuted" style="margin-top:6px">${escapeHtml(e.message)}</div>`;
-        toast("ผิดพลาด: " + e.message);
-        setApiStatus(getApiUrl() ? "bad" : "bad");
-      }
-    });
-
-    $("btnQuickCheck").addEventListener("click", ()=>{
-      showSection("secCheck");
-      $("cCode").value = $("scanCode").value.trim();
-      setTimeout(()=> $("btnCheckByCode").click(), 80);
-    });
-
-    $("btnSubmitManual").addEventListener("click", async ()=>{
-      try{
-        const code = $("mCode").value.trim();
-        const type = $("mType").value;
-        const reason = $("mReason").value.trim();
-        if(!code) return toast("กรุณากรอกรหัสพนักงาน");
-        if(!reason) return toast("กรุณากรอกเหตุผล/หมายเหตุ");
-
-        const gps = ($("mUseGps").value === "1") ? await getGPS() : null;
-        const evidenceFile = $("mEvidence").files && $("mEvidence").files[0] ? $("mEvidence").files[0] : null;
-
-        const payload = {
-          employeeCode: code,
-          type,
-          note: reason,
-          gps,
-          source: "manual",
-          device: isMobile() ? "mobile" : "desktop",
-          clientTime: new Date().toISOString()
-        };
-
-        const res = await apiPost("saveManualLog", payload, { evidence: evidenceFile });
-
-        $("resultBadge").textContent = "สำเร็จ";
-        $("resultBox").innerHTML = `<div style="font-weight:800">บันทึกด้วยมือสำเร็จ ✅</div><div class="smallmuted" style="margin-top:6px">${escapeHtml(JSON.stringify(res))}</div>`;
-        saveLastResult({
-          time: fmtDT(),
-          title: `บันทึกด้วยมือ${type==="IN"?"เข้า":"ออก"} – รหัส ${code}`,
-          detail: reason
-        });
-        toast("บันทึกด้วยมือสำเร็จ ✅");
-        setApiStatus("ok");
-
-      }catch(e){
-        toast("ผิดพลาด: " + e.message);
-        setApiStatus(getApiUrl() ? "bad" : "bad");
-      }
-    });
-
-    $("btnCheckByCode").addEventListener("click", async ()=>{
-      try{
-        const code = $("cCode").value.trim();
-        const date = $("cDate").value;
-        if(!code) return toast("กรุณากรอกรหัสพนักงาน");
-
-        const res = await apiPost("getTodayByCode", { employeeCode: code, date });
-        $("resultBadge").textContent = "โหลดแล้ว";
-        $("resultBox").innerHTML = `
-          <div style="font-weight:800">ผลการเช็ค: รหัส ${escapeHtml(code)}</div>
-          <pre style="margin-top:10px; background:#0b1220; color:#e5e7eb; padding:12px; border-radius:14px; overflow:auto; border:1px solid rgba(255,255,255,.08)">${escapeHtml(JSON.stringify(res, null, 2))}</pre>
-        `;
-        toast("ดึงข้อมูลสำเร็จ ✅");
-        setApiStatus("ok");
-      }catch(e){
-        $("resultBadge").textContent = "ผิดพลาด";
-        $("resultBox").innerHTML = `<div style="font-weight:800; color: var(--bad)">เกิดข้อผิดพลาด</div><div class="smallmuted" style="margin-top:6px">${escapeHtml(e.message)}</div>`;
-        toast("ผิดพลาด: " + e.message);
-        setApiStatus(getApiUrl() ? "bad" : "bad");
-      }
-    });
-
-    $("btnTodaySummary").addEventListener("click", async ()=>{
-      try{
-        const res = await apiPost("getTodaySummary", { date: $("cDate").value });
-        $("resultBadge").textContent = "สรุปแล้ว";
-        $("resultBox").innerHTML = `
-          <div style="font-weight:800">สรุปภาพรวมวันนี้</div>
-          <pre style="margin-top:10px; background:#0b1220; color:#e5e7eb; padding:12px; border-radius:14px; overflow:auto; border:1px solid rgba(255,255,255,.08)">${escapeHtml(JSON.stringify(res, null, 2))}</pre>
-        `;
-        toast("โหลดสรุปสำเร็จ ✅");
-        setApiStatus("ok");
-      }catch(e){
-        toast("ผิดพลาด: " + e.message);
-        setApiStatus(getApiUrl() ? "bad" : "bad");
-      }
-    });
-
-    $("btnLogin").addEventListener("click", async ()=>{
-      try{
-        const username = $("hrUser").value.trim();
-        const password = $("hrPass").value;
-        if(!username || !password) return toast("กรุณากรอก Username/Password");
-
-        const res = await apiPost("loginAdmin", { username, password });
-        const token = res.token || res.data?.token || "ok";
-        localStorage.setItem(LS_ADMIN_TOKEN, token);
-
-        $("btnGoAdmin").style.pointerEvents = "auto";
-        $("btnGoAdmin").style.opacity = "1";
-        toast("เข้าสู่ระบบสำเร็จ ✅");
-        setApiStatus("ok");
-      }catch(e){
-        toast("เข้าสู่ระบบไม่สำเร็จ: " + e.message);
-        setApiStatus(getApiUrl() ? "bad" : "bad");
-      }
-    });
-
-    $("btnUploadFace").addEventListener("click", async ()=>{
-      try{
-        const code = $("regCode").value.trim();
-        const file = $("regFace").files && $("regFace").files[0] ? $("regFace").files[0] : null;
-        if(!code) return toast("กรุณากรอกรหัสพนักงาน");
-        if(!file) return toast("กรุณาเลือกรูปใบหน้า");
-
-        const res = await apiPost("uploadEmployeeFace", { employeeCode: code }, { face: file });
-        toast("อัปโหลดใบหน้าสำเร็จ ✅");
-        saveLastResult({
-          time: fmtDT(),
-          title: `อัปโหลดใบหน้า – รหัส ${code}`,
-          detail: file.name
-        });
-        setApiStatus("ok");
-      }catch(e){
-        toast("อัปโหลดไม่สำเร็จ: " + e.message);
-        setApiStatus(getApiUrl() ? "bad" : "bad");
-      }
-    });
-
-    // =========================
-    // INIT
-    // =========================
-    (async function init(){
-      const url = getApiUrl();
-      setApiStatus(url ? "warn" : "bad");
-      setNowBadges();
-      syncNavMode();
-      renderLastResult();
-
-      if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
-        try{
-          const tmp = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
-          tmp.getTracks().forEach(t=>t.stop());
-        }catch(e){}
-        await loadCameras();
-      }else{
-        toast("เบราว์เซอร์นี้ไม่รองรับกล้อง");
-      }
-
-      if(localStorage.getItem(LS_ADMIN_TOKEN)){
-        $("btnGoAdmin").style.pointerEvents = "auto";
-        $("btnGoAdmin").style.opacity = "1";
-      }
-    })();
-  </script>
+  <script src="./app.js"></script>
 </body>
 </html>
