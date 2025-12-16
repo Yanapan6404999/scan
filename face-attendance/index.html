@@ -7,10 +7,8 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- ✅ ลดความหนาตามที่ไม่ชอบ: ใช้ 300-600 -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  <!-- ✅ face-api.js (CDN) -->
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
   <style>
@@ -74,7 +72,6 @@
       .dOnly{display:block}
     }
 
-    /* ===== Mobile Header ===== */
     .mHeader{
       position: sticky; top: 0; z-index: 60;
       padding-top: var(--safeT);
@@ -115,7 +112,6 @@
     .mHamb{font-size:18px;line-height:1}
     .mMenuTxt{font-size:14px}
 
-    /* ===== PC Topbar ===== */
     .topbar{
       position:sticky;top:0;z-index:50;
       background: rgba(246,248,251,.84);
@@ -145,7 +141,6 @@
     .brandSub{margin:2px 0 0;font-size:12px;color:var(--muted);}
     .topActions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
 
-    /* ===== Layout ===== */
     .grid{
       display:grid;
       grid-template-columns: 1fr;
@@ -173,7 +168,6 @@
     .cardTitle{margin:0;font-weight:600;font-size:15px;letter-spacing:.2px;display:flex;align-items:center;gap:8px;}
     .cardB{padding:14px}
 
-    /* ===== chips / dots ===== */
     .chip{
       display:inline-flex;align-items:center;gap:8px;
       padding: 7px 10px;
@@ -195,7 +189,6 @@
     .dot.warn{background:var(--warn); box-shadow: 0 0 0 4px rgba(245,158,11,.18)}
     .dot.bad{background:var(--red); box-shadow: 0 0 0 4px rgba(239,68,68,.15)}
 
-    /* ===== form ===== */
     .row{display:flex;gap:10px;flex-wrap:wrap}
     .col{flex:1;min-width:180px}
     label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500}
@@ -211,7 +204,6 @@
     }
     textarea{min-height:92px;resize:vertical}
 
-    /* ===== buttons ===== */
     .btnbar{display:flex;gap:10px;flex-wrap:wrap}
     .btn{
       cursor:pointer;
@@ -254,7 +246,6 @@
     .btn.ghost{background: rgba(255,255,255,.88)}
     .btn[disabled]{opacity:.6;cursor:not-allowed;transform:none}
 
-    /* ===== tabs ===== */
     .tabs{
       display:flex;gap:8px;flex-wrap:wrap;
       padding: 10px 0 2px;
@@ -281,7 +272,6 @@
     .section{display:none}
     .section.active{display:block}
 
-    /* ===== camera ===== */
     .cam{
       border: 1px dashed rgba(148,163,184,.60);
       border-radius: 18px;
@@ -354,7 +344,7 @@
       font-weight: 400;
     }
     th{
-      background: linear-gradient(to bottom, rgba(255,255,255,.98), rgba(255,255,255,.86));
+      background: linear-gradient explaining(to bottom, rgba(255,255,255,.98), rgba(255,255,255,.86));
       font-weight:600;
       color: #0f172a;
       position: sticky;
@@ -363,7 +353,6 @@
     }
     tr:hover td{background: rgba(37,99,235,.04)}
 
-    /* ===== bottom nav mobile ===== */
     .bottomNav{
       position: fixed;
       left:0; right:0; bottom:0;
@@ -398,7 +387,6 @@
       .wrap{padding-bottom: calc(96px + var(--safeB))}
     }
 
-    /* ===== drawer ===== */
     .backdrop{
       position: fixed; inset:0;
       background: rgba(15,23,42,.38);
@@ -427,7 +415,7 @@
     .drawerTitle{font-weight:600}
     .drawerB{padding:14px;overflow:auto}
     .block{
-      border:1px solid rgba(229,231,235,.95);
+      border:1px solid rgba(229,231,warning,235,.95);
       border-radius: 18px;
       background:#fff;
       box-shadow: var(--shadow2);
@@ -435,7 +423,6 @@
     }
     .blockTitle{font-weight:600;margin-bottom:10px}
 
-    /* ===== toast ===== */
     .toast{
       position: fixed;
       left: 14px; right: 14px;
@@ -474,7 +461,6 @@
       padding: 8px 0 2px;
     }
 
-    /* small face result card */
     .faceCard{
       border:1px solid rgba(229,231,235,.95);
       border-radius: 18px;
@@ -498,7 +484,6 @@
 
 <body>
 
-  <!-- ===== Mobile Header ===== -->
   <div class="mHeader mOnly">
     <div class="mHeaderCard">
       <div class="mLeft">
@@ -523,7 +508,6 @@
     </div>
   </div>
 
-  <!-- ===== PC Topbar ===== -->
   <div class="topbar dOnly">
     <div class="topbarIn">
       <div class="brand">
@@ -545,13 +529,12 @@
   <div class="wrap">
     <div class="grid mt12">
 
-      <!-- ===== MAIN ===== -->
       <div class="card">
         <div class="cardH">
           <div>
-            <div class="cardTitle" id="mainTitle">📷 สแกนใบหน้า (ระบุชื่อ → กดยืนยัน → เช็คอิน)</div>
+            <div class="cardTitle" id="mainTitle">📷 สแกนใบหน้า (1/3 → 2/3 → 3/3)</div>
             <div class="small muted" id="mainHint">
-              แนะนำ: ตั้งค่า URL /exec → ทดสอบ API → ขอ GPS (เพราะ GS บังคับ lat/lng ตอนบันทึก)
+              ตั้งค่า URL /exec → ทดสอบ API → เริ่มสแกน (ระบบจะพยายามขอ GPS + โหลดรายชื่อให้อัตโนมัติ)
             </div>
           </div>
 
@@ -562,7 +545,6 @@
 
         <div class="cardB">
 
-          <!-- Tabs (PC) -->
           <div class="tabs dOnly" id="tabs">
             <button class="tab active" data-sec="secFace" type="button">📷 สแกนใบหน้า</button>
             <button class="tab" data-sec="secManual" type="button">📝 บันทึกมือ</button>
@@ -575,6 +557,7 @@
           <!-- ===== SECTION: FACE SCAN ===== -->
           <section class="section active" id="secFace">
             <div class="cam">
+
               <div class="camBox">
                 <video id="videoFace" playsinline muted></video>
                 <canvas class="camOverlay" id="overlayFace"></canvas>
@@ -584,15 +567,14 @@
                 </div>
               </div>
 
-              <!-- ✅ ย้ายผลลัพธ์ขึ้นมาไว้ใกล้กล้อง + เพิ่มขั้นตอน 1/3 2/3 3/3 -->
+              <!-- ✅ ย้ายผลลัพธ์ขึ้นมาใกล้กล้อง (ไม่แตะ CSS) -->
               <div class="mt14 faceCard" id="faceResultCard">
                 <div>
-                  <div class="small muted" id="faceStepLine">ขั้นตอน 1/3: พร้อมเริ่มสแกน</div>
-                  <div class="faceWho" id="faceWho">ยังไม่พบใบหน้า</div>
-                  <div class="faceMeta" id="faceMeta">ยืนหน้ากล้องให้ชัด ๆ แล้วรอสักครู่</div>
+                  <div class="faceWho" id="faceWho">ขั้นตอน 1/3: รอเริ่มสแกน</div>
+                  <div class="faceMeta" id="faceMeta">กดเริ่มสแกน → ระบบจะตรวจใบหน้าและแสดงชื่อให้</div>
                 </div>
                 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
-                  <div class="faceScore" id="faceScore">ความมั่นใจ: —</div>
+                  <div class="faceScore" id="faceScore">สถานะ: —</div>
                   <button class="btn good" id="btnConfirmFace" type="button" disabled>✅ ยืนยันแล้วเช็คอิน</button>
                 </div>
               </div>
@@ -611,12 +593,12 @@
                 </div>
               </div>
 
-              <!-- ✅ ลด “ความจำเป็นต้องกดหลายปุ่ม”: เริ่มสแกนจะพยายามขอ GPS + โหลดรายชื่อให้อัตโนมัติ (ถ้ายังไม่มี) -->
+              <!-- ✅ ลดความ “รก” ของ flow: ปุ่มหลักอยู่ชุดเดียว -->
               <div class="btnbar mt12">
                 <button class="btn primary" id="btnStartFace" type="button">▶️ เริ่มสแกนใบหน้า</button>
+                <button class="btn danger" id="btnStopFace" type="button">⏹️ ปิดกล้อง</button>
                 <button class="btn" id="btnAskGpsFace" type="button">📍 ขอ GPS</button>
                 <button class="btn" id="btnLoadInitFace" type="button">📥 โหลดรายชื่อ</button>
-                <button class="btn danger" id="btnStopFace" type="button">⏹️ ปิดกล้อง</button>
               </div>
 
               <div class="info mt12">
@@ -625,37 +607,18 @@
                     <div style="font-weight:600">📍 สถานะ GPS</div>
                     <div class="small muted" id="gpsLine">ยังไม่ได้ขอสิทธิ์ Location</div>
                   </div>
-                  <span class="statusChip" id="modelChip"><span class="dot warn" id="modelDot"></span><span id="modelText">Face Model: ยังไม่โหลด</span></span>
+                  <span class="statusChip" id="modelChip">
+                    <span class="dot warn" id="modelDot"></span>
+                    <span id="modelText">Face Model: ยังไม่โหลด</span>
+                  </span>
                 </div>
                 <div class="small muted mt8">
                   ถ้า GPS ไม่มา → GS ของคุณจะไม่ให้บันทึก (ตามกติกาที่คุณตั้งไว้)
                 </div>
               </div>
 
-              <div class="hr"></div>
-
-              <div class="row">
-                <div class="col">
-                  <label>🧠 โหมดบันทึก (เลือกได้ตามที่ขอ)</label>
-                  <select id="slotMode">
-                    <option value="AUTO" selected>AUTO (ให้ระบบตัดสินใจ)</option>
-                    <option value="T1">บังคับลง t1</option>
-                    <option value="T2">บังคับลง t2</option>
-                    <option value="T3">บังคับลง t3</option>
-                    <option value="T4">บังคับลง t4</option>
-                    <option value="EXTRA1">บังคับลง tExtra1</option>
-                    <option value="EXTRA2">บังคับลง tExtra2</option>
-                  </select>
-                </div>
-                <div class="col">
-                  <label>🆔 สำรอง: กรอกรหัสเอง (ถ้าหน้าไม่ชัด/Unknown)</label>
-                  <input id="fallbackCode" inputmode="numeric" placeholder="เช่น 1011" list="dlCodes">
-                  <div class="tiny muted mt8">ทริค: ถ้าขึ้น Unknown แต่รู้รหัส → ใส่รหัส แล้วปุ่ม “ยืนยัน” จะกดได้ทันที</div>
-                </div>
-              </div>
-
               <div class="small muted mt10">
-                เกณฑ์จับคู่ (threshold) ตั้งไว้แบบปลอดภัย: ถ้า “คล้ายไม่พอ” จะขึ้นว่า Unknown เพื่อกันสลับคน
+                หมายเหตุ: ถ้าขึ้น Unknown บ่อย → ให้ HR ถ่าย/อัปเดตใบหน้าใหม่ให้ชัดขึ้น
               </div>
             </div>
           </section>
@@ -704,7 +667,7 @@
                 <label>📝 เหตุผล/หมายเหตุ</label>
                 <textarea id="mReason" placeholder="เช่น ลืมสแกนตอนเช้า / ระบบล่ม / ขออนุมัติหัวหน้าแล้ว"></textarea>
                 <div class="small muted mt8">
-                  (เหตุผลจะถูกแนบไปกับ manualType เพื่อให้ไม่หาย)
+                  (เหตุผลจะถูกส่งไปเป็น note ด้วย เพื่อไม่ขึ้น UNKNOWN)
                 </div>
               </div>
             </div>
@@ -758,7 +721,7 @@
           <section class="section" id="secSummary">
             <div class="info">
               <div style="font-weight:600">📊 สรุปวันนี้</div>
-              <div class="small muted mt8">โหลดสรุป → ค้นหาได้ → Export CSV ได้</div>
+              <div class="small muted mt8">โหลดสรุป → ค้นหาได้ → Export CSV (รหัส/ชื่อ/แผนก/ระดับ/เวลา/สถานะ)</div>
             </div>
 
             <div class="row mt14">
@@ -799,7 +762,7 @@
             <div class="info">
               <div style="font-weight:600">🧩 HR</div>
               <div class="small muted mt8">
-                1) ล็อกอินก่อน → 2) ไปหน้าแอดมินได้ → 3) ลงทะเบียนใบหน้า (ใช้กล้องจับหน้าเหมือนหน้าสแกน)
+                1) ล็อกอินก่อน → 2) ไปหน้าแอดมินได้ → 3) ลงทะเบียนใบหน้า (ถ่ายแล้วบันทึกไป GS)
               </div>
             </div>
 
@@ -825,10 +788,9 @@
 
             <div class="info">
               <div style="font-weight:600">🙂 ลงทะเบียนใบหน้า (HR)</div>
-              <div class="small muted mt8" id="regStepLine">ขั้นตอน 1/3: เปิดกล้อง HR แล้วให้ระบบเจอใบหน้า</div>
               <div class="small muted mt8">
-                กดเริ่มกล้อง → ให้หน้าอยู่ในกรอบ → กด “จับภาพ+บันทึกใบหน้า”
-                (ระบบจะคำนวณ faceData ให้เอง แล้วส่งไป GS: uploadEmployeeFace)
+                กดเริ่มกล้อง → ให้หน้าอยู่ในกรอบ → กด “จับภาพ+บันทึกใบหน้า”  
+                (แก้บัคแล้ว: ส่งเป็น photoBase64 ให้ GS)
               </div>
 
               <div class="row mt12">
@@ -838,7 +800,7 @@
                 </div>
                 <div class="col">
                   <label>📝 หมายเหตุ</label>
-                  <input id="regNote" placeholder="เช่น ถ่ายใหม่ให้ชัดขึ้น / เปลี่ยนคน / อัปเดตใบหน้า">
+                  <input id="regNote" placeholder="เช่น อัปเดตใบหน้า / ถ่ายใหม่ให้ชัดขึ้น">
                 </div>
               </div>
 
@@ -862,7 +824,6 @@
                 <div class="small muted">ผลจากระบบ:</div>
                 <pre id="hrDebug" style="margin-top:8px;padding:12px;border-radius:16px;background:#0b1220;color:#e5e7eb;overflow:auto;max-height:280px"></pre>
               </div>
-
             </div>
           </section>
 
@@ -878,8 +839,7 @@
               <ol class="mt10 small muted" style="line-height:1.8;margin:0;padding-left:18px">
                 <li>กดเมนู ⚙️ → วางลิงก์ Apps Script ที่ลงท้ายด้วย <b>/exec</b> → บันทึก</li>
                 <li>กด “ทดสอบ API” ถ้าขึ้น pong = พร้อมใช้งาน</li>
-                <li>กด “ขอ GPS” ให้ขึ้นพร้อมใช้งาน (สำคัญมาก)</li>
-                <li>กด “โหลดรายชื่อ” เพื่อให้ระบบรู้จักพนักงาน (และ faceData)</li>
+                <li>กด “เริ่มสแกนใบหน้า” (ระบบจะพยายามโหลดรายชื่อ + ขอ GPS ให้)</li>
               </ol>
             </div>
 
@@ -887,26 +847,16 @@
               <div style="font-weight:600">B) สแกนใบหน้า (วิธีหลัก)</div>
               <ol class="mt10 small muted" style="line-height:1.8;margin:0;padding-left:18px">
                 <li>ไปแท็บ “สแกนใบหน้า” → กด “เริ่มสแกนใบหน้า”</li>
-                <li>ยืนหน้ากล้องให้ชัด → ระบบจะขึ้นชื่อ/รหัสให้เอง</li>
-                <li>เลือกโหมดบันทึก (AUTO หรือบังคับลง t1-t4)</li>
+                <li>รอขึ้น “ขั้นตอน 2/3 พบชื่อ…”</li>
                 <li>กด “ยืนยันแล้วเช็คอิน” → เสร็จ ✅</li>
               </ol>
             </div>
 
             <div class="info mt14">
-              <div style="font-weight:600">C) บันทึกมือ (กรณีฉุกเฉิน)</div>
+              <div style="font-weight:600">C) HR ลงทะเบียนใบหน้า</div>
               <ol class="mt10 small muted" style="line-height:1.8;margin:0;padding-left:18px">
-                <li>ไปแท็บ “บันทึกมือ”</li>
-                <li>กด “ขอ GPS” ให้ขึ้นพร้อมใช้งาน</li>
-                <li>กรอกรหัส + เหตุผล + เลือกโหมด → กดบันทึก</li>
-              </ol>
-            </div>
-
-            <div class="info mt14">
-              <div style="font-weight:600">D) HR / Admin</div>
-              <ol class="mt10 small muted" style="line-height:1.8;margin:0;padding-left:18px">
-                <li>HR ต้องล็อกอินก่อนถึงจะเข้า admin.html ได้</li>
-                <li>ลงทะเบียนใบหน้า: เปิดกล้อง HR → ให้หน้าชัด → กด “จับภาพ+บันทึกใบหน้า”</li>
+                <li>ล็อกอิน HR ก่อน</li>
+                <li>เริ่มกล้อง HR → รอขึ้น “พบใบหน้า” → กด “จับภาพ+บันทึกใบหน้า”</li>
               </ol>
             </div>
           </section>
@@ -914,7 +864,6 @@
         </div>
       </div>
 
-      <!-- ===== SIDE (PC only) ===== -->
       <aside class="dOnly">
         <div class="card">
           <div class="cardH">
@@ -940,7 +889,7 @@
 
             <div class="info mt14">
               <div style="font-weight:600">📥 รายชื่อพนักงาน</div>
-              <div class="small muted mt8">โหลดรายชื่อเพื่อช่วยเลือก code และใช้ faceData สำหรับสแกนใบหน้า</div>
+              <div class="small muted mt8">โหลดรายชื่อเพื่อใช้สแกนหน้า</div>
               <div class="btnbar mt12">
                 <button class="btn primary" id="btnLoadInitSide" type="button">📥 โหลดรายชื่อ</button>
                 <button class="btn" id="btnClearLocal" type="button">🧹 ล้างสถานะ</button>
@@ -963,7 +912,6 @@
     </div>
   </div>
 
-  <!-- ===== Mobile Bottom Nav ===== -->
   <nav class="bottomNav mOnly">
     <button class="bnBtn active" data-sec="secFace" type="button"><div class="bnIcon">📷</div><div class="bnText">สแกน</div></button>
     <button class="bnBtn" data-sec="secManual" type="button"><div class="bnIcon">📝</div><div class="bnText">บันทึก</div></button>
@@ -972,7 +920,6 @@
     <button class="bnBtn" data-sec="secHR" type="button"><div class="bnIcon">🧩</div><div class="bnText">HR</div></button>
   </nav>
 
-  <!-- ===== Drawer ===== -->
   <div class="backdrop" id="backdrop"></div>
   <aside class="drawer" id="drawer">
     <div class="drawerH">
@@ -1020,7 +967,6 @@
     </div>
   </aside>
 
-  <!-- ===== Toast ===== -->
   <div class="toast" id="toast">
     <div class="toastIn">
       <div class="toastMsg" id="toastMsg">—</div>
@@ -1034,52 +980,30 @@
     ;(() => {
       "use strict";
 
-      // =========================
-      // Storage Keys
-      // =========================
       const LS_API = "attendance_api_url_v2";
       const LS_LAST = "attendance_last_ui_log_v1";
-      const LS_HR = "attendance_hr_token_v1";      // token จาก GS
-      const LS_HR_OK = "attendance_hr_logged_v1";  // flag กันเข้า admin
+      const LS_HR = "attendance_hr_token_v1";
+      const LS_HR_OK = "attendance_hr_logged_v1";
 
-      // =========================
-      // DOM helpers
-      // =========================
       const $ = (id) => document.getElementById(id);
       const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-      // =========================
-      // State
-      // =========================
       let busy = false;
 
-      // GPS
       let lastGps = null; // {lat,lng,acc}
 
-      // Employees & Face
       let employeesCache = [];
       let faceMatcher = null;
       let modelsReady = false;
       let scanLoopTimer = null;
       let lastFaceMatch = null; // { employee, label, distance, ok }
-      let faceStep = 1;          // 1/3,2/3,3/3
-      let faceStableLabel = "";
-      let faceStableCount = 0;
-      const FACE_STABLE_NEED = 3;
+      let faceStep = 0; // 0 idle, 1 scanning, 2 matched, 3 saved
 
-      // Streams
       let streamFace = null;
       let streamReg = null;
 
-      // Summary cache
       let lastSummary = [];
 
-      // HR reg detect
-      let regDetLoopId = 0;
-
-      // =========================
-      // Time
-      // =========================
       const pad2 = (n) => String(n).padStart(2, "0");
       function nowTH() {
         const d = new Date();
@@ -1091,9 +1015,6 @@
         return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
       }
 
-      // =========================
-      // Toast
-      // =========================
       function toast(msg) {
         const el = $("toast");
         const msgEl = $("toastMsg");
@@ -1105,9 +1026,6 @@
       }
       $("toastClose")?.addEventListener("click", () => ($("toast").style.display = "none"));
 
-      // =========================
-      // Busy lock
-      // =========================
       function setBusy(v) {
         busy = v;
         const ids = [
@@ -1126,12 +1044,10 @@
         });
       }
 
-      // =========================
-      // API URL
-      // =========================
       function getApiUrl() { return (localStorage.getItem(LS_API) || "").trim(); }
       function setApiUrl(url) { localStorage.setItem(LS_API, (url || "").trim()); refreshApiUI(); }
       function resetApiUrl() { localStorage.removeItem(LS_API); refreshApiUI(); }
+
       function setApiState(state, text) {
         const mDot = $("mDot"), mTxt = $("mApiText");
         const sideApi = $("sideApi");
@@ -1147,14 +1063,10 @@
       function refreshApiUI() {
         const url = getApiUrl();
         if ($("apiUrlInput")) $("apiUrlInput").value = url;
-
         if (!url) return setApiState("warn", "ยังไม่ได้ตั้งค่า URL");
         setApiState("ok", "พร้อมใช้งาน (ยังไม่ได้ทดสอบ)");
       }
 
-      // =========================
-      // Drawer
-      // =========================
       function openDrawer() {
         $("backdrop").style.display = "block";
         $("drawer").classList.add("open");
@@ -1182,11 +1094,8 @@
         toast("Reset URL แล้ว ✅");
       });
 
-      // =========================
-      // Navigation
-      // =========================
       const titleMap = {
-        secFace: "📷 สแกนใบหน้า (ระบุชื่อ → กดยืนยัน → เช็คอิน)",
+        secFace: "📷 สแกนใบหน้า (1/3 → 2/3 → 3/3)",
         secManual: "📝 บันทึกมือ (เลือก AUTO หรือ t1-t4 ได้)",
         secCheck: "🔎 ตรวจสอบวันนี้ (ดูเป็นการ์ด อ่านง่าย)",
         secSummary: "📊 สรุปวันนี้",
@@ -1209,9 +1118,6 @@
       $("btnGoCheckFromManual")?.addEventListener("click", () => showSection("secCheck"));
       $("btnToSummary")?.addEventListener("click", () => showSection("secSummary"));
 
-      // =========================
-      // API Calls (POST x-www-form-urlencoded)
-      // =========================
       async function postAction(action, params = {}) {
         const url = getApiUrl();
         if (!url) throw new Error("ยังไม่ได้ตั้งค่า URL /exec");
@@ -1269,9 +1175,6 @@
       $("btnPingSide")?.addEventListener("click", pingApi);
       $("btnPingDrawer")?.addEventListener("click", pingApi);
 
-      // =========================
-      // GPS
-      // =========================
       function setGpsUI(gps) {
         if (!gps) {
           $("gpsLine").textContent = "ยังไม่ได้ขอสิทธิ์ Location";
@@ -1296,33 +1199,29 @@
         });
       }
 
-      async function askGps({silent=false}={}) {
+      async function askGps() {
         try {
           setBusy(true);
           const gps = await getGPS();
           if (!gps) {
             lastGps = null;
             setGpsUI(null);
-            if (!silent) toast("ขอ GPS ไม่สำเร็จ — กรุณาอนุญาต Location");
-            return null;
+            toast("ขอ GPS ไม่สำเร็จ — กรุณาอนุญาต Location");
+            return;
           }
           lastGps = gps;
           setGpsUI(gps);
-          if (!silent) toast("ได้ GPS แล้ว ✅");
-          return gps;
+          toast("ได้ GPS แล้ว ✅");
         } finally {
           setBusy(false);
         }
       }
 
-      $("btnAskGpsFace")?.addEventListener("click", () => askGps());
-      $("btnAskGpsManual")?.addEventListener("click", () => askGps());
-      $("btnAskGpsSide")?.addEventListener("click", () => askGps());
-      $("btnAskGpsDrawer")?.addEventListener("click", () => askGps());
+      $("btnAskGpsFace")?.addEventListener("click", askGps);
+      $("btnAskGpsManual")?.addEventListener("click", askGps);
+      $("btnAskGpsSide")?.addEventListener("click", askGps);
+      $("btnAskGpsDrawer")?.addEventListener("click", askGps);
 
-      // =========================
-      // Load Cameras helpers
-      // =========================
       async function loadCameras(selectEl) {
         try {
           const devices = await navigator.mediaDevices.enumerateDevices();
@@ -1335,9 +1234,6 @@
         } catch {}
       }
 
-      // =========================
-      // File/Base64 + Capture frame
-      // =========================
       function fileToDataURL(file) {
         return new Promise((resolve, reject) => {
           const fr = new FileReader();
@@ -1357,9 +1253,6 @@
         return canvas.toDataURL("image/jpeg", quality);
       }
 
-      // =========================
-      // Face Models
-      // =========================
       function setModelState(ok, msg){
         const dot = $("modelDot");
         const txt = $("modelText");
@@ -1376,7 +1269,6 @@
         }
         try{
           setModelState(false, "Face Model: กำลังโหลด...");
-          // ✅ ต้องมีโฟลเดอร์ ./models/
           const MODEL_URL = "./models";
           await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
           await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
@@ -1391,9 +1283,6 @@
         }
       }
 
-      // =========================
-      // Employees -> FaceMatcher
-      // =========================
       function parseFaceData(faceDataRaw){
         if (!faceDataRaw) return [];
         let obj = faceDataRaw;
@@ -1402,7 +1291,6 @@
           if (!s) return [];
           try { obj = JSON.parse(s); } catch { return []; }
         }
-
         if (Array.isArray(obj) && obj.length && typeof obj[0] === "number") {
           return [ new Float32Array(obj) ];
         }
@@ -1429,16 +1317,10 @@
           if (!descs.length) continue;
           labeled.push(new faceapi.LabeledFaceDescriptors(label, descs));
         }
-        if (!labeled.length) {
-          faceMatcher = null;
-          return;
-        }
+        if (!labeled.length) { faceMatcher = null; return; }
         faceMatcher = new faceapi.FaceMatcher(labeled, 0.55);
       }
 
-      // =========================
-      // getInitialData -> cache employees
-      // =========================
       function fillCodes(emps){
         const dl = $("dlCodes");
         if (!dl) return;
@@ -1454,11 +1336,7 @@
           const res = await postAction("getInitialData", {});
           employeesCache = res?.employees || [];
           fillCodes(employeesCache);
-
-          if (await loadFaceModels()) {
-            rebuildFaceMatcher();
-          }
-
+          if (await loadFaceModels()) rebuildFaceMatcher();
           toast("โหลดรายชื่อแล้ว ✅");
         }catch(e){
           toast("โหลดรายชื่อไม่สำเร็จ: " + e.message);
@@ -1472,102 +1350,11 @@
       $("btnLoadInitDrawer")?.addEventListener("click", loadInitial);
       $("btnLoadInitFace")?.addEventListener("click", loadInitial);
 
-      // =========================
-      // Step UI (Face 1/3 2/3 3/3)
-      // =========================
-      function setFaceStep(step, msg){
-        faceStep = step;
-        const el = $("faceStepLine");
-        if (el) el.textContent = `ขั้นตอน ${step}/3: ${msg}`;
-      }
-
-      function resetFaceStability(){
-        faceStableLabel = "";
-        faceStableCount = 0;
-      }
-
-      // =========================
-      // Face Scan Camera
-      // =========================
       function stopStream(stream){
         if (!stream) return;
         try { stream.getTracks().forEach(t => t.stop()); } catch {}
       }
 
-      function stopFace(){
-        stopStream(streamFace);
-        streamFace = null;
-        const v = $("videoFace");
-        if (v) { v.pause(); v.srcObject = null; v.style.display = "none"; }
-        $("camHintFace").style.display = "flex";
-        clearInterval(scanLoopTimer);
-        scanLoopTimer = null;
-        resetFaceStability();
-        setFaceResult(null);
-        clearOverlay($("overlayFace"));
-        setFaceStep(1, "พร้อมเริ่มสแกน");
-      }
-
-      async function startFace(){
-        stopFace();
-
-        const okModels = await loadFaceModels();
-        if (!okModels) return;
-
-        // ✅ พยายาม “ลดการกดปุ่ม”:
-        // - ถ้ายังไม่มี GPS → ขอให้เลย (silent)
-        // - ถ้ายังไม่โหลดรายชื่อ → โหลดให้เลย (ถ้า URL พร้อม)
-        try{
-          setBusy(true);
-
-          // ขอ GPS แบบเงียบ (ถ้าไม่สำเร็จ เดี๋ยวค่อยให้กดปุ่มเอง)
-          if (!lastGps) {
-            try { await askGps({silent:true}); } catch {}
-          }
-
-          // โหลดรายชื่อแบบเงียบถ้ายังไม่มี
-          if (!employeesCache.length && getApiUrl()) {
-            try { await loadInitial(); } catch {}
-          }
-
-          const sel = $("cameraSelectFace");
-          const deviceId = sel?.value || null;
-          const facing = $("facingModeFace")?.value || "user";
-
-          streamFace = await navigator.mediaDevices.getUserMedia({
-            video: deviceId ? { deviceId:{ exact: deviceId } } : { facingMode: facing },
-            audio:false
-          });
-
-          const v = $("videoFace");
-          v.srcObject = streamFace;
-          await v.play();
-          v.style.display = "block";
-          $("camHintFace").style.display = "none";
-
-          resizeOverlayToVideo($("overlayFace"), v);
-
-          resetFaceStability();
-          setFaceResult(null);
-          setFaceStep(1, "เปิดกล้องแล้ว กำลังหาใบหน้า…");
-
-          scanLoopTimer = setInterval(() => scanFaceFrame(), 550);
-
-          toast("เริ่มสแกนแล้ว ✅");
-        }catch(e){
-          stopFace();
-          toast("เปิดกล้องไม่สำเร็จ: " + (e.message || "unknown"));
-        }finally{
-          setBusy(false);
-        }
-      }
-
-      $("btnStartFace")?.addEventListener("click", startFace);
-      $("btnStopFace")?.addEventListener("click", () => { stopFace(); toast("ปิดกล้องแล้ว"); });
-
-      // =========================
-      // Overlay draw helpers
-      // =========================
       function resizeOverlayToVideo(canvas, video){
         if (!canvas || !video) return;
         canvas.width = video.videoWidth || 1280;
@@ -1591,63 +1378,120 @@
         ctx.stroke();
       }
 
-      // =========================
-      // Face scan logic
-      // =========================
       function findEmployeeByCode(code){
         const c = String(code||"").trim();
         return employeesCache.find(e => String(e.code||"").trim() === c) || null;
       }
 
-      function setFaceResult(match){
-        lastFaceMatch = match;
+      function setFaceStepUI(step, match){
+        faceStep = step;
         const who = $("faceWho");
         const meta = $("faceMeta");
         const score = $("faceScore");
         const btn = $("btnConfirmFace");
 
-        if (!match) {
-          who.textContent = "ยังไม่พบใบหน้า";
-          meta.textContent = "ยืนหน้ากล้องให้ชัด ๆ แล้วรอสักครู่";
-          score.innerHTML = "ความมั่นใจ: —";
+        if (step === 0) {
+          who.textContent = "ขั้นตอน 1/3: รอเริ่มสแกน";
+          meta.textContent = "กดเริ่มสแกน → ระบบจะตรวจใบหน้าและแสดงชื่อให้";
+          score.textContent = "สถานะ: —";
           btn.disabled = true;
           return;
         }
 
-        const e = match.employee;
-        if (match.ok && e) {
-          who.innerHTML = `<span class="faceOk">พบ: ${escapeHtml(e.fullName || "")}</span> (รหัส ${escapeHtml(e.code)})`;
-          meta.innerHTML = `แผนก: ${escapeHtml(e.branch||"-")} • ระดับ: ${escapeHtml(e.level||"-")}`;
-          score.innerHTML = `ความมั่นใจ: <b>${Math.max(0, (1 - match.distance)).toFixed(2)}</b> • ระยะห่าง: <b>${match.distance.toFixed(3)}</b>`;
+        if (step === 1) {
+          who.textContent = "ขั้นตอน 1/3: กำลังค้นหาใบหน้า…";
+          meta.textContent = "หันหน้าตรงกล้อง แสงพอดี ไม่ไกลเกิน";
+          score.textContent = "สถานะ: กำลังสแกน";
+          btn.disabled = true;
+          return;
+        }
+
+        if (step === 2 && match?.ok && match.employee) {
+          const e = match.employee;
+          who.innerHTML = `<span class="faceOk">ขั้นตอน 2/3: พบ ${escapeHtml(e.fullName || "")}</span> (รหัส ${escapeHtml(e.code)})`;
+          meta.innerHTML = `แผนก: ${escapeHtml(e.branch||"-")} • ระดับ: ${escapeHtml(e.level||"-")}<br>กด “ยืนยันแล้วเช็คอิน” ได้เลย`;
+          score.innerHTML = `ความมั่นใจ: <b>${Math.max(0, (1 - match.distance)).toFixed(2)}</b>`;
           btn.disabled = false;
-        } else {
-          who.innerHTML = `<span class="faceBad">Unknown</span> (ยังจับคู่ไม่ได้)`;
-          meta.textContent = "ลองขยับใกล้ขึ้น / แสงสว่างขึ้น / หรือให้ HR ถ่ายใบหน้าใหม่";
-          score.innerHTML = `ความมั่นใจ: <b>${match.distance != null ? (Math.max(0, (1 - match.distance)).toFixed(2)) : "-"}</b>`;
-          // ปุ่มยืนยันจะ “ยังไม่ให้กด” จนกว่าจะใส่ fallbackCode
-          btn.disabled = !($("fallbackCode").value || "").trim();
+          return;
+        }
+
+        // unknown / not matched
+        who.innerHTML = `<span class="faceBad">ขั้นตอน 2/3: Unknown</span> (ยังจับคู่ไม่ได้)`;
+        meta.textContent = "ให้ HR อัปเดตใบหน้าใหม่ให้ชัดขึ้น แล้วลองอีกครั้ง";
+        score.textContent = "สถานะ: ยังไม่พร้อมยืนยัน";
+        btn.disabled = true;
+      }
+
+      function setFaceResult(match){
+        lastFaceMatch = match;
+        if (!match) return setFaceStepUI(1, null);
+        if (match.ok) return setFaceStepUI(2, match);
+        return setFaceStepUI(2, match);
+      }
+
+      function stopFace(){
+        stopStream(streamFace);
+        streamFace = null;
+        const v = $("videoFace");
+        if (v) { v.pause(); v.srcObject = null; v.style.display = "none"; }
+        $("camHintFace").style.display = "flex";
+        clearInterval(scanLoopTimer);
+        scanLoopTimer = null;
+        lastFaceMatch = null;
+        clearOverlay($("overlayFace"));
+        setFaceStepUI(0, null);
+      }
+
+      async function startFace(){
+        stopFace();
+
+        const okModels = await loadFaceModels();
+        if (!okModels) return;
+
+        try{
+          setBusy(true);
+          setFaceStepUI(1, null);
+
+          // ✅ ลดการกดปุ่ม: ถ้ายังไม่โหลดรายชื่อ ให้โหลดให้เลย
+          if (!employeesCache.length) {
+            try { await loadInitial(); } catch {}
+          }
+
+          // ✅ ขอ GPS แบบอ่อน ๆ: ถ้ายังไม่มี ให้ลองขอ (เป็น user gesture จากคลิกปุ่มเริ่มสแกน)
+          if (!lastGps) {
+            const gps = await getGPS();
+            if (gps) { lastGps = gps; setGpsUI(gps); }
+          }
+
+          const sel = $("cameraSelectFace");
+          const deviceId = sel?.value || null;
+          const facing = $("facingModeFace")?.value || "user";
+
+          streamFace = await navigator.mediaDevices.getUserMedia({
+            video: deviceId ? { deviceId:{ exact: deviceId } } : { facingMode: facing },
+            audio:false
+          });
+
+          const v = $("videoFace");
+          v.srcObject = streamFace;
+          await v.play();
+          v.style.display = "block";
+          $("camHintFace").style.display = "none";
+
+          resizeOverlayToVideo($("overlayFace"), v);
+
+          scanLoopTimer = setInterval(() => scanFaceFrame(), 550);
+          toast("เริ่มสแกนแล้ว ✅");
+        }catch(e){
+          stopFace();
+          toast("เปิดกล้องไม่สำเร็จ: " + (e.message || "unknown"));
+        }finally{
+          setBusy(false);
         }
       }
 
-      function updateConfirmByFallback(){
-        const fb = ($("fallbackCode").value || "").trim();
-        const btn = $("btnConfirmFace");
-        if (!btn) return;
-
-        // ถ้ายังไม่เจอหน้า ไม่เปิดให้กด
-        if (!lastFaceMatch) { btn.disabled = true; return; }
-
-        // ถ้า match ได้อยู่แล้ว → กดได้
-        if (lastFaceMatch.ok) { btn.disabled = false; return; }
-
-        // ถ้า Unknown → ให้กดได้เฉพาะมีรหัสสำรอง
-        btn.disabled = !fb;
-
-        if (fb && lastFaceMatch) {
-          setFaceStep(3, `พร้อมยืนยันด้วยรหัส ${fb}`);
-        }
-      }
-      $("fallbackCode")?.addEventListener("input", updateConfirmByFallback);
+      $("btnStartFace")?.addEventListener("click", startFace);
+      $("btnStopFace")?.addEventListener("click", () => { stopFace(); toast("ปิดกล้องแล้ว"); });
 
       async function scanFaceFrame(){
         try{
@@ -1663,92 +1507,55 @@
 
           if (!detection) {
             clearOverlay($("overlayFace"));
-            resetFaceStability();
-            setFaceResult(null);
-            setFaceStep(1, "หันหน้าตรงกล้องเพื่อเริ่มสแกน…");
+            setFaceStepUI(1, null);
             return;
           }
 
           drawBox($("overlayFace"), detection.detection.box, true);
-          setFaceStep(2, "พบใบหน้า กำลังระบุชื่อ…");
 
           if (!faceMatcher) {
-            // มีหน้า แต่ยังไม่มีฐานข้อมูล (ยังไม่โหลดรายชื่อ/ไม่มี faceData)
-            setFaceResult({ ok:false, distance:null, employee:null });
-            resetFaceStability();
+            setFaceResult({ ok:false, distance:null, employee:null, label:"unknown" });
             return;
           }
 
           const best = faceMatcher.findBestMatch(detection.descriptor);
-          const label = best.label; // code or "unknown"
+          const label = best.label;
           const distance = best.distance;
 
           if (label && label !== "unknown") {
             const emp = findEmployeeByCode(label);
-            setFaceResult({ ok:true, employee: emp, label, distance });
-
-            // ✅ ทำ “1/3 2/3 3/3” แบบนิ่ง ๆ: ต้องเจอ label เดิมติดกันหลายเฟรม
-            if (label === faceStableLabel) faceStableCount += 1;
-            else { faceStableLabel = label; faceStableCount = 1; }
-
-            if (faceStableCount >= FACE_STABLE_NEED) {
-              setFaceStep(3, `พบ ${emp?.fullName || label} • พร้อมกดยืนยัน`);
-            } else {
-              setFaceStep(2, `กำลังล็อกชื่อ… ${faceStableCount}/${FACE_STABLE_NEED}`);
-            }
+            if (emp) setFaceResult({ ok:true, employee: emp, label, distance });
+            else setFaceResult({ ok:false, employee:null, label:"unknown", distance });
           } else {
             setFaceResult({ ok:false, employee:null, label:"unknown", distance });
-            resetFaceStability();
-            // ถ้ามี fallback แล้ว ก็ถือว่าเข้าขั้น 3/3 ได้
-            const fb = ($("fallbackCode").value || "").trim();
-            if (fb) setFaceStep(3, `Unknown แต่มีรหัสสำรอง (${fb}) • พร้อมกดยืนยัน`);
-            else setFaceStep(2, "พบใบหน้าแต่ยัง Unknown (ใส่รหัสสำรอง หรือให้ HR บันทึกใบหน้า)");
           }
-
-          updateConfirmByFallback();
-        } catch {
-          // ignore scan loop errors
-        }
+        } catch {}
       }
 
-      // =========================
-      // Confirm Face -> saveManualLog
-      // =========================
       async function confirmFaceAndSave(){
         if (busy) return;
 
-        // require GPS
+        // ✅ ต้อง match จริงเท่านั้น (ตาม flow 1/3 2/3 3/3)
+        if (!lastFaceMatch?.ok || !lastFaceMatch.employee?.code) {
+          toast("ยังไม่พบชื่อที่จับคู่ได้ — ยังยืนยันไม่ได้");
+          return;
+        }
+
         if (!lastGps) {
           toast("ต้องมี GPS ก่อนบันทึก — กด “ขอ GPS”");
           return;
         }
 
-        const slot = ($("slotMode").value || "AUTO").trim();
+        const code = String(lastFaceMatch.employee.code).trim();
 
-        // determine code
-        let code = "";
-        if (lastFaceMatch?.ok && lastFaceMatch.employee?.code) {
-          code = String(lastFaceMatch.employee.code).trim();
-        } else {
-          code = ($("fallbackCode").value || "").trim();
-          if (!code) {
-            toast("ยังจับคู่ไม่ได้ — กรุณากรอกรหัสในช่องสำรอง");
-            return;
-          }
-        }
-
-        // require a live frame
         const v = $("videoFace");
         if (!v || v.readyState < 2) {
           toast("กล้องยังไม่พร้อม");
           return;
         }
 
-        setFaceStep(3, "กำลังบันทึกเช็คอิน…");
-
         const evidenceBase64 = captureFrameToJpegDataUrl(v, 0.82);
         const evidenceName = `face-${code}-${Date.now()}.jpg`;
-        const manualType = `FACE:${slot}`;
 
         try{
           setBusy(true);
@@ -1759,27 +1566,26 @@
             lng: lastGps.lng,
             evidenceBase64,
             evidenceName,
-            manualType
+
+            // ✅ แก้ note UNKNOWN (ถ้า GS รองรับ note)
+            note: "FACE",
+            method: "FACE",
+            manualType: "FACE"
           });
 
           localStorage.setItem(LS_LAST, JSON.stringify({
             at: nowTH(),
-            title: `✅ เช็คอินสำเร็จ (FACE:${slot}) • รหัส ${code}`,
+            title: `✅ เช็คอินสำเร็จ (FACE) • รหัส ${code}`,
             detail: result?.status ? ("สถานะ: " + result.status) : "-"
           }));
           renderLast();
 
-          setFaceStep(3, "เช็คอินสำเร็จ ✅");
+          setFaceStepUI(3, lastFaceMatch);
           toast("เช็คอินสำเร็จ ✅");
-
-          // ✅ จบงาน: ปิดกล้องให้เลย (ตามฟีล “ยืนยันจบเช็ค”)
-          stopFace();
-
           showSection("secCheck");
           $("cCode").value = code;
           await checkToday();
         }catch(e){
-          setFaceStep(2, "บันทึกไม่สำเร็จ (ลองใหม่)");
           toast("เช็คอินไม่สำเร็จ: " + e.message);
         }finally{
           setBusy(false);
@@ -1788,9 +1594,6 @@
 
       $("btnConfirmFace")?.addEventListener("click", confirmFaceAndSave);
 
-      // =========================
-      // Manual save -> saveManualLog
-      // =========================
       async function submitManual(){
         if (busy) return;
 
@@ -1810,7 +1613,7 @@
           evidenceName = file.name || `manual-${code}-${Date.now()}.jpg`;
         }
 
-        const safeReason = reason.replace(/\s+/g," ").slice(0, 80);
+        const safeReason = reason.replace(/\s+/g," ").slice(0, 120);
         const manualType = `MANUAL:${slot}:${safeReason}`;
 
         try{
@@ -1821,7 +1624,11 @@
             lng: lastGps.lng,
             evidenceBase64,
             evidenceName,
-            manualType
+            manualType,
+
+            // ✅ แก้ note UNKNOWN
+            note: safeReason,
+            method: "MANUAL"
           });
 
           localStorage.setItem(LS_LAST, JSON.stringify({
@@ -1843,9 +1650,6 @@
       }
       $("btnSubmitManual")?.addEventListener("click", submitManual);
 
-      // =========================
-      // Check today -> UI card
-      // =========================
       function classifyStatus(st) {
         const s = String(st || "");
         if (s === "ขาด") return "bad";
@@ -1860,8 +1664,6 @@
         if (log.t2) t.push(`t2: ${log.t2}`);
         if (log.t3) t.push(`t3: ${log.t3}`);
         if (log.t4) t.push(`t4: ${log.t4}`);
-        if (log.tExtra1) t.push(`extra1: ${log.tExtra1}`);
-        if (log.tExtra2) t.push(`extra2: ${log.tExtra2}`);
         return t.length ? t.join(" • ") : "-";
       }
 
@@ -1878,7 +1680,6 @@
 
         const found = !!result.found;
         msg.textContent = found ? "พบข้อมูล ✅" : (result.message || "ไม่พบข้อมูล");
-
         if (!found) return;
 
         const emp = result.employee || {};
@@ -1930,9 +1731,6 @@
         $("checkDebug").classList.toggle("hide", !debugOn);
       });
 
-      // =========================
-      // Summary today
-      // =========================
       function renderSummary(rows, filterText="") {
         const q = String(filterText || "").trim().toLowerCase();
         const body = $("sumBody");
@@ -1982,8 +1780,9 @@
       $("btnLoadSummary")?.addEventListener("click", loadSummary);
       $("sumSearch")?.addEventListener("input", () => renderSummary(lastSummary, $("sumSearch").value));
 
-      function toCSV(rows){
-        const headers = ["date","code","fullName","branch","level","t1","t2","t3","t4","tExtra1","tExtra2","status","evidenceUrl","locationText","lat","lng","rawType","method","note","updatedAt"];
+      // ✅ Export CSV ใหม่: ตามที่สั่ง + ใส่ BOM ให้ Excel อ่านไทยไม่เพี้ยน
+      function toCSV_Short(rows){
+        const headers = ["รหัส","ชื่อ","แผนก","ระดับ","เวลา (t1-t4)","สถานะ"];
         const esc = (v) => {
           const s = String(v ?? "");
           const needs = /[",\n]/.test(s);
@@ -1992,8 +1791,18 @@
         };
         const lines = [];
         lines.push(headers.join(","));
-        rows.forEach(r => lines.push(headers.map(h => esc(r[h])).join(",")));
-        return lines.join("\n");
+        rows.forEach(r => {
+          const time = [r.t1,r.t2,r.t3,r.t4].filter(Boolean).join(" • ") || "-";
+          lines.push([
+            esc(r.code),
+            esc(r.fullName || ""),
+            esc(r.branch || ""),
+            esc(r.level || ""),
+            esc(time),
+            esc(r.status || "-"),
+          ].join(","));
+        });
+        return "\ufeff" + lines.join("\n");
       }
       function download(name, text){
         const blob = new Blob([text], { type:"text/csv;charset=utf-8" });
@@ -2008,12 +1817,9 @@
       }
       $("btnExportCsv")?.addEventListener("click", () => {
         if (!lastSummary.length) return toast("ยังไม่มีข้อมูล — โหลดสรุปก่อน");
-        download(`today_summary_${todayISO()}.csv`, toCSV(lastSummary));
+        download(`today_summary_${todayISO()}.csv`, toCSV_Short(lastSummary));
       });
 
-      // =========================
-      // HR: login + gate admin.html
-      // =========================
       function setHrState(ok, msg){
         const dot = $("hrDot");
         const txt = $("hrText");
@@ -2022,8 +1828,7 @@
         txt.textContent = msg;
         $("btnGoAdmin").disabled = !ok;
         $("btnLogout").disabled = !ok;
-        // capture ปรับตาม step ใน loop อีกที แต่ล็อกอินต้องผ่านก่อน
-        if (!ok) $("btnCaptureReg").disabled = true;
+        $("btnCaptureReg").disabled = !ok;
       }
 
       function isHrLoggedIn(){
@@ -2073,16 +1878,7 @@
         location.href = "./admin.html";
       });
 
-      // =========================
-      // HR Registration: camera + compute descriptor + uploadEmployeeFace
-      // =========================
-      function setRegStep(step, msg){
-        const el = $("regStepLine");
-        if (el) el.textContent = `ขั้นตอน ${step}/3: ${msg}`;
-      }
-
       function stopReg(){
-        regDetLoopId += 1; // cancel loop
         stopStream(streamReg);
         streamReg = null;
         const v = $("videoReg");
@@ -2091,7 +1887,7 @@
         clearOverlay($("overlayReg"));
         $("btnCaptureReg").disabled = true;
         $("regHint").textContent = "รอให้ระบบขึ้นว่า “พบใบหน้า” แล้วค่อยกดบันทึก";
-        setRegStep(1, "เปิดกล้อง HR แล้วให้ระบบเจอใบหน้า");
+        window.__lastRegDet = null;
       }
 
       async function startReg(){
@@ -2110,15 +1906,10 @@
           $("camHintReg").style.display = "none";
           resizeOverlayToVideo($("overlayReg"), v);
 
-          setRegStep(1, "เปิดกล้องแล้ว กำลังหาใบหน้า…");
           toast("เปิดกล้อง HR แล้ว ✅");
-
-          const myLoopId = ++regDetLoopId;
 
           const loop = async () => {
             if (!streamReg) return;
-            if (myLoopId !== regDetLoopId) return;
-
             try{
               const det = await faceapi
                 .detectSingleFace(v, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
@@ -2129,19 +1920,16 @@
                 clearOverlay($("overlayReg"));
                 $("regHint").textContent = "ยังไม่พบใบหน้า — ขยับหน้าให้ชัด/แสงพอดี";
                 $("btnCaptureReg").disabled = true;
-                setRegStep(1, "ยังไม่พบใบหน้า (ขยับ/แสง/ระยะ)");
+                window.__lastRegDet = null;
               } else {
                 drawBox($("overlayReg"), det.detection.box, true);
                 $("regHint").textContent = "พบใบหน้า ✅ กด “จับภาพ+บันทึกใบหน้า” ได้เลย";
                 $("btnCaptureReg").disabled = false;
-                setRegStep(2, "พบใบหน้าแล้ว พร้อมบันทึก");
                 window.__lastRegDet = det;
               }
             }catch{}
-
             requestAnimationFrame(loop);
           };
-
           requestAnimationFrame(loop);
 
         }catch(e){
@@ -2165,27 +1953,36 @@
         const det = window.__lastRegDet;
         if (!det || !det.descriptor) return toast("ยังไม่พบใบหน้า — ให้หน้าอยู่ในกรอบก่อน");
 
-        setRegStep(3, "กำลังบันทึกใบหน้า…");
-
         const descriptorArr = Array.from(det.descriptor);
         const faceData = JSON.stringify({ descriptors: [descriptorArr] });
 
         const token = localStorage.getItem(LS_HR) || "";
 
         const v = $("videoReg");
-        const evidenceBase64 = (v && v.readyState >= 2) ? captureFrameToJpegDataUrl(v, 0.82) : "";
-        const evidenceName = `hr-face-${code}-${Date.now()}.jpg`;
+        const photoBase64 = (v && v.readyState >= 2) ? captureFrameToJpegDataUrl(v, 0.82) : "";
+        const photoName = `hr-face-${code}-${Date.now()}.jpg`;
+
+        if (!photoBase64) {
+          toast("บันทึกใบหน้าไม่สำเร็จ: ไม่พบข้อมูลรูปภาพ (photoBase64)");
+          return;
+        }
 
         try{
           setBusy(true);
 
+          // ✅ สำคัญ: ส่ง photoBase64 ให้ตรงกับ GS (แก้บัค)
           const result = await postAction("uploadEmployeeFace", {
             code,
             faceData,
             note,
             token,
-            evidenceBase64,
-            evidenceName
+
+            photoBase64,
+            photoName,
+
+            // เผื่อ GS ของคุณเคยใช้ชื่อ evidence... (ไม่เสียหายถ้าไม่ใช้)
+            evidenceBase64: photoBase64,
+            evidenceName: photoName
           });
 
           await loadInitial();
@@ -2193,12 +1990,10 @@
           $("hrDebugWrap").style.display = "block";
           $("hrDebug").textContent = JSON.stringify({ ok:true, result }, null, 2);
 
-          setRegStep(3, "บันทึกใบหน้าแล้ว ✅");
           toast("บันทึกใบหน้าแล้ว ✅");
         }catch(e){
           $("hrDebugWrap").style.display = "block";
           $("hrDebug").textContent = JSON.stringify({ ok:false, error: e.message }, null, 2);
-          setRegStep(2, "บันทึกไม่สำเร็จ (ลองใหม่)");
           toast("บันทึกใบหน้าไม่สำเร็จ: " + e.message);
         }finally{
           setBusy(false);
@@ -2207,9 +2002,6 @@
 
       $("btnCaptureReg")?.addEventListener("click", captureAndUploadReg);
 
-      // =========================
-      // Last UI log
-      // =========================
       function renderLast(){
         const el = $("lastLine");
         if (!el) return;
@@ -2223,18 +2015,12 @@
         }
       }
 
-      // =========================
-      // Clear Local
-      // =========================
       $("btnClearLocal")?.addEventListener("click", () => {
         localStorage.removeItem(LS_LAST);
         toast("ล้างสถานะล่าสุดแล้ว ✅");
         renderLast();
       });
 
-      // =========================
-      // Utilities
-      // =========================
       function escapeHtml(s){
         return String(s ?? "")
           .replaceAll("&","&amp;")
@@ -2244,13 +2030,9 @@
           .replaceAll("'","&#39;");
       }
 
-      // =========================
-      // Init
-      // =========================
       function tickNow(){
         const el = $("nowBadge");
         if (el) el.textContent = nowTH();
-        requestAnimationFrame(() => {});
       }
       setInterval(tickNow, 1000 * 20);
       tickNow();
@@ -2261,9 +2043,7 @@
       applyHrUI();
       setGpsUI(lastGps);
       renderLast();
-
-      setFaceStep(1, "พร้อมเริ่มสแกน");
-      setRegStep(1, "เปิดกล้อง HR แล้วให้ระบบเจอใบหน้า");
+      setFaceStepUI(0, null);
 
       if (navigator.mediaDevices?.enumerateDevices) {
         loadCameras($("cameraSelectFace"));
