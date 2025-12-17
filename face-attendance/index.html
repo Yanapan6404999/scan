@@ -132,13 +132,8 @@
       box-shadow: var(--shadow2);
       font-size:18px;
     }
-    .brandTitle{
-      font-weight:600;
-      font-size:16px;
-      letter-spacing:.2px;
-      margin:0;
-    }
-    .brandSub{margin:2px 0 0;font-size:12px;color:var(--muted);}
+    .brandTitle{font-weight:600;font-size:16px;letter-spacing:.2px;margin:0}
+    .brandSub{margin:2px 0 0;font-size:12px;color:var(--muted)}
     .topActions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
 
     .grid{
@@ -312,6 +307,7 @@
       box-shadow: var(--shadow2);
     }
 
+    /* ✅ แก้ “สถานะล้น” : เอา nowrap ออก + ให้ตัดบรรทัดได้ */
     .statusChip{
       display:inline-flex;align-items:center;gap:8px;
       padding: 6px 10px;
@@ -321,7 +317,11 @@
       font-weight:600;
       font-size:12px;
       color: var(--muted);
-      white-space:nowrap;
+      max-width: 100%;
+      white-space: normal;        /* ✅ อนุญาตขึ้นบรรทัดใหม่ */
+      word-break: break-word;     /* ✅ กันล้น */
+      overflow-wrap: anywhere;    /* ✅ กันคำยาวๆ */
+      line-height: 1.25;
     }
     .statusChip.ok{border-color: rgba(22,163,74,.22); background: rgba(22,163,74,.08); color: #166534}
     .statusChip.bad{border-color: rgba(239,68,68,.22); background: rgba(239,68,68,.08); color: #b91c1c}
@@ -344,7 +344,7 @@
       font-weight: 400;
     }
     th{
-      background: linear-gradient explaining(to bottom, rgba(255,255,255,.98), rgba(255,255,255,.86));
+      background: linear-gradient(to bottom, rgba(255,255,255,.98), rgba(255,255,255,.86));
       font-weight:600;
       color: #0f172a;
       position: sticky;
@@ -352,6 +352,11 @@
       z-index: 1;
     }
     tr:hover td{background: rgba(37,99,235,.04)}
+
+    /* ✅ เวลา t1-t4 ให้ขึ้นเป็นบรรทัดอ่านง่าย */
+    .timeCell{white-space:normal; line-height:1.35}
+    .timeLine{display:block}
+    .timeTag{font-size:11px;color:var(--muted);font-weight:500}
 
     .bottomNav{
       position: fixed;
@@ -415,7 +420,7 @@
     .drawerTitle{font-weight:600}
     .drawerB{padding:14px;overflow:auto}
     .block{
-      border:1px solid rgba(229,231,warning,235,.95);
+      border:1px solid rgba(229,231,235,.95); /* ✅ แก้บัค rgba */
       border-radius: 18px;
       background:#fff;
       box-shadow: var(--shadow2);
@@ -567,7 +572,6 @@
                 </div>
               </div>
 
-              <!-- ✅ ย้ายผลลัพธ์ขึ้นมาใกล้กล้อง (ไม่แตะ CSS) -->
               <div class="mt14 faceCard" id="faceResultCard">
                 <div>
                   <div class="faceWho" id="faceWho">ขั้นตอน 1/3: รอเริ่มสแกน</div>
@@ -593,7 +597,6 @@
                 </div>
               </div>
 
-              <!-- ✅ ลดความ “รก” ของ flow: ปุ่มหลักอยู่ชุดเดียว -->
               <div class="btnbar mt12">
                 <button class="btn primary" id="btnStartFace" type="button">▶️ เริ่มสแกนใบหน้า</button>
                 <button class="btn danger" id="btnStopFace" type="button">⏹️ ปิดกล้อง</button>
@@ -722,6 +725,8 @@
             <div class="info">
               <div style="font-weight:600">📊 สรุปวันนี้</div>
               <div class="small muted mt8">โหลดสรุป → ค้นหาได้ → Export CSV (รหัส/ชื่อ/แผนก/ระดับ/เวลา/สถานะ)</div>
+              <!-- ✅ เพิ่ม “ไกด์เวลา t1-t4” (แก้ได้ที่ CONFIG ใน JS) -->
+              <div class="small muted mt8" id="slotGuideLine">เวลามาตรฐาน: —</div>
             </div>
 
             <div class="row mt14">
@@ -746,8 +751,8 @@
                     <th>ชื่อ</th>
                     <th style="width:160px">แผนก</th>
                     <th style="width:140px">ระดับ</th>
-                    <th style="width:170px">เวลา (t1-t4)</th>
-                    <th style="width:210px">สถานะ</th>
+                    <th style="width:210px" id="thTime">เวลา (t1-t4)</th>
+                    <th style="width:220px">สถานะ</th>
                   </tr>
                 </thead>
                 <tbody id="sumBody">
@@ -789,8 +794,8 @@
             <div class="info">
               <div style="font-weight:600">🙂 ลงทะเบียนใบหน้า (HR)</div>
               <div class="small muted mt8">
-                กดเริ่มกล้อง → ให้หน้าอยู่ในกรอบ → กด “จับภาพ+บันทึกใบหน้า”  
-                (แก้บัคแล้ว: ส่งเป็น photoBase64 ให้ GS)
+                กดเริ่มกล้อง → ให้หน้าอยู่ในกรอบ → กด “จับภาพ+บันทึกใบหน้า”
+                (ส่ง photoBase64 ให้ GS)
               </div>
 
               <div class="row mt12">
@@ -980,6 +985,19 @@
     ;(() => {
       "use strict";
 
+      /** =============================
+       *  ✅ CONFIG: เวลา “มาตรฐาน” ของ t1-t4
+       *  แก้ตรงนี้จุดเดียวพอ (ให้ตรงกับกติกาใน GS)
+       *  ============================= */
+      const SLOT_SCHEDULE = {
+        t1: "08:00",
+        t2: "12:00",
+        t3: "13:00",
+        t4: "17:00",
+        extra1: "",
+        extra2: ""
+      };
+
       const LS_API = "attendance_api_url_v2";
       const LS_LAST = "attendance_last_ui_log_v1";
       const LS_HR = "attendance_hr_token_v1";
@@ -989,7 +1007,6 @@
       const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
       let busy = false;
-
       let lastGps = null; // {lat,lng,acc}
 
       let employeesCache = [];
@@ -1415,7 +1432,6 @@
           return;
         }
 
-        // unknown / not matched
         who.innerHTML = `<span class="faceBad">ขั้นตอน 2/3: Unknown</span> (ยังจับคู่ไม่ได้)`;
         meta.textContent = "ให้ HR อัปเดตใบหน้าใหม่ให้ชัดขึ้น แล้วลองอีกครั้ง";
         score.textContent = "สถานะ: ยังไม่พร้อมยืนยัน";
@@ -1425,7 +1441,6 @@
       function setFaceResult(match){
         lastFaceMatch = match;
         if (!match) return setFaceStepUI(1, null);
-        if (match.ok) return setFaceStepUI(2, match);
         return setFaceStepUI(2, match);
       }
 
@@ -1452,12 +1467,10 @@
           setBusy(true);
           setFaceStepUI(1, null);
 
-          // ✅ ลดการกดปุ่ม: ถ้ายังไม่โหลดรายชื่อ ให้โหลดให้เลย
           if (!employeesCache.length) {
             try { await loadInitial(); } catch {}
           }
 
-          // ✅ ขอ GPS แบบอ่อน ๆ: ถ้ายังไม่มี ให้ลองขอ (เป็น user gesture จากคลิกปุ่มเริ่มสแกน)
           if (!lastGps) {
             const gps = await getGPS();
             if (gps) { lastGps = gps; setGpsUI(gps); }
@@ -1535,7 +1548,6 @@
       async function confirmFaceAndSave(){
         if (busy) return;
 
-        // ✅ ต้อง match จริงเท่านั้น (ตาม flow 1/3 2/3 3/3)
         if (!lastFaceMatch?.ok || !lastFaceMatch.employee?.code) {
           toast("ยังไม่พบชื่อที่จับคู่ได้ — ยังยืนยันไม่ได้");
           return;
@@ -1566,8 +1578,6 @@
             lng: lastGps.lng,
             evidenceBase64,
             evidenceName,
-
-            // ✅ แก้ note UNKNOWN (ถ้า GS รองรับ note)
             note: "FACE",
             method: "FACE",
             manualType: "FACE"
@@ -1625,8 +1635,6 @@
             evidenceBase64,
             evidenceName,
             manualType,
-
-            // ✅ แก้ note UNKNOWN
             note: safeReason,
             method: "MANUAL"
           });
@@ -1657,14 +1665,27 @@
         return "warn";
       }
 
-      function buildTimesRow(log){
-        if (!log) return "-";
-        const t = [];
-        if (log.t1) t.push(`t1: ${log.t1}`);
-        if (log.t2) t.push(`t2: ${log.t2}`);
-        if (log.t3) t.push(`t3: ${log.t3}`);
-        if (log.t4) t.push(`t4: ${log.t4}`);
-        return t.length ? t.join(" • ") : "-";
+      /** ✅ เวลา t1-t4: แสดง “ค่าจริง” + “เวลามาตรฐาน” */
+      function formatTimeSlotsHTML(obj){
+        const t1 = obj?.t1 || "-";
+        const t2 = obj?.t2 || "-";
+        const t3 = obj?.t3 || "-";
+        const t4 = obj?.t4 || "-";
+        return `
+          <div class="timeCell">
+            <span class="timeLine"><b>t1</b> <span class="timeTag">(${escapeHtml(SLOT_SCHEDULE.t1 || "-")})</span>: ${escapeHtml(t1)}</span>
+            <span class="timeLine"><b>t2</b> <span class="timeTag">(${escapeHtml(SLOT_SCHEDULE.t2 || "-")})</span>: ${escapeHtml(t2)}</span>
+            <span class="timeLine"><b>t3</b> <span class="timeTag">(${escapeHtml(SLOT_SCHEDULE.t3 || "-")})</span>: ${escapeHtml(t3)}</span>
+            <span class="timeLine"><b>t4</b> <span class="timeTag">(${escapeHtml(SLOT_SCHEDULE.t4 || "-")})</span>: ${escapeHtml(t4)}</span>
+          </div>
+        `;
+      }
+      function formatTimeSlotsText(obj){
+        const t1 = obj?.t1 || "-";
+        const t2 = obj?.t2 || "-";
+        const t3 = obj?.t3 || "-";
+        const t4 = obj?.t4 || "-";
+        return `t1(${SLOT_SCHEDULE.t1||"-"}): ${t1} • t2(${SLOT_SCHEDULE.t2||"-"}): ${t2} • t3(${SLOT_SCHEDULE.t3||"-"}): ${t3} • t4(${SLOT_SCHEDULE.t4||"-"}): ${t4}`;
       }
 
       function renderCheckUI(result){
@@ -1696,7 +1717,8 @@
             <div class="mt10">
               <span class="statusChip ${chipClass}">สถานะ: ${escapeHtml(log.status || "-")}</span>
             </div>
-            <div class="small muted mt10">เวลา: ${escapeHtml(buildTimesRow(log))}</div>
+            <div class="small muted mt10">เวลา:</div>
+            <div class="mt8">${formatTimeSlotsHTML(log)}</div>
             <div class="small muted mt10">หลักฐาน: ${evidence}</div>
           </div>
         `;
@@ -1747,7 +1769,6 @@
         }
 
         body.innerHTML = filtered.map(r => {
-          const t = [r.t1,r.t2,r.t3,r.t4].filter(Boolean).join(" • ") || "-";
           const cls = classifyStatus(r.status);
           const chipClass = cls==="ok" ? "ok" : cls==="bad" ? "bad" : "warn";
           return `
@@ -1756,7 +1777,7 @@
               <td>${escapeHtml(r.fullName || "")}</td>
               <td>${escapeHtml(r.branch || "")}</td>
               <td>${escapeHtml(r.level || "")}</td>
-              <td>${escapeHtml(t)}</td>
+              <td>${formatTimeSlotsHTML(r)}</td>
               <td><span class="statusChip ${chipClass}">${escapeHtml(r.status || "-")}</span></td>
             </tr>
           `;
@@ -1780,7 +1801,7 @@
       $("btnLoadSummary")?.addEventListener("click", loadSummary);
       $("sumSearch")?.addEventListener("input", () => renderSummary(lastSummary, $("sumSearch").value));
 
-      // ✅ Export CSV ใหม่: ตามที่สั่ง + ใส่ BOM ให้ Excel อ่านไทยไม่เพี้ยน
+      // ✅ Export CSV: ใช้ BOM + ลำดับคอลัมน์เดิม
       function toCSV_Short(rows){
         const headers = ["รหัส","ชื่อ","แผนก","ระดับ","เวลา (t1-t4)","สถานะ"];
         const esc = (v) => {
@@ -1792,13 +1813,12 @@
         const lines = [];
         lines.push(headers.join(","));
         rows.forEach(r => {
-          const time = [r.t1,r.t2,r.t3,r.t4].filter(Boolean).join(" • ") || "-";
           lines.push([
             esc(r.code),
             esc(r.fullName || ""),
             esc(r.branch || ""),
             esc(r.level || ""),
-            esc(time),
+            esc(formatTimeSlotsText(r)),
             esc(r.status || "-"),
           ].join(","));
         });
@@ -1970,17 +1990,13 @@
         try{
           setBusy(true);
 
-          // ✅ สำคัญ: ส่ง photoBase64 ให้ตรงกับ GS (แก้บัค)
           const result = await postAction("uploadEmployeeFace", {
             code,
             faceData,
             note,
             token,
-
             photoBase64,
             photoName,
-
-            // เผื่อ GS ของคุณเคยใช้ชื่อ evidence... (ไม่เสียหายถ้าไม่ใช้)
             evidenceBase64: photoBase64,
             evidenceName: photoName
           });
@@ -2039,11 +2055,19 @@
 
       $("cDate") && ($("cDate").value = todayISO());
 
+      /** ✅ เติมไกด์เวลาให้เห็นชัด (ต1 ต2 ต3 ต4 กี่โมง) */
+      function renderSlotGuide(){
+        const s = `เวลามาตรฐาน: t1 ${SLOT_SCHEDULE.t1||"-"} • t2 ${SLOT_SCHEDULE.t2||"-"} • t3 ${SLOT_SCHEDULE.t3||"-"} • t4 ${SLOT_SCHEDULE.t4||"-"}`;
+        $("slotGuideLine") && ($("slotGuideLine").textContent = s);
+        $("thTime") && ($("thTime").textContent = `เวลา (t1-t4) • ${SLOT_SCHEDULE.t1||"-"}/${SLOT_SCHEDULE.t2||"-"}/${SLOT_SCHEDULE.t3||"-"}/${SLOT_SCHEDULE.t4||"-"}`);
+      }
+
       refreshApiUI();
       applyHrUI();
       setGpsUI(lastGps);
       renderLast();
       setFaceStepUI(0, null);
+      renderSlotGuide();
 
       if (navigator.mediaDevices?.enumerateDevices) {
         loadCameras($("cameraSelectFace"));
