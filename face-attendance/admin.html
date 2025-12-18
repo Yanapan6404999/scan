@@ -28,8 +28,7 @@
       font-family: "Prompt", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    html,
-    body {
+    html, body {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -48,8 +47,7 @@
     a { color: var(--primary); text-decoration: none; }
     a:hover { text-decoration: underline; }
 
-    button,
-    .btn {
+    button, .btn {
       border-radius: 999px;
       border: none;
       cursor: pointer;
@@ -63,49 +61,14 @@
       white-space: nowrap;
     }
 
-    button:active,
-    .btn:active {
-      transform: translateY(1px) scale(0.99);
-      box-shadow: none;
-    }
+    button:active, .btn:active { transform: translateY(1px) scale(0.99); box-shadow: none; }
+    button:disabled, .btn:disabled { opacity: 0.6; cursor: default; transform: none; box-shadow: none; }
 
-    button:disabled,
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: default;
-      transform: none;
-      box-shadow: none;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: white;
-      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35);
-    }
-
-    .btn-secondary {
-      background: white;
-      color: #111827;
-      border: 1px solid var(--border);
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: white;
-    }
-
-    .btn-small {
-      padding: 4px 10px;
-      font-size: 12px;
-      border-radius: 999px;
-    }
-
-    .btn-ghost {
-      border-radius: 999px;
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-soft);
-    }
+    .btn-primary { background: var(--primary); color: white; box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35); }
+    .btn-secondary { background: white; color: #111827; border: 1px solid var(--border); }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-small { padding: 4px 10px; font-size: 12px; border-radius: 999px; }
+    .btn-ghost { border-radius: 999px; background: transparent; border: 1px solid var(--border); color: var(--text-soft); }
 
     /* PAGE LAYOUT --------------------------------------------------- */
     .page {
@@ -175,13 +138,11 @@
     }
 
     .nav-item span.icon { width: 22px; display: inline-flex; justify-content: center; }
-
     .nav-item.active {
       background: rgba(15,23,42,0.95);
       border-color: rgba(59,130,246,0.8);
       box-shadow: 0 8px 16px rgba(15,23,42,0.8);
     }
-
     .nav-item:hover { background: rgba(31,41,55,0.9); }
 
     .sidebar-footer {
@@ -250,7 +211,6 @@
     }
 
     main.main { padding: 18px 18px 22px; max-width: 100%; overflow-x: hidden; }
-
     .main-inner { max-width: 1260px; margin: 0 auto; width: 100%; max-width: 100%; }
 
     /* MOBILE NAV ---------------------------------------------------- */
@@ -486,13 +446,11 @@
     .mt-12 { margin-top: 12px; }
 
     .tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: #e5e7eb; color: #374151; }
-
     .section { display: none; }
     .section.active { display: block; }
 
     .error-text { font-size: 12px; color: var(--danger); margin-top: 4px; }
     .success-text { font-size: 12px; color: #16a34a; margin-top: 4px; }
-
     .flex { display: flex; gap: 8px; align-items: center; min-width: 0; }
 
     .flex-stack-mobile {}
@@ -548,19 +506,15 @@
     }
     .emp-hidden { display: none !important; }
 
-    /* ✅ ปรับ: ไม่ซ่อน overflow-x แบบตัดปุ่มทิ้ง (เดสก์ท็อปยังโอเค) */
     .emp-table-scroll {
       max-height: 420px;
       overflow-y: auto;
-      overflow-x: auto; /* ✅ เปลี่ยนจาก hidden -> auto */
+      overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       max-width: 100%;
     }
-    .emp-table-scroll table {
-      min-width: 520px; /* กันคอลัมน์ “จัดการ” โดนบีบจนหาย */
-    }
+    .emp-table-scroll table { min-width: 560px; }
 
-    /* ✅ แยก UI PC vs Mobile “ขาดลอย” (แต่ยังอยู่ไฟล์เดียว) */
     .emp-desktop-only { display: block; }
     .emp-mobile-only { display: none; }
 
@@ -587,11 +541,7 @@
       gap: 10px;
       align-items: flex-start;
     }
-    .emp-name {
-      font-weight: 600;
-      font-size: 14px;
-      line-height: 1.25;
-    }
+    .emp-name { font-weight: 600; font-size: 14px; line-height: 1.25; }
     .emp-meta {
       font-size: 12px;
       color: var(--text-soft);
@@ -609,6 +559,22 @@
       white-space: nowrap;
       height: fit-content;
     }
+
+    .emp-face-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(16,185,129,0.25);
+      background: rgba(16,185,129,0.10);
+      color: #047857;
+      white-space: nowrap;
+    }
+    .emp-face-badge.off {
+      border-color: rgba(239,68,68,0.25);
+      background: rgba(239,68,68,0.10);
+      color: #b91c1c;
+    }
+
     .emp-item-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -620,6 +586,7 @@
       padding: 10px 12px;
       font-size: 13px;
     }
+    .btn-span-2 { grid-column: 1 / -1; }
 
     /* RESPONSIVE ---------------------------------------------------- */
     @media (max-width: 1000px) {
@@ -632,10 +599,8 @@
     @media (max-width: 800px) {
       .grid-3 { grid-template-columns: 1fr; }
       .grid-2 { grid-template-columns: 1fr; }
-
       #section-employees .mobile-segment { display: flex; }
 
-      /* ✅ “แยก UI” บนมือถือ: ใช้ Card List แทน Table */
       .emp-desktop-only { display: none; }
       .emp-mobile-only { display: block; }
     }
@@ -668,10 +633,72 @@
       width: calc(100% - 32px);
       z-index: 40;
     }
-
     @media (max-width: 640px) {
       #urlCard { left: 12px; right: 12px; bottom: 12px; width: auto; }
     }
+
+    /* MODALS -------------------------------------------------------- */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2,6,23,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      z-index: 60;
+      backdrop-filter: blur(6px);
+    }
+    .modal {
+      width: 100%;
+      max-width: 520px;
+      background: #fff;
+      border-radius: 18px;
+      border: 1px solid rgba(226,232,240,0.9);
+      box-shadow: 0 30px 80px rgba(15,23,42,0.35);
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      background: #f8fafc;
+    }
+    .modal-title { font-weight: 600; font-size: 14px; }
+    .modal-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .modal-body { padding: 12px 14px 14px; }
+    .modal-footer {
+      padding: 12px 14px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      background: #fafafa;
+    }
+
+    .preview-box {
+      border: 1px dashed #e5e7eb;
+      border-radius: 14px;
+      padding: 10px;
+      background: #f9fafb;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .preview-box img {
+      width: 110px;
+      height: 110px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid rgba(226,232,240,0.9);
+      background: #fff;
+    }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; }
   </style>
 </head>
 
@@ -864,7 +891,7 @@
                 </div>
 
                 <div class="mt-8">
-                  <div class="helper">รูปพนักงาน (ใช้ช่วยระบบตรวจจับใบหน้า / ไม่บังคับ)</div>
+                  <div class="helper">รูปพนักงาน (ช่วย HR / ไม่บังคับ)</div>
                   <input type="file" id="empPhoto" accept="image/*" class="input-block" />
                   <img id="empPhotoPreview" style="width:100px;margin-top:8px;border-radius:8px;display:none;" />
                 </div>
@@ -875,6 +902,12 @@
                 </div>
                 <div id="empFormError" class="error-text" style="display:none;"></div>
                 <div id="empFormSuccess" class="success-text" style="display:none;"></div>
+
+                <div class="mt-12">
+                  <div class="helper">
+                    ✅ ฟีเจอร์เพิ่ม: “บันทึกใบหน้า” อยู่ในรายการพนักงาน (ปุ่ม 📸)
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -885,7 +918,7 @@
                     <span class="icon">📋</span> รายชื่อพนักงาน
                   </div>
                   <div class="card-subtitle">
-                    PC = ตารางเหมือนเดิม | Mobile = การ์ดแบบแอป (ปุ่มแก้ไข/ลบไม่หายแล้ว) ✅
+                    PC = ตารางเหมือนเดิม | Mobile = การ์ดแบบแอป ✅ + เพิ่มปุ่ม “บันทึกใบหน้า”
                   </div>
                 </div>
                 <div class="header-search-box">
@@ -903,11 +936,12 @@
                       <th>ชื่อ</th>
                       <th>แผนก</th>
                       <th>ระดับ</th>
+                      <th>ใบหน้า</th>
                       <th>จัดการ</th>
                     </tr>
                     </thead>
                     <tbody id="empTableBody">
-                    <tr><td colspan="5" class="text-center">กำลังโหลด...</td></tr>
+                    <tr><td colspan="6" class="text-center">กำลังโหลด...</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -968,21 +1002,22 @@
                   <th>วันที่</th>
                   <th>รหัส</th>
                   <th>ชื่อ</th>
-                  <th>เวลาเข้า</th>
-                  <th>เวลาออก</th>
+                  <th>เข้า</th>
+                  <th>ออก</th>
                   <th>ชั่วโมงรวม</th>
                   <th>สถานะ</th>
                   <th>สถานที่</th>
-                  <th>รูปหลักฐาน</th>
+                  <th>หลักฐาน</th>
+                  <th>ดู</th>
                 </tr>
                 </thead>
                 <tbody id="logsTableBody">
-                <tr><td colspan="9" class="text-center">ยังไม่มีข้อมูล</td></tr>
+                <tr><td colspan="10" class="text-center">ยังไม่มีข้อมูล</td></tr>
                 </tbody>
               </table>
             </div>
             <div class="helper mt-8">
-              * ชั่วโมงรวมจะคำนวณจาก t1 ถึง t4 ถ้ามีข้อมูลครบ หากไม่มีเวลาออกจะไม่แสดงค่า
+              * ชั่วโมงรวมคำนวณจาก t1 ถึง t4 (ถ้ามีครบ) | เพิ่มปุ่ม “ดู” เพื่อดูรายละเอียดทั้งแถว ✅
             </div>
           </div>
         </section>
@@ -1131,8 +1166,91 @@
   </div>
 </div>
 
+<!-- MODAL: FACE ENROLL -------------------------------------------->
+<div class="modal-backdrop" id="faceModalBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="faceModalTitle">
+    <div class="modal-header">
+      <div style="min-width:0;">
+        <div class="modal-title" id="faceModalTitle">📸 บันทึกใบหน้า</div>
+        <div class="modal-sub" id="faceModalSub">–</div>
+      </div>
+      <button class="btn btn-ghost btn-small" id="btnCloseFaceModal" type="button">ปิด</button>
+    </div>
+    <div class="modal-body">
+      <div class="helper">
+        แนวทางที่ง่ายสุด: เลือกรูปใบหน้าชัด ๆ 1 รูป (หรือถ่ายจากมือถือ) แล้วกด “บันทึกใบหน้า”
+      </div>
+
+      <div class="mt-10">
+        <div class="helper">เลือกรูป (มือถือแนะนำใช้กล้องหน้า)</div>
+        <input type="file" id="facePhotoInput" accept="image/*" capture="user" class="input-block" />
+      </div>
+
+      <div class="mt-10 preview-box">
+        <img id="facePreviewImg" alt="preview" />
+        <div style="min-width:0;flex:1;">
+          <div class="helper">สถานะ</div>
+          <div class="mono" id="faceStatusText">ยังไม่เลือกรูป</div>
+          <div class="helper mt-8">หมายเหตุ</div>
+          <div class="mono" id="faceHintText">
+            - ถ้าระบบตอบว่า UNKNOWN ใน Logs “ถือว่าปกติ” (ไม่ใช่ error)<br/>
+            - ถ้าบันทึกสำเร็จ จะมีป้าย “มีใบหน้า” ในรายชื่อพนักงาน
+          </div>
+        </div>
+      </div>
+
+      <div id="faceError" class="error-text" style="display:none;"></div>
+      <div id="faceSuccess" class="success-text" style="display:none;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnFaceClear" type="button">ล้างรูป</button>
+      <button class="btn btn-primary" id="btnFaceUpload" type="button">บันทึกใบหน้า</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: LOG DETAIL -------------------------------------------->
+<div class="modal-backdrop" id="logModalBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="logModalTitle">
+    <div class="modal-header">
+      <div style="min-width:0;">
+        <div class="modal-title" id="logModalTitle">🧾 รายละเอียดลงเวลา</div>
+        <div class="modal-sub" id="logModalSub">–</div>
+      </div>
+      <button class="btn btn-ghost btn-small" id="btnCloseLogModal" type="button">ปิด</button>
+    </div>
+    <div class="modal-body">
+      <div class="helper">ดูข้อมูลจากแถว Logs (อ่านอย่างเดียว)</div>
+
+      <div class="mt-10 preview-box">
+        <img id="logEvidenceImg" alt="evidence" style="display:none;" />
+        <div style="min-width:0;flex:1;">
+          <div class="helper">ข้อมูลสำคัญ</div>
+          <div class="mono" id="logKeyText">–</div>
+          <div class="helper mt-8">ข้อมูลดิบ</div>
+          <div class="mono" id="logRawText" style="white-space:pre-wrap;">–</div>
+        </div>
+      </div>
+
+      <div id="logModalHint" class="helper mt-10"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnOpenEvidence" type="button" disabled>เปิดหลักฐาน</button>
+      <button class="btn btn-primary" id="btnCopyLogJson" type="button">คัดลอก JSON</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const STORAGE_KEY = 'attendance_api_url_v2';
+
+  // ====== HARD-CODED (ถ้ายังไม่อยากพึ่ง Sheet เพิ่ม) ===========
+  // ปรับได้ทีหลังตามใจ
+  const HARD = {
+    FACE_MAX_BYTES: 900 * 1024, // 900KB (กัน Apps Script ชอบพัง)
+    FACE_IMAGE_QUALITY: 0.86,
+    FACE_IMAGE_MAX_EDGE: 960,   // ย่อภาพก่อนส่ง
+  };
 
   function getApiUrl() {
     return localStorage.getItem(STORAGE_KEY) || '';
@@ -1175,6 +1293,12 @@
 
   // ✅ จำแท็บของหน้า employees (มือถือ)
   let empTabState = 'form';
+
+  // ✅ modal states
+  let faceTargetEmp = null;  // {id, code, fullName}
+  let faceBase64 = '';
+  let lastLogsRows = [];     // cache latest logs
+  let logModalRow = null;    // selected row
 
   function $(id) { return document.getElementById(id); }
 
@@ -1360,6 +1484,15 @@
     branchFilter2.innerHTML = opts.join('');
   }
 
+  function hasFace(e) {
+    const fd = e && e.faceData;
+    if (!fd) return false;
+    const s = String(fd).trim();
+    if (!s) return false;
+    if (s === '-' || s === '–') return false;
+    return true;
+  }
+
   // ✅ เรนเดอร์ “ทั้ง PC table” และ “Mobile card list”
   function renderEmployeesTable() {
     const tb = $('empTableBody');
@@ -1376,22 +1509,30 @@
 
     // PC table
     if (!list.length) {
-      if (tb) tb.innerHTML = '<tr><td colspan="5" class="text-center">ไม่พบข้อมูล</td></tr>';
+      if (tb) tb.innerHTML = '<tr><td colspan="6" class="text-center">ไม่พบข้อมูล</td></tr>';
     } else {
-      if (tb) tb.innerHTML = list.map(e => `
-        <tr>
-          <td>${escHtml(e.code || '')}</td>
-          <td>${escHtml(e.fullName || '')}</td>
-          <td>${escHtml(e.branch || '')}</td>
-          <td>${escHtml(e.level || '')}</td>
-          <td>
-            <div class="table-actions">
-              <button class="btn btn-secondary btn-small" onclick="editEmployee('${escHtml(e.id || '')}')">แก้ไข</button>
-              <button class="btn btn-danger btn-small" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">ลบ</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
+      if (tb) tb.innerHTML = list.map(e => {
+        const faceOk = hasFace(e);
+        const faceBadge = faceOk
+          ? `<span class="emp-face-badge">มีใบหน้า</span>`
+          : `<span class="emp-face-badge off">ไม่มีใบหน้า</span>`;
+        return `
+          <tr>
+            <td>${escHtml(e.code || '')}</td>
+            <td>${escHtml(e.fullName || '')}</td>
+            <td>${escHtml(e.branch || '')}</td>
+            <td>${escHtml(e.level || '')}</td>
+            <td>${faceBadge}</td>
+            <td>
+              <div class="table-actions">
+                <button class="btn btn-primary btn-small" onclick="openFaceEnroll('${escHtml(e.id || '')}')">📸 ใบหน้า</button>
+                <button class="btn btn-secondary btn-small" onclick="editEmployee('${escHtml(e.id || '')}')">แก้ไข</button>
+                <button class="btn btn-danger btn-small" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">ลบ</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     // Mobile cards
@@ -1399,25 +1540,33 @@
       if (!list.length) {
         mobileList.innerHTML = '<div class="helper">ไม่พบข้อมูล</div>';
       } else {
-        mobileList.innerHTML = list.map(e => `
-          <div class="emp-item">
-            <div class="emp-item-top">
-              <div style="min-width:0;">
-                <div class="emp-name">${escHtml(e.fullName || '-')}</div>
-                <div class="emp-meta">
-                  <span class="pill-small">แผนก: ${escHtml(e.branch || '-')}</span>
-                  <span class="pill-small">ระดับ: ${escHtml(e.level || '-')}</span>
+        mobileList.innerHTML = list.map(e => {
+          const faceOk = hasFace(e);
+          const faceBadge = faceOk
+            ? `<span class="emp-face-badge">มีใบหน้า</span>`
+            : `<span class="emp-face-badge off">ไม่มีใบหน้า</span>`;
+          return `
+            <div class="emp-item">
+              <div class="emp-item-top">
+                <div style="min-width:0;">
+                  <div class="emp-name">${escHtml(e.fullName || '-')}</div>
+                  <div class="emp-meta">
+                    <span class="pill-small">แผนก: ${escHtml(e.branch || '-')}</span>
+                    <span class="pill-small">ระดับ: ${escHtml(e.level || '-')}</span>
+                    ${faceBadge}
+                  </div>
                 </div>
+                <div class="emp-code-badge">รหัส ${escHtml(e.code || '-')}</div>
               </div>
-              <div class="emp-code-badge">รหัส ${escHtml(e.code || '-')}</div>
-            </div>
 
-            <div class="emp-item-actions">
-              <button class="btn btn-secondary" onclick="editEmployee('${escHtml(e.id || '')}')">✏️ แก้ไข</button>
-              <button class="btn btn-danger" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">🗑️ ลบ</button>
+              <div class="emp-item-actions">
+                <button class="btn btn-secondary" onclick="editEmployee('${escHtml(e.id || '')}')">✏️ แก้ไข</button>
+                <button class="btn btn-danger" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">🗑️ ลบ</button>
+                <button class="btn btn-primary btn-span-2" onclick="openFaceEnroll('${escHtml(e.id || '')}')">📸 บันทึกใบหน้า</button>
+              </div>
             </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       }
     }
   }
@@ -1537,14 +1686,17 @@
     if (!keepMsg) $('empFormSuccess').style.display = 'none';
   }
 
+  // ====== Logs ======
   function renderLogsTable(res) {
     const rows = (res && res.rows) || [];
+    lastLogsRows = rows;
+
     const tb = $('logsTableBody');
     if (!rows.length) {
-      tb.innerHTML = '<tr><td colspan="9" class="text-center">ยังไม่มีข้อมูล</td></tr>';
+      tb.innerHTML = '<tr><td colspan="10" class="text-center">ยังไม่มีข้อมูล</td></tr>';
       return;
     }
-    tb.innerHTML = rows.map(r => {
+    tb.innerHTML = rows.map((r, idx) => {
       const total = calcTotalHours(r.t1, r.t4);
       const locText = r.locationText || '';
       const locCell = locText ? `<span class="pill-small">${escHtml(locText)}</span>` : '-';
@@ -1562,6 +1714,9 @@
           <td>${statusBadgeHtml(r.status || '')}</td>
           <td>${locCell}</td>
           <td>${evidence}</td>
+          <td>
+            <button class="btn btn-secondary btn-small" onclick="openLogDetail(${idx})">ดู</button>
+          </td>
         </tr>
       `;
     }).join('');
@@ -1581,6 +1736,7 @@
     }
   }
 
+  // ====== Summary ======
   function renderSummaryTable(res) {
     const rows = (res && res.rows) || [];
     const tb = $('summaryTableBody');
@@ -1614,6 +1770,7 @@
     }
   }
 
+  // ====== Settings (branches/levels) ======
   function renderBranchesLevelsTables() {
     const bt = $('branchTableBody');
     const lt = $('levelTableBody');
@@ -1733,12 +1890,12 @@
     }
   }
 
+  // ====== URL Card ======
   function openUrlCard() {
     $('inputApiUrl').value = getApiUrl();
     $('urlCard').style.display = 'block';
     $('urlError').style.display = 'none';
   }
-
   function closeUrlCard() { $('urlCard').style.display = 'none'; }
 
   function saveUrl() {
@@ -1756,6 +1913,7 @@
     initAdmin();
   }
 
+  // ====== Navigation ======
   function switchSection(section) {
     document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
     document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
@@ -1778,54 +1936,7 @@
     el.dataset.full = url || '';
   }
 
-  async function initAdmin() {
-    const apiUrl = getApiUrl();
-    setApiText(apiUrl);
-
-    if (!apiUrl) {
-      setConnectionStatus(false, 'ยังไม่ได้ตั้งค่า URL');
-      return;
-    }
-
-    try {
-      const [empRes, blRes, todaySummary, monthSummary] = await Promise.all([
-        api.call('getEmployees'),
-        api.call('getBranchesLevels'),
-        api.call('getTodaySummary'),
-        (async () => {
-          const now = new Date();
-          const year = now.getFullYear();
-          const month = now.getMonth() + 1;
-          return api.call('getSummaryRange', { year, month, branch: 'ALL' });
-        })()
-      ]);
-
-      employees = empRes || [];
-      branches  = blRes.branches || [];
-      levels    = blRes.levels || [];
-
-      setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
-
-      renderBranchLevelSelects();
-      renderEmployeesTable();   // ✅ ยิงทั้ง table + mobile list
-      renderBranchesLevelsTables();
-      renderDashboard(todaySummary, monthSummary);
-
-      fillYearMonthSelect($('logYearFilter'), $('logMonthFilter'));
-      fillYearMonthSelect($('sumYearFilter'), $('sumMonthFilter'));
-
-      reloadLogs();
-      reloadSummary();
-
-      applyEmpMobileLayout();
-
-    } catch (err) {
-      console.error(err);
-      setConnectionStatus(false, err.message);
-      alert('เชื่อมต่อ API ไม่สำเร็จ: ' + err.message);
-    }
-  }
-
+  // ====== Employees mobile tab ======
   function isMobileEmployeesMode() {
     return window.matchMedia('(max-width: 800px)').matches;
   }
@@ -1862,6 +1973,274 @@
   function applyEmpMobileLayout() {
     if (isMobileEmployeesMode()) setEmpTab(empTabState || 'form');
     else setEmpTab('form');
+  }
+
+  // ====== Feature: FACE ENROLL (เรียก action: uploadEmployeeFace) ======
+  window.openFaceEnroll = function(empId) {
+    const emp = employees.find(e => String(e.id) === String(empId));
+    if (!emp) return;
+
+    faceTargetEmp = { id: emp.id, code: emp.code, fullName: emp.fullName };
+    faceBase64 = '';
+
+    $('faceModalSub').innerHTML = `พนักงาน: <b>${escHtml(emp.fullName || '-')}</b> • รหัส <b>${escHtml(emp.code || '-')}</b>`;
+    $('faceError').style.display = 'none';
+    $('faceSuccess').style.display = 'none';
+    $('faceStatusText').textContent = 'ยังไม่เลือกรูป';
+    $('facePreviewImg').src = '';
+    $('facePreviewImg').style.display = 'none';
+
+    $('facePhotoInput').value = '';
+    $('btnFaceUpload').disabled = false;
+
+    openModal('faceModalBackdrop');
+  };
+
+  function openModal(id) {
+    const el = $(id);
+    if (!el) return;
+    el.style.display = 'flex';
+    el.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeModal(id) {
+    const el = $(id);
+    if (!el) return;
+    el.style.display = 'none';
+    el.setAttribute('aria-hidden', 'true');
+  }
+
+  async function compressImageToJpegBase64(file) {
+    // รับไฟล์ -> ย่อ -> jpeg base64
+    const dataUrl = await fileToBase64(file);
+
+    const img = new Image();
+    img.src = dataUrl;
+
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+    });
+
+    const w = img.naturalWidth || img.width;
+    const h = img.naturalHeight || img.height;
+
+    const maxEdge = HARD.FACE_IMAGE_MAX_EDGE;
+    let nw = w, nh = h;
+    if (Math.max(w, h) > maxEdge) {
+      const scale = maxEdge / Math.max(w, h);
+      nw = Math.round(w * scale);
+      nh = Math.round(h * scale);
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = nw;
+    canvas.height = nh;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, nw, nh);
+
+    let out = canvas.toDataURL('image/jpeg', HARD.FACE_IMAGE_QUALITY);
+
+    // ถ้าใหญ่เกิน ลองลดคุณภาพอีกนิด
+    if (out.length > HARD.FACE_MAX_BYTES * 1.37) {
+      out = canvas.toDataURL('image/jpeg', 0.78);
+    }
+    if (out.length > HARD.FACE_MAX_BYTES * 1.37) {
+      out = canvas.toDataURL('image/jpeg', 0.68);
+    }
+    return out;
+  }
+
+  async function handleFaceFileSelected() {
+    const file = $('facePhotoInput').files && $('facePhotoInput').files[0];
+    $('faceError').style.display = 'none';
+    $('faceSuccess').style.display = 'none';
+
+    if (!file) {
+      faceBase64 = '';
+      $('faceStatusText').textContent = 'ยังไม่เลือกรูป';
+      $('facePreviewImg').src = '';
+      $('facePreviewImg').style.display = 'none';
+      return;
+    }
+
+    try {
+      $('faceStatusText').textContent = 'กำลังเตรียมรูป...';
+      const b64 = await compressImageToJpegBase64(file);
+      faceBase64 = b64;
+
+      $('facePreviewImg').src = b64;
+      $('facePreviewImg').style.display = 'block';
+      const kb = Math.round((b64.length * 3) / 4 / 1024);
+      $('faceStatusText').textContent = `พร้อมส่ง (ประมาณ ${kb} KB)`;
+    } catch (err) {
+      console.error(err);
+      faceBase64 = '';
+      $('faceStatusText').textContent = 'เตรียมรูปไม่สำเร็จ';
+      $('faceError').textContent = 'อ่านไฟล์รูปไม่สำเร็จ: ' + err.message;
+      $('faceError').style.display = 'block';
+    }
+  }
+
+  async function uploadEmployeeFace() {
+    const errEl = $('faceError');
+    const sucEl = $('faceSuccess');
+    errEl.style.display = 'none';
+    sucEl.style.display = 'none';
+
+    if (!faceTargetEmp) return;
+
+    if (!faceBase64) {
+      errEl.textContent = 'กรุณาเลือกรูปก่อน';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    $('btnFaceUpload').disabled = true;
+    $('faceStatusText').textContent = 'กำลังอัปโหลด...';
+
+    try {
+      // ✅ สมมติฝั่ง GS รับ action = uploadEmployeeFace
+      // ส่งทั้ง id และ code กันพลาด
+      await api.call('uploadEmployeeFace', {
+        id: faceTargetEmp.id || '',
+        code: faceTargetEmp.code || '',
+        photoBase64: faceBase64
+      });
+
+      sucEl.textContent = 'บันทึกใบหน้าสำเร็จ ✅';
+      sucEl.style.display = 'block';
+      $('faceStatusText').textContent = 'สำเร็จ';
+
+      // refresh employees เพื่อให้ badge “มีใบหน้า” ขึ้น
+      employees = await api.call('getEmployees');
+      renderEmployeesTable();
+
+    } catch (err) {
+      errEl.textContent = 'บันทึกใบหน้าไม่สำเร็จ: ' + err.message;
+      errEl.style.display = 'block';
+      $('faceStatusText').textContent = 'ไม่สำเร็จ';
+    } finally {
+      $('btnFaceUpload').disabled = false;
+    }
+  }
+
+  function clearFaceModal() {
+    faceBase64 = '';
+    $('facePhotoInput').value = '';
+    $('facePreviewImg').src = '';
+    $('facePreviewImg').style.display = 'none';
+    $('faceStatusText').textContent = 'ยังไม่เลือกรูป';
+    $('faceError').style.display = 'none';
+    $('faceSuccess').style.display = 'none';
+  }
+
+  // ====== Feature: LOG DETAIL MODAL ======
+  window.openLogDetail = function(index) {
+    const r = lastLogsRows && lastLogsRows[index];
+    if (!r) return;
+    logModalRow = r;
+
+    const d = formatDateThai(r.date);
+    $('logModalSub').innerHTML = `วันที่ <b>${escHtml(d)}</b> • รหัส <b>${escHtml(r.code || '-')}</b> • <b>${escHtml(r.fullName || '-')}</b>`;
+
+    const keyLines = [
+      `t1=${r.t1 || '-'}`,
+      `t2=${r.t2 || '-'}`,
+      `t3=${r.t3 || '-'}`,
+      `t4=${r.t4 || '-'}`,
+      `status=${r.status || '-'}`,
+      `method=${r.method || '-'}`,
+      `rawType=${r.rawType || '-'}`,
+      `note=${r.note || '-'}`,
+      `locationText=${r.locationText || '-'}`,
+      `zone=${r.locationZone || r.zone || '-'}`,
+    ];
+
+    $('logKeyText').textContent = keyLines.join(' | ');
+
+    const raw = JSON.stringify(r, null, 2);
+    $('logRawText').textContent = raw;
+
+    const evidenceUrl = r.evidenceUrl || '';
+    const img = $('logEvidenceImg');
+    const btnOpen = $('btnOpenEvidence');
+
+    if (evidenceUrl) {
+      img.src = evidenceUrl;
+      img.style.display = 'block';
+      btnOpen.disabled = false;
+      btnOpen.onclick = () => window.open(evidenceUrl, '_blank', 'noopener');
+    } else {
+      img.src = '';
+      img.style.display = 'none';
+      btnOpen.disabled = true;
+      btnOpen.onclick = null;
+    }
+
+    // hint เรื่อง UNKNOWN
+    const note = String(r.note || '');
+    const hint = [];
+    if (note === 'UNKNOWN') hint.push('หมายเหตุ: UNKNOWN ถือว่า “ปกติ” สำหรับระบบสแกน (ไม่ใช่ error)');
+    if (String(r.method || '').includes('MANUAL')) hint.push('แถวนี้เป็นการบันทึกแบบ MANUAL');
+    $('logModalHint').textContent = hint.join(' • ');
+
+    openModal('logModalBackdrop');
+  };
+
+  function copyTextToClipboard(text) {
+    return navigator.clipboard.writeText(text).catch(() => {
+      prompt('คัดลอกข้อความนี้:', text);
+    });
+  }
+
+  // ====== INIT ======
+  async function initAdmin() {
+    const apiUrl = getApiUrl();
+    setApiText(apiUrl);
+
+    if (!apiUrl) {
+      setConnectionStatus(false, 'ยังไม่ได้ตั้งค่า URL');
+      return;
+    }
+
+    try {
+      const [empRes, blRes, todaySummary, monthSummary] = await Promise.all([
+        api.call('getEmployees'),
+        api.call('getBranchesLevels'),
+        api.call('getTodaySummary'),
+        (async () => {
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = now.getMonth() + 1;
+          return api.call('getSummaryRange', { year, month, branch: 'ALL' });
+        })()
+      ]);
+
+      employees = empRes || [];
+      branches  = blRes.branches || [];
+      levels    = blRes.levels || [];
+
+      setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
+
+      renderBranchLevelSelects();
+      renderEmployeesTable();
+      renderBranchesLevelsTables();
+      renderDashboard(todaySummary, monthSummary);
+
+      fillYearMonthSelect($('logYearFilter'), $('logMonthFilter'));
+      fillYearMonthSelect($('sumYearFilter'), $('sumMonthFilter'));
+
+      await reloadLogs();
+      await reloadSummary();
+
+      applyEmpMobileLayout();
+
+    } catch (err) {
+      console.error(err);
+      setConnectionStatus(false, err.message);
+      alert('เชื่อมต่อ API ไม่สำเร็จ: ' + err.message);
+    }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -1934,6 +2313,26 @@
       if (document.getElementById('section-employees').classList.contains('active')) {
         applyEmpMobileLayout();
       }
+    });
+
+    // === Face modal events
+    $('btnCloseFaceModal').addEventListener('click', () => closeModal('faceModalBackdrop'));
+    $('faceModalBackdrop').addEventListener('click', (e) => {
+      if (e.target === $('faceModalBackdrop')) closeModal('faceModalBackdrop');
+    });
+    $('facePhotoInput').addEventListener('change', handleFaceFileSelected);
+    $('btnFaceUpload').addEventListener('click', uploadEmployeeFace);
+    $('btnFaceClear').addEventListener('click', clearFaceModal);
+
+    // === Log modal events
+    $('btnCloseLogModal').addEventListener('click', () => closeModal('logModalBackdrop'));
+    $('logModalBackdrop').addEventListener('click', (e) => {
+      if (e.target === $('logModalBackdrop')) closeModal('logModalBackdrop');
+    });
+    $('btnCopyLogJson').addEventListener('click', async () => {
+      const txt = logModalRow ? JSON.stringify(logModalRow, null, 2) : '';
+      await copyTextToClipboard(txt);
+      alert('คัดลอก JSON แล้ว');
     });
 
     initAdmin();
