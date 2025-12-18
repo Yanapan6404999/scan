@@ -1,0 +1,1237 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>ยื่นใบลา • Leave Request</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary:#2563eb;
+      --primary2:#1d4ed8;
+      --soft:#dbeafe;
+
+      --bg:#f3f4f6;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:#e5e7eb;
+
+      --success:#16a34a;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+
+      --shadow: 0 18px 40px rgba(15,23,42,.08);
+      --shadow2: 0 30px 80px rgba(15,23,42,.18);
+    }
+
+    *{ box-sizing:border-box; font-family:"Prompt",system-ui,-apple-system,"Segoe UI",sans-serif; }
+    html,body{ margin:0; padding:0; width:100%; overflow-x:hidden; }
+    body{
+      color:var(--text);
+      background:
+        radial-gradient(circle at 20% 10%, #e0e7ff 0, transparent 55%),
+        radial-gradient(circle at 80% 90%, #e5f5ff 0, transparent 55%),
+        var(--bg);
+    }
+
+    a{ color:var(--primary); text-decoration:none; }
+    a:hover{ text-decoration:underline; }
+
+    /* Topbar */
+    header{
+      position:sticky; top:0; z-index:30;
+      background:rgba(2,6,23,.86);
+      border-bottom:1px solid rgba(15,23,42,.45);
+      color:#e5e7eb;
+      padding:12px 14px;
+      backdrop-filter: blur(14px);
+    }
+    .topbar{
+      max-width:1050px; margin:0 auto;
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    }
+    .tb-left{ min-width:0; }
+    .tb-title{ font-weight:900; font-size:18px; letter-spacing:.2px; }
+    .tb-sub{
+      font-size:12px; color:#94a3b8; margin-top:2px;
+      display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+    }
+    #apiUrlDisplay{ cursor:pointer; word-break:break-all; overflow-wrap:anywhere; }
+    .tb-right{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+
+    .badge-connection{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 12px; border-radius:999px;
+      font-size:11px; font-weight:900;
+      background:rgba(15,118,110,.14);
+      color:#a5f3fc;
+      border:1px solid rgba(34,197,94,.75);
+      white-space:nowrap;
+    }
+    .badge-connection.offline{
+      background:rgba(127,29,29,.30);
+      color:#fecaca;
+      border-color:rgba(248,113,113,.85);
+    }
+    .dot{
+      width:8px; height:8px; border-radius:999px;
+      background:#22c55e; box-shadow:0 0 10px rgba(34,197,94,.75);
+    }
+    .badge-connection.offline .dot{
+      background:#f97373; box-shadow:0 0 10px rgba(248,113,113,.75);
+    }
+
+    /* Main layout */
+    main{ padding:16px 12px 22px; }
+    .wrap{ max-width:1050px; margin:0 auto; }
+
+    .card{
+      background:rgba(255,255,255,.92);
+      border-radius:18px;
+      padding:14px 14px 12px;
+      box-shadow:var(--shadow), 0 0 0 1px rgba(226,232,240,.92);
+      border:1px solid rgba(226,232,240,.92);
+      margin-bottom:14px;
+      overflow:hidden;
+    }
+
+    .card-header{
+      display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .card-title{
+      font-size:15px; font-weight:900;
+      display:flex; align-items:center; gap:8px;
+    }
+    .icon{
+      width:24px; height:24px; border-radius:999px;
+      display:inline-flex; align-items:center; justify-content:center;
+      font-size:13px; background:var(--soft); color:var(--primary);
+    }
+    .card-sub{ font-size:12px; color:var(--muted); line-height:1.5; }
+
+    .grid-2{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .grid-3{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+    @media (max-width:900px){ .grid-2,.grid-3{ grid-template-columns:1fr; } }
+
+    .helper{ font-size:12px; color:var(--muted); }
+    .mt-8{ margin-top:8px; }
+    .mt-10{ margin-top:10px; }
+    .mt-12{ margin-top:12px; }
+
+    /* Inputs */
+    .input, .textarea, select.input{
+      width:100%;
+      border-radius:14px;
+      border:1px solid var(--border);
+      padding:11px 12px;
+      font-size:14px;
+      outline:none;
+      background:#fff;
+    }
+    .textarea{ min-height:90px; resize:vertical; }
+    .input:focus, .textarea:focus{
+      border-color:var(--primary);
+      box-shadow:0 0 0 3px rgba(37,99,235,.14);
+    }
+
+    /* Buttons */
+    .btn{
+      border:none; cursor:pointer; border-radius:999px;
+      padding:10px 14px; font-size:13px; font-weight:800;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      transition:transform .08s ease, box-shadow .08s ease, background .1s ease, opacity .1s ease;
+      white-space:nowrap;
+    }
+    .btn:active{ transform:translateY(1px) scale(.99); }
+    .btn:disabled{ opacity:.55; cursor:default; transform:none; }
+    .btn-primary{ background:linear-gradient(135deg,var(--primary),var(--primary2)); color:#fff; box-shadow:0 14px 30px rgba(37,99,235,.25); }
+    .btn-secondary{ background:#fff; border:1px solid var(--border); color:#111827; }
+    .btn-danger{ background:var(--danger); color:#fff; }
+    .btn-small{ padding:7px 11px; font-size:12px; }
+
+    /* Tabs */
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .tab{
+      padding:9px 12px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.35);
+      background:#fff;
+      color:#334155;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+      user-select:none;
+      transition:transform .08s ease, box-shadow .12s ease, background .12s ease;
+    }
+    .tab:active{ transform:translateY(1px); }
+    .tab.active{
+      background:rgba(37,99,235,.10);
+      border-color:rgba(37,99,235,.35);
+      color:#1d4ed8;
+      box-shadow:0 10px 18px rgba(37,99,235,.12);
+    }
+
+    /* Pills */
+    .pill{
+      font-size:11px; padding:4px 10px; border-radius:999px;
+      background:#eef2ff; color:#1d4ed8;
+      border:1px solid rgba(37,99,235,.18);
+      font-weight:900;
+      display:inline-flex; align-items:center; gap:6px;
+      white-space:nowrap;
+    }
+    .tag{
+      font-size:11px; padding:4px 10px; border-radius:999px;
+      background:#f1f5f9; color:#334155;
+      border:1px solid rgba(148,163,184,.30);
+      font-weight:900;
+      display:inline-flex; align-items:center; gap:6px;
+      white-space:nowrap;
+    }
+
+    .status-badge{ font-size:11px; padding:4px 10px; border-radius:999px; font-weight:900; display:inline-block; }
+    .st-pending{ background:#fef3c7; color:#92400e; }
+    .st-approved{ background:#dcfce7; color:#166534; }
+    .st-rejected{ background:#fee2e2; color:#b91c1c; }
+    .st-unknown{ background:#0b1220; color:#e5e7eb; border:1px solid rgba(148,163,184,.35); }
+
+    /* History list */
+    .list{ display:flex; flex-direction:column; gap:10px; padding-top:6px; }
+    .item{
+      border:1px solid rgba(226,232,240,.95);
+      border-radius:18px;
+      padding:12px 12px 10px;
+      background:#fff;
+      box-shadow:0 12px 24px rgba(15,23,42,.06);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .item-top{
+      display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+    }
+    .item-title{ font-weight:900; font-size:14px; line-height:1.25; }
+    .item-meta{ font-size:12px; color:var(--muted); display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+    .kv{
+      display:grid;
+      grid-template-columns:110px 1fr;
+      gap:6px 10px;
+      font-size:12px;
+      color:#0f172a;
+    }
+    .kv .k{ color:var(--muted); }
+    .kv .v{ font-weight:800; }
+
+    /* URL card */
+    #urlCard{
+      position:fixed;
+      right:14px;
+      bottom:14px;
+      max-width:520px;
+      width:calc(100% - 28px);
+      z-index:60;
+      display:none;
+    }
+
+    .error{ font-size:12px; color:var(--danger); font-weight:900; margin-top:8px; }
+    .ok{ font-size:12px; color:var(--success); font-weight:900; margin-top:8px; }
+
+    .hide{ display:none !important; }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-title">ยื่นใบลา</div>
+      <div class="tb-sub">
+        <span id="apiUrlDisplay" title="แตะเพื่อคัดลอก URL"></span>
+        <span id="lastUpdated" style="font-weight:900;">• อัปเดตล่าสุด: -</span>
+      </div>
+    </div>
+    <div class="tb-right">
+      <div id="connBadge" class="badge-connection offline">
+        <span class="dot"></span>
+        <span id="connText">ยังไม่ได้เชื่อมต่อ</span>
+      </div>
+      <button class="btn btn-secondary" id="btnRefresh">รีเฟรช</button>
+      <button class="btn btn-secondary" id="btnSetUrl">ตั้งค่า URL</button>
+      <button class="btn btn-secondary" id="btnBack">กลับหน้าแรก</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title"><span class="icon">🧑‍💼</span>ระบุตัวตนพนักงาน</div>
+          <div class="card-sub">ใส่ “รหัสพนักงาน” เพื่อยืนยันข้อมูลก่อนยื่นใบลา (แนะนำทำให้เหมือนกันทุกหน้า)</div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div>
+          <div class="helper">รหัสพนักงาน</div>
+          <input class="input" id="empCode" placeholder="เช่น 1011" inputmode="numeric" />
+        </div>
+        <div>
+          <div class="helper">ชื่อ-นามสกุล</div>
+          <input class="input" id="empName" placeholder="กด “ดึงข้อมูล”" disabled />
+        </div>
+        <div style="display:flex; align-items:end; gap:8px;">
+          <button class="btn btn-primary" id="btnLoadEmp" style="flex:1;">🔎 ดึงข้อมูล</button>
+          <button class="btn btn-secondary" id="btnClearEmp">ล้าง</button>
+        </div>
+      </div>
+
+      <div class="mt-10" id="empInfoRow" style="display:none;">
+        <div class="item-meta">
+          <span class="tag" id="empBranchTag">แผนก: -</span>
+          <span class="tag" id="empLevelTag">ระดับ: -</span>
+          <span class="pill" id="empCodeTag">รหัส: -</span>
+        </div>
+      </div>
+
+      <div id="empErr" class="error" style="display:none;"></div>
+      <div id="empOk" class="ok" style="display:none;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title"><span class="icon">🧾</span>จัดการใบลา</div>
+          <div class="card-sub">สลับแท็บ = รีเฟรชอัตโนมัติ • ตอนนี้เน้น “โครง” ก่อน เดี๋ยวค่อยวิ่งโลจิคลงเวลาที่ GS</div>
+        </div>
+        <div class="tabs">
+          <div class="tab active" data-tab="submit">ยื่นใบลา</div>
+          <div class="tab" data-tab="history">ประวัติการลา</div>
+        </div>
+      </div>
+
+      <!-- SUBMIT TAB -->
+      <div id="tab-submit">
+        <div class="grid-2">
+          <div>
+            <div class="helper">ประเภทการลา</div>
+            <select class="input" id="leaveType">
+              <option value="PERSONAL">ลากิจ</option>
+              <option value="SICK_WITH_NOTE">ลาป่วย (มีใบรับรองแพทย์)</option>
+              <option value="SICK_NO_NOTE">ลาป่วย (ไม่มีใบรับรองแพทย์)</option>
+              <option value="VACATION">ลาหยุดพักร้อน</option>
+            </select>
+            <div class="helper mt-8" id="leaveTypeHint"></div>
+          </div>
+
+          <div>
+            <div class="helper">รูปแบบการลา</div>
+            <select class="input" id="durationType">
+              <option value="HOURLY">รายชั่วโมง</option>
+              <option value="HALF_DAY">ครึ่งวัน</option>
+              <option value="FULL_DAY">ทั้งวัน</option>
+            </select>
+            <div class="helper mt-8" id="durationHint"></div>
+          </div>
+        </div>
+
+        <!-- HOURLY -->
+        <div class="card mt-12" id="boxHourly" style="margin-bottom:0;">
+          <div class="card-header" style="margin-bottom:6px;">
+            <div>
+              <div class="card-title"><span class="icon">⏱</span>รายละเอียดรายชั่วโมง</div>
+              <div class="card-sub">
+                ใช้สำหรับ “ลา 1–3 ชม.” หรือมากกว่า • บันทึกไว้ให้ GS เอาไปตัด “มาสายช่วงเช้า” ตามที่คุณวางโลจิค
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <div>
+              <div class="helper">วันที่ลา</div>
+              <input class="input" id="hourlyDate" type="date" />
+            </div>
+            <div>
+              <div class="helper">จำนวนชั่วโมง</div>
+              <select class="input" id="hourlyHours">
+                <option value="1">1 ชั่วโมง</option>
+                <option value="2">2 ชั่วโมง</option>
+                <option value="3" selected>3 ชั่วโมง</option>
+                <option value="CUSTOM">กำหนดเอง</option>
+              </select>
+            </div>
+            <div id="hourlyCustomWrap" class="hide">
+              <div class="helper">ชั่วโมง (กำหนดเอง)</div>
+              <input class="input" id="hourlyCustomHours" type="number" min="0.5" step="0.5" placeholder="เช่น 1.5" />
+            </div>
+          </div>
+
+          <div class="grid-2 mt-10">
+            <div>
+              <div class="helper">เวลาเริ่มลา</div>
+              <input class="input" id="hourlyStart" type="time" value="08:00" />
+            </div>
+            <div>
+              <div class="helper">เวลาสิ้นสุดลา</div>
+              <input class="input" id="hourlyEnd" type="time" value="11:00" />
+            </div>
+          </div>
+
+          <div class="helper mt-10">
+            หมายเหตุ: ถ้าคุณจะ “ล็อก 1–3 ชม.” จริง ๆ ฝั่ง GS ค่อย enforce อีกทีได้ (หน้าเว็บปล่อยยืดหยุ่นไว้ก่อน)
+          </div>
+        </div>
+
+        <!-- HALF DAY -->
+        <div class="card mt-12 hide" id="boxHalfDay" style="margin-bottom:0;">
+          <div class="card-header" style="margin-bottom:6px;">
+            <div>
+              <div class="card-title"><span class="icon">🌓</span>รายละเอียดครึ่งวัน</div>
+              <div class="card-sub">คุณบอกไว้ว่า “ครึ่งวัน = เข้า 13:00 แล้วลง t3” เลย • ผมใส่ตัวเลือกไว้กันอนาคต</div>
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <div>
+              <div class="helper">วันที่ลา</div>
+              <input class="input" id="halfDate" type="date" />
+            </div>
+            <div>
+              <div class="helper">ครึ่งวันช่วง</div>
+              <select class="input" id="halfPart">
+                <option value="AM" selected>เช้า (เข้า 13:00)</option>
+                <option value="PM">บ่าย (ออก 12:00)</option>
+              </select>
+            </div>
+            <div>
+              <div class="helper">หมายเหตุระบบ</div>
+              <input class="input" value="เมื่ออนุมัติ: เข้า 13:00 ลง t3" disabled />
+            </div>
+          </div>
+        </div>
+
+        <!-- FULL DAY -->
+        <div class="card mt-12 hide" id="boxFullDay" style="margin-bottom:0;">
+          <div class="card-header" style="margin-bottom:6px;">
+            <div>
+              <div class="card-title"><span class="icon">📅</span>รายละเอียดทั้งวัน</div>
+              <div class="card-sub">เลือกช่วงวันลา (วันเริ่ม–วันจบ)</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <div class="helper">วันที่เริ่มลา</div>
+              <input class="input" id="fullStart" type="date" />
+            </div>
+            <div>
+              <div class="helper">วันที่สิ้นสุด</div>
+              <input class="input" id="fullEnd" type="date" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Reason + Evidence -->
+        <div class="mt-12">
+          <div class="helper">เหตุผลการลา</div>
+          <textarea class="textarea" id="reason" placeholder="พิมพ์เหตุผลสั้น ๆ เช่น ไปทำธุระ / ป่วย / พักร้อน"></textarea>
+        </div>
+
+        <div class="mt-12">
+          <div class="helper">แนบไฟล์ (ถ้ามี) — รูป/ไฟล์ PDF</div>
+          <input class="input" id="evidenceFile" type="file" accept="image/*,application/pdf" />
+          <div class="helper mt-8" id="evidenceHint">
+            * ถ้าเลือก “ลาป่วย (มีใบรับรองแพทย์)” จะบังคับแนบไฟล์
+          </div>
+
+          <div id="evidencePreview" class="mt-10 hide">
+            <div class="helper">ตัวอย่างไฟล์</div>
+            <div id="previewBox" class="mt-8"></div>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="card mt-12" style="margin-bottom:0;">
+          <div class="card-header" style="margin-bottom:6px;">
+            <div>
+              <div class="card-title"><span class="icon">✅</span>สรุปก่อนยืนยัน</div>
+              <div class="card-sub">ตรวจสอบความถูกต้องก่อนส่ง (ฝั่ง Admin จะเห็นสถานะ รอดำเนินการ/อนุมัติ/ไม่อนุมัติ)</div>
+            </div>
+          </div>
+
+          <div class="kv">
+            <div class="k">พนักงาน</div><div class="v" id="sumEmp">-</div>
+            <div class="k">ประเภทลา</div><div class="v" id="sumType">-</div>
+            <div class="k">รูปแบบ</div><div class="v" id="sumDuration">-</div>
+            <div class="k">ช่วงวัน/เวลา</div><div class="v" id="sumRange">-</div>
+            <div class="k">เหตุผล</div><div class="v" id="sumReason">-</div>
+            <div class="k">ไฟล์แนบ</div><div class="v" id="sumFile">-</div>
+          </div>
+
+          <div class="mt-12" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+            <button class="btn btn-secondary" id="btnReset">ล้างฟอร์ม</button>
+            <button class="btn btn-primary" id="btnSubmit">📨 ส่งใบลา</button>
+          </div>
+
+          <div id="submitErr" class="error" style="display:none;"></div>
+          <div id="submitOk" class="ok" style="display:none;"></div>
+        </div>
+      </div>
+
+      <!-- HISTORY TAB -->
+      <div id="tab-history" class="hide">
+        <div class="grid-3">
+          <div>
+            <div class="helper">สถานะ</div>
+            <select class="input" id="histStatus">
+              <option value="ALL">ทั้งหมด</option>
+              <option value="PENDING" selected>รอดำเนินการ</option>
+              <option value="APPROVED">อนุมัติ</option>
+              <option value="REJECTED">ไม่อนุมัติ</option>
+            </select>
+          </div>
+          <div>
+            <div class="helper">เดือน</div>
+            <select class="input" id="histMonth"></select>
+          </div>
+          <div>
+            <div class="helper">ปี (พ.ศ.)</div>
+            <select class="input" id="histYear"></select>
+          </div>
+        </div>
+
+        <div class="mt-12" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+          <button class="btn btn-primary" id="btnLoadHistory">รีเฟรชประวัติ</button>
+        </div>
+
+        <div id="histHint" class="helper mt-8"></div>
+        <div class="list mt-10" id="histList">
+          <div class="helper">ยังไม่มีข้อมูล</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- URL CARD -->
+    <div class="card" id="urlCard">
+      <div class="card-header">
+        <div>
+          <div class="card-title"><span class="icon">🔗</span>ตั้งค่า URL API</div>
+          <div class="card-sub">URL จาก Apps Script Web App (ต้องลงท้ายด้วย <code>/exec</code>)</div>
+        </div>
+      </div>
+      <input class="input" id="inputApiUrl" placeholder="เช่น https://script.google.com/macros/s/XXXXX/exec" />
+      <div class="mt-10" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+        <button class="btn btn-primary" id="btnSaveUrl">บันทึก</button>
+        <button class="btn btn-secondary" id="btnCancelUrl">ยกเลิก</button>
+      </div>
+      <div id="urlErr" class="error" style="display:none;"></div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  // ===== Storage key (ใช้ร่วมกับหน้าอื่น) =====
+  const STORAGE_KEY = 'attendance_api_url_v2';
+
+  const $ = (id) => document.getElementById(id);
+
+  function getApiUrl(){ return localStorage.getItem(STORAGE_KEY) || ''; }
+  function setApiUrl(url){
+    if(!url) localStorage.removeItem(STORAGE_KEY);
+    else localStorage.setItem(STORAGE_KEY, url);
+  }
+
+  function esc(s){
+    return String(s ?? '')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#39;");
+  }
+
+  function ellipsizeUrl(url){
+    if(!url) return '';
+    if(url.length <= 58) return url;
+    return url.slice(0, 32) + '...' + url.slice(-14);
+  }
+
+  function setApiDisplay(url){
+    const el = $('apiUrlDisplay');
+    if(!url){
+      el.textContent = 'ยังไม่ได้ตั้งค่า URL';
+      el.dataset.full = '';
+      el.title = '';
+    }else{
+      el.textContent = 'API: ' + ellipsizeUrl(url);
+      el.dataset.full = url;
+      el.title = 'แตะเพื่อคัดลอก: ' + url;
+    }
+  }
+
+  function setLastUpdated(){
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mm = String(d.getMinutes()).padStart(2,'0');
+    const ss = String(d.getSeconds()).padStart(2,'0');
+    $('lastUpdated').textContent = `• อัปเดตล่าสุด: ${hh}:${mm}:${ss}`;
+  }
+
+  function setConn(online, msg){
+    const b = $('connBadge');
+    const t = $('connText');
+    if(online){
+      b.classList.remove('offline');
+      t.textContent = msg || 'เชื่อมต่อสำเร็จ';
+    }else{
+      b.classList.add('offline');
+      t.textContent = msg || 'ยังไม่ได้เชื่อมต่อ';
+    }
+  }
+
+  // ===== API helper =====
+  const api = {
+    async call(action, params = {}){
+      const apiUrl = getApiUrl();
+      if(!apiUrl) throw new Error('ยังไม่ได้ตั้งค่า URL API');
+      const body = new URLSearchParams({ action, ...params }).toString();
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8' },
+        body
+      });
+      const text = await res.text();
+      let data;
+      try{ data = JSON.parse(text); }
+      catch(e){
+        console.error(text);
+        throw new Error('API ส่งผลลัพธ์ไม่ใช่ JSON (เช็ค URL /exec หรือ GS)');
+      }
+      if(!data.ok) throw new Error(data.error || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
+      return data.result;
+    }
+  };
+
+  // ===== State =====
+  let emp = null; // { code, fullName, branch, level, ... }
+  let evidenceBase64 = '';
+  let evidenceName = '';
+  let evidenceMime = '';
+
+  let autoTimer = null;
+  const AUTO_REFRESH_MS = 30000;
+
+  // ===== UI helpers =====
+  function openUrlCard(){
+    $('inputApiUrl').value = getApiUrl();
+    $('urlErr').style.display = 'none';
+    $('urlCard').style.display = 'block';
+  }
+  function closeUrlCard(){ $('urlCard').style.display = 'none'; }
+
+  function showError(id, msg){
+    const el = $(id);
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+  function hideError(id){ $(id).style.display = 'none'; }
+  function showOk(id, msg){
+    const el = $(id);
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+  function hideOk(id){ $(id).style.display = 'none'; }
+
+  function setTab(tab){
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    $('tab-submit').classList.toggle('hide', tab !== 'submit');
+    $('tab-history').classList.toggle('hide', tab !== 'history');
+
+    // ✅ สลับแท็บ = รีเฟรชให้ชัวร์
+    if(tab === 'history') loadHistory(true);
+
+    startAutoRefresh(tab);
+    setLastUpdated();
+  }
+
+  function startAutoRefresh(tab){
+    if(autoTimer) clearInterval(autoTimer);
+    autoTimer = setInterval(() => {
+      if(tab === 'history') loadHistory(true);
+      updateSummary();
+      setLastUpdated();
+    }, AUTO_REFRESH_MS);
+  }
+
+  function leaveTypeText(v){
+    if(v === 'PERSONAL') return 'ลากิจ';
+    if(v === 'SICK_WITH_NOTE') return 'ลาป่วย (มีใบรับรองแพทย์)';
+    if(v === 'SICK_NO_NOTE') return 'ลาป่วย (ไม่มีใบรับรองแพทย์)';
+    if(v === 'VACATION') return 'ลาหยุดพักร้อน';
+    return v || '-';
+  }
+  function durationText(v){
+    if(v === 'HOURLY') return 'รายชั่วโมง';
+    if(v === 'HALF_DAY') return 'ครึ่งวัน';
+    if(v === 'FULL_DAY') return 'ทั้งวัน';
+    return v || '-';
+  }
+
+  function statusBadge(st){
+    const s = String(st || '').toUpperCase();
+    if(s === 'PENDING') return '<span class="status-badge st-pending">รอดำเนินการ</span>';
+    if(s === 'APPROVED') return '<span class="status-badge st-approved">อนุมัติ</span>';
+    if(s === 'REJECTED') return '<span class="status-badge st-rejected">ไม่อนุมัติ</span>';
+    return '<span class="status-badge st-unknown">UNKNOWN</span>';
+  }
+
+  // ===== Forms behavior =====
+  function toggleDurationBoxes(){
+    const dt = $('durationType').value;
+
+    $('boxHourly').classList.toggle('hide', dt !== 'HOURLY');
+    $('boxHalfDay').classList.toggle('hide', dt !== 'HALF_DAY');
+    $('boxFullDay').classList.toggle('hide', dt !== 'FULL_DAY');
+
+    const hint = $('durationHint');
+    if(dt === 'HOURLY'){
+      hint.textContent = 'รายชั่วโมง: เหมาะกับ “ลา 1–3 ชม.” และจะเอาไปให้ GS ตัด “มาสายช่วงเช้า” ตามโลจิค';
+    }else if(dt === 'HALF_DAY'){
+      hint.textContent = 'ครึ่งวัน: ค่าเริ่มต้นเป็น “เช้า (เข้า 13:00 ลง t3)” และสถานะจะขึ้นว่า “ลาครึ่งวัน”';
+    }else{
+      hint.textContent = 'ทั้งวัน: เลือกช่วงวันเริ่ม–วันจบ เหมาะกับลาพักร้อน/ลากิจหลายวัน';
+    }
+
+    updateSummary();
+  }
+
+  function toggleLeaveTypeHint(){
+    const lt = $('leaveType').value;
+    const hint = $('leaveTypeHint');
+    if(lt === 'SICK_WITH_NOTE'){
+      hint.textContent = 'ลาป่วยแบบมีใบรับรองแพทย์: จำเป็นต้องแนบไฟล์ (รูป/ PDF)';
+    }else if(lt === 'SICK_NO_NOTE'){
+      hint.textContent = 'ลาป่วยแบบไม่มีใบรับรองแพทย์: ไม่บังคับไฟล์แนบ';
+    }else if(lt === 'VACATION'){
+      hint.textContent = 'พักร้อน: ถ้ามีหลายวัน แนะนำเลือก “ทั้งวัน” แล้วเลือกช่วงวัน';
+    }else{
+      hint.textContent = 'ลากิจ: ใส่เหตุผลสั้น ๆ และเลือกรูปแบบลาให้ตรง';
+    }
+    updateSummary();
+  }
+
+  function toggleCustomHours(){
+    const v = $('hourlyHours').value;
+    $('hourlyCustomWrap').classList.toggle('hide', v !== 'CUSTOM');
+    updateSummary();
+  }
+
+  function getRangeText(){
+    const dt = $('durationType').value;
+
+    if(dt === 'HOURLY'){
+      const d = $('hourlyDate').value || '-';
+      const hh = $('hourlyHours').value;
+      const h = (hh === 'CUSTOM') ? ($('hourlyCustomHours').value || '-') : hh;
+      const st = $('hourlyStart').value || '-';
+      const en = $('hourlyEnd').value || '-';
+      return `${d} • ${h} ชม. • ${st}–${en}`;
+    }
+
+    if(dt === 'HALF_DAY'){
+      const d = $('halfDate').value || '-';
+      const p = $('halfPart').value === 'AM' ? 'เช้า (เข้า 13:00)' : 'บ่าย (ออก 12:00)';
+      return `${d} • ครึ่งวัน • ${p}`;
+    }
+
+    // FULL_DAY
+    const s = $('fullStart').value || '-';
+    const e = $('fullEnd').value || '-';
+    return `${s} – ${e}`;
+  }
+
+  function updateSummary(){
+    $('sumEmp').textContent = emp ? `${emp.fullName || '-'} (รหัส ${emp.code || '-'})` : '-';
+    $('sumType').textContent = leaveTypeText($('leaveType').value);
+    $('sumDuration').textContent = durationText($('durationType').value);
+    $('sumRange').textContent = getRangeText();
+    $('sumReason').textContent = ($('reason').value || '').trim() || '-';
+    $('sumFile').textContent = evidenceName ? evidenceName : '-';
+  }
+
+  function resetForm(){
+    $('leaveType').value = 'PERSONAL';
+    $('durationType').value = 'HOURLY';
+
+    // dates default = today
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth()+1).padStart(2,'0');
+    const dd = String(today.getDate()).padStart(2,'0');
+    const iso = `${yyyy}-${mm}-${dd}`;
+
+    $('hourlyDate').value = iso;
+    $('halfDate').value = iso;
+    $('fullStart').value = iso;
+    $('fullEnd').value = iso;
+
+    $('hourlyHours').value = '3';
+    $('hourlyCustomHours').value = '';
+    $('hourlyStart').value = '08:00';
+    $('hourlyEnd').value = '11:00';
+
+    $('halfPart').value = 'AM';
+    $('reason').value = '';
+
+    $('evidenceFile').value = '';
+    evidenceBase64 = '';
+    evidenceName = '';
+    evidenceMime = '';
+    $('evidencePreview').classList.add('hide');
+    $('previewBox').innerHTML = '';
+
+    hideError('submitErr');
+    hideOk('submitOk');
+
+    toggleLeaveTypeHint();
+    toggleDurationBoxes();
+    toggleCustomHours();
+    updateSummary();
+  }
+
+  // ===== Evidence upload (base64) =====
+  function readFileAsBase64(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleEvidenceChange(){
+    const file = $('evidenceFile').files && $('evidenceFile').files[0];
+    evidenceBase64 = '';
+    evidenceName = '';
+    evidenceMime = '';
+    $('evidencePreview').classList.add('hide');
+    $('previewBox').innerHTML = '';
+
+    if(!file){ updateSummary(); return; }
+
+    // Limit ~ 5MB (กันเว็บแอปพัง)
+    const maxBytes = 5 * 1024 * 1024;
+    if(file.size > maxBytes){
+      alert('ไฟล์ใหญ่เกิน 5MB กรุณาลดขนาดรูป/ไฟล์');
+      $('evidenceFile').value = '';
+      updateSummary();
+      return;
+    }
+
+    const dataUrl = await readFileAsBase64(file);
+    evidenceBase64 = dataUrl; // ส่งทั้ง dataURL ไป GS ได้เลย (ค่อย parse ที่ GS)
+    evidenceName = file.name || 'evidence';
+    evidenceMime = file.type || '';
+
+    // preview
+    $('evidencePreview').classList.remove('hide');
+    if((file.type || '').startsWith('image/')){
+      $('previewBox').innerHTML = `<img src="${esc(dataUrl)}" alt="preview" style="max-width:100%; border-radius:14px; border:1px solid #e5e7eb;" />`;
+    }else{
+      $('previewBox').innerHTML = `<div class="tag">ไฟล์แนบ: ${esc(evidenceName)}</div>`;
+    }
+
+    updateSummary();
+  }
+
+  // ===== Employee =====
+  async function loadEmployee(){
+    hideError('empErr'); hideOk('empOk');
+
+    const code = ($('empCode').value || '').trim();
+    if(!code){
+      showError('empErr', 'กรุณากรอกรหัสพนักงาน');
+      return;
+    }
+
+    try{
+      // ✅ แนะนำทำ action นี้ใน GS: getEmployeeByCode
+      // return: { code, fullName, branch, level }
+      const result = await api.call('getEmployeeByCode', { code });
+      emp = result;
+
+      $('empName').value = emp.fullName || '';
+      $('empBranchTag').textContent = 'แผนก: ' + (emp.branch || '-');
+      $('empLevelTag').textContent  = 'ระดับ: ' + (emp.level || '-');
+      $('empCodeTag').textContent   = 'รหัส: ' + (emp.code || code);
+      $('empInfoRow').style.display = 'block';
+
+      showOk('empOk', 'ดึงข้อมูลพนักงานสำเร็จ');
+      setConn(true, 'เชื่อมต่อสำเร็จ');
+      updateSummary();
+      setLastUpdated();
+    }catch(err){
+      emp = null;
+      $('empName').value = '';
+      $('empInfoRow').style.display = 'none';
+      showError('empErr', 'ดึงข้อมูลไม่สำเร็จ: ' + err.message + ' (ถ้า GS ยังไม่มี action getEmployeeByCode ให้ทำทีหลังได้)');
+      setConn(false, 'ยังไม่พร้อม');
+      updateSummary();
+    }
+  }
+
+  function clearEmployee(){
+    emp = null;
+    $('empCode').value = '';
+    $('empName').value = '';
+    $('empInfoRow').style.display = 'none';
+    hideError('empErr'); hideOk('empOk');
+    updateSummary();
+  }
+
+  // ===== Submit leave =====
+  function validateBeforeSubmit(){
+    hideError('submitErr'); hideOk('submitOk');
+
+    if(!emp || !String(emp.code || '').trim()){
+      return 'กรุณาดึงข้อมูลพนักงานก่อนส่งใบลา';
+    }
+
+    const lt = $('leaveType').value;
+    const dt = $('durationType').value;
+    const reason = ($('reason').value || '').trim();
+
+    if(!reason){
+      return 'กรุณากรอกเหตุผลการลา';
+    }
+
+    if(lt === 'SICK_WITH_NOTE' && !evidenceBase64){
+      return 'ลาป่วย (มีใบรับรองแพทย์) ต้องแนบไฟล์';
+    }
+
+    if(dt === 'HOURLY'){
+      const d = $('hourlyDate').value;
+      if(!d) return 'กรุณาเลือกวันที่ลา (รายชั่วโมง)';
+      const hSel = $('hourlyHours').value;
+      if(hSel === 'CUSTOM'){
+        const hv = Number($('hourlyCustomHours').value);
+        if(!hv || hv <= 0) return 'กรุณากรอกชั่วโมง (กำหนดเอง) ให้ถูกต้อง';
+      }
+      const st = $('hourlyStart').value;
+      const en = $('hourlyEnd').value;
+      if(!st || !en) return 'กรุณาเลือกเวลาเริ่ม/สิ้นสุด';
+    }
+
+    if(dt === 'HALF_DAY'){
+      if(!$('halfDate').value) return 'กรุณาเลือกวันที่ลา (ครึ่งวัน)';
+    }
+
+    if(dt === 'FULL_DAY'){
+      const s = $('fullStart').value;
+      const e = $('fullEnd').value;
+      if(!s || !e) return 'กรุณาเลือกวันที่เริ่ม/สิ้นสุด';
+      if(e < s) return 'วันที่สิ้นสุดต้องไม่ก่อนวันที่เริ่ม';
+    }
+
+    return '';
+  }
+
+  function buildPayload(){
+    const lt = $('leaveType').value;
+    const dt = $('durationType').value;
+
+    const payload = {
+      empCode: emp.code,
+      empName: emp.fullName || '',
+      branch: emp.branch || '',
+      level: emp.level || '',
+
+      leaveType: lt,
+      durationType: dt,
+      reason: ($('reason').value || '').trim(),
+
+      // range
+      dateFrom: '',
+      dateTo: '',
+      hours: '',
+      timeFrom: '',
+      timeTo: '',
+      halfPart: '',
+
+      // evidence
+      evidenceName: evidenceName || '',
+      evidenceMime: evidenceMime || '',
+      evidenceBase64: evidenceBase64 || '',
+
+      // meta
+      clientTime: new Date().toISOString(),
+    };
+
+    if(dt === 'HOURLY'){
+      payload.dateFrom = $('hourlyDate').value || '';
+      payload.dateTo   = payload.dateFrom;
+      payload.timeFrom = $('hourlyStart').value || '';
+      payload.timeTo   = $('hourlyEnd').value || '';
+      const hs = $('hourlyHours').value;
+      payload.hours = (hs === 'CUSTOM') ? String($('hourlyCustomHours').value || '') : String(hs);
+    }else if(dt === 'HALF_DAY'){
+      payload.dateFrom = $('halfDate').value || '';
+      payload.dateTo   = payload.dateFrom;
+      payload.halfPart = $('halfPart').value || 'AM';
+    }else{
+      payload.dateFrom = $('fullStart').value || '';
+      payload.dateTo   = $('fullEnd').value || payload.dateFrom;
+    }
+
+    // friendly summary for note column if needed
+    payload.summaryText = [
+      leaveTypeText(payload.leaveType),
+      durationText(payload.durationType),
+      getRangeText()
+    ].join(' • ');
+
+    return payload;
+  }
+
+  async function submitLeave(){
+    const err = validateBeforeSubmit();
+    if(err){
+      showError('submitErr', err);
+      return;
+    }
+
+    const payload = buildPayload();
+
+    try{
+      // ✅ แนะนำทำ action นี้ใน GS: submitLeaveRequest
+      // รับ params เป็น jsonString จะง่ายสุด
+      const jsonString = JSON.stringify(payload);
+
+      // ส่งแบบ urlencoded (ปลอดภัยกับ GS)
+      const result = await api.call('submitLeaveRequest', { json: jsonString });
+
+      showOk('submitOk', 'ส่งใบลาสำเร็จ ✅ (สถานะ: รอดำเนินการ)');
+      hideError('submitErr');
+
+      // reset partial
+      resetForm();
+
+      // ไป history แล้วโหลด
+      setTab('history');
+      await loadHistory(true);
+
+      setConn(true, 'เชื่อมต่อสำเร็จ');
+      setLastUpdated();
+    }catch(e){
+      // ถ้า GS ยังไม่ทำ action นี้ หน้าจะไม่พัง
+      showError('submitErr',
+        'ส่งใบลาไม่สำเร็จ: ' + e.message +
+        ' (ถ้า GS ยังไม่มี action submitLeaveRequest ให้ทำทีหลังได้ — หน้า leave.html พร้อมแล้ว)'
+      );
+      hideOk('submitOk');
+    }
+  }
+
+  // ===== History =====
+  function fillYearMonth(){
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const years = [curYear-1, curYear, curYear+1];
+
+    $('histYear').innerHTML = years.map(y => {
+      const be = y + 543;
+      const sel = (y === curYear) ? 'selected' : '';
+      return `<option value="${y}" ${sel}>${be}</option>`;
+    }).join('');
+
+    const monthNames = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    $('histMonth').innerHTML = monthNames.map((m,i) => {
+      const sel = (i === now.getMonth()) ? 'selected' : '';
+      return `<option value="${i+1}" ${sel}>${m}</option>`;
+    }).join('');
+  }
+
+  async function loadHistory(silent=false){
+    const list = $('histList');
+    const hint = $('histHint');
+    hint.textContent = '';
+
+    if(!emp || !String(emp.code || '').trim()){
+      list.innerHTML = '<div class="helper">กรุณาระบุรหัสพนักงานก่อน</div>';
+      return;
+    }
+
+    list.innerHTML = '<div class="helper">กำลังโหลด...</div>';
+
+    const year = $('histYear').value;
+    const month = $('histMonth').value;
+    const status = $('histStatus').value || 'ALL';
+
+    try{
+      // ✅ แนะนำ action ใน GS: getMyLeaveRequests
+      // params: empCode, year, month, status
+      const res = await api.call('getMyLeaveRequests', { empCode: emp.code, year, month, status });
+
+      const rows = (res && res.rows) || [];
+      if(!rows.length){
+        list.innerHTML = '<div class="helper">ยังไม่มีรายการ</div>';
+        return;
+      }
+
+      list.innerHTML = rows.map(r => {
+        const t = leaveTypeText(r.leaveType || r.type || '');
+        const d = durationText(r.durationType || r.duration || '');
+        const range = r.rangeText || r.range || r.dateRange || `${r.dateFrom || '-'} – ${r.dateTo || '-'}`;
+        const st = statusBadge(r.status || 'PENDING');
+        const createdAt = r.createdAt || r.requestDate || '';
+        const file = r.evidenceUrl ? `<a href="${esc(r.evidenceUrl)}" target="_blank" rel="noopener">เปิดไฟล์แนบ</a>` : '-';
+
+        return `
+          <div class="item">
+            <div class="item-top">
+              <div style="min-width:0;">
+                <div class="item-title">${esc(t)} • ${esc(d)}</div>
+                <div class="item-meta">
+                  <span class="tag">ช่วง: ${esc(range)}</span>
+                  ${st}
+                </div>
+              </div>
+              <div class="pill">${esc(createdAt || 'ส่งแล้ว')}</div>
+            </div>
+
+            <div class="kv">
+              <div class="k">เหตุผล</div><div class="v">${esc(r.reason || '-')}</div>
+              <div class="k">ไฟล์แนบ</div><div class="v">${file}</div>
+              <div class="k">หมายเหตุผู้อนุมัติ</div><div class="v">${esc(r.adminNote || r.note || '-')}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      setConn(true, 'เชื่อมต่อสำเร็จ');
+      setLastUpdated();
+    }catch(e){
+      list.innerHTML = '<div class="helper">ยังไม่พร้อม (รอทำ GS/DB)</div>';
+      hint.textContent =
+        'ยังไม่ได้ผูก API ประวัติลา (action: getMyLeaveRequests) — แต่หน้า leave.html พร้อมใช้งานด้าน UI แล้ว ✅';
+      if(!silent) console.error(e);
+    }
+  }
+
+  // ===== init =====
+  function initDefaults(){
+    fillYearMonth();
+
+    // default dates today
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth()+1).padStart(2,'0');
+    const dd = String(today.getDate()).padStart(2,'0');
+    const iso = `${yyyy}-${mm}-${dd}`;
+
+    $('hourlyDate').value = iso;
+    $('halfDate').value = iso;
+    $('fullStart').value = iso;
+    $('fullEnd').value = iso;
+
+    toggleLeaveTypeHint();
+    toggleDurationBoxes();
+    toggleCustomHours();
+    updateSummary();
+  }
+
+  function initApiStatus(){
+    const url = getApiUrl();
+    setApiDisplay(url);
+    if(!url){
+      setConn(false, 'ยังไม่ได้ตั้งค่า URL');
+    }else{
+      setConn(true, 'พร้อมใช้งาน');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initDefaults();
+    initApiStatus();
+
+    // topbar actions
+    $('btnSetUrl').addEventListener('click', openUrlCard);
+    $('btnCancelUrl').addEventListener('click', closeUrlCard);
+    $('btnSaveUrl').addEventListener('click', () => {
+      const url = ($('inputApiUrl').value || '').trim();
+      $('urlErr').style.display = 'none';
+      if(!url){
+        $('urlErr').textContent = 'กรุณากรอก URL';
+        $('urlErr').style.display = 'block';
+        return;
+      }
+      setApiUrl(url);
+      setApiDisplay(url);
+      closeUrlCard();
+      setConn(true, 'พร้อมใช้งาน');
+      setLastUpdated();
+    });
+
+    $('apiUrlDisplay').addEventListener('click', async () => {
+      const full = $('apiUrlDisplay').dataset.full || '';
+      if(!full) return;
+      try{
+        await navigator.clipboard.writeText(full);
+        alert('คัดลอก URL แล้ว');
+      }catch(e){
+        prompt('คัดลอก URL นี้:', full);
+      }
+    });
+
+    $('btnBack').addEventListener('click', () => window.location.href = 'index.html');
+    $('btnRefresh').addEventListener('click', () => {
+      updateSummary();
+      if(document.querySelector('.tab.active')?.dataset.tab === 'history') loadHistory(true);
+      setLastUpdated();
+    });
+
+    // tabs
+    document.querySelectorAll('.tab').forEach(t => {
+      t.addEventListener('click', () => setTab(t.dataset.tab));
+    });
+
+    // emp
+    $('btnLoadEmp').addEventListener('click', loadEmployee);
+    $('btnClearEmp').addEventListener('click', clearEmployee);
+    $('empCode').addEventListener('keydown', (e) => { if(e.key === 'Enter') loadEmployee(); });
+
+    // form changes
+    $('leaveType').addEventListener('change', toggleLeaveTypeHint);
+    $('durationType').addEventListener('change', toggleDurationBoxes);
+    $('hourlyHours').addEventListener('change', toggleCustomHours);
+
+    ['hourlyDate','hourlyCustomHours','hourlyStart','hourlyEnd','halfDate','halfPart','fullStart','fullEnd','reason']
+      .forEach(id => $(id).addEventListener('input', updateSummary));
+
+    $('evidenceFile').addEventListener('change', handleEvidenceChange);
+
+    // buttons
+    $('btnReset').addEventListener('click', resetForm);
+    $('btnSubmit').addEventListener('click', submitLeave);
+
+    // history
+    $('btnLoadHistory').addEventListener('click', () => loadHistory(false));
+    ['histStatus','histMonth','histYear'].forEach(id => $(id).addEventListener('change', () => loadHistory(true)));
+
+    setLastUpdated();
+    startAutoRefresh('submit');
+  });
+</script>
+</body>
+</html>
