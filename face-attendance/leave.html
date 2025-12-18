@@ -42,7 +42,6 @@
     a{ color:var(--primary); text-decoration:none; }
     a:hover{ text-decoration:underline; }
 
-    /* Topbar */
     header{
       position:sticky; top:0; z-index:30;
       background:rgba(2,6,23,.86);
@@ -86,7 +85,6 @@
       background:#f97373; box-shadow:0 0 10px rgba(248,113,113,.75);
     }
 
-    /* Main layout */
     main{ padding:16px 12px 22px; }
     .wrap{ max-width:1050px; margin:0 auto; }
 
@@ -124,7 +122,6 @@
     .mt-10{ margin-top:10px; }
     .mt-12{ margin-top:12px; }
 
-    /* Inputs */
     .input, .textarea, select.input{
       width:100%;
       border-radius:14px;
@@ -139,8 +136,13 @@
       border-color:var(--primary);
       box-shadow:0 0 0 3px rgba(37,99,235,.14);
     }
+    .input:disabled, .textarea:disabled, select:disabled{
+      background:#f8fafc;
+      color:#94a3b8;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
 
-    /* Buttons */
     .btn{
       border:none; cursor:pointer; border-radius:999px;
       padding:10px 14px; font-size:13px; font-weight:800;
@@ -155,10 +157,7 @@
     .btn-danger{ background:var(--danger); color:#fff; }
     .btn-small{ padding:7px 11px; font-size:12px; }
 
-    /* Tabs */
-    .tabs{
-      display:flex; gap:8px; flex-wrap:wrap;
-    }
+    .tabs{ display:flex; gap:8px; flex-wrap:wrap; }
     .tab{
       padding:9px 12px;
       border-radius:999px;
@@ -179,7 +178,6 @@
       box-shadow:0 10px 18px rgba(37,99,235,.12);
     }
 
-    /* Pills */
     .pill{
       font-size:11px; padding:4px 10px; border-radius:999px;
       background:#eef2ff; color:#1d4ed8;
@@ -201,9 +199,9 @@
     .st-pending{ background:#fef3c7; color:#92400e; }
     .st-approved{ background:#dcfce7; color:#166534; }
     .st-rejected{ background:#fee2e2; color:#b91c1c; }
+    .st-canceled{ background:#e2e8f0; color:#334155; }
     .st-unknown{ background:#0b1220; color:#e5e7eb; border:1px solid rgba(148,163,184,.35); }
 
-    /* History list */
     .list{ display:flex; flex-direction:column; gap:10px; padding-top:6px; }
     .item{
       border:1px solid rgba(226,232,240,.95);
@@ -230,7 +228,16 @@
     .kv .k{ color:var(--muted); }
     .kv .v{ font-weight:800; }
 
-    /* URL card */
+    .actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      align-items:center;
+      padding-top:6px;
+      border-top:1px dashed rgba(148,163,184,.35);
+    }
+
     #urlCard{
       position:fixed;
       right:14px;
@@ -243,8 +250,23 @@
 
     .error{ font-size:12px; color:var(--danger); font-weight:900; margin-top:8px; }
     .ok{ font-size:12px; color:var(--success); font-weight:900; margin-top:8px; }
-
     .hide{ display:none !important; }
+
+    /* Edit banner */
+    .edit-banner{
+      border:1px solid rgba(37,99,235,.25);
+      background:rgba(37,99,235,.08);
+      border-radius:16px;
+      padding:12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .edit-banner .title{ font-weight:900; }
+    .edit-banner .sub{ font-size:12px; color:var(--muted); margin-top:2px; }
   </style>
 </head>
 
@@ -277,7 +299,7 @@
       <div class="card-header">
         <div>
           <div class="card-title"><span class="icon">🧑‍💼</span>ระบุตัวตนพนักงาน</div>
-          <div class="card-sub">ใส่ “รหัสพนักงาน” เพื่อยืนยันข้อมูลก่อนยื่นใบลา (แนะนำทำให้เหมือนกันทุกหน้า)</div>
+          <div class="card-sub">ใส่ “รหัสพนักงาน” เพื่อยืนยันข้อมูลก่อนยื่นใบลา</div>
         </div>
       </div>
 
@@ -312,7 +334,7 @@
       <div class="card-header">
         <div>
           <div class="card-title"><span class="icon">🧾</span>จัดการใบลา</div>
-          <div class="card-sub">สลับแท็บ = รีเฟรชอัตโนมัติ • ตอนนี้เน้น “โครง” ก่อน เดี๋ยวค่อยวิ่งโลจิคลงเวลาที่ GS</div>
+          <div class="card-sub">สลับแท็บ/กดรีเฟรช = ดึงสถานะล่าสุด • แก้ไข/ยกเลิกได้เฉพาะ “รอดำเนินการ”</div>
         </div>
         <div class="tabs">
           <div class="tab active" data-tab="submit">ยื่นใบลา</div>
@@ -322,6 +344,32 @@
 
       <!-- SUBMIT TAB -->
       <div id="tab-submit">
+
+        <!-- edit banner -->
+        <div id="editBanner" class="edit-banner hide">
+          <div>
+            <div class="title" id="editBannerTitle">กำลังแก้ไขใบลา</div>
+            <div class="sub" id="editBannerSub">แก้ได้เฉพาะสถานะ “รอดำเนินการ”</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+            <button class="btn btn-secondary btn-small" id="btnCancelEdit">ยกเลิกการแก้ไข</button>
+          </div>
+        </div>
+
+        <!-- status latest -->
+        <div class="card" style="margin-bottom:12px;">
+          <div class="card-header" style="margin-bottom:6px;">
+            <div>
+              <div class="card-title"><span class="icon">📌</span>สถานะล่าสุดของฉัน</div>
+              <div class="card-sub">ดูได้เลยว่าใบลาของคุณ “อนุมัติ/ไม่อนุมัติ/รอดำเนินการ” (ดึงจากประวัติ)</div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-secondary btn-small" id="btnRefreshLatest">รีเฟรชสถานะ</button>
+            </div>
+          </div>
+          <div id="latestBox" class="helper">ยังไม่มีข้อมูล</div>
+        </div>
+
         <div class="grid-2">
           <div>
             <div class="helper">ประเภทการลา</div>
@@ -350,9 +398,7 @@
           <div class="card-header" style="margin-bottom:6px;">
             <div>
               <div class="card-title"><span class="icon">⏱</span>รายละเอียดรายชั่วโมง</div>
-              <div class="card-sub">
-                ใช้สำหรับ “ลา 1–3 ชม.” หรือมากกว่า • บันทึกไว้ให้ GS เอาไปตัด “มาสายช่วงเช้า” ตามที่คุณวางโลจิค
-              </div>
+              <div class="card-sub">ช่อง “ชั่วโมงกำหนดเอง” จะแสดงตลอด แต่จะกรอกได้เมื่อเลือก “กำหนดเอง”</div>
             </div>
           </div>
 
@@ -370,9 +416,12 @@
                 <option value="CUSTOM">กำหนดเอง</option>
               </select>
             </div>
-            <div id="hourlyCustomWrap" class="hide">
+
+            <!-- ✅ แสดงตลอด แต่ disabled จนกว่าจะเลือก CUSTOM -->
+            <div id="hourlyCustomWrap">
               <div class="helper">ชั่วโมง (กำหนดเอง)</div>
-              <input class="input" id="hourlyCustomHours" type="number" min="0.5" step="0.5" placeholder="เช่น 1.5" />
+              <input class="input" id="hourlyCustomHours" type="number" min="0.5" step="0.5" placeholder="เช่น 1.5" disabled />
+              <div class="helper mt-8" id="customHoursHint">* เลือก “กำหนดเอง” เพื่อกรอกช่องนี้</div>
             </div>
           </div>
 
@@ -386,10 +435,6 @@
               <input class="input" id="hourlyEnd" type="time" value="11:00" />
             </div>
           </div>
-
-          <div class="helper mt-10">
-            หมายเหตุ: ถ้าคุณจะ “ล็อก 1–3 ชม.” จริง ๆ ฝั่ง GS ค่อย enforce อีกทีได้ (หน้าเว็บปล่อยยืดหยุ่นไว้ก่อน)
-          </div>
         </div>
 
         <!-- HALF DAY -->
@@ -397,7 +442,7 @@
           <div class="card-header" style="margin-bottom:6px;">
             <div>
               <div class="card-title"><span class="icon">🌓</span>รายละเอียดครึ่งวัน</div>
-              <div class="card-sub">คุณบอกไว้ว่า “ครึ่งวัน = เข้า 13:00 แล้วลง t3” เลย • ผมใส่ตัวเลือกไว้กันอนาคต</div>
+              <div class="card-sub">ครึ่งวัน = เข้า 13:00 (ลง t3) ตามโลจิคที่คุณวาง</div>
             </div>
           </div>
 
@@ -450,12 +495,17 @@
         <div class="mt-12">
           <div class="helper">แนบไฟล์ (ถ้ามี) — รูป/ไฟล์ PDF</div>
           <input class="input" id="evidenceFile" type="file" accept="image/*,application/pdf" />
-          <div class="helper mt-8" id="evidenceHint">
-            * ถ้าเลือก “ลาป่วย (มีใบรับรองแพทย์)” จะบังคับแนบไฟล์
+          <div class="helper mt-8" id="evidenceHint">* ถ้าเลือก “ลาป่วย (มีใบรับรองแพทย์)” จะบังคับแนบไฟล์</div>
+
+          <!-- ✅ ตอนแก้ไข: ถ้ามีไฟล์เดิม จะโชว์ตรงนี้ -->
+          <div id="existingEvidenceRow" class="mt-10 hide">
+            <div class="helper">ไฟล์แนบเดิม</div>
+            <div class="tag" id="existingEvidenceTag">-</div>
+            <div class="helper mt-8">* ไม่ต้องแนบใหม่ก็ได้ (ถ้าไฟล์เดิมยังอยู่)</div>
           </div>
 
           <div id="evidencePreview" class="mt-10 hide">
-            <div class="helper">ตัวอย่างไฟล์</div>
+            <div class="helper">ตัวอย่างไฟล์ใหม่ที่เลือก</div>
             <div id="previewBox" class="mt-8"></div>
           </div>
         </div>
@@ -465,7 +515,7 @@
           <div class="card-header" style="margin-bottom:6px;">
             <div>
               <div class="card-title"><span class="icon">✅</span>สรุปก่อนยืนยัน</div>
-              <div class="card-sub">ตรวจสอบความถูกต้องก่อนส่ง (ฝั่ง Admin จะเห็นสถานะ รอดำเนินการ/อนุมัติ/ไม่อนุมัติ)</div>
+              <div class="card-sub">ส่งแล้วจะเป็น “รอดำเนินการ” และสามารถแก้ไข/ยกเลิกได้จนกว่า Admin จะอนุมัติ</div>
             </div>
           </div>
 
@@ -498,6 +548,7 @@
               <option value="PENDING" selected>รอดำเนินการ</option>
               <option value="APPROVED">อนุมัติ</option>
               <option value="REJECTED">ไม่อนุมัติ</option>
+              <option value="CANCELED">ยกเลิกแล้ว</option>
             </select>
           </div>
           <div>
@@ -541,9 +592,7 @@
 </main>
 
 <script>
-  // ===== Storage key (ใช้ร่วมกับหน้าอื่น) =====
   const STORAGE_KEY = 'attendance_api_url_v2';
-
   const $ = (id) => document.getElementById(id);
 
   function getApiUrl(){ return localStorage.getItem(STORAGE_KEY) || ''; }
@@ -600,7 +649,6 @@
     }
   }
 
-  // ===== API helper =====
   const api = {
     async call(action, params = {}){
       const apiUrl = getApiUrl();
@@ -624,13 +672,23 @@
   };
 
   // ===== State =====
-  let emp = null; // { code, fullName, branch, level, ... }
+  let emp = null;
+
   let evidenceBase64 = '';
   let evidenceName = '';
   let evidenceMime = '';
 
+  // edit mode
+  let editing = {
+    on: false,
+    requestId: '',
+    existingEvidenceUrl: '',
+    existingEvidenceName: '',
+    status: ''
+  };
+
   let autoTimer = null;
-  const AUTO_REFRESH_MS = 30000;
+  const AUTO_REFRESH_MS = 25000;
 
   // ===== UI helpers =====
   function openUrlCard(){
@@ -658,8 +716,8 @@
     $('tab-submit').classList.toggle('hide', tab !== 'submit');
     $('tab-history').classList.toggle('hide', tab !== 'history');
 
-    // ✅ สลับแท็บ = รีเฟรชให้ชัวร์
     if(tab === 'history') loadHistory(true);
+    if(tab === 'submit') loadLatestStatus(true);
 
     startAutoRefresh(tab);
     setLastUpdated();
@@ -669,6 +727,7 @@
     if(autoTimer) clearInterval(autoTimer);
     autoTimer = setInterval(() => {
       if(tab === 'history') loadHistory(true);
+      if(tab === 'submit') loadLatestStatus(true);
       updateSummary();
       setLastUpdated();
     }, AUTO_REFRESH_MS);
@@ -693,26 +752,25 @@
     if(s === 'PENDING') return '<span class="status-badge st-pending">รอดำเนินการ</span>';
     if(s === 'APPROVED') return '<span class="status-badge st-approved">อนุมัติ</span>';
     if(s === 'REJECTED') return '<span class="status-badge st-rejected">ไม่อนุมัติ</span>';
+    if(s === 'CANCELED') return '<span class="status-badge st-canceled">ยกเลิกแล้ว</span>';
     return '<span class="status-badge st-unknown">UNKNOWN</span>';
   }
 
   // ===== Forms behavior =====
   function toggleDurationBoxes(){
     const dt = $('durationType').value;
-
     $('boxHourly').classList.toggle('hide', dt !== 'HOURLY');
     $('boxHalfDay').classList.toggle('hide', dt !== 'HALF_DAY');
     $('boxFullDay').classList.toggle('hide', dt !== 'FULL_DAY');
 
     const hint = $('durationHint');
     if(dt === 'HOURLY'){
-      hint.textContent = 'รายชั่วโมง: เหมาะกับ “ลา 1–3 ชม.” และจะเอาไปให้ GS ตัด “มาสายช่วงเช้า” ตามโลจิค';
+      hint.textContent = 'รายชั่วโมง: เหมาะกับ “ลา 1–3 ชม.” และระบบจะนำไปผูกโลจิคลง t1–t4 ใน GS';
     }else if(dt === 'HALF_DAY'){
-      hint.textContent = 'ครึ่งวัน: ค่าเริ่มต้นเป็น “เช้า (เข้า 13:00 ลง t3)” และสถานะจะขึ้นว่า “ลาครึ่งวัน”';
+      hint.textContent = 'ครึ่งวัน: เข้า 13:00 ลง t3 และสถานะ “ลาครึ่งวัน”';
     }else{
-      hint.textContent = 'ทั้งวัน: เลือกช่วงวันเริ่ม–วันจบ เหมาะกับลาพักร้อน/ลากิจหลายวัน';
+      hint.textContent = 'ทั้งวัน: เลือกช่วงวันเริ่ม–วันจบ เหมาะกับลาหลายวัน';
     }
-
     updateSummary();
   }
 
@@ -720,20 +778,32 @@
     const lt = $('leaveType').value;
     const hint = $('leaveTypeHint');
     if(lt === 'SICK_WITH_NOTE'){
-      hint.textContent = 'ลาป่วยแบบมีใบรับรองแพทย์: จำเป็นต้องแนบไฟล์ (รูป/ PDF)';
+      hint.textContent = 'ลาป่วยแบบมีใบรับรองแพทย์: ต้องมีไฟล์แนบ (ถ้าแก้ไขและมีไฟล์เดิมอยู่ ถือว่าโอเค)';
     }else if(lt === 'SICK_NO_NOTE'){
       hint.textContent = 'ลาป่วยแบบไม่มีใบรับรองแพทย์: ไม่บังคับไฟล์แนบ';
     }else if(lt === 'VACATION'){
-      hint.textContent = 'พักร้อน: ถ้ามีหลายวัน แนะนำเลือก “ทั้งวัน” แล้วเลือกช่วงวัน';
+      hint.textContent = 'พักร้อน: ถ้ามีหลายวัน แนะนำเลือก “ทั้งวัน”';
     }else{
-      hint.textContent = 'ลากิจ: ใส่เหตุผลสั้น ๆ และเลือกรูปแบบลาให้ตรง';
+      hint.textContent = 'ลากิจ: ใส่เหตุผลและเลือกรูปแบบลาให้ตรง';
     }
     updateSummary();
   }
 
+  // ✅ แสดงช่อง custom ตลอด แต่ enable/disable ตาม dropdown
   function toggleCustomHours(){
     const v = $('hourlyHours').value;
-    $('hourlyCustomWrap').classList.toggle('hide', v !== 'CUSTOM');
+    const input = $('hourlyCustomHours');
+    const hint = $('customHoursHint');
+
+    if(v === 'CUSTOM'){
+      input.disabled = false;
+      hint.textContent = '* กรอกจำนวนชั่วโมงที่ต้องการ';
+      setTimeout(() => input.focus(), 50);
+    }else{
+      input.disabled = true;
+      hint.textContent = '* เลือก “กำหนดเอง” เพื่อกรอกช่องนี้';
+      input.value = ''; // กันสรุปเพี้ยน
+    }
     updateSummary();
   }
 
@@ -755,7 +825,6 @@
       return `${d} • ครึ่งวัน • ${p}`;
     }
 
-    // FULL_DAY
     const s = $('fullStart').value || '-';
     const e = $('fullEnd').value || '-';
     return `${s} – ${e}`;
@@ -767,14 +836,55 @@
     $('sumDuration').textContent = durationText($('durationType').value);
     $('sumRange').textContent = getRangeText();
     $('sumReason').textContent = ($('reason').value || '').trim() || '-';
-    $('sumFile').textContent = evidenceName ? evidenceName : '-';
+
+    const hasNew = !!evidenceName;
+    const hasOld = !!editing.existingEvidenceName;
+    $('sumFile').textContent = hasNew ? evidenceName : (hasOld ? `(เดิม) ${editing.existingEvidenceName}` : '-');
+  }
+
+  function setEditMode(on, req){
+    editing.on = !!on;
+    if(!on){
+      editing.requestId = '';
+      editing.existingEvidenceUrl = '';
+      editing.existingEvidenceName = '';
+      editing.status = '';
+      $('editBanner').classList.add('hide');
+      $('existingEvidenceRow').classList.add('hide');
+      $('existingEvidenceTag').textContent = '-';
+      $('btnSubmit').textContent = '📨 ส่งใบลา';
+      return;
+    }
+
+    editing.requestId = String(req?.id || req?.requestId || '');
+    editing.existingEvidenceUrl = String(req?.evidenceUrl || '');
+    editing.existingEvidenceName = String(req?.evidenceName || (req?.evidenceUrl ? 'มีไฟล์แนบเดิม' : ''));
+    editing.status = String(req?.status || 'PENDING');
+
+    $('editBanner').classList.remove('hide');
+    $('editBannerTitle').textContent = `กำลังแก้ไขใบลา #${editing.requestId || '-'}`;
+    $('editBannerSub').innerHTML = `สถานะปัจจุบัน: <b>${esc(editing.status || '-')}</b> (แก้ไขได้เฉพาะ PENDING)`;
+
+    if(editing.existingEvidenceUrl || editing.existingEvidenceName){
+      $('existingEvidenceRow').classList.remove('hide');
+      if(editing.existingEvidenceUrl){
+        $('existingEvidenceTag').innerHTML = `ไฟล์เดิม: <a href="${esc(editing.existingEvidenceUrl)}" target="_blank" rel="noopener">เปิดดู</a>`;
+      }else{
+        $('existingEvidenceTag').textContent = `ไฟล์เดิม: ${editing.existingEvidenceName}`;
+      }
+    }else{
+      $('existingEvidenceRow').classList.add('hide');
+    }
+
+    $('btnSubmit').textContent = '💾 บันทึกการแก้ไข';
   }
 
   function resetForm(){
+    setEditMode(false);
+
     $('leaveType').value = 'PERSONAL';
     $('durationType').value = 'HOURLY';
 
-    // dates default = today
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth()+1).padStart(2,'0');
@@ -830,7 +940,6 @@
 
     if(!file){ updateSummary(); return; }
 
-    // Limit ~ 5MB (กันเว็บแอปพัง)
     const maxBytes = 5 * 1024 * 1024;
     if(file.size > maxBytes){
       alert('ไฟล์ใหญ่เกิน 5MB กรุณาลดขนาดรูป/ไฟล์');
@@ -840,16 +949,15 @@
     }
 
     const dataUrl = await readFileAsBase64(file);
-    evidenceBase64 = dataUrl; // ส่งทั้ง dataURL ไป GS ได้เลย (ค่อย parse ที่ GS)
+    evidenceBase64 = dataUrl;
     evidenceName = file.name || 'evidence';
     evidenceMime = file.type || '';
 
-    // preview
     $('evidencePreview').classList.remove('hide');
     if((file.type || '').startsWith('image/')){
       $('previewBox').innerHTML = `<img src="${esc(dataUrl)}" alt="preview" style="max-width:100%; border-radius:14px; border:1px solid #e5e7eb;" />`;
     }else{
-      $('previewBox').innerHTML = `<div class="tag">ไฟล์แนบ: ${esc(evidenceName)}</div>`;
+      $('previewBox').innerHTML = `<div class="tag">ไฟล์แนบใหม่: ${esc(evidenceName)}</div>`;
     }
 
     updateSummary();
@@ -866,8 +974,6 @@
     }
 
     try{
-      // ✅ แนะนำทำ action นี้ใน GS: getEmployeeByCode
-      // return: { code, fullName, branch, level }
       const result = await api.call('getEmployeeByCode', { code });
       emp = result;
 
@@ -879,13 +985,17 @@
 
       showOk('empOk', 'ดึงข้อมูลพนักงานสำเร็จ');
       setConn(true, 'เชื่อมต่อสำเร็จ');
+
       updateSummary();
       setLastUpdated();
+
+      // โหลดสถานะล่าสุดทันที
+      loadLatestStatus(true);
     }catch(err){
       emp = null;
       $('empName').value = '';
       $('empInfoRow').style.display = 'none';
-      showError('empErr', 'ดึงข้อมูลไม่สำเร็จ: ' + err.message + ' (ถ้า GS ยังไม่มี action getEmployeeByCode ให้ทำทีหลังได้)');
+      showError('empErr', 'ดึงข้อมูลไม่สำเร็จ: ' + err.message);
       setConn(false, 'ยังไม่พร้อม');
       updateSummary();
     }
@@ -897,10 +1007,11 @@
     $('empName').value = '';
     $('empInfoRow').style.display = 'none';
     hideError('empErr'); hideOk('empOk');
-    updateSummary();
+    $('latestBox').innerHTML = '<div class="helper">ยังไม่มีข้อมูล</div>';
+    resetForm();
   }
 
-  // ===== Submit leave =====
+  // ===== Validation & payload =====
   function validateBeforeSubmit(){
     hideError('submitErr'); hideOk('submitOk');
 
@@ -912,22 +1023,25 @@
     const dt = $('durationType').value;
     const reason = ($('reason').value || '').trim();
 
-    if(!reason){
-      return 'กรุณากรอกเหตุผลการลา';
-    }
+    if(!reason) return 'กรุณากรอกเหตุผลการลา';
 
-    if(lt === 'SICK_WITH_NOTE' && !evidenceBase64){
-      return 'ลาป่วย (มีใบรับรองแพทย์) ต้องแนบไฟล์';
+    // ถ้าเป็น sick with note: ยอมรับไฟล์เดิมตอนแก้ไขได้
+    const hasEvidenceNow = !!evidenceBase64;
+    const hasEvidenceOld = !!editing.existingEvidenceUrl || !!editing.existingEvidenceName;
+    if(lt === 'SICK_WITH_NOTE' && !(hasEvidenceNow || hasEvidenceOld)){
+      return 'ลาป่วย (มีใบรับรองแพทย์) ต้องมีไฟล์แนบ';
     }
 
     if(dt === 'HOURLY'){
       const d = $('hourlyDate').value;
       if(!d) return 'กรุณาเลือกวันที่ลา (รายชั่วโมง)';
+
       const hSel = $('hourlyHours').value;
       if(hSel === 'CUSTOM'){
         const hv = Number($('hourlyCustomHours').value);
         if(!hv || hv <= 0) return 'กรุณากรอกชั่วโมง (กำหนดเอง) ให้ถูกต้อง';
       }
+
       const st = $('hourlyStart').value;
       const en = $('hourlyEnd').value;
       if(!st || !en) return 'กรุณาเลือกเวลาเริ่ม/สิ้นสุด';
@@ -944,6 +1058,11 @@
       if(e < s) return 'วันที่สิ้นสุดต้องไม่ก่อนวันที่เริ่ม';
     }
 
+    // edit mode: กันแก้ไขถ้า status ไม่ใช่ pending (ฝั่ง GS ต้องเช็คซ้ำ)
+    if(editing.on && String(editing.status).toUpperCase() !== 'PENDING'){
+      return 'ใบลานี้ไม่อยู่สถานะ “รอดำเนินการ” จึงแก้ไขไม่ได้';
+    }
+
     return '';
   }
 
@@ -952,6 +1071,9 @@
     const dt = $('durationType').value;
 
     const payload = {
+      // edit meta
+      requestId: editing.on ? editing.requestId : '',
+
       empCode: emp.code,
       empName: emp.fullName || '',
       branch: emp.branch || '',
@@ -961,7 +1083,6 @@
       durationType: dt,
       reason: ($('reason').value || '').trim(),
 
-      // range
       dateFrom: '',
       dateTo: '',
       hours: '',
@@ -969,13 +1090,16 @@
       timeTo: '',
       halfPart: '',
 
-      // evidence
       evidenceName: evidenceName || '',
       evidenceMime: evidenceMime || '',
       evidenceBase64: evidenceBase64 || '',
 
-      // meta
+      // keep old evidence if no new upload
+      existingEvidenceUrl: editing.existingEvidenceUrl || '',
+      existingEvidenceName: editing.existingEvidenceName || '',
+
       clientTime: new Date().toISOString(),
+      summaryText: [leaveTypeText(lt), durationText(dt), getRangeText()].join(' • ')
     };
 
     if(dt === 'HOURLY'){
@@ -994,13 +1118,6 @@
       payload.dateTo   = $('fullEnd').value || payload.dateFrom;
     }
 
-    // friendly summary for note column if needed
-    payload.summaryText = [
-      leaveTypeText(payload.leaveType),
-      durationText(payload.durationType),
-      getRangeText()
-    ].join(' • ');
-
     return payload;
   }
 
@@ -1012,38 +1129,37 @@
     }
 
     const payload = buildPayload();
+    const jsonString = JSON.stringify(payload);
 
     try{
-      // ✅ แนะนำทำ action นี้ใน GS: submitLeaveRequest
-      // รับ params เป็น jsonString จะง่ายสุด
-      const jsonString = JSON.stringify(payload);
+      if(editing.on){
+        // ✅ ต้องมีใน GS: updateLeaveRequest
+        await api.call('updateLeaveRequest', { json: jsonString });
+        showOk('submitOk', 'บันทึกการแก้ไขสำเร็จ ✅ (ยังรอดำเนินการ)');
+      }else{
+        // ✅ ต้องมีใน GS: submitLeaveRequest
+        await api.call('submitLeaveRequest', { json: jsonString });
+        showOk('submitOk', 'ส่งใบลาสำเร็จ ✅ (สถานะ: รอดำเนินการ)');
+      }
 
-      // ส่งแบบ urlencoded (ปลอดภัยกับ GS)
-      const result = await api.call('submitLeaveRequest', { json: jsonString });
-
-      showOk('submitOk', 'ส่งใบลาสำเร็จ ✅ (สถานะ: รอดำเนินการ)');
       hideError('submitErr');
 
-      // reset partial
+      // reset form + ไปดูสถานะ
       resetForm();
+      loadLatestStatus(true);
 
-      // ไป history แล้วโหลด
       setTab('history');
       await loadHistory(true);
 
       setConn(true, 'เชื่อมต่อสำเร็จ');
       setLastUpdated();
     }catch(e){
-      // ถ้า GS ยังไม่ทำ action นี้ หน้าจะไม่พัง
-      showError('submitErr',
-        'ส่งใบลาไม่สำเร็จ: ' + e.message +
-        ' (ถ้า GS ยังไม่มี action submitLeaveRequest ให้ทำทีหลังได้ — หน้า leave.html พร้อมแล้ว)'
-      );
+      showError('submitErr', 'ทำรายการไม่สำเร็จ: ' + e.message + ' (รอทำ GS action ให้ครบ)');
       hideOk('submitOk');
     }
   }
 
-  // ===== History =====
+  // ===== History / Latest =====
   function fillYearMonth(){
     const now = new Date();
     const curYear = now.getFullYear();
@@ -1060,6 +1176,125 @@
       const sel = (i === now.getMonth()) ? 'selected' : '';
       return `<option value="${i+1}" ${sel}>${m}</option>`;
     }).join('');
+  }
+
+  async function loadLatestStatus(silent=false){
+    const box = $('latestBox');
+
+    if(!emp || !String(emp.code || '').trim()){
+      box.innerHTML = '<div class="helper">กรุณาระบุรหัสพนักงานก่อน</div>';
+      return;
+    }
+
+    // ใช้ action เดียวกับ history ก็ได้
+    const now = new Date();
+    const year = String(now.getFullYear());
+    const month = String(now.getMonth()+1);
+
+    try{
+      const res = await api.call('getMyLeaveRequests', { empCode: emp.code, year, month, status: 'ALL' });
+      const rows = (res && res.rows) || [];
+      if(!rows.length){
+        box.innerHTML = '<div class="helper">ยังไม่มีใบลาในเดือนนี้</div>';
+        return;
+      }
+
+      const top = rows.slice(0, 3);
+      box.innerHTML = top.map(r => {
+        const id = String(r.id || r.requestId || '');
+        const t = leaveTypeText(r.leaveType || r.type || '');
+        const d = durationText(r.durationType || r.duration || '');
+        const range = r.rangeText || r.range || r.dateRange || `${r.dateFrom || '-'} – ${r.dateTo || '-'}`;
+        const st = statusBadge(r.status || 'PENDING');
+
+        return `
+          <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; padding:10px 0; border-top:1px dashed rgba(148,163,184,.30);">
+            <div style="min-width:0;">
+              <div style="font-weight:900;">#${esc(id || '-')} • ${esc(t)} • ${esc(d)}</div>
+              <div class="helper">ช่วง: ${esc(range)}</div>
+            </div>
+            <div>${st}</div>
+          </div>
+        `;
+      }).join('');
+
+      setConn(true, 'เชื่อมต่อสำเร็จ');
+      setLastUpdated();
+    }catch(e){
+      if(!silent) console.error(e);
+      box.innerHTML = '<div class="helper">ยังไม่พร้อม (รอ GS action getMyLeaveRequests)</div>';
+    }
+  }
+
+  function toFormFromRequest(r){
+    // เตรียมเข้า edit mode
+    setEditMode(true, r);
+
+    // set base values
+    $('leaveType').value = r.leaveType || r.type || 'PERSONAL';
+    $('durationType').value = r.durationType || r.duration || 'HOURLY';
+    toggleLeaveTypeHint();
+    toggleDurationBoxes();
+
+    // clear new evidence
+    $('evidenceFile').value = '';
+    evidenceBase64 = '';
+    evidenceName = '';
+    evidenceMime = '';
+    $('evidencePreview').classList.add('hide');
+    $('previewBox').innerHTML = '';
+
+    // reason
+    $('reason').value = r.reason || '';
+
+    const dt = $('durationType').value;
+
+    if(dt === 'HOURLY'){
+      $('hourlyDate').value = r.dateFrom || r.date || $('hourlyDate').value;
+      const hrs = String(r.hours || '').trim();
+      if(hrs && !['1','2','3'].includes(hrs)){
+        $('hourlyHours').value = 'CUSTOM';
+        toggleCustomHours();
+        $('hourlyCustomHours').value = hrs;
+      }else{
+        $('hourlyHours').value = hrs || '3';
+        toggleCustomHours();
+      }
+      $('hourlyStart').value = r.timeFrom || '08:00';
+      $('hourlyEnd').value = r.timeTo || '11:00';
+    }
+
+    if(dt === 'HALF_DAY'){
+      $('halfDate').value = r.dateFrom || $('halfDate').value;
+      $('halfPart').value = r.halfPart || 'AM';
+    }
+
+    if(dt === 'FULL_DAY'){
+      $('fullStart').value = r.dateFrom || $('fullStart').value;
+      $('fullEnd').value = r.dateTo || $('fullEnd').value;
+    }
+
+    updateSummary();
+
+    // switch to submit
+    setTab('submit');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function cancelRequestById(id){
+    if(!id) return;
+    const ok = confirm(`ยืนยันยกเลิกใบลา #${id} ?\n(ทำได้เฉพาะสถานะรอดำเนินการ)`);
+    if(!ok) return;
+
+    try{
+      await api.call('cancelLeaveRequest', { requestId: id });
+      alert('ยกเลิกใบลาสำเร็จ');
+      loadLatestStatus(true);
+      loadHistory(true);
+      setLastUpdated();
+    }catch(e){
+      alert('ยกเลิกไม่สำเร็จ: ' + e.message + ' (รอทำ GS action cancelLeaveRequest)');
+    }
   }
 
   async function loadHistory(silent=false){
@@ -1079,29 +1314,31 @@
     const status = $('histStatus').value || 'ALL';
 
     try{
-      // ✅ แนะนำ action ใน GS: getMyLeaveRequests
-      // params: empCode, year, month, status
       const res = await api.call('getMyLeaveRequests', { empCode: emp.code, year, month, status });
-
       const rows = (res && res.rows) || [];
+
       if(!rows.length){
         list.innerHTML = '<div class="helper">ยังไม่มีรายการ</div>';
         return;
       }
 
       list.innerHTML = rows.map(r => {
+        const id = String(r.id || r.requestId || '');
         const t = leaveTypeText(r.leaveType || r.type || '');
         const d = durationText(r.durationType || r.duration || '');
         const range = r.rangeText || r.range || r.dateRange || `${r.dateFrom || '-'} – ${r.dateTo || '-'}`;
-        const st = statusBadge(r.status || 'PENDING');
+        const stRaw = String(r.status || 'PENDING').toUpperCase();
+        const st = statusBadge(stRaw);
         const createdAt = r.createdAt || r.requestDate || '';
         const file = r.evidenceUrl ? `<a href="${esc(r.evidenceUrl)}" target="_blank" rel="noopener">เปิดไฟล์แนบ</a>` : '-';
+
+        const canEdit = (stRaw === 'PENDING') && !!id;
 
         return `
           <div class="item">
             <div class="item-top">
               <div style="min-width:0;">
-                <div class="item-title">${esc(t)} • ${esc(d)}</div>
+                <div class="item-title">#${esc(id || '-')} • ${esc(t)} • ${esc(d)}</div>
                 <div class="item-meta">
                   <span class="tag">ช่วง: ${esc(range)}</span>
                   ${st}
@@ -1115,16 +1352,58 @@
               <div class="k">ไฟล์แนบ</div><div class="v">${file}</div>
               <div class="k">หมายเหตุผู้อนุมัติ</div><div class="v">${esc(r.adminNote || r.note || '-')}</div>
             </div>
+
+            <div class="actions">
+              <button class="btn btn-secondary btn-small" ${canEdit ? '' : 'disabled'} data-action="edit" data-id="${esc(id)}">แก้ไข</button>
+              <button class="btn btn-danger btn-small" ${canEdit ? '' : 'disabled'} data-action="cancel" data-id="${esc(id)}">ยกเลิกใบลา</button>
+            </div>
           </div>
         `;
       }).join('');
+
+      // bind actions
+      list.querySelectorAll('button[data-action]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const action = btn.dataset.action;
+          const id = btn.dataset.id;
+
+          // หา row original เพื่อเอาข้อมูลมา prefill
+          const year = $('histYear').value;
+          const month = $('histMonth').value;
+          const status = 'ALL';
+
+          if(action === 'cancel'){
+            await cancelRequestById(id);
+            return;
+          }
+
+          if(action === 'edit'){
+            try{
+              // ดึงรายการทั้งหมดอีกครั้งเพื่อหา record ที่ตรง id (กันข้อมูลหลุด)
+              const res = await api.call('getMyLeaveRequests', { empCode: emp.code, year, month, status });
+              const rows = (res && res.rows) || [];
+              const found = rows.find(x => String(x.id || x.requestId || '') === String(id));
+              if(!found){
+                alert('ไม่พบใบลาที่เลือก');
+                return;
+              }
+              if(String(found.status || '').toUpperCase() !== 'PENDING'){
+                alert('ใบลานี้ไม่อยู่สถานะ “รอดำเนินการ” จึงแก้ไขไม่ได้');
+                return;
+              }
+              toFormFromRequest(found);
+            }catch(e){
+              alert('เปิดหน้าแก้ไขไม่สำเร็จ: ' + e.message);
+            }
+          }
+        });
+      });
 
       setConn(true, 'เชื่อมต่อสำเร็จ');
       setLastUpdated();
     }catch(e){
       list.innerHTML = '<div class="helper">ยังไม่พร้อม (รอทำ GS/DB)</div>';
-      hint.textContent =
-        'ยังไม่ได้ผูก API ประวัติลา (action: getMyLeaveRequests) — แต่หน้า leave.html พร้อมใช้งานด้าน UI แล้ว ✅';
+      hint.textContent = 'ต้องมี GS action: getMyLeaveRequests / updateLeaveRequest / cancelLeaveRequest';
       if(!silent) console.error(e);
     }
   }
@@ -1133,7 +1412,6 @@
   function initDefaults(){
     fillYearMonth();
 
-    // default dates today
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth()+1).padStart(2,'0');
@@ -1154,18 +1432,13 @@
   function initApiStatus(){
     const url = getApiUrl();
     setApiDisplay(url);
-    if(!url){
-      setConn(false, 'ยังไม่ได้ตั้งค่า URL');
-    }else{
-      setConn(true, 'พร้อมใช้งาน');
-    }
+    setConn(!!url, url ? 'พร้อมใช้งาน' : 'ยังไม่ได้ตั้งค่า URL');
   }
 
   document.addEventListener('DOMContentLoaded', () => {
     initDefaults();
     initApiStatus();
 
-    // topbar actions
     $('btnSetUrl').addEventListener('click', openUrlCard);
     $('btnCancelUrl').addEventListener('click', closeUrlCard);
     $('btnSaveUrl').addEventListener('click', () => {
@@ -1197,21 +1470,19 @@
     $('btnBack').addEventListener('click', () => window.location.href = 'index.html');
     $('btnRefresh').addEventListener('click', () => {
       updateSummary();
+      loadLatestStatus(true);
       if(document.querySelector('.tab.active')?.dataset.tab === 'history') loadHistory(true);
       setLastUpdated();
     });
 
-    // tabs
     document.querySelectorAll('.tab').forEach(t => {
       t.addEventListener('click', () => setTab(t.dataset.tab));
     });
 
-    // emp
     $('btnLoadEmp').addEventListener('click', loadEmployee);
     $('btnClearEmp').addEventListener('click', clearEmployee);
     $('empCode').addEventListener('keydown', (e) => { if(e.key === 'Enter') loadEmployee(); });
 
-    // form changes
     $('leaveType').addEventListener('change', toggleLeaveTypeHint);
     $('durationType').addEventListener('change', toggleDurationBoxes);
     $('hourlyHours').addEventListener('change', toggleCustomHours);
@@ -1221,11 +1492,16 @@
 
     $('evidenceFile').addEventListener('change', handleEvidenceChange);
 
-    // buttons
     $('btnReset').addEventListener('click', resetForm);
     $('btnSubmit').addEventListener('click', submitLeave);
 
-    // history
+    $('btnCancelEdit').addEventListener('click', () => {
+      const ok = confirm('ยกเลิกการแก้ไขและล้างฟอร์ม?');
+      if(ok) resetForm();
+    });
+
+    $('btnRefreshLatest').addEventListener('click', () => loadLatestStatus(false));
+
     $('btnLoadHistory').addEventListener('click', () => loadHistory(false));
     ['histStatus','histMonth','histYear'].forEach(id => $(id).addEventListener('change', () => loadHistory(true)));
 
