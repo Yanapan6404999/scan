@@ -4,753 +4,445 @@
   <meta charset="UTF-8" />
   <title>ระบบจัดการเวลาทำงาน – Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
-    :root {
-      --primary: #2563eb;
-      --primary-soft: #dbeafe;
-      --accent: #22c55e;
-      --danger: #ef4444;
-      --warning: #fbbf24;
-      --bg: #f3f4f6;
-      --text-main: #0f172a;
-      --text-soft: #6b7280;
-      --border: #e5e7eb;
-      --card-bg: #ffffff;
-      --sidebar-bg: #020617;
-      --sidebar-active: #020617;
+    :root{
+      --primary:#2563eb;
+      --primary-soft:#dbeafe;
+
+      --bg:#f3f4f6;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:#e5e7eb;
+
+      --success:#16a34a;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+
+      --sidebar:#020617;
+      --sidebar2:#111827;
     }
 
-    * {
-      box-sizing: border-box;
-      font-family: "Prompt", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
-    }
-
-    body {
-      color: var(--text-main);
+    *{ box-sizing:border-box; font-family:"Prompt",system-ui,-apple-system,"Segoe UI",sans-serif; }
+    html,body{ margin:0; padding:0; width:100%; overflow-x:hidden; }
+    body{
+      color:var(--text);
       background:
         radial-gradient(circle at top left, #e0e7ff 0, transparent 55%),
         radial-gradient(circle at bottom right, #e5f5ff 0, transparent 50%),
-        #f3f4f6;
-    }
-
-    a { color: var(--primary); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-
-    button, .btn {
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-size: 13px;
-      padding: 7px 14px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease, opacity 0.1s ease;
-      white-space: nowrap;
-    }
-
-    button:active, .btn:active { transform: translateY(1px) scale(0.99); box-shadow: none; }
-    button:disabled, .btn:disabled { opacity: 0.6; cursor: default; transform: none; box-shadow: none; }
-
-    .btn-primary { background: var(--primary); color: white; box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35); }
-    .btn-secondary { background: white; color: #111827; border: 1px solid var(--border); }
-    .btn-danger { background: var(--danger); color: white; }
-    .btn-small { padding: 4px 10px; font-size: 12px; border-radius: 999px; }
-    .btn-ghost { border-radius: 999px; background: transparent; border: 1px solid var(--border); color: var(--text-soft); }
-
-    /* PAGE LAYOUT --------------------------------------------------- */
-    .page {
-      display: flex;
-      min-height: 100vh;
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
-    }
-
-    /* SIDEBAR */
-    .sidebar {
-      width: 240px;
-      background: radial-gradient(circle at top, #111827, #020617);
-      color: #e5e7eb;
-      display: flex;
-      flex-direction: column;
-      padding: 16px 14px;
-      flex-shrink: 0;
-      box-shadow:
-        8px 0 30px rgba(15, 23, 42, 0.5),
-        0 0 0 1px rgba(15,23,42,0.5);
-      position: relative;
-      z-index: 30;
-    }
-
-    .sidebar::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at bottom, rgba(37,99,235,0.2), transparent 60%);
-      pointer-events: none;
-    }
-
-    .sidebar-header {
-      padding: 6px 6px 16px;
-      border-bottom: 1px solid rgba(55,65,81,0.9);
-      margin-bottom: 10px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .sidebar-title { font-weight: 600; font-size: 18px; margin-bottom: 2px; }
-    .sidebar-sub { font-size: 11px; color: #9ca3af; }
-
-    .nav {
-      margin-top: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      flex: 1;
-      min-height: 0;
-      position: relative;
-      z-index: 1;
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 11px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 14px;
-      color: #e5e7eb;
-      border: 1px solid transparent;
-    }
-
-    .nav-item span.icon { width: 22px; display: inline-flex; justify-content: center; }
-    .nav-item.active {
-      background: rgba(15,23,42,0.95);
-      border-color: rgba(59,130,246,0.8);
-      box-shadow: 0 8px 16px rgba(15,23,42,0.8);
-    }
-    .nav-item:hover { background: rgba(31,41,55,0.9); }
-
-    .sidebar-footer {
-      padding-top: 10px;
-      border-top: 1px solid rgba(55,65,81,0.9);
-      font-size: 11px;
-      color: #9ca3af;
-      position: relative;
-      z-index: 1;
-    }
-    .sidebar-footer button { margin-top: 8px; width: 100%; }
-
-    /* CONTENT AREA */
-    .content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-      max-width: 100%;
-      overflow-x: hidden;
-    }
-
-    header.topbar {
-      padding: 10px 18px;
-      background: rgba(15,23,42,0.9);
-      color: #e5e7eb;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid rgba(15,23,42,0.5);
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      backdrop-filter: blur(14px);
-      max-width: 100%;
-      overflow-x: hidden;
-    }
-
-    .topbar-title { font-size: 18px; font-weight: 600; max-width: 100%; }
-    .topbar-sub { font-size: 12px; color: #9ca3af; display: flex; flex-wrap: wrap; gap: 4px; max-width: 100%; }
-
-    #apiUrlDisplay {
-      word-break: break-all;
-      overflow-wrap: anywhere;
-      max-width: 100%;
-      display: inline-block;
-      cursor: pointer;
-    }
-
-    .topbar-left {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-      max-width: 100%;
-    }
-
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      min-width: 0;
-      max-width: 100%;
-    }
-
-    main.main { padding: 18px 18px 22px; max-width: 100%; overflow-x: hidden; }
-    .main-inner { max-width: 1260px; margin: 0 auto; width: 100%; max-width: 100%; }
-
-    /* MOBILE NAV ---------------------------------------------------- */
-    .mobile-nav {
-      display: none;
-      background: #020617;
-      padding: 7px 10px;
-      border-bottom: 1px solid #1f2937;
-      max-width: 100%;
-      overflow-x: hidden;
-    }
-
-    .mobile-nav-inner {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      max-width: 100%;
-    }
-
-    .mobile-nav-item {
-      flex: 0 0 auto;
-      border-radius: 999px;
-      border: 1px solid rgba(75,85,99,0.8);
-      background: #111827;
-      color: #e5e7eb;
-      font-size: 12px;
-      padding: 6px 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .mobile-nav-item.active {
-      background: var(--primary);
-      border-color: rgba(37,99,235,0.8);
-      box-shadow: 0 8px 18px rgba(37,99,235,0.4);
-    }
-
-    /* CONNECTION BADGE ---------------------------------------------- */
-    .badge-connection {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      background: rgba(15, 118, 110, 0.15);
-      color: #a5f3fc;
-      border: 1px solid rgba(34,197,94,0.8);
-      max-width: 100%;
-    }
-
-    .badge-connection.offline {
-      background: rgba(127, 29, 29, 0.35);
-      color: #fecaca;
-      border-color: rgba(248,113,113,0.9);
-    }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: #22c55e;
-      box-shadow: 0 0 8px rgba(34, 197, 94, 0.85);
-    }
-
-    .badge-connection.offline .dot {
-      background: #f97373;
-      box-shadow: 0 0 8px rgba(248, 113, 113, 0.8);
-    }
-
-    /* CARDS & TABLES ----------------------------------------------- */
-    .card {
-      background: var(--card-bg);
-      border-radius: 18px;
-      padding: 14px 14px 12px;
-      box-shadow:
-        0 18px 40px rgba(15, 23, 42, 0.08),
-        0 0 0 1px rgba(226,232,240,0.9);
-      border: 1px solid rgba(226,232,240,0.9);
-      margin-bottom: 14px;
-      backdrop-filter: blur(10px);
-      width: 100%;
-      max-width: 100%;
-      overflow: hidden;
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 10px;
-      gap: 10px;
-      flex-wrap: wrap;
-      max-width: 100%;
-    }
-
-    .card-title {
-      font-size: 15px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .card-title span.icon {
-      width: 22px;
-      height: 22px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      background: var(--primary-soft);
-      color: var(--primary);
-    }
-
-    .card-subtitle { font-size: 12px; color: var(--text-soft); max-width: 100%; }
-
-    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
-
-    .stat-card {
-      padding: 10px 12px;
-      border-radius: 14px;
-      background: #f9fafb;
-      border: 1px dashed #e5e7eb;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: 0;
-    }
-
-    .stat-label { font-size: 12px; color: var(--text-soft); }
-    .stat-value { font-size: 20px; font-weight: 600; }
-    .stat-extra { font-size: 11px; color: var(--text-soft); }
-    .stat-accent { color: #16a34a; }
-    .stat-danger { color: #b91c1c; }
-
-    .badge-status { font-size: 11px; padding: 3px 9px; border-radius: 999px; display: inline-block; }
-    .badge-normal { background: #dcfce7; color: #166534; }
-    .badge-late { background: #fee2e2; color: #b91c1c; }
-    .badge-absent { background: #ffe4e6; color: #be123c; }
-    .badge-other { background: #fef3c7; color: #92400e; }
-    .badge-unknown { background: #111827; color: #e5e7eb; }
-
-    .badge-pill { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: #e5e7eb; color: #374151; }
-
-    table { width: 100%; border-collapse: collapse; font-size: 13px; max-width: 100%; }
-    thead { background: #f3f4f6; }
-    th, td { padding: 7px 8px; border-bottom: 1px solid #e5e7eb; text-align: left; white-space: nowrap; vertical-align: top; }
-    th { font-weight: 500; color: #374151; font-size: 12px; }
-    tbody tr:nth-child(even) { background: #f9fafb; }
-
-    .text-right { text-align: right; }
-    .text-center { text-align: center; }
-
-    .scroll-x {
-      width: 100%;
-      max-width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-    }
-
-    .table-wide {
-      width: max-content;
-      min-width: 760px;
-    }
-
-    .scroll-x::-webkit-scrollbar { height: 6px; }
-    .scroll-x::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
-
-    .filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      max-width: 100%;
-    }
-
-    .filters .field {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      font-size: 11px;
-      color: var(--text-soft);
-      min-width: 0;
-    }
-
-    select,
-    input[type="text"],
-    input[type="number"] {
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      padding: 6px 10px;
-      font-size: 13px;
-      outline: none;
-      min-width: 120px;
-      background: white;
-      max-width: 100%;
-    }
-
-    input[type="text"]:focus,
-    select:focus,
-    input[type="number"]:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 1px rgba(37,99,235,0.3);
-    }
-
-    .input-block {
-      width: 100%;
-      max-width: 100%;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      padding: 6px 9px;
-      font-size: 13px;
-      outline: none;
-      background: white;
-    }
-
-    .input-block:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 1px rgba(37,99,235,0.3);
-    }
-
-    .helper { font-size: 11px; color: var(--text-soft); }
-
-    .mt-8 { margin-top: 8px; }
-    .mt-10 { margin-top: 10px; }
-    .mt-12 { margin-top: 12px; }
-
-    .tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: #e5e7eb; color: #374151; }
-    .section { display: none; }
-    .section.active { display: block; }
-
-    .error-text { font-size: 12px; color: var(--danger); margin-top: 4px; }
-    .success-text { font-size: 12px; color: #16a34a; margin-top: 4px; }
-    .flex { display: flex; gap: 8px; align-items: center; min-width: 0; }
-
-    .flex-stack-mobile {}
-    @media (max-width: 640px) {
-      .flex-stack-mobile { flex-direction: column; align-items: stretch; }
-      .flex-stack-mobile .btn { width: 100%; justify-content: center; }
-    }
-
-    .table-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-    .pill-small { font-size: 10px; padding: 2px 6px; border-radius: 999px; background: #e5e7eb; color: #4b5563; }
-
-    .header-search-box { min-width: 0; max-width: 280px; width: 100%; }
-    @media (max-width: 640px) {
-      .header-search-box { min-width: 100%; max-width: 100%; }
-      #empSearch { width: 100%; }
-      .table-actions .btn { flex: 1; }
-    }
-
-    /* ✅ Mobile Segmented Control */
-    .mobile-segment {
-      display: none;
-      gap: 8px;
-      margin-bottom: 10px;
-      padding: 8px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.65);
-      border: 1px solid rgba(226,232,240,0.9);
-      box-shadow: 0 12px 28px rgba(15,23,42,0.06);
-      backdrop-filter: blur(10px);
-      max-width: 100%;
-    }
-    .seg-btn {
-      flex: 1;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: white;
-      color: #111827;
-      padding: 9px 12px;
-      font-size: 13px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: transform .08s ease, box-shadow .08s ease, background .1s ease;
-      max-width: 100%;
-    }
-    .seg-btn.active {
-      background: var(--primary);
-      color: white;
-      border-color: rgba(37,99,235,0.7);
-      box-shadow: 0 10px 18px rgba(37,99,235,0.25);
-    }
-    .emp-hidden { display: none !important; }
-
-    .emp-table-scroll {
-      max-height: 420px;
-      overflow-y: auto;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      max-width: 100%;
-    }
-    .emp-table-scroll table { min-width: 560px; }
-
-    .emp-desktop-only { display: block; }
-    .emp-mobile-only { display: none; }
-
-    /* ✅ Mobile List (เหมือนแอป) */
-    .emp-mobile-list,
-    .logs-mobile-list,
-    .summary-mobile-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 6px 2px 2px;
-    }
-    .emp-item,
-    .log-item,
-    .sum-item {
-      border: 1px solid rgba(226,232,240,0.95);
-      border-radius: 16px;
-      padding: 12px 12px 10px;
-      background: #fff;
-      box-shadow: 0 10px 22px rgba(15,23,42,0.06);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .emp-item-top,
-    .log-item-top,
-    .sum-item-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: flex-start;
-    }
-    .emp-name, .log-name, .sum-name { font-weight: 600; font-size: 14px; line-height: 1.25; }
-    .emp-meta, .log-meta, .sum-meta {
-      font-size: 12px;
-      color: var(--text-soft);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .emp-code-badge, .log-code-badge, .sum-code-badge {
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: rgba(37,99,235,0.12);
-      color: var(--primary);
-      border: 1px solid rgba(37,99,235,0.25);
-      white-space: nowrap;
-      height: fit-content;
-    }
-
-    .emp-face-badge {
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(16,185,129,0.25);
-      background: rgba(16,185,129,0.10);
-      color: #047857;
-      white-space: nowrap;
-    }
-    .emp-face-badge.off {
-      border-color: rgba(239,68,68,0.25);
-      background: rgba(239,68,68,0.10);
-      color: #b91c1c;
-    }
-
-    .emp-item-actions,
-    .log-item-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .emp-item-actions .btn,
-    .log-item-actions .btn {
-      width: 100%;
-      justify-content: center;
-      padding: 10px 12px;
-      font-size: 13px;
-    }
-    .btn-span-2 { grid-column: 1 / -1; }
-
-    .kv {
-      display: grid;
-      grid-template-columns: 90px 1fr;
-      gap: 6px 10px;
-      font-size: 12px;
-      color: #111827;
-    }
-    .kv .k { color: var(--text-soft); }
-    .kv .v { font-weight: 500; }
-
-    .skeleton {
-      background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
-      background-size: 400% 100%;
-      animation: sk 1.2s ease infinite;
-      border-radius: 12px;
-      height: 14px;
-      width: 100%;
-    }
-    @keyframes sk {
-      0% { background-position: 100% 0; }
-      100% { background-position: 0 0; }
-    }
-
-    /* RESPONSIVE ---------------------------------------------------- */
-    @media (max-width: 1000px) {
-      .sidebar { display: none; }
-      .page { flex-direction: column; }
-      main.main { padding: 14px 12px 18px; }
-      .mobile-nav { display: block; position: sticky; top: 48px; z-index: 15; }
-    }
-
-    @media (max-width: 800px) {
-      .grid-3 { grid-template-columns: 1fr; }
-      .grid-2 { grid-template-columns: 1fr; }
-      #section-employees .mobile-segment { display: flex; }
-
-      .emp-desktop-only { display: none; }
-      .emp-mobile-only { display: block; }
-    }
-
-    @media (max-width: 760px) {
-      /* ซ่อนคอลัมน์ที่ยาวบางตัวในตาราง (แต่ยังมีการ์ดในมือถืออยู่แล้ว) */
-      .col-hide-sm { display: none; }
-    }
-
-    @media (max-width: 640px) {
-      header.topbar {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
-      }
-      .topbar-right {
-        width: 100%;
-        justify-content: space-between;
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 8px;
-        align-items: center;
-      }
-      #connectionBadge { justify-self: start; }
-      #btnSetUrl { justify-self: end; }
-      .filters .field { min-width: 46%; }
-    }
-
-    /* URL Card ลอยด้านล่าง ---------------------------------------- */
-    #urlCard {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      max-width: 420px;
-      width: calc(100% - 32px);
-      z-index: 40;
-    }
-    @media (max-width: 640px) {
-      #urlCard { left: 12px; right: 12px; bottom: 12px; width: auto; }
-    }
-
-    /* MODALS -------------------------------------------------------- */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(2,6,23,0.55);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 14px;
-      z-index: 60;
-      backdrop-filter: blur(6px);
-    }
-    .modal {
-      width: 100%;
-      max-width: 520px;
-      background: #fff;
-      border-radius: 18px;
-      border: 1px solid rgba(226,232,240,0.9);
-      box-shadow: 0 30px 80px rgba(15,23,42,0.35);
-      overflow: hidden;
-    }
-    .modal-header {
-      padding: 12px 14px;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-      background: #f8fafc;
-    }
-    .modal-title { font-weight: 600; font-size: 14px; }
-    .modal-sub { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
-    .modal-body { padding: 12px 14px 14px; }
-    .modal-footer {
-      padding: 12px 14px;
-      border-top: 1px solid #e5e7eb;
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-      flex-wrap: wrap;
-      background: #fafafa;
-    }
-
-    .preview-box {
-      border: 1px dashed #e5e7eb;
-      border-radius: 14px;
-      padding: 10px;
-      background: #f9fafb;
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      flex-wrap: wrap;
-    }
-    .preview-box img {
-      width: 110px;
-      height: 110px;
-      border-radius: 12px;
-      object-fit: cover;
-      border: 1px solid rgba(226,232,240,0.9);
-      background: #fff;
-    }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; }
-
-    /* ✅ Logs/Summary: table desktop, cards mobile */
-    .logs-desktop-only, .summary-desktop-only { display: block; }
-    .logs-mobile-only, .summary-mobile-only { display: none; }
-    @media (max-width: 800px) {
-      .logs-desktop-only, .summary-desktop-only { display: none; }
-      .logs-mobile-only, .summary-mobile-only { display: block; }
-    }
+        var(--bg);
+    }
+
+    a{ color:var(--primary); text-decoration:none; }
+    a:hover{ text-decoration:underline; }
+
+    /* Buttons */
+    .btn{
+      border:none; cursor:pointer; border-radius:999px;
+      padding:9px 14px; font-size:13px; font-weight:500;
+      display:inline-flex; align-items:center; justify-content:center; gap:6px;
+      transition:transform .08s ease, box-shadow .08s ease, background .1s ease, opacity .1s ease;
+      white-space:nowrap;
+    }
+    .btn:active{ transform:translateY(1px) scale(.99); }
+    .btn:disabled{ opacity:.6; cursor:default; transform:none; }
+    .btn-primary{ background:var(--primary); color:#fff; box-shadow:0 10px 24px rgba(37,99,235,.28); }
+    .btn-secondary{ background:#fff; border:1px solid var(--border); color:#111827; }
+    .btn-danger{ background:var(--danger); color:#fff; }
+    .btn-ghost{ background:transparent; border:1px solid var(--border); color:var(--muted); }
+    .btn-small{ padding:6px 10px; font-size:12px; }
+
+    /* Layout */
+    .page{ display:flex; min-height:100vh; width:100%; overflow-x:hidden; }
+    .sidebar{
+      width:240px; flex-shrink:0;
+      background:radial-gradient(circle at top, var(--sidebar2), var(--sidebar));
+      color:#e5e7eb;
+      padding:16px 14px;
+      display:flex; flex-direction:column;
+      box-shadow:8px 0 30px rgba(15,23,42,.5), 0 0 0 1px rgba(15,23,42,.55);
+      position:relative; z-index:30;
+    }
+    .sidebar::after{
+      content:""; position:absolute; inset:0;
+      background:radial-gradient(circle at bottom, rgba(37,99,235,.20), transparent 60%);
+      pointer-events:none;
+    }
+    .sidebar-header{ padding:6px 6px 16px; border-bottom:1px solid rgba(55,65,81,.9); margin-bottom:10px; position:relative; z-index:1;}
+    .sidebar-title{ font-weight:700; font-size:18px; margin-bottom:2px;}
+    .sidebar-sub{ font-size:11px; color:#9ca3af; }
+    .nav{ margin-top:12px; display:flex; flex-direction:column; gap:6px; flex:1; min-height:0; position:relative; z-index:1;}
+    .nav-item{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px; border-radius:14px;
+      cursor:pointer; border:1px solid transparent;
+      color:#e5e7eb; font-size:14px;
+    }
+    .nav-item .icon{ width:22px; display:inline-flex; justify-content:center; }
+    .nav-item:hover{ background:rgba(31,41,55,.85); }
+    .nav-item.active{
+      background:rgba(15,23,42,.95);
+      border-color:rgba(59,130,246,.75);
+      box-shadow:0 10px 20px rgba(15,23,42,.75);
+    }
+    .sidebar-footer{
+      padding-top:10px; border-top:1px solid rgba(55,65,81,.9);
+      font-size:11px; color:#9ca3af;
+      position:relative; z-index:1;
+    }
+    .sidebar-footer .btn{ width:100%; margin-top:8px; }
+
+    .content{ flex:1; display:flex; flex-direction:column; min-width:0; max-width:100%; overflow-x:hidden; }
+
+    header.topbar{
+      padding:10px 18px;
+      background:rgba(15,23,42,.92);
+      color:#e5e7eb;
+      border-bottom:1px solid rgba(15,23,42,.55);
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:20;
+      backdrop-filter:blur(14px);
+      gap:10px;
+    }
+    .topbar-left{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+    .topbar-title{ font-size:18px; font-weight:700; }
+    .topbar-sub{ font-size:12px; color:#9ca3af; display:flex; flex-wrap:wrap; gap:6px; }
+    #apiUrlDisplay{ cursor:pointer; word-break:break-all; overflow-wrap:anywhere; }
+    .topbar-right{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+
+    main.main{ padding:18px 18px 22px; }
+    .main-inner{ max-width:1260px; margin:0 auto; width:100%; }
+
+    /* Cards */
+    .card{
+      background:var(--card);
+      border-radius:18px;
+      padding:14px 14px 12px;
+      box-shadow:0 18px 40px rgba(15,23,42,.08), 0 0 0 1px rgba(226,232,240,.9);
+      border:1px solid rgba(226,232,240,.9);
+      margin-bottom:14px;
+      width:100%;
+      overflow:hidden;
+    }
+    .card-header{
+      display:flex; justify-content:space-between; align-items:flex-start;
+      gap:10px; flex-wrap:wrap; margin-bottom:10px;
+    }
+    .card-title{
+      font-size:15px; font-weight:700;
+      display:flex; align-items:center; gap:8px;
+    }
+    .card-title .icon{
+      width:22px; height:22px; border-radius:999px;
+      display:inline-flex; align-items:center; justify-content:center;
+      font-size:13px;
+      background:var(--primary-soft);
+      color:var(--primary);
+    }
+    .card-subtitle{ font-size:12px; color:var(--muted); }
+
+    /* Inputs */
+    .input{
+      width:100%;
+      border-radius:12px;
+      border:1px solid var(--border);
+      padding:10px 12px;
+      font-size:14px;
+      outline:none;
+      background:#fff;
+    }
+    .input:focus{
+      border-color:var(--primary);
+      box-shadow:0 0 0 2px rgba(37,99,235,.18);
+    }
+    select.input{ appearance:none; }
+
+    .helper{ font-size:12px; color:var(--muted); }
+    .mt-8{ margin-top:8px; }
+    .mt-10{ margin-top:10px; }
+    .mt-12{ margin-top:12px; }
+
+    /* Status badges */
+    .badge-status{ font-size:11px; padding:3px 9px; border-radius:999px; display:inline-block; }
+    .badge-normal{ background:#dcfce7; color:#166534; }
+    .badge-late{ background:#fee2e2; color:#b91c1c; }
+    .badge-absent{ background:#ffe4e6; color:#be123c; }
+    .badge-other{ background:#fef3c7; color:#92400e; }
+    .badge-unknown{ background:#111827; color:#e5e7eb; }
+    .badge-pill{ font-size:11px; padding:3px 8px; border-radius:999px; background:#e5e7eb; color:#374151; }
+    .tag{ font-size:11px; padding:3px 8px; border-radius:999px; background:#e5e7eb; color:#374151; }
+
+    .emp-face-badge{
+      font-size:11px; padding:3px 8px; border-radius:999px;
+      border:1px solid rgba(16,185,129,.25);
+      background:rgba(16,185,129,.10);
+      color:#047857;
+      white-space:nowrap;
+    }
+    .emp-face-badge.off{
+      border-color:rgba(239,68,68,.25);
+      background:rgba(239,68,68,.10);
+      color:#b91c1c;
+    }
+
+    /* Tables */
+    table{ width:100%; border-collapse:collapse; font-size:13px; }
+    thead{ background:#f3f4f6; }
+    th,td{ padding:8px 8px; border-bottom:1px solid #e5e7eb; text-align:left; white-space:nowrap; vertical-align:top; }
+    th{ font-weight:600; color:#374151; font-size:12px; }
+    tbody tr:nth-child(even){ background:#f9fafb; }
+    .scroll-x{ width:100%; overflow:auto; -webkit-overflow-scrolling:touch; }
+    .table-wide{ width:max-content; min-width:760px; }
+    .text-center{ text-align:center; }
+    .text-right{ text-align:right; }
+
+    /* Connection badge */
+    .badge-connection{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 10px; border-radius:999px;
+      font-size:11px;
+      background:rgba(15,118,110,.15);
+      color:#a5f3fc;
+      border:1px solid rgba(34,197,94,.8);
+    }
+    .badge-connection.offline{
+      background:rgba(127,29,29,.35);
+      color:#fecaca;
+      border-color:rgba(248,113,113,.9);
+    }
+    .dot{
+      width:8px; height:8px; border-radius:999px;
+      background:#22c55e;
+      box-shadow:0 0 8px rgba(34,197,94,.85);
+    }
+    .badge-connection.offline .dot{
+      background:#f97373;
+      box-shadow:0 0 8px rgba(248,113,113,.8);
+    }
+
+    /* Sections */
+    .section{ display:none; }
+    .section.active{ display:block; }
+
+    /* Employee list (mobile cards) */
+    .emp-mobile-list, .logs-mobile-list, .summary-mobile-list{
+      display:flex; flex-direction:column; gap:10px;
+      padding:6px 2px 2px;
+    }
+    .item{
+      border:1px solid rgba(226,232,240,.95);
+      border-radius:16px;
+      padding:12px 12px 10px;
+      background:#fff;
+      box-shadow:0 10px 22px rgba(15,23,42,.06);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .item-top{
+      display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+    }
+    .item-title{ font-weight:700; font-size:14px; line-height:1.25; }
+    .item-meta{
+      font-size:12px; color:var(--muted);
+      display:flex; flex-wrap:wrap; gap:6px;
+    }
+    .code-badge{
+      font-size:11px; padding:3px 8px; border-radius:999px;
+      background:rgba(37,99,235,.12);
+      color:var(--primary);
+      border:1px solid rgba(37,99,235,.25);
+      white-space:nowrap;
+      height:fit-content;
+    }
+    .pill-small{
+      font-size:10px; padding:2px 6px; border-radius:999px;
+      background:#e5e7eb; color:#4b5563;
+    }
+
+    .item-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+    .item-actions .btn{ width:100%; padding:10px 12px; }
+    .btn-span-2{ grid-column:1 / -1; }
+
+    /* Desktop vs Mobile toggles */
+    .desktop-only{ display:block; }
+    .mobile-only{ display:none; }
+    @media (max-width:900px){
+      .desktop-only{ display:none; }
+      .mobile-only{ display:block; }
+    }
+
+    /* Bottom nav (mobile) */
+    .bottom-nav{
+      display:none;
+      position:fixed;
+      left:10px; right:10px; bottom:10px;
+      z-index:40;
+      background:rgba(2,6,23,.92);
+      border:1px solid rgba(31,41,55,.85);
+      border-radius:18px;
+      padding:8px;
+      backdrop-filter:blur(12px);
+      box-shadow:0 16px 44px rgba(15,23,42,.35);
+    }
+    .bottom-nav-inner{
+      display:grid;
+      grid-template-columns:repeat(5, minmax(0,1fr));
+      gap:6px;
+    }
+    .bottom-item{
+      border:none;
+      background:transparent;
+      color:#cbd5e1;
+      border-radius:14px;
+      padding:8px 6px;
+      cursor:pointer;
+      display:flex; flex-direction:column; align-items:center; gap:2px;
+      font-size:10px;
+    }
+    .bottom-item .bicon{ font-size:16px; }
+    .bottom-item.active{
+      background:rgba(37,99,235,.18);
+      color:#fff;
+      border:1px solid rgba(59,130,246,.45);
+      box-shadow:0 10px 18px rgba(37,99,235,.22);
+    }
+
+    @media (max-width:1000px){
+      .sidebar{ display:none; }
+      .page{ flex-direction:column; }
+      main.main{ padding:14px 12px 90px; } /* เผื่อ bottom nav */
+      .bottom-nav{ display:block; }
+      header.topbar{ padding:10px 12px; }
+    }
+    @media (max-width:640px){
+      header.topbar{ flex-direction:column; align-items:flex-start; }
+      .topbar-right{ width:100%; display:flex; justify-content:space-between; }
+    }
+
+    /* URL card (floating) */
+    #urlCard{
+      position:fixed;
+      right:16px;
+      bottom:92px; /* กันชน bottom nav */
+      max-width:420px;
+      width:calc(100% - 32px);
+      z-index:45;
+      display:none;
+    }
+    @media (min-width:1001px){
+      #urlCard{ bottom:16px; }
+    }
+    @media (max-width:640px){
+      #urlCard{ left:12px; right:12px; width:auto; }
+    }
+
+    /* Modals */
+    .modal-backdrop{
+      position:fixed; inset:0;
+      background:rgba(2,6,23,.55);
+      display:none;
+      align-items:center; justify-content:center;
+      padding:14px;
+      z-index:60;
+      backdrop-filter:blur(6px);
+    }
+    .modal{
+      width:100%;
+      max-width:560px;
+      background:#fff;
+      border-radius:18px;
+      border:1px solid rgba(226,232,240,.9);
+      box-shadow:0 30px 80px rgba(15,23,42,.35);
+      overflow:hidden;
+    }
+    .modal-header{
+      padding:12px 14px;
+      border-bottom:1px solid #e5e7eb;
+      display:flex; justify-content:space-between; gap:10px;
+      background:#f8fafc;
+    }
+    .modal-title{ font-weight:700; font-size:14px; }
+    .modal-sub{ font-size:12px; color:var(--muted); margin-top:2px; }
+    .modal-body{ padding:12px 14px 14px; }
+    .modal-footer{
+      padding:12px 14px;
+      border-top:1px solid #e5e7eb;
+      display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap;
+      background:#fafafa;
+    }
+
+    .grid-2{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .grid-3{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+    @media (max-width:800px){
+      .grid-2,.grid-3{ grid-template-columns:1fr; }
+    }
+
+    .stat-card{
+      padding:10px 12px; border-radius:14px;
+      background:#f9fafb; border:1px dashed #e5e7eb;
+      display:flex; flex-direction:column; gap:4px;
+      min-width:0;
+    }
+    .stat-label{ font-size:12px; color:var(--muted); }
+    .stat-value{ font-size:20px; font-weight:800; }
+    .stat-extra{ font-size:11px; color:var(--muted); }
+    .stat-accent{ color:#16a34a; }
+    .stat-danger{ color:#b91c1c; }
+
+    .skeleton{
+      background:linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 37%,#f3f4f6 63%);
+      background-size:400% 100%;
+      animation:sk 1.2s ease infinite;
+      border-radius:12px;
+      height:14px;
+      width:100%;
+    }
+    @keyframes sk{ 0%{background-position:100% 0} 100%{background-position:0 0} }
+
+    .error-text{ font-size:12px; color:var(--danger); margin-top:6px; }
+    .success-text{ font-size:12px; color:var(--success); margin-top:6px; }
+
+    /* preview box (face/log modal) */
+    .preview-box{
+      border:1px dashed #e5e7eb;
+      border-radius:14px;
+      padding:10px;
+      background:#f9fafb;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+    .preview-box img{
+      width:110px; height:110px; border-radius:12px;
+      object-fit:cover;
+      border:1px solid rgba(226,232,240,.9);
+      background:#fff;
+    }
+    .mono{ font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Courier New",monospace; font-size:12px; }
+
+    .kv{
+      display:grid;
+      grid-template-columns:90px 1fr;
+      gap:6px 10px;
+      font-size:12px;
+      color:#111827;
+    }
+    .kv .k{ color:var(--muted); }
+    .kv .v{ font-weight:600; }
   </style>
 </head>
 
 <body>
 <div class="page">
-
-  <!-- SIDEBAR -->
+  <!-- SIDEBAR (Desktop) -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-title">ระบบจัดการเวลาทำงาน</div>
@@ -758,21 +450,11 @@
     </div>
 
     <nav class="nav">
-      <div class="nav-item active" data-section="dashboard">
-        <span class="icon">📊</span><span>ภาพรวมระบบ</span>
-      </div>
-      <div class="nav-item" data-section="employees">
-        <span class="icon">👥</span><span>จัดการสมาชิก</span>
-      </div>
-      <div class="nav-item" data-section="logs">
-        <span class="icon">⏱</span><span>ประวัติเวลา</span>
-      </div>
-      <div class="nav-item" data-section="summary">
-        <span class="icon">📈</span><span>สรุปเวลาทำงาน</span>
-      </div>
-      <div class="nav-item" data-section="settings">
-        <span class="icon">⚙️</span><span>ตั้งค่า (สาขา/ชั้น)</span>
-      </div>
+      <div class="nav-item active" data-section="dashboard"><span class="icon">📊</span><span>ภาพรวมระบบ</span></div>
+      <div class="nav-item" data-section="employees"><span class="icon">👥</span><span>พนักงาน</span></div>
+      <div class="nav-item" data-section="logs"><span class="icon">⏱</span><span>ประวัติเวลา</span></div>
+      <div class="nav-item" data-section="summary"><span class="icon">📈</span><span>สรุปเวลาทำงาน</span></div>
+      <div class="nav-item" data-section="settings"><span class="icon">⚙️</span><span>ตั้งค่า (แผนก/ระดับ)</span></div>
     </nav>
 
     <div class="sidebar-footer">
@@ -782,7 +464,6 @@
     </div>
   </aside>
 
-  <!-- MAIN CONTENT -->
   <div class="content">
     <header class="topbar">
       <div class="topbar-left">
@@ -801,42 +482,16 @@
       </div>
     </header>
 
-    <!-- MOBILE NAV -->
-    <nav class="mobile-nav">
-      <div class="mobile-nav-inner">
-        <button class="mobile-nav-item active" data-section="dashboard">
-          <span>📊</span><span>ภาพรวม</span>
-        </button>
-        <button class="mobile-nav-item" data-section="employees">
-          <span>👥</span><span>สมาชิก</span>
-        </button>
-        <button class="mobile-nav-item" data-section="logs">
-          <span>⏱</span><span>ประวัติ</span>
-        </button>
-        <button class="mobile-nav-item" data-section="summary">
-          <span>📈</span><span>สรุป</span>
-        </button>
-        <button class="mobile-nav-item" data-section="settings">
-          <span>⚙️</span><span>ตั้งค่า</span>
-        </button>
-      </div>
-    </nav>
-
     <main class="main">
       <div class="main-inner">
 
-        <!-- DASHBOARD ---------------------------------------------->
+        <!-- DASHBOARD -->
         <section class="section active" id="section-dashboard">
           <div class="card">
             <div class="card-header">
               <div>
-                <div class="card-title">
-                  <span class="icon">📊</span>
-                  ภาพรวมระบบวันนี้
-                </div>
-                <div class="card-subtitle">
-                  ดูสถานะเข้า–ออกงานแบบรวดเร็ว เพื่อใช้ประกอบการตัดสินใจของ HR
-                </div>
+                <div class="card-title"><span class="icon">📊</span>ภาพรวมระบบวันนี้</div>
+                <div class="card-subtitle">ดูสถานะเข้า–ออกงานแบบรวดเร็ว เพื่อใช้ประกอบการตัดสินใจของ HR</div>
               </div>
             </div>
 
@@ -849,9 +504,7 @@
               <div class="stat-card">
                 <div class="stat-label">จำนวนคนที่มีบันทึกวันนี้</div>
                 <div class="stat-value stat-accent" id="statTodayCount"><div class="skeleton"></div></div>
-                <div class="stat-extra">
-                  สถานะ <span class="stat-danger" id="statTodayLate">สาย 0 คน</span>
-                </div>
+                <div class="stat-extra"><span class="stat-danger" id="statTodayLate">สาย 0 คน</span></div>
               </div>
               <div class="stat-card">
                 <div class="stat-label">สรุปเดือนนี้ (ปกติ / สาย / ขาด)</div>
@@ -865,25 +518,19 @@
               <div class="scroll-x mt-8">
                 <table class="table-wide">
                   <thead>
-                  <tr>
-                    <th>รหัส</th>
-                    <th>ชื่อ</th>
-                    <th>เข้าเช้า</th>
-                    <th>ออกเที่ยง</th>
-                    <th>เข้าเที่ยง</th>
-                    <th>ออกเย็น</th>
-                    <th class="col-hide-sm">สถานที่</th>
-                    <th>รวมผิดปกติ</th>
-                    <th>สถานะ</th>
-                  </tr>
+                    <tr>
+                      <th>รหัส</th><th>ชื่อ</th>
+                      <th>เข้าเช้า</th><th>ออกเที่ยง</th><th>เข้าเที่ยง</th><th>ออกเย็น</th>
+                      <th>รวมผิดปกติ</th><th>สถานะ</th>
+                    </tr>
                   </thead>
                   <tbody id="dashboardTodayBody">
-                  <tr><td colspan="9" class="text-center">กำลังโหลด...</td></tr>
+                    <tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>
                   </tbody>
                 </table>
               </div>
 
-              <div class="mt-8">
+              <div class="mt-10">
                 <div class="card-subtitle">สรุปตามจุดลงเวลา (วันนี้)</div>
                 <div id="dashboardLocationSummary" class="mt-8" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
               </div>
@@ -891,92 +538,28 @@
           </div>
         </section>
 
-        <!-- EMPLOYEES ---------------------------------------------->
+        <!-- EMPLOYEES (Clean: list first + modal form) -->
         <section class="section" id="section-employees">
-
-          <div class="mobile-segment" id="empSegment">
-            <button class="seg-btn active" id="btnEmpTabForm" type="button">👤 ฟอร์ม</button>
-            <button class="seg-btn" id="btnEmpTabList" type="button">📋 รายชื่อ</button>
-          </div>
-
-          <div class="grid-2">
-            <div class="card" id="empFormCard">
-              <div class="card-header">
-                <div>
-                  <div class="card-title">
-                    <span class="icon">👥</span> จัดการสมาชิก / พนักงาน
-                  </div>
-                  <div class="card-subtitle">
-                    เพิ่ม–แก้ไขข้อมูลพนักงาน เชื่อมกับชีต Employees โดยตรง
-                  </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><span class="icon">👥</span>พนักงาน</div>
+                <div class="card-subtitle">
+                  โหมดใหม่: เน้น “รายชื่อ” ให้โล่งเหมือนแอป • เพิ่ม/แก้ไขผ่านหน้าต่าง • คงสถานะ “มีใบหน้า/ไม่มีใบหน้า” ✅
                 </div>
               </div>
 
-              <div class="card-subtitle" id="empFormTitle">เพิ่มพนักงานใหม่</div>
-
-              <div class="mt-8">
-                <div class="mt-8">
-                  <div class="helper">รหัสพนักงาน</div>
-                  <input id="empCode" class="input-block" placeholder="เช่น 1011" />
-                </div>
-                <div class="mt-8">
-                  <div class="helper">ชื่อ–นามสกุล</div>
-                  <input id="empFullName" class="input-block" placeholder="ชื่อ นามสกุล" />
-                </div>
-                <div class="mt-8">
-                  <div class="helper">แผนก</div>
-                  <select id="empBranch" class="input-block"></select>
-                </div>
-                <div class="mt-8">
-                  <div class="helper">ระดับ / ตำแหน่ง</div>
-                  <select id="empLevel" class="input-block"></select>
-                </div>
-                <div class="mt-8">
-                  <div class="helper">อีเมล (ถ้ามี)</div>
-                  <input id="empEmail" class="input-block" placeholder="optional" />
-                </div>
-
-                <div class="mt-8">
-                  <div class="helper">รูปพนักงาน (ถ่าย/เลือกได้) • ระบบจะย่อรูปก่อนส่ง</div>
-                  <input type="file" id="empPhoto" accept="image/*" capture="environment" class="input-block" />
-                  <img id="empPhotoPreview" style="width:100px;margin-top:8px;border-radius:8px;display:none;" />
-                </div>
-
-                <div class="mt-10 flex">
-                  <button class="btn btn-primary" id="btnSaveEmployee">บันทึก</button>
-                  <button class="btn btn-secondary" id="btnResetEmpForm">ล้างฟอร์ม</button>
-                </div>
-                <div id="empFormError" class="error-text" style="display:none;"></div>
-                <div id="empFormSuccess" class="success-text" style="display:none;"></div>
-
-                <div class="mt-12">
-                  <div class="helper">
-                    ✅ “บันทึกใบหน้า” อยู่ในรายการพนักงาน (ปุ่ม 📸)
-                  </div>
-                </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; min-width:260px; max-width:420px; width:100%;">
+                <input id="empSearch" class="input" placeholder="ค้นหาจากรหัส / ชื่อ" />
+                <button class="btn btn-primary" id="btnOpenAddEmp">➕ เพิ่มพนักงาน</button>
               </div>
             </div>
 
-            <div class="card" id="empListCard">
-              <div class="card-header">
-                <div>
-                  <div class="card-title">
-                    <span class="icon">📋</span> รายชื่อพนักงาน
-                  </div>
-                  <div class="card-subtitle">
-                    PC = ตารางเหมือนเดิม | Mobile = การ์ดแบบแอป ✅ + เพิ่มปุ่ม “บันทึกใบหน้า”
-                  </div>
-                </div>
-                <div class="header-search-box">
-                  <input type="text" id="empSearch" class="input-block" placeholder="ค้นหาจากรหัส / ชื่อ" />
-                </div>
-              </div>
-
-              <!-- ✅ PC TABLE -->
-              <div class="emp-desktop-only">
-                <div class="emp-table-scroll">
-                  <table>
-                    <thead>
+            <!-- Desktop table -->
+            <div class="desktop-only">
+              <div class="scroll-x" style="max-height:520px; overflow:auto;">
+                <table class="table-wide">
+                  <thead>
                     <tr>
                       <th>รหัส</th>
                       <th>ชื่อ</th>
@@ -985,159 +568,130 @@
                       <th>ใบหน้า</th>
                       <th>จัดการ</th>
                     </tr>
-                    </thead>
-                    <tbody id="empTableBody">
-                    <tr><td colspan="6" class="text-center">กำลังโหลด...</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <!-- ✅ MOBILE LIST -->
-              <div class="emp-mobile-only">
-                <div id="empMobileList" class="emp-mobile-list">
-                  <div class="helper">กำลังโหลด...</div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-        <!-- LOGS --------------------------------------------------->
-        <section class="section" id="section-logs">
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title">
-                  <span class="icon">⏱</span> ประวัติเวลา
-                </div>
-                <div class="card-subtitle">
-                  เพิ่มคอลัมน์ “รวมผิดปกติทั้งวัน” (รวมจากข้อความสถานะ) • มือถือดูเป็นการ์ด ✅
-                </div>
-              </div>
-            </div>
-
-            <div class="filters mt-8">
-              <div class="field" style="flex:1; min-width:160px;">
-                <span>ค้นหาชื่อ / รหัส</span>
-                <input type="text" id="logSearch" placeholder="เช่น 1011, สมชาย" />
-              </div>
-              <div class="field">
-                <span>สาขา</span>
-                <select id="logBranchFilter"></select>
-              </div>
-              <div class="field">
-                <span>เดือน</span>
-                <select id="logMonthFilter"></select>
-              </div>
-              <div class="field">
-                <span>ปี (พ.ศ.)</span>
-                <select id="logYearFilter"></select>
-              </div>
-              <div class="field">
-                <span>&nbsp;</span>
-                <button class="btn btn-primary btn-small" id="btnReloadLogs">รีเฟรช</button>
-              </div>
-            </div>
-
-            <!-- Desktop table -->
-            <div class="logs-desktop-only">
-              <div class="scroll-x mt-10" style="max-height:480px; overflow-y:auto;">
-                <table class="table-wide">
-                  <thead>
-                  <tr>
-                    <th>วันที่</th>
-                    <th>รหัส</th>
-                    <th>ชื่อ</th>
-                    <th>เข้า</th>
-                    <th class="col-hide-sm">ออก</th>
-                    <th>ชั่วโมงรวม</th>
-                    <th>รวมผิดปกติ</th>
-                    <th>สถานะ</th>
-                    <th class="col-hide-sm">สถานที่</th>
-                    <th class="col-hide-sm">หลักฐาน</th>
-                    <th>ดู</th>
-                  </tr>
                   </thead>
-                  <tbody id="logsTableBody">
-                  <tr><td colspan="11" class="text-center">ยังไม่มีข้อมูล</td></tr>
+                  <tbody id="empTableBody">
+                    <tr><td colspan="6" class="text-center">กำลังโหลด...</td></tr>
                   </tbody>
                 </table>
               </div>
             </div>
 
             <!-- Mobile cards -->
-            <div class="logs-mobile-only mt-10">
+            <div class="mobile-only">
+              <div id="empMobileList" class="emp-mobile-list">
+                <div class="helper">กำลังโหลด...</div>
+              </div>
+            </div>
+
+            <div class="helper mt-10">
+              * “บันทึกใบหน้า” อยู่ในปุ่ม 📸 ที่รายการพนักงาน (ไม่ซ่อนแล้ว) • ไม่มีช่องอัปโหลดรูปพนักงานในฟอร์มอีกต่อไป ✅
+            </div>
+          </div>
+        </section>
+
+        <!-- LOGS -->
+        <section class="section" id="section-logs">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><span class="icon">⏱</span>ประวัติเวลา</div>
+                <div class="card-subtitle">ตาราง PC / การ์ดมือถือ • “รวมผิดปกติ” ดึงจากข้อความสถานะเหมือนเดิม</div>
+              </div>
+            </div>
+
+            <div class="mt-8" style="display:flex; flex-wrap:wrap; gap:8px; align-items:end;">
+              <div style="flex:1; min-width:200px;">
+                <div class="helper">ค้นหาชื่อ / รหัส</div>
+                <input id="logSearch" class="input" placeholder="เช่น 1011, สมชาย" />
+              </div>
+              <div style="min-width:160px;">
+                <div class="helper">สาขา</div>
+                <select id="logBranchFilter" class="input"></select>
+              </div>
+              <div style="min-width:160px;">
+                <div class="helper">เดือน</div>
+                <select id="logMonthFilter" class="input"></select>
+              </div>
+              <div style="min-width:160px;">
+                <div class="helper">ปี (พ.ศ.)</div>
+                <select id="logYearFilter" class="input"></select>
+              </div>
+              <button class="btn btn-primary" id="btnReloadLogs">รีเฟรช</button>
+            </div>
+
+            <div class="desktop-only mt-10">
+              <div class="scroll-x" style="max-height:520px; overflow:auto;">
+                <table class="table-wide">
+                  <thead>
+                    <tr>
+                      <th>วันที่</th><th>รหัส</th><th>ชื่อ</th>
+                      <th>เข้า</th><th>ออก</th><th>ชั่วโมงรวม</th>
+                      <th>รวมผิดปกติ</th><th>สถานะ</th>
+                      <th>สถานที่</th><th>หลักฐาน</th><th>ดู</th>
+                    </tr>
+                  </thead>
+                  <tbody id="logsTableBody">
+                    <tr><td colspan="11" class="text-center">ยังไม่มีข้อมูล</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="mobile-only mt-10">
               <div id="logsMobileList" class="logs-mobile-list">
                 <div class="helper">ยังไม่มีข้อมูล</div>
               </div>
             </div>
 
-            <div class="helper mt-8">
-              * ชั่วโมงรวมคำนวณจาก t1 ถึง t4 (ถ้ามีครบ) | “รวมผิดปกติ” จะคำนวณจากตัวเลขในข้อความสถานะ (ยังไม่ต้องแก้ GS) ✅
+            <div class="helper mt-10">
+              * ชั่วโมงรวมคำนวณจาก t1 ถึง t4 (ถ้ามีครบ) | “รวมผิดปกติ” จะคำนวณจากตัวเลขในข้อความสถานะ (ไม่ต้องแก้ GS)
             </div>
           </div>
         </section>
 
-        <!-- SUMMARY ----------------------------------------------->
+        <!-- SUMMARY -->
         <section class="section" id="section-summary">
           <div class="card">
             <div class="card-header">
               <div>
-                <div class="card-title">
-                  <span class="icon">📈</span> สรุปเวลาทำงานรายบุคคล
-                </div>
-                <div class="card-subtitle">
-                  ใช้ดูภาพรวมทั้งเดือน เช่น ใครมาสายกี่ครั้ง ขาดกี่วัน ฯลฯ
-                </div>
+                <div class="card-title"><span class="icon">📈</span>สรุปเวลาทำงานรายบุคคล</div>
+                <div class="card-subtitle">ดูภาพรวมทั้งเดือน เช่น ใครมาสายกี่ครั้ง ขาดกี่วัน ฯลฯ</div>
               </div>
             </div>
 
-            <div class="filters mt-8">
-              <div class="field">
-                <span>สาขา</span>
-                <select id="sumBranchFilter"></select>
+            <div class="mt-8" style="display:flex; flex-wrap:wrap; gap:8px; align-items:end;">
+              <div style="min-width:160px;">
+                <div class="helper">สาขา</div>
+                <select id="sumBranchFilter" class="input"></select>
               </div>
-              <div class="field">
-                <span>เดือน</span>
-                <select id="sumMonthFilter"></select>
+              <div style="min-width:160px;">
+                <div class="helper">เดือน</div>
+                <select id="sumMonthFilter" class="input"></select>
               </div>
-              <div class="field">
-                <span>ปี (พ.ศ.)</span>
-                <select id="sumYearFilter"></select>
+              <div style="min-width:160px;">
+                <div class="helper">ปี (พ.ศ.)</div>
+                <select id="sumYearFilter" class="input"></select>
               </div>
-              <div class="field">
-                <span>&nbsp;</span>
-                <button class="btn btn-primary btn-small" id="btnReloadSummary">รีเฟรช</button>
-              </div>
+              <button class="btn btn-primary" id="btnReloadSummary">รีเฟรช</button>
             </div>
 
-            <!-- Desktop table -->
-            <div class="summary-desktop-only">
-              <div class="scroll-x mt-10" style="max-height:480px; overflow-y:auto;">
+            <div class="desktop-only mt-10">
+              <div class="scroll-x" style="max-height:520px; overflow:auto;">
                 <table class="table-wide">
                   <thead>
-                  <tr>
-                    <th>รหัส</th>
-                    <th>ชื่อ</th>
-                    <th class="col-hide-sm">แผนก</th>
-                    <th class="col-hide-sm">ระดับ</th>
-                    <th>จำนวนวัน</th>
-                    <th>ปกติ</th>
-                    <th>สาย</th>
-                    <th>ขาด</th>
-                  </tr>
+                    <tr>
+                      <th>รหัส</th><th>ชื่อ</th><th>แผนก</th><th>ระดับ</th>
+                      <th>จำนวนวัน</th><th>ปกติ</th><th>สาย</th><th>ขาด</th>
+                    </tr>
                   </thead>
                   <tbody id="summaryTableBody">
-                  <tr><td colspan="8" class="text-center">ยังไม่มีข้อมูล</td></tr>
+                    <tr><td colspan="8" class="text-center">ยังไม่มีข้อมูล</td></tr>
                   </tbody>
                 </table>
               </div>
             </div>
 
-            <!-- Mobile cards -->
-            <div class="summary-mobile-only mt-10">
+            <div class="mobile-only mt-10">
               <div id="summaryMobileList" class="summary-mobile-list">
                 <div class="helper">ยังไม่มีข้อมูล</div>
               </div>
@@ -1145,88 +699,74 @@
           </div>
         </section>
 
-        <!-- SETTINGS ---------------------------------------------->
+        <!-- SETTINGS -->
         <section class="section" id="section-settings">
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title">
-                  <span class="icon">⚙️</span> ตั้งค่าแผนก / ชั้น
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title"><span class="icon">🏷️</span>ตั้งค่าแผนก</div>
+                  <div class="card-subtitle">ใช้ในฟอร์มพนักงาน และตัวกรองต่าง ๆ</div>
                 </div>
-                <div class="card-subtitle">
-                  ข้อมูลตรงนี้จะถูกใช้ในหน้าเพิ่มพนักงาน และการกรองสรุปต่าง ๆ
+              </div>
+
+              <div class="mt-8">
+                <div class="helper">ชื่อแผนกใหม่</div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <input id="branchName" class="input" placeholder="เช่น ฝ่ายขาย / ฝ่ายบุคคล" />
+                  <button class="btn btn-primary" id="btnAddBranch">เพิ่ม</button>
                 </div>
+              </div>
+
+              <div class="scroll-x mt-10" style="max-height:360px; overflow:auto;">
+                <table>
+                  <thead><tr><th>แผนก</th><th>จัดการ</th></tr></thead>
+                  <tbody id="branchTableBody"><tr><td colspan="2" class="text-center">ยังไม่มีข้อมูล</td></tr></tbody>
+                </table>
               </div>
             </div>
 
-            <div class="card-subtitle">แผนก</div>
-            <div class="mt-8 flex flex-stack-mobile">
-              <input id="branchName" class="input-block" placeholder="ชื่อแผนกใหม่" />
-              <button class="btn btn-primary btn-small" id="btnAddBranch">เพิ่ม</button>
-            </div>
-
-            <div class="scroll-x mt-8" style="max-height:320px; overflow-y:auto;">
-              <table>
-                <thead>
-                  <tr><th>แผนก</th><th>จัดการ</th></tr>
-                </thead>
-                <tbody id="branchTableBody">
-                  <tr><td colspan="2" class="text-center">ยังไม่มีข้อมูล</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title">
-                  <span class="icon">📌</span> ระดับ / ตำแหน่ง
-                </div>
-                <div class="card-subtitle">
-                  ใช้กำหนดตำแหน่งงาน เช่น หัวหน้างาน พนักงานทั่วไป ผู้จัดการสาขา ฯลฯ
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title"><span class="icon">📌</span>ตั้งค่าระดับ / ตำแหน่ง</div>
+                  <div class="card-subtitle">เช่น หัวหน้างาน / พนักงาน / ผู้จัดการสาขา ฯลฯ</div>
                 </div>
               </div>
-            </div>
 
-            <div class="card-subtitle">ระดับ / ตำแหน่ง</div>
-            <div class="mt-8 flex flex-stack-mobile">
-              <input id="levelName" class="input-block" placeholder="ชื่อตำแหน่งใหม่" />
-              <button class="btn btn-primary btn-small" id="btnAddLevel">เพิ่ม</button>
-            </div>
+              <div class="mt-8">
+                <div class="helper">ชื่อตำแหน่งใหม่</div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <input id="levelName" class="input" placeholder="เช่น หัวหน้างาน" />
+                  <button class="btn btn-primary" id="btnAddLevel">เพิ่ม</button>
+                </div>
+              </div>
 
-            <div class="scroll-x mt-8" style="max-height:320px; overflow-y:auto;">
-              <table>
-                <thead>
-                  <tr><th>ระดับ</th><th>จัดการ</th></tr>
-                </thead>
-                <tbody id="levelTableBody">
-                  <tr><td colspan="2" class="text-center">ยังไม่มีระดับ</td></tr>
-                </tbody>
-              </table>
-            </div>
+              <div class="scroll-x mt-10" style="max-height:360px; overflow:auto;">
+                <table>
+                  <thead><tr><th>ระดับ</th><th>จัดการ</th></tr></thead>
+                  <tbody id="levelTableBody"><tr><td colspan="2" class="text-center">ยังไม่มีข้อมูล</td></tr></tbody>
+                </table>
+              </div>
 
-            <div id="settingsError" class="error-text" style="display:none;"></div>
-            <div id="settingsSuccess" class="success-text" style="display:none;"></div>
+              <div id="settingsError" class="error-text" style="display:none;"></div>
+              <div id="settingsSuccess" class="success-text" style="display:none;"></div>
+            </div>
           </div>
         </section>
 
-        <!-- URL CARD ---------------------------------------------->
-        <div class="card" id="urlCard" style="display:none;">
+        <!-- URL CARD -->
+        <div class="card" id="urlCard">
           <div class="card-header">
-            <div class="card-title">
-              <span class="icon">🔗</span> ตั้งค่า URL API
-            </div>
+            <div class="card-title"><span class="icon">🔗</span>ตั้งค่า URL API</div>
           </div>
-          <div>
-            <div class="helper">URL จาก Apps Script Web App (ตัวที่ลงท้ายด้วย <code>/exec</code>)</div>
-            <input id="inputApiUrl" class="input-block mt-8" placeholder="เช่น https://script.google.com/macros/s/XXXXX/exec" />
-            <div class="mt-8 flex flex-stack-mobile">
-              <button class="btn btn-primary" id="btnSaveUrl">บันทึก</button>
-              <button class="btn btn-secondary" id="btnCancelUrl">ยกเลิก</button>
-            </div>
-            <div id="urlError" class="error-text" style="display:none;"></div>
+          <div class="helper">URL จาก Apps Script Web App (ต้องลงท้ายด้วย <code>/exec</code>)</div>
+          <input id="inputApiUrl" class="input mt-8" placeholder="เช่น https://script.google.com/macros/s/XXXXX/exec" />
+          <div class="mt-10" style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-primary" id="btnSaveUrl">บันทึก</button>
+            <button class="btn btn-secondary" id="btnCancelUrl">ยกเลิก</button>
           </div>
+          <div id="urlError" class="error-text" style="display:none;"></div>
         </div>
 
       </div>
@@ -1234,7 +774,70 @@
   </div>
 </div>
 
-<!-- MODAL: FACE ENROLL -------------------------------------------->
+<!-- Bottom Nav (Mobile) -->
+<div class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bottom-item active" data-section="dashboard"><div class="bicon">📊</div><div>ภาพรวม</div></button>
+    <button class="bottom-item" data-section="employees"><div class="bicon">👥</div><div>พนักงาน</div></button>
+    <button class="bottom-item" data-section="logs"><div class="bicon">⏱</div><div>ประวัติ</div></button>
+    <button class="bottom-item" data-section="summary"><div class="bicon">📈</div><div>สรุป</div></button>
+    <button class="bottom-item" data-section="settings"><div class="bicon">⚙️</div><div>ตั้งค่า</div></button>
+  </div>
+</div>
+
+<!-- MODAL: EMPLOYEE FORM -->
+<div class="modal-backdrop" id="empModalBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="empModalTitle">
+    <div class="modal-header">
+      <div style="min-width:0;">
+        <div class="modal-title" id="empModalTitle">👤 เพิ่มพนักงาน</div>
+        <div class="modal-sub" id="empModalSub">กรอกข้อมูลพื้นฐาน (ไม่มีอัปโหลดรูป)</div>
+      </div>
+      <button class="btn btn-ghost btn-small" id="btnCloseEmpModal" type="button">ปิด</button>
+    </div>
+    <div class="modal-body">
+      <div class="grid-2">
+        <div>
+          <div class="helper">รหัสพนักงาน</div>
+          <input id="empCode" class="input" placeholder="เช่น 1011" />
+        </div>
+        <div>
+          <div class="helper">อีเมล (ถ้ามี)</div>
+          <input id="empEmail" class="input" placeholder="optional" />
+        </div>
+      </div>
+
+      <div class="mt-10">
+        <div class="helper">ชื่อ–นามสกุล</div>
+        <input id="empFullName" class="input" placeholder="ชื่อ นามสกุล" />
+      </div>
+
+      <div class="grid-2 mt-10">
+        <div>
+          <div class="helper">แผนก</div>
+          <select id="empBranch" class="input"></select>
+        </div>
+        <div>
+          <div class="helper">ระดับ / ตำแหน่ง</div>
+          <select id="empLevel" class="input"></select>
+        </div>
+      </div>
+
+      <div id="empFormError" class="error-text" style="display:none;"></div>
+      <div id="empFormSuccess" class="success-text" style="display:none;"></div>
+
+      <div class="helper mt-10">
+        ✅ การบันทึก “ใบหน้า” ทำผ่านปุ่ม 📸 ที่รายการพนักงาน (เพื่อให้ UI ไม่รก)
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnResetEmpForm" type="button">ล้างฟอร์ม</button>
+      <button class="btn btn-primary" id="btnSaveEmployee" type="button">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: FACE ENROLL -->
 <div class="modal-backdrop" id="faceModalBackdrop" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="faceModalTitle">
     <div class="modal-header">
@@ -1245,24 +848,22 @@
       <button class="btn btn-ghost btn-small" id="btnCloseFaceModal" type="button">ปิด</button>
     </div>
     <div class="modal-body">
-      <div class="helper">
-        เลือกรูปใบหน้าชัด ๆ 1 รูป (หรือถ่ายจากมือถือ) แล้วกด “บันทึกใบหน้า”
-      </div>
+      <div class="helper">เลือกรูปใบหน้าชัด ๆ 1 รูป (หรือถ่ายจากมือถือ) แล้วกด “บันทึกใบหน้า”</div>
 
       <div class="mt-10">
         <div class="helper">เลือกรูป (มือถือแนะนำใช้กล้องหน้า)</div>
-        <input type="file" id="facePhotoInput" accept="image/*" capture="user" class="input-block" />
+        <input type="file" id="facePhotoInput" accept="image/*" capture="user" class="input" />
       </div>
 
       <div class="mt-10 preview-box">
-        <img id="facePreviewImg" alt="preview" />
-        <div style="min-width:0;flex:1;">
+        <img id="facePreviewImg" alt="preview" style="display:none;" />
+        <div style="min-width:0; flex:1;">
           <div class="helper">สถานะ</div>
           <div class="mono" id="faceStatusText">ยังไม่เลือกรูป</div>
           <div class="helper mt-8">หมายเหตุ</div>
-          <div class="mono" id="faceHintText">
-            - ถ้าระบบตอบว่า UNKNOWN ใน Logs “ถือว่าปกติ” (ไม่ใช่ error)<br/>
-            - ถ้าบันทึกสำเร็จ จะมีป้าย “มีใบหน้า” ในรายชื่อพนักงาน
+          <div class="mono" id="faceHintText" style="white-space:pre-wrap;">
+- ถ้าระบบตอบว่า UNKNOWN ใน Logs “ถือว่าปกติ” (ไม่ใช่ error)
+- ถ้าบันทึกสำเร็จ จะมีป้าย “มีใบหน้า” ในรายชื่อพนักงาน
           </div>
         </div>
       </div>
@@ -1277,7 +878,7 @@
   </div>
 </div>
 
-<!-- MODAL: LOG DETAIL -------------------------------------------->
+<!-- MODAL: LOG DETAIL -->
 <div class="modal-backdrop" id="logModalBackdrop" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="logModalTitle">
     <div class="modal-header">
@@ -1312,87 +913,64 @@
 <script>
   const STORAGE_KEY = 'attendance_api_url_v2';
 
-  // ====== HARD-CODED (ย่อรูป + ให้โหลดไวขึ้น) ===================
+  // ====== HARD (เฉพาะหน้าใบหน้า) =========================
   const HARD = {
     FACE_MAX_BYTES: 900 * 1024,
     FACE_IMAGE_QUALITY: 0.86,
     FACE_IMAGE_MAX_EDGE: 960,
-
-    EMP_MAX_BYTES: 900 * 1024,
-    EMP_IMAGE_QUALITY: 0.84,
-    EMP_IMAGE_MAX_EDGE: 1024,
-
-    CACHE_TTL_MS: 60 * 1000, // 60 วิ (เร่งให้หน้าเปิดไวขึ้น)
+    CACHE_TTL_MS: 60 * 1000
   };
 
-  function getApiUrl() {
-    return localStorage.getItem(STORAGE_KEY) || '';
-  }
+  function $(id){ return document.getElementById(id); }
 
-  function setApiUrl(url) {
-    if (!url) localStorage.removeItem(STORAGE_KEY);
+  function getApiUrl(){ return localStorage.getItem(STORAGE_KEY) || ''; }
+  function setApiUrl(url){
+    if(!url) localStorage.removeItem(STORAGE_KEY);
     else localStorage.setItem(STORAGE_KEY, url);
   }
 
   const api = {
-    async call(action, params = {}) {
+    async call(action, params = {}){
       const apiUrl = getApiUrl();
-      if (!apiUrl) throw new Error('ยังไม่ได้ตั้งค่า URL API');
+      if(!apiUrl) throw new Error('ยังไม่ได้ตั้งค่า URL API');
 
       const body = new URLSearchParams({ action, ...params }).toString();
       const res = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        headers: { 'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8' },
         body
       });
 
       const text = await res.text();
       let data;
-      try {
-        data = JSON.parse(text);
-      } catch (e) {
+      try { data = JSON.parse(text); }
+      catch(e){
         console.error('API response is not JSON:', text);
         throw new Error('API ส่งผลลัพธ์ไม่ใช่ JSON (เช็คว่าใช้ URL ที่ลงท้ายด้วย /exec แล้วหรือยัง)');
       }
-      if (!data.ok) throw new Error(data.error || 'ไม่ทราบสาเหตุจากเซิร์ฟเวอร์');
+      if(!data.ok) throw new Error(data.error || 'ไม่ทราบสาเหตุจากเซิร์ฟเวอร์');
       return data.result;
     }
   };
 
+  // data
   let employees = [];
   let branches = [];
   let levels = [];
   let editingEmpId = null;
 
-  // ✅ จำแท็บของหน้า employees (มือถือ)
-  let empTabState = 'form';
-
-  // ✅ modal states
-  let faceTargetEmp = null;  // {id, code, fullName}
+  // face modal
+  let faceTargetEmp = null;
   let faceBase64 = '';
-  let lastLogsRows = [];     // cache latest logs
-  let logModalRow = null;    // selected row
 
-  // ✅ lazy-loading flags (ให้หน้าเปิดไวขึ้น)
-  const loaded = {
-    core: false,
-    logs: false,
-    summary: false,
-  };
+  // logs
+  let lastLogsRows = [];
+  let logModalRow = null;
 
-  function $(id) { return document.getElementById(id); }
+  // lazy loading
+  const loaded = { core:false, logs:false, summary:false };
 
-  function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = err => reject(err);
-      reader.readAsDataURL(file);
-    });
-  }
-
-  // ✅ กัน XSS/ตัวอักษรพิเศษใน HTML
-  function escHtml(s) {
+  function escHtml(s){
     return String(s ?? '')
       .replaceAll('&','&amp;')
       .replaceAll('<','&lt;')
@@ -1401,65 +979,114 @@
       .replaceAll("'","&#39;");
   }
 
-  function setConnectionStatus(online, msg) {
+  function setConnectionStatus(online, msg){
     const bdg = $('connectionBadge');
     const txt = $('connectionText');
-    if (!bdg || !txt) return;
-    if (online) {
+    if(!bdg || !txt) return;
+    if(online){
       bdg.classList.remove('offline');
       txt.textContent = msg || 'เชื่อมต่อสำเร็จ';
-    } else {
+    }else{
       bdg.classList.add('offline');
       txt.textContent = msg || 'ยังไม่ได้เชื่อมต่อ';
     }
   }
 
-  function statusBadgeHtml(status) {
-    const s = String(status || '').trim();
-    if (!s) return '<span class="badge-status badge-absent">ขาด</span>';
+  function ellipsizeUrl(url){
+    if(!url) return '';
+    if(url.length <= 48) return url;
+    return url.slice(0, 28) + '...' + url.slice(-12);
+  }
+  function setApiText(url){
+    const el = $('apiUrlDisplay');
+    if(!el) return;
+    el.textContent = url ? ('API: ' + ellipsizeUrl(url)) : 'ยังไม่ได้ตั้งค่า URL';
+    el.title = url ? ('แตะเพื่อคัดลอก: ' + url) : '';
+    el.dataset.full = url || '';
+  }
 
+  function openUrlCard(){
+    $('inputApiUrl').value = getApiUrl();
+    $('urlCard').style.display = 'block';
+    $('urlError').style.display = 'none';
+  }
+  function closeUrlCard(){ $('urlCard').style.display = 'none'; }
+  function saveUrl(){
+    const url = $('inputApiUrl').value.trim();
+    const errEl = $('urlError');
+    errEl.style.display = 'none';
+    if(!url){
+      errEl.textContent = 'กรุณากรอก URL';
+      errEl.style.display = 'block';
+      return;
+    }
+    setApiUrl(url);
+    setApiText(url);
+    closeUrlCard();
+    initAdmin();
+  }
+
+  // ====== sections nav ======
+  function switchSection(section){
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
+    document.querySelectorAll('.bottom-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
+    document.querySelectorAll('.section').forEach(el => el.classList.toggle('active', el.id === 'section-' + section));
+
+    if(section === 'logs' && !loaded.logs){
+      $('logsTableBody').innerHTML = '<tr><td colspan="11" class="text-center">กำลังโหลด...</td></tr>';
+      $('logsMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
+      reloadLogs();
+    }
+    if(section === 'summary' && !loaded.summary){
+      $('summaryTableBody').innerHTML = '<tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>';
+      $('summaryMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
+      reloadSummary();
+    }
+  }
+
+  // ====== badges/status ======
+  function statusBadgeHtml(status){
+    const s = String(status || '').trim();
+    if(!s) return '<span class="badge-status badge-absent">ขาด</span>';
     const up = s.toUpperCase();
-    if (up.includes('UNKNOWN') || up.includes('UNKNOW')) return '<span class="badge-status badge-unknown">UNKNOWN</span>';
+    if(up.includes('UNKNOWN') || up.includes('UNKNOW')) return '<span class="badge-status badge-unknown">UNKNOWN</span>';
 
     let cls = 'badge-other';
-    if (s === 'ปกติ') cls = 'badge-normal';
-    else if (s.includes('สาย') || s.includes('ออกงานไว') || s.includes('ออกกินข้าวไว')) cls = 'badge-late';
-    else if (s === 'ขาด') cls = 'badge-absent';
-    return '<span class="badge-status ' + cls + '">' + escHtml(s) + '</span>';
+    if(s === 'ปกติ') cls = 'badge-normal';
+    else if(s.includes('สาย') || s.includes('ออกงานไว') || s.includes('ออกกินข้าวไว')) cls = 'badge-late';
+    else if(s === 'ขาด') cls = 'badge-absent';
+    return '<span class="badge-status '+cls+'">'+escHtml(s)+'</span>';
   }
 
-  function timeToMinutes(t) {
-    if (!t) return null;
+  function timeToMinutes(t){
+    if(!t) return null;
     const parts = String(t).split(':');
-    if (parts.length < 2) return null;
+    if(parts.length < 2) return null;
     const h = Number(parts[0]), m = Number(parts[1]);
-    if (isNaN(h) || isNaN(m)) return null;
+    if(isNaN(h) || isNaN(m)) return null;
     return h * 60 + m;
   }
-
-  function minutesToThai(min) {
-    if (min == null) return '-';
-    if (min <= 0) return '0 นาที';
+  function minutesToThai(min){
+    if(min == null) return '-';
+    if(min <= 0) return '0 นาที';
     const h = Math.floor(min / 60);
     const m = min % 60;
-    if (h <= 0) return `${m} นาที`;
+    if(h <= 0) return `${m} นาที`;
     return `${h} ชม ${m.toString().padStart(2,'0')} นาที`;
   }
-
-  function calcTotalHours(t1, t4) {
+  function calcTotalHours(t1, t4){
     const m1 = timeToMinutes(t1);
     const m4 = timeToMinutes(t4);
-    if (m1 == null || m4 == null || m4 <= m1) return '-';
-    const diff = m4 - m1;
-    return minutesToThai(diff);
+    if(m1 == null || m4 == null || m4 <= m1) return '-';
+    return minutesToThai(m4 - m1);
   }
 
-  function formatDateThai(dateStr) {
+  function formatDateThai(dateStr){
     let d;
-    if (dateStr instanceof Date) d = dateStr;
-    else {
+    if(dateStr instanceof Date) d = dateStr;
+    else{
       const parts = String(dateStr).split('-');
-      if (parts.length === 3) d = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
+      if(parts.length === 3) d = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
       else return String(dateStr || '');
     }
     const dd = d.getDate().toString().padStart(2,'0');
@@ -1468,7 +1095,323 @@
     return `${dd}/${mm}/${yy}`;
   }
 
-  function fillYearMonthSelect(yearSel, monthSel) {
+  function isRealTime(v){
+    if(v == null) return false;
+    const s = String(v).trim();
+    if(!s) return false;
+    if(s === '-' || s === '–') return false;
+    return true;
+  }
+  function hasAnyLogRow(r){
+    return isRealTime(r.t1) || isRealTime(r.t2) || isRealTime(r.t3) || isRealTime(r.t4);
+  }
+
+  // calc penalty from status
+  function calcPenaltyFromStatus(status){
+    const s = String(status || '').trim();
+    if(!s) return { kind:'none', minutes:0 };
+    const up = s.toUpperCase();
+    if(up.includes('UNKNOWN') || up.includes('UNKNOW')) return { kind:'unknown' };
+    if(s.includes('HR') || s.includes('ตรวจสอบ')) return { kind:'unknown' };
+
+    let total = 0;
+    const re = /(\d+)\s*(?:ชม\.?|ชั่วโมง)\s*(\d+)\s*นาที|(\d+)\s*นาที/g;
+    let m;
+    while((m = re.exec(s)) !== null){
+      if(m[1] && m[2]) total += (Number(m[1]) * 60) + Number(m[2]);
+      else if(m[3]) total += Number(m[3]);
+    }
+    return { kind:'ok', minutes:total };
+  }
+  function penaltyHtmlFromRow(r){
+    const res = calcPenaltyFromStatus(r.status || '');
+    if(res.kind === 'unknown') return '<span class="badge-status badge-unknown">UNKNOWN</span>';
+    if(res.kind === 'none') return '-';
+    return `<span class="badge-pill">${escHtml(minutesToThai(res.minutes))}</span>`;
+  }
+
+  // ====== branches/levels selects ======
+  function renderBranchLevelSelects(){
+    const branchSel = $('empBranch');
+    const levelSel  = $('empLevel');
+
+    branchSel.innerHTML = branches.length
+      ? branches.map(b => `<option value="${escHtml(b.name)}">${escHtml(b.name)}</option>`).join('')
+      : '<option value="">- ยังไม่มีแผนก -</option>';
+
+    levelSel.innerHTML = levels.length
+      ? levels.map(l => `<option value="${escHtml(l.name)}">${escHtml(l.name)}</option>`).join('')
+      : '<option value="">- ยังไม่มีระดับ -</option>';
+
+    const logBranch = $('logBranchFilter');
+    const sumBranch = $('sumBranchFilter');
+    const opts = ['<option value="ALL">ทุกสาขา</option>'].concat(
+      branches.map(b => `<option value="${escHtml(b.name)}">${escHtml(b.name)}</option>`)
+    );
+    logBranch.innerHTML = opts.join('');
+    sumBranch.innerHTML = opts.join('');
+  }
+
+  function hasFace(e){
+    const fd = e && e.faceData;
+    if(!fd) return false;
+    const s = String(fd).trim();
+    if(!s) return false;
+    if(s === '-' || s === '–') return false;
+    return true;
+  }
+
+  // ====== employees render ======
+  function renderEmployeesTable(){
+    const tb = $('empTableBody');
+    const mobileList = $('empMobileList');
+    const q = ($('empSearch').value || '').trim().toLowerCase();
+
+    let list = employees;
+    if(q){
+      list = list.filter(e => (String(e.code)+' '+String(e.fullName)).toLowerCase().includes(q));
+    }
+
+    if(!list.length){
+      tb.innerHTML = '<tr><td colspan="6" class="text-center">ไม่พบข้อมูล</td></tr>';
+      if(mobileList) mobileList.innerHTML = '<div class="helper">ไม่พบข้อมูล</div>';
+      return;
+    }
+
+    // desktop table
+    tb.innerHTML = list.map(e => {
+      const faceOk = hasFace(e);
+      const faceBadge = faceOk
+        ? `<span class="emp-face-badge">มีใบหน้า</span>`
+        : `<span class="emp-face-badge off">ไม่มีใบหน้า</span>`;
+
+      return `
+        <tr>
+          <td>${escHtml(e.code || '')}</td>
+          <td>${escHtml(e.fullName || '')}</td>
+          <td>${escHtml(e.branch || '')}</td>
+          <td>${escHtml(e.level || '')}</td>
+          <td>${faceBadge}</td>
+          <td>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button class="btn btn-primary btn-small" onclick="openFaceEnroll('${escHtml(e.id || '')}')">📸 ใบหน้า</button>
+              <button class="btn btn-secondary btn-small" onclick="editEmployee('${escHtml(e.id || '')}')">✏️ แก้ไข</button>
+              <button class="btn btn-danger btn-small" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">🗑️ ลบ</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // mobile cards
+    if(mobileList){
+      mobileList.innerHTML = list.map(e => {
+        const faceOk = hasFace(e);
+        const faceBadge = faceOk
+          ? `<span class="emp-face-badge">มีใบหน้า</span>`
+          : `<span class="emp-face-badge off">ไม่มีใบหน้า</span>`;
+
+        return `
+          <div class="item">
+            <div class="item-top">
+              <div style="min-width:0;">
+                <div class="item-title">${escHtml(e.fullName || '-')}</div>
+                <div class="item-meta">
+                  <span class="pill-small">แผนก: ${escHtml(e.branch || '-')}</span>
+                  <span class="pill-small">ระดับ: ${escHtml(e.level || '-')}</span>
+                  ${faceBadge}
+                </div>
+              </div>
+              <div class="code-badge">รหัส ${escHtml(e.code || '-')}</div>
+            </div>
+
+            <div class="item-actions">
+              <button class="btn btn-secondary" onclick="editEmployee('${escHtml(e.id || '')}')">✏️ แก้ไข</button>
+              <button class="btn btn-danger" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">🗑️ ลบ</button>
+              <button class="btn btn-primary btn-span-2" onclick="openFaceEnroll('${escHtml(e.id || '')}')">📸 บันทึกใบหน้า</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  // ====== employee modal ======
+  function openModal(id){
+    const el = $(id);
+    if(!el) return;
+    el.style.display = 'flex';
+    el.setAttribute('aria-hidden','false');
+  }
+  function closeModal(id){
+    const el = $(id);
+    if(!el) return;
+    el.style.display = 'none';
+    el.setAttribute('aria-hidden','true');
+  }
+
+  function resetEmpForm(keepMsg){
+    editingEmpId = null;
+    $('empModalTitle').textContent = '👤 เพิ่มพนักงาน';
+    $('empModalSub').textContent = 'กรอกข้อมูลพื้นฐาน (ไม่มีอัปโหลดรูป)';
+    $('empCode').value = '';
+    $('empFullName').value = '';
+    $('empEmail').value = '';
+    if($('empBranch').options.length) $('empBranch').selectedIndex = 0;
+    if($('empLevel').options.length) $('empLevel').selectedIndex = 0;
+
+    $('empFormError').style.display = 'none';
+    if(!keepMsg) $('empFormSuccess').style.display = 'none';
+  }
+
+  function openEmpAdd(){
+    resetEmpForm(false);
+    openModal('empModalBackdrop');
+  }
+
+  window.editEmployee = function(id){
+    const emp = employees.find(e => String(e.id) === String(id));
+    if(!emp) return;
+
+    editingEmpId = emp.id;
+    $('empModalTitle').textContent = '✏️ แก้ไขพนักงาน';
+    $('empModalSub').textContent = `รหัส ${emp.code || '-'} • ${emp.fullName || '-'}`;
+
+    $('empCode').value = emp.code || '';
+    $('empFullName').value = emp.fullName || '';
+    $('empEmail').value = emp.email || '';
+    $('empBranch').value = emp.branch || '';
+    $('empLevel').value = emp.level || '';
+
+    $('empFormError').style.display = 'none';
+    $('empFormSuccess').style.display = 'none';
+    openModal('empModalBackdrop');
+  };
+
+  async function saveEmployee(){
+    const code = ($('empCode').value || '').trim();
+    const fullName = ($('empFullName').value || '').trim();
+    const branch = ($('empBranch').value || '').trim();
+    const level  = ($('empLevel').value || '').trim();
+    const email  = ($('empEmail').value || '').trim();
+
+    const errEl = $('empFormError');
+    const sucEl = $('empFormSuccess');
+    errEl.style.display = 'none';
+    sucEl.style.display = 'none';
+
+    if(!code || !fullName){
+      errEl.textContent = 'กรุณากรอกรหัสพนักงานและชื่อ–นามสกุล';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    try{
+      // ✅ ไม่มี photoBase64 แล้ว (ให้ UI โล่ง) — ส่งค่าว่างไว้ก็ยังเข้ากับ GS เดิมได้
+      await api.call('saveEmployee', {
+        id: editingEmpId || '',
+        code, fullName, branch, level, email,
+        photoBase64: '' // เผื่อ GS เดิมยังรับ param นี้อยู่
+      });
+
+      employees = await api.call('getEmployees');
+      renderEmployeesTable();
+
+      sucEl.textContent = 'บันทึกข้อมูลสำเร็จ';
+      sucEl.style.display = 'block';
+
+      // close modal หลังบันทึก (นิดหน่อยให้ user เห็นข้อความก็ได้)
+      setTimeout(() => {
+        closeModal('empModalBackdrop');
+        resetEmpForm(false);
+      }, 250);
+    }catch(err){
+      errEl.textContent = 'บันทึกไม่สำเร็จ: ' + err.message;
+      errEl.style.display = 'block';
+    }
+  }
+
+  window.deleteEmployeeConfirm = async function(id){
+    const emp = employees.find(e => String(e.id) === String(id));
+    if(!emp) return;
+    if(!confirm(`ต้องการลบพนักงานรหัส ${emp.code || ''} (${emp.fullName || ''}) หรือไม่?`)) return;
+
+    try{
+      await api.call('deleteEmployee', { id });
+      employees = await api.call('getEmployees');
+      renderEmployeesTable();
+      alert('ลบพนักงานสำเร็จ');
+    }catch(err){
+      alert('ลบไม่สำเร็จ: ' + err.message);
+    }
+  };
+
+  // ====== Dashboard render ======
+  function renderDashboard(todaySummary, monthSummary){
+    $('statTotalEmployees').textContent = employees.length.toString();
+
+    const todayRows = todaySummary || [];
+    const loggedRows = todayRows.filter(hasAnyLogRow);
+    $('statTodayCount').textContent = loggedRows.length.toString();
+
+    let lateCount = 0;
+    loggedRows.forEach(r => {
+      const st = String(r.status || '');
+      if(st.includes('สาย') || st.includes('ออกงานไว') || st.includes('ออกกินข้าวไว')) lateCount++;
+    });
+    $('statTodayLate').textContent = `สาย ${lateCount} คน`;
+
+    const rows = (monthSummary && monthSummary.rows) || [];
+    let normal=0, late=0, absent=0;
+    rows.forEach(r => {
+      normal += Number(r.normalCount || 0);
+      late   += Number(r.lateCount || 0);
+      absent += Number(r.absentCount || 0);
+    });
+    $('statMonthOverview').textContent = `${normal} ปกติ / ${late} สาย / ${absent} ขาด`;
+
+    const tbody = $('dashboardTodayBody');
+    if(!todayRows.length){
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center">ยังไม่มีข้อมูลวันนี้</td></tr>';
+    }else{
+      tbody.innerHTML = todayRows.map(r => {
+        const p = calcPenaltyFromStatus(r.status || '');
+        const pHtml = (p.kind === 'unknown')
+          ? '<span class="badge-status badge-unknown">UNKNOWN</span>'
+          : `<span class="badge-pill">${escHtml(minutesToThai(p.minutes || 0))}</span>`;
+
+        return `
+          <tr>
+            <td>${escHtml(r.code || '')}</td>
+            <td>${escHtml(r.fullName || '')}</td>
+            <td>${escHtml((isRealTime(r.t1) ? r.t1 : '-') || '-')}</td>
+            <td>${escHtml((isRealTime(r.t2) ? r.t2 : '-') || '-')}</td>
+            <td>${escHtml((isRealTime(r.t3) ? r.t3 : '-') || '-')}</td>
+            <td>${escHtml((isRealTime(r.t4) ? r.t4 : '-') || '-')}</td>
+            <td>${pHtml}</td>
+            <td>${statusBadgeHtml(r.status || '')}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    const locBox = $('dashboardLocationSummary');
+    if(locBox){
+      const locMap = {};
+      loggedRows.forEach(r => {
+        const loc = r.locationText || r.location || '';
+        if(!loc) return;
+        locMap[loc] = (locMap[loc] || 0) + 1;
+      });
+      const entries = Object.entries(locMap);
+      locBox.innerHTML = entries.length
+        ? entries.map(([name,count]) => `<span class="tag">${escHtml(name)} – ${escHtml(count)} คน</span>`).join(' ')
+        : '<span class="helper">วันนี้ยังไม่มีข้อมูลจุดลงเวลา</span>';
+    }
+  }
+
+  // ====== Logs/Summary select ======
+  function fillYearMonthSelect(yearSel, monthSel){
     const now = new Date();
     const curYear = now.getFullYear();
     const years = [curYear-1, curYear, curYear+1];
@@ -1486,396 +1429,25 @@
     }).join('');
   }
 
-  function isRealTime(v) {
-    if (v == null) return false;
-    const s = String(v).trim();
-    if (!s) return false;
-    if (s === '-' || s === '–') return false;
-    return true;
-  }
-
-  function hasAnyLogRow(r) {
-    return isRealTime(r.t1) || isRealTime(r.t2) || isRealTime(r.t3) || isRealTime(r.t4);
-  }
-
-  // ✅ รวมผิดปกติ: ดึงเลขจากข้อความสถานะแล้วรวมเป็นนาที
-  // รองรับ: "2 ชม 47 นาที" / "2ชม 47 นาที" / "10 นาที"
-  // ถ้าพบคำว่า HR ตรวจสอบ หรือ UNKNOWN/UNKNOW -> คืน UNKNOWN
-  function calcPenaltyFromStatus(status) {
-    const s = String(status || '').trim();
-    if (!s) return { kind: 'none', minutes: 0 };
-
-    const up = s.toUpperCase();
-    if (up.includes('UNKNOWN') || up.includes('UNKNOW')) return { kind: 'unknown' };
-    if (s.includes('HR') || s.includes('ตรวจสอบ')) return { kind: 'unknown' };
-
-    let total = 0;
-    const re = /(\d+)\s*(?:ชม\.?|ชั่วโมง)\s*(\d+)\s*นาที|(\d+)\s*นาที/g;
-    let m;
-    while ((m = re.exec(s)) !== null) {
-      if (m[1] && m[2]) {
-        total += (Number(m[1]) * 60) + Number(m[2]);
-      } else if (m[3]) {
-        total += Number(m[3]);
-      }
-    }
-    return { kind: 'ok', minutes: total };
-  }
-
-  function penaltyHtmlFromRow(r) {
-    const res = calcPenaltyFromStatus(r.status || '');
-    if (res.kind === 'unknown') return '<span class="badge-status badge-unknown">UNKNOWN</span>';
-    if (res.kind === 'none') return '-';
-    return `<span class="badge-pill">${escHtml(minutesToThai(res.minutes))}</span>`;
-  }
-
-  function renderDashboard(todaySummary, monthSummary) {
-    $('statTotalEmployees').textContent = employees.length.toString();
-
-    const todayRows = todaySummary || [];
-    const loggedRows = todayRows.filter(hasAnyLogRow);
-    $('statTodayCount').textContent = loggedRows.length.toString();
-
-    let lateCount = 0;
-    loggedRows.forEach(r => {
-      const st = String(r.status || '');
-      if (st.includes('สาย') || st.includes('ออกงานไว') || st.includes('ออกกินข้าวไว')) lateCount++;
-    });
-    $('statTodayLate').textContent = `สาย ${lateCount} คน`;
-
-    const rows = (monthSummary && monthSummary.rows) || [];
-    let normal = 0, late = 0, absent = 0;
-    rows.forEach(r => {
-      normal += Number(r.normalCount || 0);
-      late   += Number(r.lateCount || 0);
-      absent += Number(r.absentCount || 0);
-    });
-    $('statMonthOverview').textContent = `${normal} ปกติ / ${late} สาย / ${absent} ขาด`;
-
-    const tbody = $('dashboardTodayBody');
-    if (!todayRows.length) {
-      tbody.innerHTML = '<tr><td colspan="9" class="text-center">ยังไม่มีข้อมูลวันนี้</td></tr>';
-    } else {
-      tbody.innerHTML = todayRows.map(r => {
-        const p = calcPenaltyFromStatus(r.status || '');
-        const pText = (p.kind === 'unknown') ? 'UNKNOWN' : minutesToThai(p.minutes || 0);
-        const pHtml = (p.kind === 'unknown')
-          ? '<span class="badge-status badge-unknown">UNKNOWN</span>'
-          : `<span class="badge-pill">${escHtml(pText)}</span>`;
-
-        return `
-          <tr>
-            <td>${escHtml(r.code || '')}</td>
-            <td>${escHtml(r.fullName || '')}</td>
-            <td>${escHtml((isRealTime(r.t1) ? r.t1 : '-') || '-')}</td>
-            <td>${escHtml((isRealTime(r.t2) ? r.t2 : '-') || '-')}</td>
-            <td>${escHtml((isRealTime(r.t3) ? r.t3 : '-') || '-')}</td>
-            <td>${escHtml((isRealTime(r.t4) ? r.t4 : '-') || '-')}</td>
-            <td class="col-hide-sm">${escHtml(r.locationText || r.location || '-')}</td>
-            <td>${pHtml}</td>
-            <td>${statusBadgeHtml(r.status || '')}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    const locBox = $('dashboardLocationSummary');
-    if (locBox) {
-      const locMap = {};
-      loggedRows.forEach(r => {
-        const loc = r.locationText || r.location || '';
-        if (!loc) return;
-        locMap[loc] = (locMap[loc] || 0) + 1;
-      });
-      const entries = Object.entries(locMap);
-      if (!entries.length) {
-        locBox.innerHTML = '<span class="helper">วันนี้ยังไม่มีข้อมูลจุดลงเวลา</span>';
-      } else {
-        locBox.innerHTML = entries.map(([name,count]) =>
-          `<span class="tag">${escHtml(name)} – ${escHtml(count)} คน</span>`
-        ).join(' ');
-      }
-    }
-  }
-
-  function renderBranchLevelSelects() {
-    const branchSel = $('empBranch');
-    const levelSel  = $('empLevel');
-    branchSel.innerHTML = branches.length
-      ? branches.map(b => `<option value="${escHtml(b.name)}">${escHtml(b.name)}</option>`).join('')
-      : '<option value="">- ยังไม่มีแผนก -</option>';
-    levelSel.innerHTML = levels.length
-      ? levels.map(l => `<option value="${escHtml(l.name)}">${escHtml(l.name)}</option>`).join('')
-      : '<option value="">- ยังไม่มีระดับ -</option>';
-
-    const branchFilter = $('logBranchFilter');
-    const branchFilter2 = $('sumBranchFilter');
-    const opts = ['<option value="ALL">ทุกสาขา</option>']
-      .concat(branches.map(b => `<option value="${escHtml(b.name)}">${escHtml(b.name)}</option>`));
-    branchFilter.innerHTML = opts.join('');
-    branchFilter2.innerHTML = opts.join('');
-  }
-
-  function hasFace(e) {
-    const fd = e && e.faceData;
-    if (!fd) return false;
-    const s = String(fd).trim();
-    if (!s) return false;
-    if (s === '-' || s === '–') return false;
-    return true;
-  }
-
-  function renderEmployeesTable() {
-    const tb = $('empTableBody');
-    const mobileList = $('empMobileList');
-    const q = $('empSearch').value.trim().toLowerCase();
-
-    let list = employees;
-    if (q) {
-      list = list.filter(e => {
-        const text = (String(e.code) + ' ' + String(e.fullName)).toLowerCase();
-        return text.includes(q);
-      });
-    }
-
-    if (!list.length) {
-      if (tb) tb.innerHTML = '<tr><td colspan="6" class="text-center">ไม่พบข้อมูล</td></tr>';
-    } else {
-      if (tb) tb.innerHTML = list.map(e => {
-        const faceOk = hasFace(e);
-        const faceBadge = faceOk
-          ? `<span class="emp-face-badge">มีใบหน้า</span>`
-          : `<span class="emp-face-badge off">ไม่มีใบหน้า</span>`;
-        return `
-          <tr>
-            <td>${escHtml(e.code || '')}</td>
-            <td>${escHtml(e.fullName || '')}</td>
-            <td>${escHtml(e.branch || '')}</td>
-            <td>${escHtml(e.level || '')}</td>
-            <td>${faceBadge}</td>
-            <td>
-              <div class="table-actions">
-                <button class="btn btn-primary btn-small" onclick="openFaceEnroll('${escHtml(e.id || '')}')">📸 ใบหน้า</button>
-                <button class="btn btn-secondary btn-small" onclick="editEmployee('${escHtml(e.id || '')}')">แก้ไข</button>
-                <button class="btn btn-danger btn-small" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">ลบ</button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    if (mobileList) {
-      if (!list.length) {
-        mobileList.innerHTML = '<div class="helper">ไม่พบข้อมูล</div>';
-      } else {
-        mobileList.innerHTML = list.map(e => {
-          const faceOk = hasFace(e);
-          const faceBadge = faceOk
-            ? `<span class="emp-face-badge">มีใบหน้า</span>`
-            : `<span class="emp-face-badge off">ไม่มีใบหน้า</span>`;
-          return `
-            <div class="emp-item">
-              <div class="emp-item-top">
-                <div style="min-width:0;">
-                  <div class="emp-name">${escHtml(e.fullName || '-')}</div>
-                  <div class="emp-meta">
-                    <span class="pill-small">แผนก: ${escHtml(e.branch || '-')}</span>
-                    <span class="pill-small">ระดับ: ${escHtml(e.level || '-')}</span>
-                    ${faceBadge}
-                  </div>
-                </div>
-                <div class="emp-code-badge">รหัส ${escHtml(e.code || '-')}</div>
-              </div>
-
-              <div class="emp-item-actions">
-                <button class="btn btn-secondary" onclick="editEmployee('${escHtml(e.id || '')}')">✏️ แก้ไข</button>
-                <button class="btn btn-danger" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">🗑️ ลบ</button>
-                <button class="btn btn-primary btn-span-2" onclick="openFaceEnroll('${escHtml(e.id || '')}')">📸 บันทึกใบหน้า</button>
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
-    }
-  }
-
-  window.editEmployee = function(id) {
-    const emp = employees.find(e => String(e.id) === String(id));
-    if (!emp) return;
-    editingEmpId = emp.id;
-    $('empFormTitle').textContent = 'แก้ไขข้อมูลพนักงาน';
-    $('empCode').value = emp.code || '';
-    $('empFullName').value = emp.fullName || '';
-    $('empBranch').value = emp.branch || '';
-    $('empLevel').value = emp.level || '';
-    $('empEmail').value = emp.email || '';
-
-    const preview = $('empPhotoPreview');
-    const inputPhoto = $('empPhoto');
-    if (emp.photo) {
-      preview.src = emp.photo;
-      preview.style.display = 'block';
-    } else {
-      preview.src = '';
-      preview.style.display = 'none';
-    }
-    if (inputPhoto) inputPhoto.value = '';
-
-    $('empFormError').style.display = 'none';
-    $('empFormSuccess').style.display = 'none';
-
-    setEmpTab('form');
-  };
-
-  window.deleteEmployeeConfirm = async function(id) {
-    const emp = employees.find(e => String(e.id) === String(id));
-    if (!emp) return;
-    const code = emp.code || '';
-    const name = emp.fullName || '';
-    if (!confirm(`ต้องการลบพนักงานรหัส ${code} (${name}) หรือไม่?`)) return;
-
-    try {
-      await api.call('deleteEmployee', { id });
-      employees = await api.call('getEmployees');
-      renderEmployeesTable();
-      alert('ลบพนักงานสำเร็จ');
-    } catch (err) {
-      alert('ลบไม่สำเร็จ: ' + err.message);
-    }
-  };
-
-  async function compressImageToJpegBase64(file, maxEdge, quality, maxBytes) {
-    const dataUrl = await fileToBase64(file);
-    const img = new Image();
-    img.src = dataUrl;
-
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = reject;
-    });
-
-    const w = img.naturalWidth || img.width;
-    const h = img.naturalHeight || img.height;
-
-    let nw = w, nh = h;
-    if (Math.max(w, h) > maxEdge) {
-      const scale = maxEdge / Math.max(w, h);
-      nw = Math.round(w * scale);
-      nh = Math.round(h * scale);
-    }
-
-    const canvas = document.createElement('canvas');
-    canvas.width = nw;
-    canvas.height = nh;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, nw, nh);
-
-    let out = canvas.toDataURL('image/jpeg', quality);
-
-    // ถ้าใหญ่เกิน ลองลดคุณภาพลง
-    if (out.length > maxBytes * 1.37) out = canvas.toDataURL('image/jpeg', Math.max(0.70, quality - 0.08));
-    if (out.length > maxBytes * 1.37) out = canvas.toDataURL('image/jpeg', Math.max(0.62, quality - 0.18));
-
-    return out;
-  }
-
-  async function saveEmployee() {
-    const code = $('empCode').value.trim();
-    const fullName = $('empFullName').value.trim();
-    const branch = $('empBranch').value.trim();
-    const level  = $('empLevel').value.trim();
-    const email  = $('empEmail').value.trim();
-
-    const errEl = $('empFormError');
-    const sucEl = $('empFormSuccess');
-    errEl.style.display = 'none';
-    sucEl.style.display = 'none';
-
-    if (!code || !fullName) {
-      errEl.textContent = 'กรุณากรอกรหัสพนักงานและชื่อ–นามสกุล';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    let photoBase64 = '';
-    const photoInput = $('empPhoto');
-    if (photoInput && photoInput.files && photoInput.files[0]) {
-      try {
-        photoBase64 = await compressImageToJpegBase64(
-          photoInput.files[0],
-          HARD.EMP_IMAGE_MAX_EDGE,
-          HARD.EMP_IMAGE_QUALITY,
-          HARD.EMP_MAX_BYTES
-        );
-      } catch (e) {
-        console.error('แปลงรูปไม่สำเร็จ', e);
-      }
-    }
-
-    try {
-      await api.call('saveEmployee', {
-        id: editingEmpId || '',
-        code,
-        fullName,
-        branch,
-        level,
-        email,
-        photoBase64
-      });
-      employees = await api.call('getEmployees');
-      renderEmployeesTable();
-      editingEmpId = null;
-      resetEmpForm(true);
-      sucEl.textContent = 'บันทึกข้อมูลสำเร็จ';
-      sucEl.style.display = 'block';
-      setEmpTab('list');
-    } catch (err) {
-      errEl.textContent = 'บันทึกไม่สำเร็จ: ' + err.message;
-      errEl.style.display = 'block';
-    }
-  }
-
-  function resetEmpForm(keepMsg) {
-    editingEmpId = null;
-    $('empFormTitle').textContent = 'เพิ่มพนักงานใหม่';
-    $('empCode').value = '';
-    $('empFullName').value = '';
-    if ($('empBranch').options.length) $('empBranch').selectedIndex = 0;
-    if ($('empLevel').options.length) $('empLevel').selectedIndex = 0;
-    $('empEmail').value = '';
-    const photoInput = $('empPhoto');
-    const preview = $('empPhotoPreview');
-    if (photoInput) photoInput.value = '';
-    if (preview) {
-      preview.src = '';
-      preview.style.display = 'none';
-    }
-    $('empFormError').style.display = 'none';
-    if (!keepMsg) $('empFormSuccess').style.display = 'none';
-  }
-
-  // ====== Logs ======
-  function renderLogsTable(res) {
+  // ====== Logs render ======
+  function renderLogsTable(res){
     const rows = (res && res.rows) || [];
     lastLogsRows = rows;
 
     const tb = $('logsTableBody');
     const mobileList = $('logsMobileList');
 
-    if (!rows.length) {
+    if(!rows.length){
       tb.innerHTML = '<tr><td colspan="11" class="text-center">ยังไม่มีข้อมูล</td></tr>';
-      if (mobileList) mobileList.innerHTML = '<div class="helper">ยังไม่มีข้อมูล</div>';
+      if(mobileList) mobileList.innerHTML = '<div class="helper">ยังไม่มีข้อมูล</div>';
       return;
     }
 
     tb.innerHTML = rows.map((r, idx) => {
       const total = calcTotalHours(r.t1, r.t4);
-      const locText = r.locationText || '';
+      const locText = r.locationText || r.location || '';
       const locCell = locText ? `<span class="pill-small">${escHtml(locText)}</span>` : '-';
-      const evidence = r.evidenceUrl
-        ? `<a href="${escHtml(r.evidenceUrl)}" target="_blank" rel="noopener">เปิดรูป</a>`
-        : '-';
+      const evidence = r.evidenceUrl ? `<a href="${escHtml(r.evidenceUrl)}" target="_blank" rel="noopener">เปิดรูป</a>` : '-';
 
       return `
         <tr>
@@ -1883,48 +1455,50 @@
           <td>${escHtml(r.code || '')}</td>
           <td>${escHtml(r.fullName || '')}</td>
           <td>${escHtml(r.t1 || '-')}</td>
-          <td class="col-hide-sm">${escHtml(r.t4 || '-')}</td>
+          <td>${escHtml(r.t4 || '-')}</td>
           <td>${escHtml(total)}</td>
           <td>${penaltyHtmlFromRow(r)}</td>
           <td>${statusBadgeHtml(r.status || '')}</td>
-          <td class="col-hide-sm">${locCell}</td>
-          <td class="col-hide-sm">${evidence}</td>
-          <td>
-            <button class="btn btn-secondary btn-small" onclick="openLogDetail(${idx})">ดู</button>
-          </td>
+          <td>${locCell}</td>
+          <td>${evidence}</td>
+          <td><button class="btn btn-secondary btn-small" onclick="openLogDetail(${idx})">ดู</button></td>
         </tr>
       `;
     }).join('');
 
-    if (mobileList) {
+    if(mobileList){
       mobileList.innerHTML = rows.map((r, idx) => {
         const d = formatDateThai(r.date);
         const total = calcTotalHours(r.t1, r.t4);
         const loc = r.locationText || r.location || '-';
         const evidence = r.evidenceUrl ? `<a href="${escHtml(r.evidenceUrl)}" target="_blank" rel="noopener">เปิดหลักฐาน</a>` : '-';
+
+        const p = calcPenaltyFromStatus(r.status || '');
+        const pText = (p.kind === 'unknown') ? 'UNKNOWN' : minutesToThai(p.minutes || 0);
+
         return `
-          <div class="log-item">
-            <div class="log-item-top">
+          <div class="item">
+            <div class="item-top">
               <div style="min-width:0;">
-                <div class="log-name">${escHtml(r.fullName || '-')}</div>
-                <div class="log-meta">
+                <div class="item-title">${escHtml(r.fullName || '-')}</div>
+                <div class="item-meta">
                   <span class="pill-small">วันที่ ${escHtml(d)}</span>
                   <span class="pill-small">${escHtml(loc)}</span>
                 </div>
               </div>
-              <div class="log-code-badge">รหัส ${escHtml(r.code || '-')}</div>
+              <div class="code-badge">รหัส ${escHtml(r.code || '-')}</div>
             </div>
 
             <div class="kv">
               <div class="k">เข้า</div><div class="v">${escHtml(r.t1 || '-')}</div>
               <div class="k">ออก</div><div class="v">${escHtml(r.t4 || '-')}</div>
               <div class="k">ชั่วโมงรวม</div><div class="v">${escHtml(total)}</div>
-              <div class="k">รวมผิดปกติ</div><div class="v">${(calcPenaltyFromStatus(r.status||'').kind==='unknown') ? 'UNKNOWN' : escHtml(minutesToThai(calcPenaltyFromStatus(r.status||'').minutes||0))}</div>
+              <div class="k">รวมผิดปกติ</div><div class="v">${escHtml(pText)}</div>
               <div class="k">สถานะ</div><div class="v">${escHtml(r.status || '-')}</div>
               <div class="k">หลักฐาน</div><div class="v">${evidence}</div>
             </div>
 
-            <div class="log-item-actions">
+            <div class="item-actions">
               <button class="btn btn-secondary" onclick="openLogDetail(${idx})">ดูรายละเอียด</button>
               <button class="btn btn-primary" onclick="copyLogQuick(${idx})">คัดลอกสรุป</button>
             </div>
@@ -1934,30 +1508,30 @@
     }
   }
 
-  async function reloadLogs() {
+  async function reloadLogs(){
     const year  = $('logYearFilter').value;
     const month = $('logMonthFilter').value;
     const branch = $('logBranchFilter').value || 'ALL';
-    const search = $('logSearch').value.trim();
+    const search = ($('logSearch').value || '').trim();
 
-    try {
+    try{
       const res = await api.call('getLogsRange', { year, month, branch, search });
       renderLogsTable(res);
       loaded.logs = true;
-    } catch (err) {
+    }catch(err){
       alert('โหลดประวัติเวลาไม่สำเร็จ: ' + err.message);
     }
   }
 
-  // ====== Summary ======
-  function renderSummaryTable(res) {
+  // ====== Summary render ======
+  function renderSummaryTable(res){
     const rows = (res && res.rows) || [];
     const tb = $('summaryTableBody');
     const mobileList = $('summaryMobileList');
 
-    if (!rows.length) {
+    if(!rows.length){
       tb.innerHTML = '<tr><td colspan="8" class="text-center">ยังไม่มีข้อมูล</td></tr>';
-      if (mobileList) mobileList.innerHTML = '<div class="helper">ยังไม่มีข้อมูล</div>';
+      if(mobileList) mobileList.innerHTML = '<div class="helper">ยังไม่มีข้อมูล</div>';
       return;
     }
 
@@ -1965,8 +1539,8 @@
       <tr>
         <td>${escHtml(r.code || '')}</td>
         <td>${escHtml(r.fullName || '')}</td>
-        <td class="col-hide-sm">${escHtml(r.branch || '')}</td>
-        <td class="col-hide-sm">${escHtml(r.level || '')}</td>
+        <td>${escHtml(r.branch || '')}</td>
+        <td>${escHtml(r.level || '')}</td>
         <td>${escHtml(r.days || 0)}</td>
         <td>${escHtml(r.normalCount || 0)}</td>
         <td>${escHtml(r.lateCount || 0)}</td>
@@ -1974,18 +1548,18 @@
       </tr>
     `).join('');
 
-    if (mobileList) {
+    if(mobileList){
       mobileList.innerHTML = rows.map(r => `
-        <div class="sum-item">
-          <div class="sum-item-top">
+        <div class="item">
+          <div class="item-top">
             <div style="min-width:0;">
-              <div class="sum-name">${escHtml(r.fullName || '-')}</div>
-              <div class="sum-meta">
+              <div class="item-title">${escHtml(r.fullName || '-')}</div>
+              <div class="item-meta">
                 <span class="pill-small">แผนก: ${escHtml(r.branch || '-')}</span>
                 <span class="pill-small">ระดับ: ${escHtml(r.level || '-')}</span>
               </div>
             </div>
-            <div class="sum-code-badge">รหัส ${escHtml(r.code || '-')}</div>
+            <div class="code-badge">รหัส ${escHtml(r.code || '-')}</div>
           </div>
 
           <div class="kv">
@@ -1999,50 +1573,46 @@
     }
   }
 
-  async function reloadSummary() {
+  async function reloadSummary(){
     const year  = $('sumYearFilter').value;
     const month = $('sumMonthFilter').value;
     const branch = $('sumBranchFilter').value || 'ALL';
-    try {
+    try{
       const res = await api.call('getSummaryRange', { year, month, branch });
       renderSummaryTable(res);
       loaded.summary = true;
-    } catch (err) {
+    }catch(err){
       alert('โหลดสรุปเวลาทำงานไม่สำเร็จ: ' + err.message);
     }
   }
 
-  // ====== Settings (branches/levels) ======
-  function renderBranchesLevelsTables() {
+  // ====== Settings render/add/delete ======
+  function renderBranchesLevelsTables(){
     const bt = $('branchTableBody');
     const lt = $('levelTableBody');
 
-    if (!branches.length) {
-      bt.innerHTML = '<tr><td colspan="2" class="text-center">ยังไม่มีแผนก</td></tr>';
-    } else {
-      bt.innerHTML = branches.map(b => `
-        <tr>
-          <td>${escHtml(b.name)}</td>
-          <td><button class="btn btn-danger btn-small" onclick="deleteBranch('${escHtml(b.name)}')">ลบ</button></td>
-        </tr>
-      `).join('');
-    }
+    bt.innerHTML = branches.length
+      ? branches.map(b => `
+          <tr>
+            <td>${escHtml(b.name)}</td>
+            <td class="text-right"><button class="btn btn-danger btn-small" onclick="deleteBranch('${escHtml(b.name)}')">ลบ</button></td>
+          </tr>
+        `).join('')
+      : '<tr><td colspan="2" class="text-center">ยังไม่มีแผนก</td></tr>';
 
-    if (!levels.length) {
-      lt.innerHTML = '<tr><td colspan="2" class="text-center">ยังไม่มีระดับ</td></tr>';
-    } else {
-      lt.innerHTML = levels.map(l => `
-        <tr>
-          <td>${escHtml(l.name)}</td>
-          <td><button class="btn btn-danger btn-small" onclick="deleteLevel('${escHtml(l.name)}')">ลบ</button></td>
-        </tr>
-      `).join('');
-    }
+    lt.innerHTML = levels.length
+      ? levels.map(l => `
+          <tr>
+            <td>${escHtml(l.name)}</td>
+            <td class="text-right"><button class="btn btn-danger btn-small" onclick="deleteLevel('${escHtml(l.name)}')">ลบ</button></td>
+          </tr>
+        `).join('')
+      : '<tr><td colspan="2" class="text-center">ยังไม่มีระดับ</td></tr>';
   }
 
-  window.deleteBranch = async function(name) {
-    if (!confirm(`ต้องการลบแผนก "${name}" หรือไม่?`)) return;
-    try {
+  window.deleteBranch = async function(name){
+    if(!confirm(`ต้องการลบแผนก "${name}" หรือไม่?`)) return;
+    try{
       await api.call('deleteBranch', { name });
       const bl = await api.call('getBranchesLevels');
       branches = bl.branches || [];
@@ -2052,16 +1622,16 @@
       $('settingsSuccess').textContent = 'ลบแผนกสำเร็จ';
       $('settingsSuccess').style.display = 'block';
       $('settingsError').style.display = 'none';
-    } catch (err) {
+    }catch(err){
       $('settingsError').textContent = 'ลบแผนกไม่สำเร็จ: ' + err.message;
       $('settingsError').style.display = 'block';
       $('settingsSuccess').style.display = 'none';
     }
   };
 
-  window.deleteLevel = async function(name) {
-    if (!confirm(`ต้องการลบระดับ "${name}" หรือไม่?`)) return;
-    try {
+  window.deleteLevel = async function(name){
+    if(!confirm(`ต้องการลบระดับ "${name}" หรือไม่?`)) return;
+    try{
       await api.call('deleteLevel', { name });
       const bl = await api.call('getBranchesLevels');
       branches = bl.branches || [];
@@ -2071,25 +1641,25 @@
       $('settingsSuccess').textContent = 'ลบระดับสำเร็จ';
       $('settingsSuccess').style.display = 'block';
       $('settingsError').style.display = 'none';
-    } catch (err) {
+    }catch(err){
       $('settingsError').textContent = 'ลบระดับไม่สำเร็จ: ' + err.message;
       $('settingsError').style.display = 'block';
       $('settingsSuccess').style.display = 'none';
     }
   };
 
-  async function addBranch() {
-    const name = $('branchName').value.trim();
+  async function addBranch(){
+    const name = ($('branchName').value || '').trim();
     const errEl = $('settingsError');
     const sucEl = $('settingsSuccess');
     errEl.style.display = 'none';
     sucEl.style.display = 'none';
-    if (!name) {
+    if(!name){
       errEl.textContent = 'กรุณากรอกชื่อแผนก';
       errEl.style.display = 'block';
       return;
     }
-    try {
+    try{
       await api.call('saveBranch', { name });
       $('branchName').value = '';
       const bl = await api.call('getBranchesLevels');
@@ -2099,24 +1669,24 @@
       renderBranchesLevelsTables();
       sucEl.textContent = 'เพิ่มแผนกสำเร็จ';
       sucEl.style.display = 'block';
-    } catch (err) {
+    }catch(err){
       errEl.textContent = 'เพิ่มแผนกไม่สำเร็จ: ' + err.message;
       errEl.style.display = 'block';
     }
   }
 
-  async function addLevel() {
-    const name = $('levelName').value.trim();
+  async function addLevel(){
+    const name = ($('levelName').value || '').trim();
     const errEl = $('settingsError');
     const sucEl = $('settingsSuccess');
     errEl.style.display = 'none';
     sucEl.style.display = 'none';
-    if (!name) {
+    if(!name){
       errEl.textContent = 'กรุณากรอกชื่อระดับ';
       errEl.style.display = 'block';
       return;
     }
-    try {
+    try{
       await api.call('saveLevel', { name });
       $('levelName').value = '';
       const bl = await api.call('getBranchesLevels');
@@ -2126,113 +1696,67 @@
       renderBranchesLevelsTables();
       sucEl.textContent = 'เพิ่มระดับสำเร็จ';
       sucEl.style.display = 'block';
-    } catch (err) {
+    }catch(err){
       errEl.textContent = 'เพิ่มระดับไม่สำเร็จ: ' + err.message;
       errEl.style.display = 'block';
     }
   }
 
-  // ====== URL Card ======
-  function openUrlCard() {
-    $('inputApiUrl').value = getApiUrl();
-    $('urlCard').style.display = 'block';
-    $('urlError').style.display = 'none';
+  // ====== cache helpers ======
+  function cacheSet(key, obj){
+    try{ sessionStorage.setItem(key, JSON.stringify({ t:Date.now(), v:obj })); }catch{}
   }
-  function closeUrlCard() { $('urlCard').style.display = 'none'; }
-
-  function saveUrl() {
-    const url = $('inputApiUrl').value.trim();
-    const errEl = $('urlError');
-    errEl.style.display = 'none';
-    if (!url) {
-      errEl.textContent = 'กรุณากรอก URL';
-      errEl.style.display = 'block';
-      return;
-    }
-    setApiUrl(url);
-    setApiText(url);
-    closeUrlCard();
-    initAdmin();
+  function cacheGet(key){
+    try{
+      const raw = sessionStorage.getItem(key);
+      if(!raw) return null;
+      const o = JSON.parse(raw);
+      if(!o || !o.t) return null;
+      if(Date.now() - o.t > HARD.CACHE_TTL_MS) return null;
+      return o.v;
+    }catch{ return null; }
   }
 
-  // ====== Navigation (lazy-load tabs) ======
-  function switchSection(section) {
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
-    document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
-    document.querySelectorAll('.section').forEach(el => el.classList.toggle('active', el.id === 'section-' + section));
-
-    if (section === 'employees') applyEmpMobileLayout();
-
-    // ✅ Lazy load: โหลดหนัก ๆ เฉพาะตอนเข้าแท็บ
-    if (section === 'logs' && !loaded.logs) {
-      $('logsTableBody').innerHTML = '<tr><td colspan="11" class="text-center">กำลังโหลด...</td></tr>';
-      $('logsMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
-      reloadLogs();
-    }
-    if (section === 'summary' && !loaded.summary) {
-      $('summaryTableBody').innerHTML = '<tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>';
-      $('summaryMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
-      reloadSummary();
-    }
+  // ====== Face enroll ======
+  function fileToBase64(file){
+    return new Promise((resolve,reject)=>{
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 
-  function ellipsizeUrl(url) {
-    if (!url) return '';
-    if (url.length <= 48) return url;
-    return url.slice(0, 28) + '...' + url.slice(-12);
-  }
+  async function compressImageToJpegBase64(file, maxEdge, quality, maxBytes){
+    const dataUrl = await fileToBase64(file);
+    const img = new Image();
+    img.src = dataUrl;
+    await new Promise((resolve,reject)=>{ img.onload=resolve; img.onerror=reject; });
 
-  function setApiText(url) {
-    const el = $('apiUrlDisplay');
-    if (!el) return;
-    el.textContent = url ? ('API: ' + ellipsizeUrl(url)) : 'ยังไม่ได้ตั้งค่า URL';
-    el.title = url ? ('แตะเพื่อคัดลอก: ' + url) : '';
-    el.dataset.full = url || '';
-  }
+    const w = img.naturalWidth || img.width;
+    const h = img.naturalHeight || img.height;
 
-  // ====== Employees mobile tab ======
-  function isMobileEmployeesMode() {
-    return window.matchMedia('(max-width: 800px)').matches;
-  }
-
-  function setEmpTab(tab) {
-    empTabState = tab;
-
-    const formCard = $('empFormCard');
-    const listCard = $('empListCard');
-    const bForm = $('btnEmpTabForm');
-    const bList = $('btnEmpTabList');
-
-    if (!isMobileEmployeesMode()) {
-      if (formCard) formCard.classList.remove('emp-hidden');
-      if (listCard) listCard.classList.remove('emp-hidden');
-      if (bForm) bForm.classList.add('active');
-      if (bList) bList.classList.remove('active');
-      return;
+    let nw=w, nh=h;
+    if(Math.max(w,h) > maxEdge){
+      const scale = maxEdge / Math.max(w,h);
+      nw = Math.round(w*scale);
+      nh = Math.round(h*scale);
     }
 
-    if (tab === 'list') {
-      formCard.classList.add('emp-hidden');
-      listCard.classList.remove('emp-hidden');
-      bForm.classList.remove('active');
-      bList.classList.add('active');
-    } else {
-      listCard.classList.add('emp-hidden');
-      formCard.classList.remove('emp-hidden');
-      bList.classList.remove('active');
-      bForm.classList.add('active');
-    }
+    const canvas = document.createElement('canvas');
+    canvas.width = nw; canvas.height = nh;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, nw, nh);
+
+    let out = canvas.toDataURL('image/jpeg', quality);
+    if(out.length > maxBytes * 1.37) out = canvas.toDataURL('image/jpeg', Math.max(0.70, quality - 0.08));
+    if(out.length > maxBytes * 1.37) out = canvas.toDataURL('image/jpeg', Math.max(0.62, quality - 0.18));
+    return out;
   }
 
-  function applyEmpMobileLayout() {
-    if (isMobileEmployeesMode()) setEmpTab(empTabState || 'form');
-    else setEmpTab('form');
-  }
-
-  // ====== Feature: FACE ENROLL (action: uploadEmployeeFace) ======
-  window.openFaceEnroll = function(empId) {
+  window.openFaceEnroll = function(empId){
     const emp = employees.find(e => String(e.id) === String(empId));
-    if (!emp) return;
+    if(!emp) return;
 
     faceTargetEmp = { id: emp.id, code: emp.code, fullName: emp.fullName };
     faceBase64 = '';
@@ -2243,33 +1767,18 @@
     $('faceStatusText').textContent = 'ยังไม่เลือกรูป';
     $('facePreviewImg').src = '';
     $('facePreviewImg').style.display = 'none';
-
     $('facePhotoInput').value = '';
     $('btnFaceUpload').disabled = false;
 
     openModal('faceModalBackdrop');
   };
 
-  function openModal(id) {
-    const el = $(id);
-    if (!el) return;
-    el.style.display = 'flex';
-    el.setAttribute('aria-hidden', 'false');
-  }
-
-  function closeModal(id) {
-    const el = $(id);
-    if (!el) return;
-    el.style.display = 'none';
-    el.setAttribute('aria-hidden', 'true');
-  }
-
-  async function handleFaceFileSelected() {
+  async function handleFaceFileSelected(){
     const file = $('facePhotoInput').files && $('facePhotoInput').files[0];
     $('faceError').style.display = 'none';
     $('faceSuccess').style.display = 'none';
 
-    if (!file) {
+    if(!file){
       faceBase64 = '';
       $('faceStatusText').textContent = 'ยังไม่เลือกรูป';
       $('facePreviewImg').src = '';
@@ -2277,7 +1786,7 @@
       return;
     }
 
-    try {
+    try{
       $('faceStatusText').textContent = 'กำลังเตรียมรูป...';
       const b64 = await compressImageToJpegBase64(file, HARD.FACE_IMAGE_MAX_EDGE, HARD.FACE_IMAGE_QUALITY, HARD.FACE_MAX_BYTES);
       faceBase64 = b64;
@@ -2286,7 +1795,7 @@
       $('facePreviewImg').style.display = 'block';
       const kb = Math.round((b64.length * 3) / 4 / 1024);
       $('faceStatusText').textContent = `พร้อมส่ง (ประมาณ ${kb} KB)`;
-    } catch (err) {
+    }catch(err){
       console.error(err);
       faceBase64 = '';
       $('faceStatusText').textContent = 'เตรียมรูปไม่สำเร็จ';
@@ -2295,15 +1804,14 @@
     }
   }
 
-  async function uploadEmployeeFace() {
+  async function uploadEmployeeFace(){
     const errEl = $('faceError');
     const sucEl = $('faceSuccess');
     errEl.style.display = 'none';
     sucEl.style.display = 'none';
 
-    if (!faceTargetEmp) return;
-
-    if (!faceBase64) {
+    if(!faceTargetEmp) return;
+    if(!faceBase64){
       errEl.textContent = 'กรุณาเลือกรูปก่อน';
       errEl.style.display = 'block';
       return;
@@ -2312,7 +1820,7 @@
     $('btnFaceUpload').disabled = true;
     $('faceStatusText').textContent = 'กำลังอัปโหลด...';
 
-    try {
+    try{
       await api.call('uploadEmployeeFace', {
         id: faceTargetEmp.id || '',
         code: faceTargetEmp.code || '',
@@ -2325,17 +1833,16 @@
 
       employees = await api.call('getEmployees');
       renderEmployeesTable();
-
-    } catch (err) {
+    }catch(err){
       errEl.textContent = 'บันทึกใบหน้าไม่สำเร็จ: ' + err.message;
       errEl.style.display = 'block';
       $('faceStatusText').textContent = 'ไม่สำเร็จ';
-    } finally {
+    }finally{
       $('btnFaceUpload').disabled = false;
     }
   }
 
-  function clearFaceModal() {
+  function clearFaceModal(){
     faceBase64 = '';
     $('facePhotoInput').value = '';
     $('facePreviewImg').src = '';
@@ -2345,10 +1852,10 @@
     $('faceSuccess').style.display = 'none';
   }
 
-  // ====== Feature: LOG DETAIL MODAL ======
-  window.openLogDetail = function(index) {
+  // ====== Log detail modal ======
+  window.openLogDetail = function(index){
     const r = lastLogsRows && lastLogsRows[index];
-    if (!r) return;
+    if(!r) return;
     logModalRow = r;
 
     const d = formatDateThai(r.date);
@@ -2370,22 +1877,19 @@
       `locationText=${r.locationText || '-'}`,
       `zone=${r.locationZone || r.zone || '-'}`,
     ];
-
     $('logKeyText').textContent = keyLines.join(' | ');
-
-    const raw = JSON.stringify(r, null, 2);
-    $('logRawText').textContent = raw;
+    $('logRawText').textContent = JSON.stringify(r, null, 2);
 
     const evidenceUrl = r.evidenceUrl || '';
     const img = $('logEvidenceImg');
     const btnOpen = $('btnOpenEvidence');
 
-    if (evidenceUrl) {
+    if(evidenceUrl){
       img.src = evidenceUrl;
       img.style.display = 'block';
       btnOpen.disabled = false;
       btnOpen.onclick = () => window.open(evidenceUrl, '_blank', 'noopener');
-    } else {
+    }else{
       img.src = '';
       img.style.display = 'none';
       btnOpen.disabled = true;
@@ -2394,22 +1898,20 @@
 
     const note = String(r.note || '');
     const hint = [];
-    if (note.toUpperCase() === 'UNKNOWN' || note.toUpperCase() === 'UNKNOW') hint.push('หมายเหตุ: UNKNOWN ถือว่า “ปกติ” สำหรับระบบสแกน (ไม่ใช่ error)');
-    if (String(r.method || '').includes('MANUAL')) hint.push('แถวนี้เป็นการบันทึกแบบ MANUAL');
+    if(note.toUpperCase() === 'UNKNOWN' || note.toUpperCase() === 'UNKNOW') hint.push('หมายเหตุ: UNKNOWN ถือว่า “ปกติ” สำหรับระบบสแกน (ไม่ใช่ error)');
+    if(String(r.method || '').includes('MANUAL')) hint.push('แถวนี้เป็นการบันทึกแบบ MANUAL');
     $('logModalHint').textContent = hint.join(' • ');
 
     openModal('logModalBackdrop');
   };
 
-  async function copyTextToClipboard(text) {
-    return navigator.clipboard.writeText(text).catch(() => {
-      prompt('คัดลอกข้อความนี้:', text);
-    });
+  async function copyTextToClipboard(text){
+    return navigator.clipboard.writeText(text).catch(()=>{ prompt('คัดลอกข้อความนี้:', text); });
   }
 
-  window.copyLogQuick = async function(index) {
+  window.copyLogQuick = async function(index){
     const r = lastLogsRows && lastLogsRows[index];
-    if (!r) return;
+    if(!r) return;
     const d = formatDateThai(r.date);
     const p = calcPenaltyFromStatus(r.status || '');
     const pText = (p.kind === 'unknown') ? 'UNKNOWN' : minutesToThai(p.minutes || 0);
@@ -2428,54 +1930,38 @@
     alert('คัดลอกสรุปแล้ว');
   };
 
-  // ====== Cache helpers (เปิดหน้าไวขึ้น) ======
-  function cacheSet(key, obj) {
-    try {
-      sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), v: obj }));
-    } catch {}
-  }
-  function cacheGet(key) {
-    try {
-      const raw = sessionStorage.getItem(key);
-      if (!raw) return null;
-      const o = JSON.parse(raw);
-      if (!o || !o.t) return null;
-      if (Date.now() - o.t > HARD.CACHE_TTL_MS) return null;
-      return o.v;
-    } catch {
-      return null;
-    }
-  }
-
-  // ====== INIT (core only, logs/summary lazy) ======
-  async function initAdmin() {
+  // ====== init ======
+  async function initAdmin(){
     const apiUrl = getApiUrl();
     setApiText(apiUrl);
 
-    if (!apiUrl) {
+    if(!apiUrl){
       setConnectionStatus(false, 'ยังไม่ได้ตั้งค่า URL');
       return;
     }
 
-    // ✅ render จาก cache ก่อน (ถ้ามี) ให้รู้สึกว่าโหลดไว
+    // cache fast paint
     const cEmp = cacheGet('adm_employees');
     const cBL  = cacheGet('adm_branchesLevels');
     const cToday = cacheGet('adm_today');
     const cMonth = cacheGet('adm_month');
 
-    if (cEmp) employees = cEmp;
-    if (cBL) { branches = (cBL.branches||[]); levels = (cBL.levels||[]); }
-    if (employees.length && branches.length) {
-      renderBranchLevelSelects();
+    if(cEmp) employees = cEmp;
+    if(cBL){ branches=(cBL.branches||[]); levels=(cBL.levels||[]); }
+
+    if(employees.length){
       renderEmployeesTable();
+      $('statTotalEmployees').textContent = employees.length.toString();
+    }
+    if(branches.length){
+      renderBranchLevelSelects();
       renderBranchesLevelsTables();
     }
-    if (cToday || cMonth) {
-      renderDashboard(cToday || [], cMonth || { rows: [] });
+    if(cToday || cMonth){
+      renderDashboard(cToday || [], cMonth || { rows:[] });
     }
 
-    try {
-      // ✅ core load: employees + branches/levels + today + month summary
+    try{
       const now = new Date();
       const year = now.getFullYear();
       const month = now.getMonth() + 1;
@@ -2484,7 +1970,7 @@
         api.call('getEmployees'),
         api.call('getBranchesLevels'),
         api.call('getTodaySummary'),
-        api.call('getSummaryRange', { year, month, branch: 'ALL' }),
+        api.call('getSummaryRange', { year, month, branch:'ALL' }),
       ]);
 
       employees = empRes || [];
@@ -2494,7 +1980,7 @@
       cacheSet('adm_employees', employees);
       cacheSet('adm_branchesLevels', { branches, levels });
       cacheSet('adm_today', todaySummary || []);
-      cacheSet('adm_month', monthSummary || { rows: [] });
+      cacheSet('adm_month', monthSummary || { rows:[] });
 
       setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
 
@@ -2506,11 +1992,8 @@
       fillYearMonthSelect($('logYearFilter'), $('logMonthFilter'));
       fillYearMonthSelect($('sumYearFilter'), $('sumMonthFilter'));
 
-      // ✅ ไม่โหลด logs/summary ทันที (ให้เร็วขึ้น) — จะโหลดเมื่อกดแท็บ
       loaded.core = true;
-      applyEmpMobileLayout();
-
-    } catch (err) {
+    }catch(err){
       console.error(err);
       setConnectionStatus(false, err.message);
       alert('เชื่อมต่อ API ไม่สำเร็จ: ' + err.message);
@@ -2518,13 +2001,14 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => switchSection(el.getAttribute('data-section'))));
-    document.querySelectorAll('.mobile-nav-item').forEach(el => el.addEventListener('click', () => switchSection(el.getAttribute('data-section'))));
+    // sidebar click
+    document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => switchSection(el.dataset.section)));
+    // bottom nav click
+    document.querySelectorAll('.bottom-item').forEach(el => el.addEventListener('click', () => switchSection(el.dataset.section)));
 
-    $('btnBackToFront').addEventListener('click', () => { window.location.href = 'index.html'; });
-
+    $('btnBackToFront').addEventListener('click', () => window.location.href = 'index.html');
     $('btnLogout').addEventListener('click', () => {
-      if (confirm('ต้องการออกจากระบบ (ลบ URL API ที่บันทึกไว้) หรือไม่?')) {
+      if(confirm('ต้องการออกจากระบบ (ลบ URL API ที่บันทึกไว้) หรือไม่?')){
         setApiUrl('');
         window.location.href = 'index.html';
       }
@@ -2536,73 +2020,51 @@
 
     $('apiUrlDisplay').addEventListener('click', async () => {
       const full = $('apiUrlDisplay').dataset.full || '';
-      if (!full) return;
-      try {
+      if(!full) return;
+      try{
         await navigator.clipboard.writeText(full);
         alert('คัดลอก URL แล้ว');
-      } catch (e) {
+      }catch(e){
         prompt('คัดลอก URL นี้:', full);
       }
     });
 
+    // employees
     $('empSearch').addEventListener('input', renderEmployeesTable);
-    $('btnSaveEmployee').addEventListener('click', saveEmployee);
+    $('btnOpenAddEmp').addEventListener('click', openEmpAdd);
+
+    $('btnCloseEmpModal').addEventListener('click', () => closeModal('empModalBackdrop'));
+    $('empModalBackdrop').addEventListener('click', (e) => { if(e.target === $('empModalBackdrop')) closeModal('empModalBackdrop'); });
     $('btnResetEmpForm').addEventListener('click', () => resetEmpForm(false));
+    $('btnSaveEmployee').addEventListener('click', saveEmployee);
 
-    const photoInput = $('empPhoto');
-    const preview = $('empPhotoPreview');
-    if (photoInput && preview) {
-      photoInput.addEventListener('change', () => {
-        const file = photoInput.files && photoInput.files[0];
-        if (!file) {
-          preview.src = '';
-          preview.style.display = 'none';
-          return;
-        }
-        const url = URL.createObjectURL(file);
-        preview.src = url;
-        preview.style.display = 'block';
-      });
-    }
-
-    $('btnReloadLogs').addEventListener('click', () => reloadLogs());
-    $('logSearch').addEventListener('keydown', e => { if (e.key === 'Enter') reloadLogs(); });
-
+    // logs
+    $('btnReloadLogs').addEventListener('click', reloadLogs);
+    $('logSearch').addEventListener('keydown', e => { if(e.key === 'Enter') reloadLogs(); });
     $('logBranchFilter').addEventListener('change', reloadLogs);
     $('logMonthFilter').addEventListener('change', reloadLogs);
     $('logYearFilter').addEventListener('change', reloadLogs);
 
+    // summary
     $('btnReloadSummary').addEventListener('click', reloadSummary);
     $('sumBranchFilter').addEventListener('change', reloadSummary);
     $('sumMonthFilter').addEventListener('change', reloadSummary);
     $('sumYearFilter').addEventListener('change', reloadSummary);
 
+    // settings
     $('btnAddBranch').addEventListener('click', addBranch);
     $('btnAddLevel').addEventListener('click', addLevel);
 
-    $('btnEmpTabForm').addEventListener('click', () => setEmpTab('form'));
-    $('btnEmpTabList').addEventListener('click', () => setEmpTab('list'));
-
-    window.addEventListener('resize', () => {
-      if (document.getElementById('section-employees').classList.contains('active')) {
-        applyEmpMobileLayout();
-      }
-    });
-
-    // === Face modal events
+    // face modal
     $('btnCloseFaceModal').addEventListener('click', () => closeModal('faceModalBackdrop'));
-    $('faceModalBackdrop').addEventListener('click', (e) => {
-      if (e.target === $('faceModalBackdrop')) closeModal('faceModalBackdrop');
-    });
+    $('faceModalBackdrop').addEventListener('click', (e) => { if(e.target === $('faceModalBackdrop')) closeModal('faceModalBackdrop'); });
     $('facePhotoInput').addEventListener('change', handleFaceFileSelected);
     $('btnFaceUpload').addEventListener('click', uploadEmployeeFace);
     $('btnFaceClear').addEventListener('click', clearFaceModal);
 
-    // === Log modal events
+    // log modal
     $('btnCloseLogModal').addEventListener('click', () => closeModal('logModalBackdrop'));
-    $('logModalBackdrop').addEventListener('click', (e) => {
-      if (e.target === $('logModalBackdrop')) closeModal('logModalBackdrop');
-    });
+    $('logModalBackdrop').addEventListener('click', (e) => { if(e.target === $('logModalBackdrop')) closeModal('logModalBackdrop'); });
     $('btnCopyLogJson').addEventListener('click', async () => {
       const txt = logModalRow ? JSON.stringify(logModalRow, null, 2) : '';
       await copyTextToClipboard(txt);
