@@ -4,11 +4,12 @@
   <meta charset="UTF-8" />
   <title>ระบบจัดการเวลาทำงาน – Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <style>
     :root{
       --primary:#2563eb;
+      --primary2:#1d4ed8;
       --primary-soft:#dbeafe;
 
       --bg:#f3f4f6;
@@ -23,6 +24,9 @@
 
       --sidebar:#020617;
       --sidebar2:#111827;
+
+      --shadow: 0 18px 40px rgba(15,23,42,.08);
+      --shadow2: 0 30px 80px rgba(15,23,42,.18);
     }
 
     *{ box-sizing:border-box; font-family:"Prompt",system-ui,-apple-system,"Segoe UI",sans-serif; }
@@ -30,8 +34,8 @@
     body{
       color:var(--text);
       background:
-        radial-gradient(circle at top left, #e0e7ff 0, transparent 55%),
-        radial-gradient(circle at bottom right, #e5f5ff 0, transparent 50%),
+        radial-gradient(circle at 20% 10%, #e0e7ff 0, transparent 55%),
+        radial-gradient(circle at 80% 90%, #e5f5ff 0, transparent 55%),
         var(--bg);
     }
 
@@ -41,51 +45,52 @@
     /* Buttons */
     .btn{
       border:none; cursor:pointer; border-radius:999px;
-      padding:9px 14px; font-size:13px; font-weight:500;
-      display:inline-flex; align-items:center; justify-content:center; gap:6px;
+      padding:10px 14px; font-size:13px; font-weight:600;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
       transition:transform .08s ease, box-shadow .08s ease, background .1s ease, opacity .1s ease;
       white-space:nowrap;
     }
     .btn:active{ transform:translateY(1px) scale(.99); }
-    .btn:disabled{ opacity:.6; cursor:default; transform:none; }
-    .btn-primary{ background:var(--primary); color:#fff; box-shadow:0 10px 24px rgba(37,99,235,.28); }
+    .btn:disabled{ opacity:.55; cursor:default; transform:none; }
+    .btn-primary{ background:linear-gradient(135deg,var(--primary),var(--primary2)); color:#fff; box-shadow:0 14px 30px rgba(37,99,235,.25); }
     .btn-secondary{ background:#fff; border:1px solid var(--border); color:#111827; }
     .btn-danger{ background:var(--danger); color:#fff; }
-    .btn-ghost{ background:transparent; border:1px solid var(--border); color:var(--muted); }
-    .btn-small{ padding:6px 10px; font-size:12px; }
+    .btn-ghost{ background:transparent; border:1px solid rgba(148,163,184,.35); color:#cbd5e1; }
+    .btn-small{ padding:7px 11px; font-size:12px; }
 
     /* Layout */
     .page{ display:flex; min-height:100vh; width:100%; overflow-x:hidden; }
     .sidebar{
-      width:240px; flex-shrink:0;
+      width:250px; flex-shrink:0;
       background:radial-gradient(circle at top, var(--sidebar2), var(--sidebar));
       color:#e5e7eb;
       padding:16px 14px;
       display:flex; flex-direction:column;
-      box-shadow:8px 0 30px rgba(15,23,42,.5), 0 0 0 1px rgba(15,23,42,.55);
+      box-shadow:10px 0 34px rgba(15,23,42,.45), 0 0 0 1px rgba(15,23,42,.55);
       position:relative; z-index:30;
     }
     .sidebar::after{
       content:""; position:absolute; inset:0;
-      background:radial-gradient(circle at bottom, rgba(37,99,235,.20), transparent 60%);
+      background:radial-gradient(circle at bottom, rgba(37,99,235,.18), transparent 62%);
       pointer-events:none;
     }
     .sidebar-header{ padding:6px 6px 16px; border-bottom:1px solid rgba(55,65,81,.9); margin-bottom:10px; position:relative; z-index:1;}
-    .sidebar-title{ font-weight:700; font-size:18px; margin-bottom:2px;}
-    .sidebar-sub{ font-size:11px; color:#9ca3af; }
+    .sidebar-title{ font-weight:800; font-size:18px; margin-bottom:2px; letter-spacing:.2px;}
+    .sidebar-sub{ font-size:11px; color:#94a3b8; }
     .nav{ margin-top:12px; display:flex; flex-direction:column; gap:6px; flex:1; min-height:0; position:relative; z-index:1;}
     .nav-item{
       display:flex; align-items:center; gap:10px;
-      padding:10px 12px; border-radius:14px;
+      padding:10px 12px; border-radius:16px;
       cursor:pointer; border:1px solid transparent;
-      color:#e5e7eb; font-size:14px;
+      color:#e5e7eb; font-size:14px; font-weight:600;
+      transition:background .12s ease, transform .08s ease;
     }
     .nav-item .icon{ width:22px; display:inline-flex; justify-content:center; }
-    .nav-item:hover{ background:rgba(31,41,55,.85); }
+    .nav-item:hover{ background:rgba(31,41,55,.85); transform:translateY(-1px); }
     .nav-item.active{
-      background:rgba(15,23,42,.95);
-      border-color:rgba(59,130,246,.75);
-      box-shadow:0 10px 20px rgba(15,23,42,.75);
+      background:rgba(15,23,42,.98);
+      border-color:rgba(59,130,246,.70);
+      box-shadow:0 14px 26px rgba(15,23,42,.65);
     }
     .sidebar-footer{
       padding-top:10px; border-top:1px solid rgba(55,65,81,.9);
@@ -97,65 +102,65 @@
     .content{ flex:1; display:flex; flex-direction:column; min-width:0; max-width:100%; overflow-x:hidden; }
 
     header.topbar{
-      padding:10px 18px;
-      background:rgba(15,23,42,.92);
+      padding:12px 18px;
+      background:rgba(2,6,23,.86);
       color:#e5e7eb;
-      border-bottom:1px solid rgba(15,23,42,.55);
+      border-bottom:1px solid rgba(15,23,42,.45);
       display:flex; align-items:center; justify-content:space-between;
       position:sticky; top:0; z-index:20;
       backdrop-filter:blur(14px);
       gap:10px;
     }
-    .topbar-left{ display:flex; flex-direction:column; gap:2px; min-width:0; }
-    .topbar-title{ font-size:18px; font-weight:700; }
-    .topbar-sub{ font-size:12px; color:#9ca3af; display:flex; flex-wrap:wrap; gap:6px; }
+    .topbar-left{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+    .topbar-title{ font-size:18px; font-weight:800; letter-spacing:.2px; }
+    .topbar-sub{ font-size:12px; color:#94a3b8; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
     #apiUrlDisplay{ cursor:pointer; word-break:break-all; overflow-wrap:anywhere; }
     .topbar-right{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
 
     main.main{ padding:18px 18px 22px; }
-    .main-inner{ max-width:1260px; margin:0 auto; width:100%; }
+    .main-inner{ max-width:1280px; margin:0 auto; width:100%; }
 
     /* Cards */
     .card{
-      background:var(--card);
+      background:rgba(255,255,255,.92);
       border-radius:18px;
       padding:14px 14px 12px;
-      box-shadow:0 18px 40px rgba(15,23,42,.08), 0 0 0 1px rgba(226,232,240,.9);
-      border:1px solid rgba(226,232,240,.9);
+      box-shadow:var(--shadow), 0 0 0 1px rgba(226,232,240,.92);
+      border:1px solid rgba(226,232,240,.92);
       margin-bottom:14px;
       width:100%;
       overflow:hidden;
     }
     .card-header{
       display:flex; justify-content:space-between; align-items:flex-start;
-      gap:10px; flex-wrap:wrap; margin-bottom:10px;
+      gap:12px; flex-wrap:wrap; margin-bottom:10px;
     }
     .card-title{
-      font-size:15px; font-weight:700;
+      font-size:15px; font-weight:800;
       display:flex; align-items:center; gap:8px;
     }
     .card-title .icon{
-      width:22px; height:22px; border-radius:999px;
+      width:24px; height:24px; border-radius:999px;
       display:inline-flex; align-items:center; justify-content:center;
       font-size:13px;
       background:var(--primary-soft);
       color:var(--primary);
     }
-    .card-subtitle{ font-size:12px; color:var(--muted); }
+    .card-subtitle{ font-size:12px; color:var(--muted); line-height:1.5; }
 
     /* Inputs */
     .input{
       width:100%;
-      border-radius:12px;
+      border-radius:14px;
       border:1px solid var(--border);
-      padding:10px 12px;
+      padding:11px 12px;
       font-size:14px;
       outline:none;
       background:#fff;
     }
     .input:focus{
       border-color:var(--primary);
-      box-shadow:0 0 0 2px rgba(37,99,235,.18);
+      box-shadow:0 0 0 3px rgba(37,99,235,.14);
     }
     select.input{ appearance:none; }
 
@@ -165,78 +170,79 @@
     .mt-12{ margin-top:12px; }
 
     /* Status badges */
-    .badge-status{ font-size:11px; padding:3px 9px; border-radius:999px; display:inline-block; }
+    .badge-status{ font-size:11px; padding:4px 10px; border-radius:999px; display:inline-block; font-weight:700; }
     .badge-normal{ background:#dcfce7; color:#166534; }
     .badge-late{ background:#fee2e2; color:#b91c1c; }
     .badge-absent{ background:#ffe4e6; color:#be123c; }
     .badge-other{ background:#fef3c7; color:#92400e; }
-    .badge-unknown{ background:#111827; color:#e5e7eb; }
-    .badge-pill{ font-size:11px; padding:3px 8px; border-radius:999px; background:#e5e7eb; color:#374151; }
-    .tag{ font-size:11px; padding:3px 8px; border-radius:999px; background:#e5e7eb; color:#374151; }
+    .badge-unknown{ background:#0b1220; color:#e5e7eb; border:1px solid rgba(148,163,184,.35); }
+    .pill{ font-size:11px; padding:4px 10px; border-radius:999px; background:#eef2ff; color:#1d4ed8; border:1px solid rgba(37,99,235,.18); font-weight:700; }
+    .tag{ font-size:11px; padding:4px 10px; border-radius:999px; background:#f1f5f9; color:#334155; border:1px solid rgba(148,163,184,.30); font-weight:700; }
 
     .emp-face-badge{
-      font-size:11px; padding:3px 8px; border-radius:999px;
-      border:1px solid rgba(16,185,129,.25);
+      font-size:11px; padding:4px 10px; border-radius:999px;
+      border:1px solid rgba(16,185,129,.22);
       background:rgba(16,185,129,.10);
       color:#047857;
+      font-weight:800;
       white-space:nowrap;
     }
     .emp-face-badge.off{
-      border-color:rgba(239,68,68,.25);
+      border-color:rgba(239,68,68,.22);
       background:rgba(239,68,68,.10);
       color:#b91c1c;
     }
 
     /* Tables */
-    table{ width:100%; border-collapse:collapse; font-size:13px; }
+    table{ width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
     thead{ background:#f3f4f6; }
-    th,td{ padding:8px 8px; border-bottom:1px solid #e5e7eb; text-align:left; white-space:nowrap; vertical-align:top; }
-    th{ font-weight:600; color:#374151; font-size:12px; }
-    tbody tr:nth-child(even){ background:#f9fafb; }
+    th,td{ padding:10px 10px; border-bottom:1px solid #e5e7eb; text-align:left; white-space:nowrap; vertical-align:top; }
+    th{ font-weight:800; color:#334155; font-size:12px; }
+    tbody tr:hover{ background:#f8fafc; }
     .scroll-x{ width:100%; overflow:auto; -webkit-overflow-scrolling:touch; }
-    .table-wide{ width:max-content; min-width:760px; }
+    .table-wide{ width:max-content; min-width:820px; }
     .text-center{ text-align:center; }
     .text-right{ text-align:right; }
 
     /* Connection badge */
     .badge-connection{
-      display:inline-flex; align-items:center; gap:6px;
-      padding:4px 10px; border-radius:999px;
-      font-size:11px;
-      background:rgba(15,118,110,.15);
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 12px; border-radius:999px;
+      font-size:11px; font-weight:800;
+      background:rgba(15,118,110,.14);
       color:#a5f3fc;
-      border:1px solid rgba(34,197,94,.8);
+      border:1px solid rgba(34,197,94,.75);
     }
     .badge-connection.offline{
-      background:rgba(127,29,29,.35);
+      background:rgba(127,29,29,.30);
       color:#fecaca;
-      border-color:rgba(248,113,113,.9);
+      border-color:rgba(248,113,113,.85);
     }
     .dot{
       width:8px; height:8px; border-radius:999px;
       background:#22c55e;
-      box-shadow:0 0 8px rgba(34,197,94,.85);
+      box-shadow:0 0 10px rgba(34,197,94,.75);
     }
     .badge-connection.offline .dot{
       background:#f97373;
-      box-shadow:0 0 8px rgba(248,113,113,.8);
+      box-shadow:0 0 10px rgba(248,113,113,.75);
     }
 
     /* Sections */
     .section{ display:none; }
     .section.active{ display:block; }
 
-    /* Employee list (mobile cards) */
-    .emp-mobile-list, .logs-mobile-list, .summary-mobile-list{
+    /* Mobile cards */
+    .list-mobile{
       display:flex; flex-direction:column; gap:10px;
       padding:6px 2px 2px;
     }
     .item{
       border:1px solid rgba(226,232,240,.95);
-      border-radius:16px;
+      border-radius:18px;
       padding:12px 12px 10px;
       background:#fff;
-      box-shadow:0 10px 22px rgba(15,23,42,.06);
+      box-shadow:0 12px 24px rgba(15,23,42,.06);
       display:flex;
       flex-direction:column;
       gap:10px;
@@ -244,23 +250,29 @@
     .item-top{
       display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
     }
-    .item-title{ font-weight:700; font-size:14px; line-height:1.25; }
+    .item-title{ font-weight:800; font-size:14px; line-height:1.25; }
     .item-meta{
       font-size:12px; color:var(--muted);
-      display:flex; flex-wrap:wrap; gap:6px;
+      display:flex; flex-wrap:wrap; gap:6px; align-items:center;
     }
     .code-badge{
-      font-size:11px; padding:3px 8px; border-radius:999px;
+      font-size:11px; padding:4px 10px; border-radius:999px;
       background:rgba(37,99,235,.12);
       color:var(--primary);
-      border:1px solid rgba(37,99,235,.25);
+      border:1px solid rgba(37,99,235,.22);
+      font-weight:800;
       white-space:nowrap;
       height:fit-content;
     }
-    .pill-small{
-      font-size:10px; padding:2px 6px; border-radius:999px;
-      background:#e5e7eb; color:#4b5563;
+    .kv{
+      display:grid;
+      grid-template-columns:96px 1fr;
+      gap:6px 10px;
+      font-size:12px;
+      color:#0f172a;
     }
+    .kv .k{ color:var(--muted); }
+    .kv .v{ font-weight:700; }
 
     .item-actions{
       display:grid;
@@ -278,7 +290,7 @@
       .mobile-only{ display:block; }
     }
 
-    /* Bottom nav (mobile) */
+    /* Bottom nav (mobile) - scroll */
     .bottom-nav{
       display:none;
       position:fixed;
@@ -290,34 +302,41 @@
       padding:8px;
       backdrop-filter:blur(12px);
       box-shadow:0 16px 44px rgba(15,23,42,.35);
+      overflow:hidden;
     }
     .bottom-nav-inner{
-      display:grid;
-      grid-template-columns:repeat(5, minmax(0,1fr));
+      display:flex;
       gap:6px;
+      overflow-x:auto;
+      padding-bottom:2px;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
     }
+    .bottom-nav-inner::-webkit-scrollbar{ display:none; }
     .bottom-item{
+      min-width:82px;
       border:none;
       background:transparent;
       color:#cbd5e1;
       border-radius:14px;
-      padding:8px 6px;
+      padding:8px 8px;
       cursor:pointer;
       display:flex; flex-direction:column; align-items:center; gap:2px;
-      font-size:10px;
+      font-size:10px; font-weight:800;
+      border:1px solid transparent;
     }
     .bottom-item .bicon{ font-size:16px; }
     .bottom-item.active{
       background:rgba(37,99,235,.18);
       color:#fff;
-      border:1px solid rgba(59,130,246,.45);
+      border-color:rgba(59,130,246,.45);
       box-shadow:0 10px 18px rgba(37,99,235,.22);
     }
 
     @media (max-width:1000px){
       .sidebar{ display:none; }
       .page{ flex-direction:column; }
-      main.main{ padding:14px 12px 90px; } /* เผื่อ bottom nav */
+      main.main{ padding:14px 12px 92px; } /* เผื่อ bottom nav */
       .bottom-nav{ display:block; }
       header.topbar{ padding:10px 12px; }
     }
@@ -330,7 +349,7 @@
     #urlCard{
       position:fixed;
       right:16px;
-      bottom:92px; /* กันชน bottom nav */
+      bottom:92px;
       max-width:420px;
       width:calc(100% - 32px);
       z-index:45;
@@ -359,7 +378,7 @@
       background:#fff;
       border-radius:18px;
       border:1px solid rgba(226,232,240,.9);
-      box-shadow:0 30px 80px rgba(15,23,42,.35);
+      box-shadow:var(--shadow2);
       overflow:hidden;
     }
     .modal-header{
@@ -368,7 +387,7 @@
       display:flex; justify-content:space-between; gap:10px;
       background:#f8fafc;
     }
-    .modal-title{ font-weight:700; font-size:14px; }
+    .modal-title{ font-weight:900; font-size:14px; }
     .modal-sub{ font-size:12px; color:var(--muted); margin-top:2px; }
     .modal-body{ padding:12px 14px 14px; }
     .modal-footer{
@@ -385,13 +404,13 @@
     }
 
     .stat-card{
-      padding:10px 12px; border-radius:14px;
-      background:#f9fafb; border:1px dashed #e5e7eb;
+      padding:12px 12px; border-radius:16px;
+      background:#f9fafb; border:1px solid #e5e7eb;
       display:flex; flex-direction:column; gap:4px;
       min-width:0;
     }
-    .stat-label{ font-size:12px; color:var(--muted); }
-    .stat-value{ font-size:20px; font-weight:800; }
+    .stat-label{ font-size:12px; color:var(--muted); font-weight:700; }
+    .stat-value{ font-size:22px; font-weight:900; letter-spacing:.2px; }
     .stat-extra{ font-size:11px; color:var(--muted); }
     .stat-accent{ color:#16a34a; }
     .stat-danger{ color:#b91c1c; }
@@ -406,37 +425,37 @@
     }
     @keyframes sk{ 0%{background-position:100% 0} 100%{background-position:0 0} }
 
-    .error-text{ font-size:12px; color:var(--danger); margin-top:6px; }
-    .success-text{ font-size:12px; color:var(--success); margin-top:6px; }
+    .error-text{ font-size:12px; color:var(--danger); margin-top:8px; font-weight:700; }
+    .success-text{ font-size:12px; color:var(--success); margin-top:8px; font-weight:700; }
 
-    /* preview box (face/log modal) */
-    .preview-box{
-      border:1px dashed #e5e7eb;
-      border-radius:14px;
-      padding:10px;
-      background:#f9fafb;
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      flex-wrap:wrap;
-    }
-    .preview-box img{
-      width:110px; height:110px; border-radius:12px;
-      object-fit:cover;
-      border:1px solid rgba(226,232,240,.9);
+    /* Leave status chips */
+    .chips{ display:flex; gap:8px; flex-wrap:wrap; }
+    .chip{
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.35);
       background:#fff;
-    }
-    .mono{ font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Courier New",monospace; font-size:12px; }
-
-    .kv{
-      display:grid;
-      grid-template-columns:90px 1fr;
-      gap:6px 10px;
+      color:#334155;
       font-size:12px;
-      color:#111827;
+      font-weight:900;
+      cursor:pointer;
+      user-select:none;
+      transition:transform .08s ease, box-shadow .12s ease, background .12s ease;
     }
-    .kv .k{ color:var(--muted); }
-    .kv .v{ font-weight:600; }
+    .chip:active{ transform:translateY(1px); }
+    .chip.active{
+      background:rgba(37,99,235,.10);
+      border-color:rgba(37,99,235,.35);
+      color:#1d4ed8;
+      box-shadow:0 10px 18px rgba(37,99,235,.12);
+    }
+
+    /* Small text in topbar */
+    .tiny{
+      font-size:11px;
+      color:#94a3b8;
+      font-weight:800;
+    }
   </style>
 </head>
 
@@ -454,6 +473,7 @@
       <div class="nav-item" data-section="employees"><span class="icon">👥</span><span>พนักงาน</span></div>
       <div class="nav-item" data-section="logs"><span class="icon">⏱</span><span>ประวัติเวลา</span></div>
       <div class="nav-item" data-section="summary"><span class="icon">📈</span><span>สรุปเวลาทำงาน</span></div>
+      <div class="nav-item" data-section="leave"><span class="icon">📝</span><span>ตรวจสอบการลา</span></div>
       <div class="nav-item" data-section="settings"><span class="icon">⚙️</span><span>ตั้งค่า (แผนก/ระดับ)</span></div>
     </nav>
 
@@ -469,8 +489,10 @@
       <div class="topbar-left">
         <div class="topbar-title">แผงควบคุมระบบลงเวลา</div>
         <div class="topbar-sub">
-          <span>Admin Panel |</span>
+          <span>Admin Panel</span>
+          <span> | </span>
           <span id="apiUrlDisplay" title="แตะเพื่อคัดลอก URL"></span>
+          <span class="tiny" id="lastUpdatedText">• อัปเดตล่าสุด: -</span>
         </div>
       </div>
       <div class="topbar-right">
@@ -478,6 +500,7 @@
           <span class="dot"></span>
           <span id="connectionText">ยังไม่ได้เชื่อมต่อ</span>
         </div>
+        <button class="btn btn-secondary" id="btnRefreshNow">รีเฟรช</button>
         <button class="btn btn-secondary" id="btnSetUrl">ตั้งค่า URL</button>
       </div>
     </header>
@@ -491,7 +514,7 @@
             <div class="card-header">
               <div>
                 <div class="card-title"><span class="icon">📊</span>ภาพรวมระบบวันนี้</div>
-                <div class="card-subtitle">ดูสถานะเข้า–ออกงานแบบรวดเร็ว เพื่อใช้ประกอบการตัดสินใจของ HR</div>
+                <div class="card-subtitle">อัปเดตอัตโนมัติทุกครั้งที่เข้าแท็บ / กดรีเฟรช</div>
               </div>
             </div>
 
@@ -509,7 +532,7 @@
               <div class="stat-card">
                 <div class="stat-label">สรุปเดือนนี้ (ปกติ / สาย / ขาด)</div>
                 <div class="stat-value" id="statMonthOverview"><div class="skeleton"></div></div>
-                <div class="stat-extra">อ่านจากฟังก์ชัน getSummaryRange</div>
+                <div class="stat-extra">จาก Summary Range</div>
               </div>
             </div>
 
@@ -538,18 +561,18 @@
           </div>
         </section>
 
-        <!-- EMPLOYEES (Clean: list first + modal form) -->
+        <!-- EMPLOYEES -->
         <section class="section" id="section-employees">
           <div class="card">
             <div class="card-header">
               <div>
                 <div class="card-title"><span class="icon">👥</span>พนักงาน</div>
                 <div class="card-subtitle">
-                  โหมดใหม่: เน้น “รายชื่อ” ให้โล่งเหมือนแอป • เพิ่ม/แก้ไขผ่านหน้าต่าง • คงสถานะ “มีใบหน้า/ไม่มีใบหน้า” ✅
+                  ✅ ลบปุ่ม “ใบหน้า” ออกแล้ว เหลือแค่สถานะ “มีใบหน้า/ไม่มีใบหน้า” เท่านั้น
                 </div>
               </div>
 
-              <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; min-width:260px; max-width:420px; width:100%;">
+              <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; min-width:260px; max-width:460px; width:100%;">
                 <input id="empSearch" class="input" placeholder="ค้นหาจากรหัส / ชื่อ" />
                 <button class="btn btn-primary" id="btnOpenAddEmp">➕ เพิ่มพนักงาน</button>
               </div>
@@ -578,13 +601,13 @@
 
             <!-- Mobile cards -->
             <div class="mobile-only">
-              <div id="empMobileList" class="emp-mobile-list">
+              <div id="empMobileList" class="list-mobile">
                 <div class="helper">กำลังโหลด...</div>
               </div>
             </div>
 
             <div class="helper mt-10">
-              * “บันทึกใบหน้า” อยู่ในปุ่ม 📸 ที่รายการพนักงาน (ไม่ซ่อนแล้ว) • ไม่มีช่องอัปโหลดรูปพนักงานในฟอร์มอีกต่อไป ✅
+              * หน้า Admin โฟกัส “ข้อมูล + ตรวจสอบ” อย่างเดียว • ฟีเจอร์บันทึกใบหน้าไปทำต่อในหน้าเฉพาะได้ภายหลัง
             </div>
           </div>
         </section>
@@ -595,7 +618,7 @@
             <div class="card-header">
               <div>
                 <div class="card-title"><span class="icon">⏱</span>ประวัติเวลา</div>
-                <div class="card-subtitle">ตาราง PC / การ์ดมือถือ • “รวมผิดปกติ” ดึงจากข้อความสถานะเหมือนเดิม</div>
+                <div class="card-subtitle">สลับแท็บ = รีเฟรชอัตโนมัติ • ปุ่มรีเฟรชด้านบนก็ใช้ได้</div>
               </div>
             </div>
 
@@ -616,7 +639,7 @@
                 <div class="helper">ปี (พ.ศ.)</div>
                 <select id="logYearFilter" class="input"></select>
               </div>
-              <button class="btn btn-primary" id="btnReloadLogs">รีเฟรช</button>
+              <button class="btn btn-primary" id="btnReloadLogs">รีเฟรชแท็บนี้</button>
             </div>
 
             <div class="desktop-only mt-10">
@@ -627,24 +650,20 @@
                       <th>วันที่</th><th>รหัส</th><th>ชื่อ</th>
                       <th>เข้า</th><th>ออก</th><th>ชั่วโมงรวม</th>
                       <th>รวมผิดปกติ</th><th>สถานะ</th>
-                      <th>สถานที่</th><th>หลักฐาน</th><th>ดู</th>
+                      <th>สถานที่</th><th>หลักฐาน</th>
                     </tr>
                   </thead>
                   <tbody id="logsTableBody">
-                    <tr><td colspan="11" class="text-center">ยังไม่มีข้อมูล</td></tr>
+                    <tr><td colspan="10" class="text-center">ยังไม่มีข้อมูล</td></tr>
                   </tbody>
                 </table>
               </div>
             </div>
 
             <div class="mobile-only mt-10">
-              <div id="logsMobileList" class="logs-mobile-list">
+              <div id="logsMobileList" class="list-mobile">
                 <div class="helper">ยังไม่มีข้อมูล</div>
               </div>
-            </div>
-
-            <div class="helper mt-10">
-              * ชั่วโมงรวมคำนวณจาก t1 ถึง t4 (ถ้ามีครบ) | “รวมผิดปกติ” จะคำนวณจากตัวเลขในข้อความสถานะ (ไม่ต้องแก้ GS)
             </div>
           </div>
         </section>
@@ -655,7 +674,7 @@
             <div class="card-header">
               <div>
                 <div class="card-title"><span class="icon">📈</span>สรุปเวลาทำงานรายบุคคล</div>
-                <div class="card-subtitle">ดูภาพรวมทั้งเดือน เช่น ใครมาสายกี่ครั้ง ขาดกี่วัน ฯลฯ</div>
+                <div class="card-subtitle">สรุปทั้งเดือน (ปกติ/สาย/ขาด) เพื่อใช้ HR ตรวจสอบ</div>
               </div>
             </div>
 
@@ -672,7 +691,7 @@
                 <div class="helper">ปี (พ.ศ.)</div>
                 <select id="sumYearFilter" class="input"></select>
               </div>
-              <button class="btn btn-primary" id="btnReloadSummary">รีเฟรช</button>
+              <button class="btn btn-primary" id="btnReloadSummary">รีเฟรชแท็บนี้</button>
             </div>
 
             <div class="desktop-only mt-10">
@@ -692,9 +711,84 @@
             </div>
 
             <div class="mobile-only mt-10">
-              <div id="summaryMobileList" class="summary-mobile-list">
+              <div id="summaryMobileList" class="list-mobile">
                 <div class="helper">ยังไม่มีข้อมูล</div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- LEAVE TAB -->
+        <section class="section" id="section-leave">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><span class="icon">📝</span>ตรวจสอบการลา</div>
+                <div class="card-subtitle">
+                  โครงแท็บพร้อมแล้ว ✅ (รอผูกข้อมูลจาก GS/DB) • มีสถานะ: รอดำเนินการ / อนุมัติ / ไม่อนุมัติ
+                </div>
+              </div>
+            </div>
+
+            <div class="chips mt-8">
+              <div class="chip active" data-leave-status="PENDING">รอดำเนินการ</div>
+              <div class="chip" data-leave-status="APPROVED">อนุมัติ</div>
+              <div class="chip" data-leave-status="REJECTED">ไม่อนุมัติ</div>
+              <div class="chip" data-leave-status="ALL">ทั้งหมด</div>
+            </div>
+
+            <div class="mt-10" style="display:flex; flex-wrap:wrap; gap:8px; align-items:end;">
+              <div style="flex:1; min-width:220px;">
+                <div class="helper">ค้นหา (รหัส/ชื่อ/เหตุผล)</div>
+                <input id="leaveSearch" class="input" placeholder="เช่น 1011, สมชาย, ลาป่วย" />
+              </div>
+              <div style="min-width:160px;">
+                <div class="helper">สาขา</div>
+                <select id="leaveBranchFilter" class="input"></select>
+              </div>
+              <div style="min-width:160px;">
+                <div class="helper">เดือน</div>
+                <select id="leaveMonthFilter" class="input"></select>
+              </div>
+              <div style="min-width:160px;">
+                <div class="helper">ปี (พ.ศ.)</div>
+                <select id="leaveYearFilter" class="input"></select>
+              </div>
+              <button class="btn btn-primary" id="btnReloadLeave">รีเฟรชแท็บนี้</button>
+            </div>
+
+            <div id="leaveHint" class="helper mt-10"></div>
+
+            <div class="desktop-only mt-10">
+              <div class="scroll-x" style="max-height:520px; overflow:auto;">
+                <table class="table-wide">
+                  <thead>
+                    <tr>
+                      <th>วันที่ยื่น</th>
+                      <th>รหัส</th>
+                      <th>ชื่อ</th>
+                      <th>ประเภทลา</th>
+                      <th>ช่วงวันลา</th>
+                      <th>เหตุผล</th>
+                      <th>สถานะ</th>
+                      <th>จัดการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leaveTableBody">
+                    <tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="mobile-only mt-10">
+              <div id="leaveMobileList" class="list-mobile">
+                <div class="helper">กำลังโหลด...</div>
+              </div>
+            </div>
+
+            <div class="helper mt-10">
+              * ปุ่ม “อนุมัติ/ไม่อนุมัติ” ตอนนี้เป็นโครง (พร้อมผูก API) • เดี๋ยวไปทำ leave.html ต่อได้เลย
             </div>
           </div>
         </section>
@@ -720,7 +814,7 @@
 
               <div class="scroll-x mt-10" style="max-height:360px; overflow:auto;">
                 <table>
-                  <thead><tr><th>แผนก</th><th>จัดการ</th></tr></thead>
+                  <thead><tr><th>แผนก</th><th class="text-right">จัดการ</th></tr></thead>
                   <tbody id="branchTableBody"><tr><td colspan="2" class="text-center">ยังไม่มีข้อมูล</td></tr></tbody>
                 </table>
               </div>
@@ -744,7 +838,7 @@
 
               <div class="scroll-x mt-10" style="max-height:360px; overflow:auto;">
                 <table>
-                  <thead><tr><th>ระดับ</th><th>จัดการ</th></tr></thead>
+                  <thead><tr><th>ระดับ</th><th class="text-right">จัดการ</th></tr></thead>
                   <tbody id="levelTableBody"><tr><td colspan="2" class="text-center">ยังไม่มีข้อมูล</td></tr></tbody>
                 </table>
               </div>
@@ -781,6 +875,7 @@
     <button class="bottom-item" data-section="employees"><div class="bicon">👥</div><div>พนักงาน</div></button>
     <button class="bottom-item" data-section="logs"><div class="bicon">⏱</div><div>ประวัติ</div></button>
     <button class="bottom-item" data-section="summary"><div class="bicon">📈</div><div>สรุป</div></button>
+    <button class="bottom-item" data-section="leave"><div class="bicon">📝</div><div>ลา</div></button>
     <button class="bottom-item" data-section="settings"><div class="bicon">⚙️</div><div>ตั้งค่า</div></button>
   </div>
 </div>
@@ -791,9 +886,9 @@
     <div class="modal-header">
       <div style="min-width:0;">
         <div class="modal-title" id="empModalTitle">👤 เพิ่มพนักงาน</div>
-        <div class="modal-sub" id="empModalSub">กรอกข้อมูลพื้นฐาน (ไม่มีอัปโหลดรูป)</div>
+        <div class="modal-sub" id="empModalSub">กรอกข้อมูลพื้นฐาน (ไม่มีอัปโหลดรูป/ไม่มีปุ่มใบหน้า)</div>
       </div>
-      <button class="btn btn-ghost btn-small" id="btnCloseEmpModal" type="button">ปิด</button>
+      <button class="btn btn-secondary btn-small" id="btnCloseEmpModal" type="button">ปิด</button>
     </div>
     <div class="modal-body">
       <div class="grid-2">
@@ -825,10 +920,6 @@
 
       <div id="empFormError" class="error-text" style="display:none;"></div>
       <div id="empFormSuccess" class="success-text" style="display:none;"></div>
-
-      <div class="helper mt-10">
-        ✅ การบันทึก “ใบหน้า” ทำผ่านปุ่ม 📸 ที่รายการพนักงาน (เพื่อให้ UI ไม่รก)
-      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" id="btnResetEmpForm" type="button">ล้างฟอร์ม</button>
@@ -837,89 +928,8 @@
   </div>
 </div>
 
-<!-- MODAL: FACE ENROLL -->
-<div class="modal-backdrop" id="faceModalBackdrop" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="faceModalTitle">
-    <div class="modal-header">
-      <div style="min-width:0;">
-        <div class="modal-title" id="faceModalTitle">📸 บันทึกใบหน้า</div>
-        <div class="modal-sub" id="faceModalSub">–</div>
-      </div>
-      <button class="btn btn-ghost btn-small" id="btnCloseFaceModal" type="button">ปิด</button>
-    </div>
-    <div class="modal-body">
-      <div class="helper">เลือกรูปใบหน้าชัด ๆ 1 รูป (หรือถ่ายจากมือถือ) แล้วกด “บันทึกใบหน้า”</div>
-
-      <div class="mt-10">
-        <div class="helper">เลือกรูป (มือถือแนะนำใช้กล้องหน้า)</div>
-        <input type="file" id="facePhotoInput" accept="image/*" capture="user" class="input" />
-      </div>
-
-      <div class="mt-10 preview-box">
-        <img id="facePreviewImg" alt="preview" style="display:none;" />
-        <div style="min-width:0; flex:1;">
-          <div class="helper">สถานะ</div>
-          <div class="mono" id="faceStatusText">ยังไม่เลือกรูป</div>
-          <div class="helper mt-8">หมายเหตุ</div>
-          <div class="mono" id="faceHintText" style="white-space:pre-wrap;">
-- ถ้าระบบตอบว่า UNKNOWN ใน Logs “ถือว่าปกติ” (ไม่ใช่ error)
-- ถ้าบันทึกสำเร็จ จะมีป้าย “มีใบหน้า” ในรายชื่อพนักงาน
-          </div>
-        </div>
-      </div>
-
-      <div id="faceError" class="error-text" style="display:none;"></div>
-      <div id="faceSuccess" class="success-text" style="display:none;"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" id="btnFaceClear" type="button">ล้างรูป</button>
-      <button class="btn btn-primary" id="btnFaceUpload" type="button">บันทึกใบหน้า</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: LOG DETAIL -->
-<div class="modal-backdrop" id="logModalBackdrop" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="logModalTitle">
-    <div class="modal-header">
-      <div style="min-width:0;">
-        <div class="modal-title" id="logModalTitle">🧾 รายละเอียดลงเวลา</div>
-        <div class="modal-sub" id="logModalSub">–</div>
-      </div>
-      <button class="btn btn-ghost btn-small" id="btnCloseLogModal" type="button">ปิด</button>
-    </div>
-    <div class="modal-body">
-      <div class="helper">ดูข้อมูลจากแถว Logs (อ่านอย่างเดียว)</div>
-
-      <div class="mt-10 preview-box">
-        <img id="logEvidenceImg" alt="evidence" style="display:none;" />
-        <div style="min-width:0;flex:1;">
-          <div class="helper">ข้อมูลสำคัญ</div>
-          <div class="mono" id="logKeyText">–</div>
-          <div class="helper mt-8">ข้อมูลดิบ</div>
-          <div class="mono" id="logRawText" style="white-space:pre-wrap;">–</div>
-        </div>
-      </div>
-
-      <div id="logModalHint" class="helper mt-10"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" id="btnOpenEvidence" type="button" disabled>เปิดหลักฐาน</button>
-      <button class="btn btn-primary" id="btnCopyLogJson" type="button">คัดลอก JSON</button>
-    </div>
-  </div>
-</div>
-
 <script>
   const STORAGE_KEY = 'attendance_api_url_v2';
-
-  // ====== HARD (เฉพาะหน้าใบหน้า) =========================
-  const HARD = {
-    FACE_MAX_BYTES: 900 * 1024,
-    FACE_IMAGE_QUALITY: 0.86,
-    FACE_IMAGE_MAX_EDGE: 960,
-    CACHE_TTL_MS: 60 * 1000
-  };
 
   function $(id){ return document.getElementById(id); }
 
@@ -946,29 +956,26 @@
       try { data = JSON.parse(text); }
       catch(e){
         console.error('API response is not JSON:', text);
-        throw new Error('API ส่งผลลัพธ์ไม่ใช่ JSON (เช็คว่าใช้ URL ที่ลงท้ายด้วย /exec แล้วหรือยัง)');
+        throw new Error('API ส่งผลลัพธ์ไม่ใช่ JSON (เช็คว่า URL ลงท้ายด้วย /exec แล้วหรือยัง)');
       }
       if(!data.ok) throw new Error(data.error || 'ไม่ทราบสาเหตุจากเซิร์ฟเวอร์');
       return data.result;
     }
   };
 
-  // data
+  // ===== Data =====
   let employees = [];
   let branches = [];
   let levels = [];
   let editingEmpId = null;
 
-  // face modal
-  let faceTargetEmp = null;
-  let faceBase64 = '';
-
-  // logs
+  // logs / leave
   let lastLogsRows = [];
-  let logModalRow = null;
+  let leaveStatus = 'PENDING'; // PENDING | APPROVED | REJECTED | ALL
 
-  // lazy loading
-  const loaded = { core:false, logs:false, summary:false };
+  // Auto refresh control
+  let autoTimer = null;
+  const AUTO_REFRESH_MS = 30000; // 30s
 
   function escHtml(s){
     return String(s ?? '')
@@ -977,6 +984,14 @@
       .replaceAll('>','&gt;')
       .replaceAll('"','&quot;')
       .replaceAll("'","&#39;");
+  }
+
+  function setLastUpdated(){
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mm = String(d.getMinutes()).padStart(2,'0');
+    const ss = String(d.getSeconds()).padStart(2,'0');
+    $('lastUpdatedText').textContent = `• อัปเดตล่าสุด: ${hh}:${mm}:${ss}`;
   }
 
   function setConnectionStatus(online, msg){
@@ -994,8 +1009,8 @@
 
   function ellipsizeUrl(url){
     if(!url) return '';
-    if(url.length <= 48) return url;
-    return url.slice(0, 28) + '...' + url.slice(-12);
+    if(url.length <= 52) return url;
+    return url.slice(0, 30) + '...' + url.slice(-12);
   }
   function setApiText(url){
     const el = $('apiUrlDisplay');
@@ -1005,6 +1020,7 @@
     el.dataset.full = url || '';
   }
 
+  // ===== URL Card =====
   function openUrlCard(){
     $('inputApiUrl').value = getApiUrl();
     $('urlCard').style.display = 'block';
@@ -1023,28 +1039,59 @@
     setApiUrl(url);
     setApiText(url);
     closeUrlCard();
-    initAdmin();
+    initAdmin(true);
   }
 
-  // ====== sections nav ======
+  // ===== Section nav =====
   function switchSection(section){
     document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
     document.querySelectorAll('.bottom-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
     document.querySelectorAll('.section').forEach(el => el.classList.toggle('active', el.id === 'section-' + section));
 
-    if(section === 'logs' && !loaded.logs){
-      $('logsTableBody').innerHTML = '<tr><td colspan="11" class="text-center">กำลังโหลด...</td></tr>';
-      $('logsMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
-      reloadLogs();
-    }
-    if(section === 'summary' && !loaded.summary){
-      $('summaryTableBody').innerHTML = '<tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>';
-      $('summaryMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
-      reloadSummary();
+    // ✅ ทุกครั้งที่เข้าแท็บ = รีเฟรชข้อมูลแท็บนั้นทันที
+    refreshCurrentSection(section);
+
+    // ✅ เปิด auto refresh เฉพาะแท็บที่กำลังใช้อยู่
+    startAutoRefresh(section);
+  }
+
+  function getActiveSection(){
+    const active = document.querySelector('.nav-item.active');
+    return active ? active.dataset.section : 'dashboard';
+  }
+
+  function startAutoRefresh(section){
+    if(autoTimer) clearInterval(autoTimer);
+    autoTimer = setInterval(() => {
+      const cur = getActiveSection();
+      refreshCurrentSection(cur, true);
+    }, AUTO_REFRESH_MS);
+  }
+
+  async function refreshCurrentSection(section, silent=false){
+    try{
+      if(section === 'dashboard'){
+        await loadDashboard();
+      }else if(section === 'employees'){
+        await loadEmployees();
+      }else if(section === 'logs'){
+        await reloadLogs();
+      }else if(section === 'summary'){
+        await reloadSummary();
+      }else if(section === 'settings'){
+        await loadBranchesLevels();
+      }else if(section === 'leave'){
+        await reloadLeave();
+      }
+      setLastUpdated();
+      if(!silent) {} // no toast
+    }catch(err){
+      console.error(err);
+      if(!silent) alert('รีเฟรชไม่สำเร็จ: ' + err.message);
     }
   }
 
-  // ====== badges/status ======
+  // ===== Status helpers =====
   function statusBadgeHtml(status){
     const s = String(status || '').trim();
     if(!s) return '<span class="badge-status badge-absent">ขาด</span>';
@@ -1106,13 +1153,11 @@
     return isRealTime(r.t1) || isRealTime(r.t2) || isRealTime(r.t3) || isRealTime(r.t4);
   }
 
-  // calc penalty from status
   function calcPenaltyFromStatus(status){
     const s = String(status || '').trim();
     if(!s) return { kind:'none', minutes:0 };
     const up = s.toUpperCase();
     if(up.includes('UNKNOWN') || up.includes('UNKNOW')) return { kind:'unknown' };
-    if(s.includes('HR') || s.includes('ตรวจสอบ')) return { kind:'unknown' };
 
     let total = 0;
     const re = /(\d+)\s*(?:ชม\.?|ชั่วโมง)\s*(\d+)\s*นาที|(\d+)\s*นาที/g;
@@ -1127,10 +1172,10 @@
     const res = calcPenaltyFromStatus(r.status || '');
     if(res.kind === 'unknown') return '<span class="badge-status badge-unknown">UNKNOWN</span>';
     if(res.kind === 'none') return '-';
-    return `<span class="badge-pill">${escHtml(minutesToThai(res.minutes))}</span>`;
+    return `<span class="pill">${escHtml(minutesToThai(res.minutes))}</span>`;
   }
 
-  // ====== branches/levels selects ======
+  // ===== Selects =====
   function renderBranchLevelSelects(){
     const branchSel = $('empBranch');
     const levelSel  = $('empLevel');
@@ -1143,15 +1188,34 @@
       ? levels.map(l => `<option value="${escHtml(l.name)}">${escHtml(l.name)}</option>`).join('')
       : '<option value="">- ยังไม่มีระดับ -</option>';
 
-    const logBranch = $('logBranchFilter');
-    const sumBranch = $('sumBranchFilter');
     const opts = ['<option value="ALL">ทุกสาขา</option>'].concat(
       branches.map(b => `<option value="${escHtml(b.name)}">${escHtml(b.name)}</option>`)
-    );
-    logBranch.innerHTML = opts.join('');
-    sumBranch.innerHTML = opts.join('');
+    ).join('');
+
+    $('logBranchFilter').innerHTML = opts;
+    $('sumBranchFilter').innerHTML = opts;
+    $('leaveBranchFilter').innerHTML = opts;
   }
 
+  function fillYearMonthSelect(yearSel, monthSel){
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const years = [curYear-1, curYear, curYear+1];
+
+    yearSel.innerHTML = years.map(y => {
+      const be = y + 543;
+      const sel = (y === curYear) ? 'selected' : '';
+      return `<option value="${y}" ${sel}>${be}</option>`;
+    }).join('');
+
+    const monthNames = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    monthSel.innerHTML = monthNames.map((m,i) => {
+      const sel = (i === now.getMonth()) ? 'selected' : '';
+      return `<option value="${i+1}" ${sel}>${m}</option>`;
+    }).join('');
+  }
+
+  // ===== Employees =====
   function hasFace(e){
     const fd = e && e.faceData;
     if(!fd) return false;
@@ -1161,7 +1225,6 @@
     return true;
   }
 
-  // ====== employees render ======
   function renderEmployeesTable(){
     const tb = $('empTableBody');
     const mobileList = $('empMobileList');
@@ -1174,11 +1237,10 @@
 
     if(!list.length){
       tb.innerHTML = '<tr><td colspan="6" class="text-center">ไม่พบข้อมูล</td></tr>';
-      if(mobileList) mobileList.innerHTML = '<div class="helper">ไม่พบข้อมูล</div>';
+      mobileList.innerHTML = '<div class="helper">ไม่พบข้อมูล</div>';
       return;
     }
 
-    // desktop table
     tb.innerHTML = list.map(e => {
       const faceOk = hasFace(e);
       const faceBadge = faceOk
@@ -1194,7 +1256,6 @@
           <td>${faceBadge}</td>
           <td>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              <button class="btn btn-primary btn-small" onclick="openFaceEnroll('${escHtml(e.id || '')}')">📸 ใบหน้า</button>
               <button class="btn btn-secondary btn-small" onclick="editEmployee('${escHtml(e.id || '')}')">✏️ แก้ไข</button>
               <button class="btn btn-danger btn-small" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">🗑️ ลบ</button>
             </div>
@@ -1203,40 +1264,475 @@
       `;
     }).join('');
 
-    // mobile cards
-    if(mobileList){
-      mobileList.innerHTML = list.map(e => {
-        const faceOk = hasFace(e);
-        const faceBadge = faceOk
-          ? `<span class="emp-face-badge">มีใบหน้า</span>`
-          : `<span class="emp-face-badge off">ไม่มีใบหน้า</span>`;
+    mobileList.innerHTML = list.map(e => {
+      const faceOk = hasFace(e);
+      const faceBadge = faceOk
+        ? `<span class="emp-face-badge">มีใบหน้า</span>`
+        : `<span class="emp-face-badge off">ไม่มีใบหน้า</span>`;
 
-        return `
-          <div class="item">
-            <div class="item-top">
-              <div style="min-width:0;">
-                <div class="item-title">${escHtml(e.fullName || '-')}</div>
-                <div class="item-meta">
-                  <span class="pill-small">แผนก: ${escHtml(e.branch || '-')}</span>
-                  <span class="pill-small">ระดับ: ${escHtml(e.level || '-')}</span>
-                  ${faceBadge}
-                </div>
+      return `
+        <div class="item">
+          <div class="item-top">
+            <div style="min-width:0;">
+              <div class="item-title">${escHtml(e.fullName || '-')}</div>
+              <div class="item-meta">
+                <span class="tag">แผนก: ${escHtml(e.branch || '-')}</span>
+                <span class="tag">ระดับ: ${escHtml(e.level || '-')}</span>
+                ${faceBadge}
               </div>
-              <div class="code-badge">รหัส ${escHtml(e.code || '-')}</div>
             </div>
-
-            <div class="item-actions">
-              <button class="btn btn-secondary" onclick="editEmployee('${escHtml(e.id || '')}')">✏️ แก้ไข</button>
-              <button class="btn btn-danger" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">🗑️ ลบ</button>
-              <button class="btn btn-primary btn-span-2" onclick="openFaceEnroll('${escHtml(e.id || '')}')">📸 บันทึกใบหน้า</button>
-            </div>
+            <div class="code-badge">รหัส ${escHtml(e.code || '-')}</div>
           </div>
+
+          <div class="item-actions">
+            <button class="btn btn-secondary" onclick="editEmployee('${escHtml(e.id || '')}')">✏️ แก้ไข</button>
+            <button class="btn btn-danger" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">🗑️ ลบ</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function loadEmployees(){
+    $('empTableBody').innerHTML = '<tr><td colspan="6" class="text-center">กำลังโหลด...</td></tr>';
+    $('empMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
+
+    employees = await api.call('getEmployees');
+    renderEmployeesTable();
+    $('statTotalEmployees').textContent = String(employees.length);
+  }
+
+  // ===== Dashboard =====
+  async function loadDashboard(){
+    $('dashboardTodayBody').innerHTML = '<tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>';
+    $('dashboardLocationSummary').innerHTML = '';
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+
+    const [empRes, todaySummary, monthSummary] = await Promise.all([
+      api.call('getEmployees'),
+      api.call('getTodaySummary'),
+      api.call('getSummaryRange', { year, month, branch:'ALL' }),
+    ]);
+
+    employees = empRes || employees;
+    $('statTotalEmployees').textContent = String(employees.length);
+
+    renderDashboard(todaySummary || [], monthSummary || { rows:[] });
+  }
+
+  function renderDashboard(todaySummary, monthSummary){
+    const todayRows = todaySummary || [];
+    const loggedRows = todayRows.filter(hasAnyLogRow);
+    $('statTodayCount').textContent = String(loggedRows.length);
+
+    let lateCount = 0;
+    loggedRows.forEach(r => {
+      const st = String(r.status || '');
+      if(st.includes('สาย') || st.includes('ออกงานไว') || st.includes('ออกกินข้าวไว')) lateCount++;
+    });
+    $('statTodayLate').textContent = `สาย ${lateCount} คน`;
+
+    const rows = (monthSummary && monthSummary.rows) || [];
+    let normal=0, late=0, absent=0;
+    rows.forEach(r => {
+      normal += Number(r.normalCount || 0);
+      late   += Number(r.lateCount || 0);
+      absent += Number(r.absentCount || 0);
+    });
+    $('statMonthOverview').textContent = `${normal} ปกติ / ${late} สาย / ${absent} ขาด`;
+
+    const tbody = $('dashboardTodayBody');
+    if(!todayRows.length){
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center">ยังไม่มีข้อมูลวันนี้</td></tr>';
+    }else{
+      tbody.innerHTML = todayRows.map(r => {
+        return `
+          <tr>
+            <td>${escHtml(r.code || '')}</td>
+            <td>${escHtml(r.fullName || '')}</td>
+            <td>${escHtml((isRealTime(r.t1) ? r.t1 : '-') || '-')}</td>
+            <td>${escHtml((isRealTime(r.t2) ? r.t2 : '-') || '-')}</td>
+            <td>${escHtml((isRealTime(r.t3) ? r.t3 : '-') || '-')}</td>
+            <td>${escHtml((isRealTime(r.t4) ? r.t4 : '-') || '-')}</td>
+            <td>${penaltyHtmlFromRow(r)}</td>
+            <td>${statusBadgeHtml(r.status || '')}</td>
+          </tr>
         `;
       }).join('');
     }
+
+    const locBox = $('dashboardLocationSummary');
+    const locMap = {};
+    loggedRows.forEach(r => {
+      const loc = r.locationText || r.location || '';
+      if(!loc) return;
+      locMap[loc] = (locMap[loc] || 0) + 1;
+    });
+    const entries = Object.entries(locMap);
+    locBox.innerHTML = entries.length
+      ? entries.map(([name,count]) => `<span class="tag">${escHtml(name)} – ${escHtml(count)} คน</span>`).join(' ')
+      : '<span class="helper">วันนี้ยังไม่มีข้อมูลจุดลงเวลา</span>';
   }
 
-  // ====== employee modal ======
+  // ===== Logs =====
+  function renderLogsTable(res){
+    const rows = (res && res.rows) || [];
+    lastLogsRows = rows;
+
+    const tb = $('logsTableBody');
+    const mobileList = $('logsMobileList');
+
+    if(!rows.length){
+      tb.innerHTML = '<tr><td colspan="10" class="text-center">ยังไม่มีข้อมูล</td></tr>';
+      mobileList.innerHTML = '<div class="helper">ยังไม่มีข้อมูล</div>';
+      return;
+    }
+
+    tb.innerHTML = rows.map((r) => {
+      const total = calcTotalHours(r.t1, r.t4);
+      const locText = r.locationText || r.location || '';
+      const locCell = locText ? `<span class="tag">${escHtml(locText)}</span>` : '-';
+      const evidence = r.evidenceUrl ? `<a href="${escHtml(r.evidenceUrl)}" target="_blank" rel="noopener">เปิดรูป</a>` : '-';
+
+      return `
+        <tr>
+          <td>${escHtml(formatDateThai(r.date))}</td>
+          <td>${escHtml(r.code || '')}</td>
+          <td>${escHtml(r.fullName || '')}</td>
+          <td>${escHtml(r.t1 || '-')}</td>
+          <td>${escHtml(r.t4 || '-')}</td>
+          <td>${escHtml(total)}</td>
+          <td>${penaltyHtmlFromRow(r)}</td>
+          <td>${statusBadgeHtml(r.status || '')}</td>
+          <td>${locCell}</td>
+          <td>${evidence}</td>
+        </tr>
+      `;
+    }).join('');
+
+    mobileList.innerHTML = rows.map((r) => {
+      const d = formatDateThai(r.date);
+      const total = calcTotalHours(r.t1, r.t4);
+      const loc = r.locationText || r.location || '-';
+      const evidence = r.evidenceUrl ? `<a href="${escHtml(r.evidenceUrl)}" target="_blank" rel="noopener">เปิดหลักฐาน</a>` : '-';
+      const p = calcPenaltyFromStatus(r.status || '');
+      const pText = (p.kind === 'unknown') ? 'UNKNOWN' : minutesToThai(p.minutes || 0);
+
+      return `
+        <div class="item">
+          <div class="item-top">
+            <div style="min-width:0;">
+              <div class="item-title">${escHtml(r.fullName || '-')}</div>
+              <div class="item-meta">
+                <span class="tag">วันที่ ${escHtml(d)}</span>
+                <span class="tag">${escHtml(loc)}</span>
+              </div>
+            </div>
+            <div class="code-badge">รหัส ${escHtml(r.code || '-')}</div>
+          </div>
+
+          <div class="kv">
+            <div class="k">เข้า</div><div class="v">${escHtml(r.t1 || '-')}</div>
+            <div class="k">ออก</div><div class="v">${escHtml(r.t4 || '-')}</div>
+            <div class="k">ชั่วโมงรวม</div><div class="v">${escHtml(total)}</div>
+            <div class="k">รวมผิดปกติ</div><div class="v">${escHtml(pText)}</div>
+            <div class="k">สถานะ</div><div class="v">${escHtml(r.status || '-')}</div>
+            <div class="k">หลักฐาน</div><div class="v">${evidence}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function reloadLogs(){
+    $('logsTableBody').innerHTML = '<tr><td colspan="10" class="text-center">กำลังโหลด...</td></tr>';
+    $('logsMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
+
+    const year  = $('logYearFilter').value;
+    const month = $('logMonthFilter').value;
+    const branch = $('logBranchFilter').value || 'ALL';
+    const search = ($('logSearch').value || '').trim();
+
+    const res = await api.call('getLogsRange', { year, month, branch, search });
+    renderLogsTable(res);
+  }
+
+  // ===== Summary =====
+  function renderSummaryTable(res){
+    const rows = (res && res.rows) || [];
+    const tb = $('summaryTableBody');
+    const mobileList = $('summaryMobileList');
+
+    if(!rows.length){
+      tb.innerHTML = '<tr><td colspan="8" class="text-center">ยังไม่มีข้อมูล</td></tr>';
+      mobileList.innerHTML = '<div class="helper">ยังไม่มีข้อมูล</div>';
+      return;
+    }
+
+    tb.innerHTML = rows.map(r => `
+      <tr>
+        <td>${escHtml(r.code || '')}</td>
+        <td>${escHtml(r.fullName || '')}</td>
+        <td>${escHtml(r.branch || '')}</td>
+        <td>${escHtml(r.level || '')}</td>
+        <td>${escHtml(r.days || 0)}</td>
+        <td>${escHtml(r.normalCount || 0)}</td>
+        <td>${escHtml(r.lateCount || 0)}</td>
+        <td>${escHtml(r.absentCount || 0)}</td>
+      </tr>
+    `).join('');
+
+    mobileList.innerHTML = rows.map(r => `
+      <div class="item">
+        <div class="item-top">
+          <div style="min-width:0;">
+            <div class="item-title">${escHtml(r.fullName || '-')}</div>
+            <div class="item-meta">
+              <span class="tag">แผนก: ${escHtml(r.branch || '-')}</span>
+              <span class="tag">ระดับ: ${escHtml(r.level || '-')}</span>
+            </div>
+          </div>
+          <div class="code-badge">รหัส ${escHtml(r.code || '-')}</div>
+        </div>
+
+        <div class="kv">
+          <div class="k">จำนวนวัน</div><div class="v">${escHtml(r.days || 0)}</div>
+          <div class="k">ปกติ</div><div class="v">${escHtml(r.normalCount || 0)}</div>
+          <div class="k">สาย</div><div class="v">${escHtml(r.lateCount || 0)}</div>
+          <div class="k">ขาด</div><div class="v">${escHtml(r.absentCount || 0)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function reloadSummary(){
+    $('summaryTableBody').innerHTML = '<tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>';
+    $('summaryMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
+
+    const year  = $('sumYearFilter').value;
+    const month = $('sumMonthFilter').value;
+    const branch = $('sumBranchFilter').value || 'ALL';
+
+    const res = await api.call('getSummaryRange', { year, month, branch });
+    renderSummaryTable(res);
+  }
+
+  // ===== Leave (โครง + hook) =====
+  function leaveStatusBadge(status){
+    const s = String(status || '').toUpperCase();
+    if(s === 'PENDING') return '<span class="badge-status badge-other">รอดำเนินการ</span>';
+    if(s === 'APPROVED') return '<span class="badge-status badge-normal">อนุมัติ</span>';
+    if(s === 'REJECTED') return '<span class="badge-status badge-absent">ไม่อนุมัติ</span>';
+    return '<span class="badge-status badge-unknown">UNKNOWN</span>';
+  }
+
+  function renderLeave(res){
+    const rows = (res && res.rows) || [];
+    const tb = $('leaveTableBody');
+    const mobileList = $('leaveMobileList');
+
+    if(!rows.length){
+      tb.innerHTML = '<tr><td colspan="8" class="text-center">ยังไม่มีรายการ</td></tr>';
+      mobileList.innerHTML = '<div class="helper">ยังไม่มีรายการ</div>';
+      return;
+    }
+
+    tb.innerHTML = rows.map(r => {
+      const status = leaveStatusBadge(r.status);
+      return `
+        <tr>
+          <td>${escHtml(formatDateThai(r.createdAt || r.requestDate || r.date || '-'))}</td>
+          <td>${escHtml(r.code || '-')}</td>
+          <td>${escHtml(r.fullName || '-')}</td>
+          <td>${escHtml(r.leaveType || r.type || '-')}</td>
+          <td>${escHtml(r.range || r.dateRange || '-')}</td>
+          <td style="max-width:340px; white-space:normal;">${escHtml(r.reason || '-')}</td>
+          <td>${status}</td>
+          <td>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button class="btn btn-primary btn-small" onclick="approveLeave('${escHtml(r.id || '')}')">อนุมัติ</button>
+              <button class="btn btn-danger btn-small" onclick="rejectLeave('${escHtml(r.id || '')}')">ไม่อนุมัติ</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    mobileList.innerHTML = rows.map(r => {
+      const status = leaveStatusBadge(r.status);
+      return `
+        <div class="item">
+          <div class="item-top">
+            <div style="min-width:0;">
+              <div class="item-title">${escHtml(r.fullName || '-')}</div>
+              <div class="item-meta">
+                <span class="tag">รหัส ${escHtml(r.code || '-')}</span>
+                <span class="tag">${escHtml(r.leaveType || r.type || '-')}</span>
+                ${status}
+              </div>
+            </div>
+            <div class="code-badge">${escHtml(formatDateThai(r.createdAt || r.requestDate || r.date || '-'))}</div>
+          </div>
+
+          <div class="kv">
+            <div class="k">ช่วงลา</div><div class="v">${escHtml(r.range || r.dateRange || '-')}</div>
+            <div class="k">เหตุผล</div><div class="v">${escHtml(r.reason || '-')}</div>
+          </div>
+
+          <div class="item-actions">
+            <button class="btn btn-primary" onclick="approveLeave('${escHtml(r.id || '')}')">อนุมัติ</button>
+            <button class="btn btn-danger" onclick="rejectLeave('${escHtml(r.id || '')}')">ไม่อนุมัติ</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function reloadLeave(){
+    $('leaveTableBody').innerHTML = '<tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>';
+    $('leaveMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
+    $('leaveHint').textContent = '';
+
+    const year  = $('leaveYearFilter').value;
+    const month = $('leaveMonthFilter').value;
+    const branch = $('leaveBranchFilter').value || 'ALL';
+    const search = ($('leaveSearch').value || '').trim();
+    const status = leaveStatus;
+
+    // ✅ โครง: ถ้า API ยังไม่มี จะไม่พัง แต่บอกชัดว่า “ยังไม่พร้อม”
+    try{
+      // คุณจะไปทำ GS ทีหลัง: แนะนำ action ชื่อ getLeaveRequests
+      // params: year, month, branch, status, search
+      const res = await api.call('getLeaveRequests', { year, month, branch, status, search });
+      renderLeave(res);
+    }catch(err){
+      $('leaveHint').textContent =
+        'ยังไม่ได้ผูก API สำหรับการลา (action: getLeaveRequests) — ตอนนี้เป็นโครงหน้าไว้ก่อน ✅';
+      $('leaveTableBody').innerHTML = '<tr><td colspan="8" class="text-center">ยังไม่พร้อม (รอทำ GS/DB)</td></tr>';
+      $('leaveMobileList').innerHTML = '<div class="helper">ยังไม่พร้อม (รอทำ GS/DB)</div>';
+    }
+  }
+
+  // โครงอนุมัติ/ไม่อนุมัติ (ผูก API ทีหลัง)
+  window.approveLeave = async function(id){
+    alert('โครงปุ่มอนุมัติ ✅ เดี๋ยวไปทำ GS/DB ตอนทำ leave.html');
+  };
+  window.rejectLeave = async function(id){
+    alert('โครงปุ่มไม่อนุมัติ ✅ เดี๋ยวไปทำ GS/DB ตอนทำ leave.html');
+  };
+
+  // ===== Settings =====
+  function renderBranchesLevelsTables(){
+    const bt = $('branchTableBody');
+    const lt = $('levelTableBody');
+
+    bt.innerHTML = branches.length
+      ? branches.map(b => `
+          <tr>
+            <td>${escHtml(b.name)}</td>
+            <td class="text-right"><button class="btn btn-danger btn-small" onclick="deleteBranch('${escHtml(b.name)}')">ลบ</button></td>
+          </tr>
+        `).join('')
+      : '<tr><td colspan="2" class="text-center">ยังไม่มีแผนก</td></tr>';
+
+    lt.innerHTML = levels.length
+      ? levels.map(l => `
+          <tr>
+            <td>${escHtml(l.name)}</td>
+            <td class="text-right"><button class="btn btn-danger btn-small" onclick="deleteLevel('${escHtml(l.name)}')">ลบ</button></td>
+          </tr>
+        `).join('')
+      : '<tr><td colspan="2" class="text-center">ยังไม่มีระดับ</td></tr>';
+  }
+
+  async function loadBranchesLevels(){
+    const bl = await api.call('getBranchesLevels');
+    branches = bl.branches || [];
+    levels   = bl.levels || [];
+    renderBranchLevelSelects();
+    renderBranchesLevelsTables();
+  }
+
+  window.deleteBranch = async function(name){
+    if(!confirm(`ต้องการลบแผนก "${name}" หรือไม่?`)) return;
+    try{
+      await api.call('deleteBranch', { name });
+      await loadBranchesLevels();
+      $('settingsSuccess').textContent = 'ลบแผนกสำเร็จ';
+      $('settingsSuccess').style.display = 'block';
+      $('settingsError').style.display = 'none';
+    }catch(err){
+      $('settingsError').textContent = 'ลบแผนกไม่สำเร็จ: ' + err.message;
+      $('settingsError').style.display = 'block';
+      $('settingsSuccess').style.display = 'none';
+    }
+  };
+
+  window.deleteLevel = async function(name){
+    if(!confirm(`ต้องการลบระดับ "${name}" หรือไม่?`)) return;
+    try{
+      await api.call('deleteLevel', { name });
+      await loadBranchesLevels();
+      $('settingsSuccess').textContent = 'ลบระดับสำเร็จ';
+      $('settingsSuccess').style.display = 'block';
+      $('settingsError').style.display = 'none';
+    }catch(err){
+      $('settingsError').textContent = 'ลบระดับไม่สำเร็จ: ' + err.message;
+      $('settingsError').style.display = 'block';
+      $('settingsSuccess').style.display = 'none';
+    }
+  };
+
+  async function addBranch(){
+    const name = ($('branchName').value || '').trim();
+    const errEl = $('settingsError');
+    const sucEl = $('settingsSuccess');
+    errEl.style.display = 'none';
+    sucEl.style.display = 'none';
+    if(!name){
+      errEl.textContent = 'กรุณากรอกชื่อแผนก';
+      errEl.style.display = 'block';
+      return;
+    }
+    try{
+      await api.call('saveBranch', { name });
+      $('branchName').value = '';
+      await loadBranchesLevels();
+      sucEl.textContent = 'เพิ่มแผนกสำเร็จ';
+      sucEl.style.display = 'block';
+    }catch(err){
+      errEl.textContent = 'เพิ่มแผนกไม่สำเร็จ: ' + err.message;
+      errEl.style.display = 'block';
+    }
+  }
+
+  async function addLevel(){
+    const name = ($('levelName').value || '').trim();
+    const errEl = $('settingsError');
+    const sucEl = $('settingsSuccess');
+    errEl.style.display = 'none';
+    sucEl.style.display = 'none';
+    if(!name){
+      errEl.textContent = 'กรุณากรอกชื่อระดับ';
+      errEl.style.display = 'block';
+      return;
+    }
+    try{
+      await api.call('saveLevel', { name });
+      $('levelName').value = '';
+      await loadBranchesLevels();
+      sucEl.textContent = 'เพิ่มระดับสำเร็จ';
+      sucEl.style.display = 'block';
+    }catch(err){
+      errEl.textContent = 'เพิ่มระดับไม่สำเร็จ: ' + err.message;
+      errEl.style.display = 'block';
+    }
+  }
+
+  // ===== Employee modal =====
   function openModal(id){
     const el = $(id);
     if(!el) return;
@@ -1253,7 +1749,7 @@
   function resetEmpForm(keepMsg){
     editingEmpId = null;
     $('empModalTitle').textContent = '👤 เพิ่มพนักงาน';
-    $('empModalSub').textContent = 'กรอกข้อมูลพื้นฐาน (ไม่มีอัปโหลดรูป)';
+    $('empModalSub').textContent = 'กรอกข้อมูลพื้นฐาน (ไม่มีอัปโหลดรูป/ไม่มีปุ่มใบหน้า)';
     $('empCode').value = '';
     $('empFullName').value = '';
     $('empEmail').value = '';
@@ -1307,20 +1803,18 @@
     }
 
     try{
-      // ✅ ไม่มี photoBase64 แล้ว (ให้ UI โล่ง) — ส่งค่าว่างไว้ก็ยังเข้ากับ GS เดิมได้
+      // ✅ ไม่มี photoBase64 แล้ว (ให้ UI โล่ง)
       await api.call('saveEmployee', {
         id: editingEmpId || '',
         code, fullName, branch, level, email,
-        photoBase64: '' // เผื่อ GS เดิมยังรับ param นี้อยู่
+        photoBase64: '' // กัน GS เดิมยังรับไว้
       });
 
-      employees = await api.call('getEmployees');
-      renderEmployeesTable();
+      await loadEmployees();
 
       sucEl.textContent = 'บันทึกข้อมูลสำเร็จ';
       sucEl.style.display = 'block';
 
-      // close modal หลังบันทึก (นิดหน่อยให้ user เห็นข้อความก็ได้)
       setTimeout(() => {
         closeModal('empModalBackdrop');
         resetEmpForm(false);
@@ -1338,600 +1832,15 @@
 
     try{
       await api.call('deleteEmployee', { id });
-      employees = await api.call('getEmployees');
-      renderEmployeesTable();
+      await loadEmployees();
       alert('ลบพนักงานสำเร็จ');
     }catch(err){
       alert('ลบไม่สำเร็จ: ' + err.message);
     }
   };
 
-  // ====== Dashboard render ======
-  function renderDashboard(todaySummary, monthSummary){
-    $('statTotalEmployees').textContent = employees.length.toString();
-
-    const todayRows = todaySummary || [];
-    const loggedRows = todayRows.filter(hasAnyLogRow);
-    $('statTodayCount').textContent = loggedRows.length.toString();
-
-    let lateCount = 0;
-    loggedRows.forEach(r => {
-      const st = String(r.status || '');
-      if(st.includes('สาย') || st.includes('ออกงานไว') || st.includes('ออกกินข้าวไว')) lateCount++;
-    });
-    $('statTodayLate').textContent = `สาย ${lateCount} คน`;
-
-    const rows = (monthSummary && monthSummary.rows) || [];
-    let normal=0, late=0, absent=0;
-    rows.forEach(r => {
-      normal += Number(r.normalCount || 0);
-      late   += Number(r.lateCount || 0);
-      absent += Number(r.absentCount || 0);
-    });
-    $('statMonthOverview').textContent = `${normal} ปกติ / ${late} สาย / ${absent} ขาด`;
-
-    const tbody = $('dashboardTodayBody');
-    if(!todayRows.length){
-      tbody.innerHTML = '<tr><td colspan="8" class="text-center">ยังไม่มีข้อมูลวันนี้</td></tr>';
-    }else{
-      tbody.innerHTML = todayRows.map(r => {
-        const p = calcPenaltyFromStatus(r.status || '');
-        const pHtml = (p.kind === 'unknown')
-          ? '<span class="badge-status badge-unknown">UNKNOWN</span>'
-          : `<span class="badge-pill">${escHtml(minutesToThai(p.minutes || 0))}</span>`;
-
-        return `
-          <tr>
-            <td>${escHtml(r.code || '')}</td>
-            <td>${escHtml(r.fullName || '')}</td>
-            <td>${escHtml((isRealTime(r.t1) ? r.t1 : '-') || '-')}</td>
-            <td>${escHtml((isRealTime(r.t2) ? r.t2 : '-') || '-')}</td>
-            <td>${escHtml((isRealTime(r.t3) ? r.t3 : '-') || '-')}</td>
-            <td>${escHtml((isRealTime(r.t4) ? r.t4 : '-') || '-')}</td>
-            <td>${pHtml}</td>
-            <td>${statusBadgeHtml(r.status || '')}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    const locBox = $('dashboardLocationSummary');
-    if(locBox){
-      const locMap = {};
-      loggedRows.forEach(r => {
-        const loc = r.locationText || r.location || '';
-        if(!loc) return;
-        locMap[loc] = (locMap[loc] || 0) + 1;
-      });
-      const entries = Object.entries(locMap);
-      locBox.innerHTML = entries.length
-        ? entries.map(([name,count]) => `<span class="tag">${escHtml(name)} – ${escHtml(count)} คน</span>`).join(' ')
-        : '<span class="helper">วันนี้ยังไม่มีข้อมูลจุดลงเวลา</span>';
-    }
-  }
-
-  // ====== Logs/Summary select ======
-  function fillYearMonthSelect(yearSel, monthSel){
-    const now = new Date();
-    const curYear = now.getFullYear();
-    const years = [curYear-1, curYear, curYear+1];
-
-    yearSel.innerHTML = years.map(y => {
-      const be = y + 543;
-      const sel = (y === curYear) ? 'selected' : '';
-      return `<option value="${y}" ${sel}>${be}</option>`;
-    }).join('');
-
-    const monthNames = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-    monthSel.innerHTML = monthNames.map((m,i) => {
-      const sel = (i === now.getMonth()) ? 'selected' : '';
-      return `<option value="${i+1}" ${sel}>${m}</option>`;
-    }).join('');
-  }
-
-  // ====== Logs render ======
-  function renderLogsTable(res){
-    const rows = (res && res.rows) || [];
-    lastLogsRows = rows;
-
-    const tb = $('logsTableBody');
-    const mobileList = $('logsMobileList');
-
-    if(!rows.length){
-      tb.innerHTML = '<tr><td colspan="11" class="text-center">ยังไม่มีข้อมูล</td></tr>';
-      if(mobileList) mobileList.innerHTML = '<div class="helper">ยังไม่มีข้อมูล</div>';
-      return;
-    }
-
-    tb.innerHTML = rows.map((r, idx) => {
-      const total = calcTotalHours(r.t1, r.t4);
-      const locText = r.locationText || r.location || '';
-      const locCell = locText ? `<span class="pill-small">${escHtml(locText)}</span>` : '-';
-      const evidence = r.evidenceUrl ? `<a href="${escHtml(r.evidenceUrl)}" target="_blank" rel="noopener">เปิดรูป</a>` : '-';
-
-      return `
-        <tr>
-          <td>${escHtml(formatDateThai(r.date))}</td>
-          <td>${escHtml(r.code || '')}</td>
-          <td>${escHtml(r.fullName || '')}</td>
-          <td>${escHtml(r.t1 || '-')}</td>
-          <td>${escHtml(r.t4 || '-')}</td>
-          <td>${escHtml(total)}</td>
-          <td>${penaltyHtmlFromRow(r)}</td>
-          <td>${statusBadgeHtml(r.status || '')}</td>
-          <td>${locCell}</td>
-          <td>${evidence}</td>
-          <td><button class="btn btn-secondary btn-small" onclick="openLogDetail(${idx})">ดู</button></td>
-        </tr>
-      `;
-    }).join('');
-
-    if(mobileList){
-      mobileList.innerHTML = rows.map((r, idx) => {
-        const d = formatDateThai(r.date);
-        const total = calcTotalHours(r.t1, r.t4);
-        const loc = r.locationText || r.location || '-';
-        const evidence = r.evidenceUrl ? `<a href="${escHtml(r.evidenceUrl)}" target="_blank" rel="noopener">เปิดหลักฐาน</a>` : '-';
-
-        const p = calcPenaltyFromStatus(r.status || '');
-        const pText = (p.kind === 'unknown') ? 'UNKNOWN' : minutesToThai(p.minutes || 0);
-
-        return `
-          <div class="item">
-            <div class="item-top">
-              <div style="min-width:0;">
-                <div class="item-title">${escHtml(r.fullName || '-')}</div>
-                <div class="item-meta">
-                  <span class="pill-small">วันที่ ${escHtml(d)}</span>
-                  <span class="pill-small">${escHtml(loc)}</span>
-                </div>
-              </div>
-              <div class="code-badge">รหัส ${escHtml(r.code || '-')}</div>
-            </div>
-
-            <div class="kv">
-              <div class="k">เข้า</div><div class="v">${escHtml(r.t1 || '-')}</div>
-              <div class="k">ออก</div><div class="v">${escHtml(r.t4 || '-')}</div>
-              <div class="k">ชั่วโมงรวม</div><div class="v">${escHtml(total)}</div>
-              <div class="k">รวมผิดปกติ</div><div class="v">${escHtml(pText)}</div>
-              <div class="k">สถานะ</div><div class="v">${escHtml(r.status || '-')}</div>
-              <div class="k">หลักฐาน</div><div class="v">${evidence}</div>
-            </div>
-
-            <div class="item-actions">
-              <button class="btn btn-secondary" onclick="openLogDetail(${idx})">ดูรายละเอียด</button>
-              <button class="btn btn-primary" onclick="copyLogQuick(${idx})">คัดลอกสรุป</button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-  }
-
-  async function reloadLogs(){
-    const year  = $('logYearFilter').value;
-    const month = $('logMonthFilter').value;
-    const branch = $('logBranchFilter').value || 'ALL';
-    const search = ($('logSearch').value || '').trim();
-
-    try{
-      const res = await api.call('getLogsRange', { year, month, branch, search });
-      renderLogsTable(res);
-      loaded.logs = true;
-    }catch(err){
-      alert('โหลดประวัติเวลาไม่สำเร็จ: ' + err.message);
-    }
-  }
-
-  // ====== Summary render ======
-  function renderSummaryTable(res){
-    const rows = (res && res.rows) || [];
-    const tb = $('summaryTableBody');
-    const mobileList = $('summaryMobileList');
-
-    if(!rows.length){
-      tb.innerHTML = '<tr><td colspan="8" class="text-center">ยังไม่มีข้อมูล</td></tr>';
-      if(mobileList) mobileList.innerHTML = '<div class="helper">ยังไม่มีข้อมูล</div>';
-      return;
-    }
-
-    tb.innerHTML = rows.map(r => `
-      <tr>
-        <td>${escHtml(r.code || '')}</td>
-        <td>${escHtml(r.fullName || '')}</td>
-        <td>${escHtml(r.branch || '')}</td>
-        <td>${escHtml(r.level || '')}</td>
-        <td>${escHtml(r.days || 0)}</td>
-        <td>${escHtml(r.normalCount || 0)}</td>
-        <td>${escHtml(r.lateCount || 0)}</td>
-        <td>${escHtml(r.absentCount || 0)}</td>
-      </tr>
-    `).join('');
-
-    if(mobileList){
-      mobileList.innerHTML = rows.map(r => `
-        <div class="item">
-          <div class="item-top">
-            <div style="min-width:0;">
-              <div class="item-title">${escHtml(r.fullName || '-')}</div>
-              <div class="item-meta">
-                <span class="pill-small">แผนก: ${escHtml(r.branch || '-')}</span>
-                <span class="pill-small">ระดับ: ${escHtml(r.level || '-')}</span>
-              </div>
-            </div>
-            <div class="code-badge">รหัส ${escHtml(r.code || '-')}</div>
-          </div>
-
-          <div class="kv">
-            <div class="k">จำนวนวัน</div><div class="v">${escHtml(r.days || 0)}</div>
-            <div class="k">ปกติ</div><div class="v">${escHtml(r.normalCount || 0)}</div>
-            <div class="k">สาย</div><div class="v">${escHtml(r.lateCount || 0)}</div>
-            <div class="k">ขาด</div><div class="v">${escHtml(r.absentCount || 0)}</div>
-          </div>
-        </div>
-      `).join('');
-    }
-  }
-
-  async function reloadSummary(){
-    const year  = $('sumYearFilter').value;
-    const month = $('sumMonthFilter').value;
-    const branch = $('sumBranchFilter').value || 'ALL';
-    try{
-      const res = await api.call('getSummaryRange', { year, month, branch });
-      renderSummaryTable(res);
-      loaded.summary = true;
-    }catch(err){
-      alert('โหลดสรุปเวลาทำงานไม่สำเร็จ: ' + err.message);
-    }
-  }
-
-  // ====== Settings render/add/delete ======
-  function renderBranchesLevelsTables(){
-    const bt = $('branchTableBody');
-    const lt = $('levelTableBody');
-
-    bt.innerHTML = branches.length
-      ? branches.map(b => `
-          <tr>
-            <td>${escHtml(b.name)}</td>
-            <td class="text-right"><button class="btn btn-danger btn-small" onclick="deleteBranch('${escHtml(b.name)}')">ลบ</button></td>
-          </tr>
-        `).join('')
-      : '<tr><td colspan="2" class="text-center">ยังไม่มีแผนก</td></tr>';
-
-    lt.innerHTML = levels.length
-      ? levels.map(l => `
-          <tr>
-            <td>${escHtml(l.name)}</td>
-            <td class="text-right"><button class="btn btn-danger btn-small" onclick="deleteLevel('${escHtml(l.name)}')">ลบ</button></td>
-          </tr>
-        `).join('')
-      : '<tr><td colspan="2" class="text-center">ยังไม่มีระดับ</td></tr>';
-  }
-
-  window.deleteBranch = async function(name){
-    if(!confirm(`ต้องการลบแผนก "${name}" หรือไม่?`)) return;
-    try{
-      await api.call('deleteBranch', { name });
-      const bl = await api.call('getBranchesLevels');
-      branches = bl.branches || [];
-      levels   = bl.levels || [];
-      renderBranchLevelSelects();
-      renderBranchesLevelsTables();
-      $('settingsSuccess').textContent = 'ลบแผนกสำเร็จ';
-      $('settingsSuccess').style.display = 'block';
-      $('settingsError').style.display = 'none';
-    }catch(err){
-      $('settingsError').textContent = 'ลบแผนกไม่สำเร็จ: ' + err.message;
-      $('settingsError').style.display = 'block';
-      $('settingsSuccess').style.display = 'none';
-    }
-  };
-
-  window.deleteLevel = async function(name){
-    if(!confirm(`ต้องการลบระดับ "${name}" หรือไม่?`)) return;
-    try{
-      await api.call('deleteLevel', { name });
-      const bl = await api.call('getBranchesLevels');
-      branches = bl.branches || [];
-      levels   = bl.levels || [];
-      renderBranchLevelSelects();
-      renderBranchesLevelsTables();
-      $('settingsSuccess').textContent = 'ลบระดับสำเร็จ';
-      $('settingsSuccess').style.display = 'block';
-      $('settingsError').style.display = 'none';
-    }catch(err){
-      $('settingsError').textContent = 'ลบระดับไม่สำเร็จ: ' + err.message;
-      $('settingsError').style.display = 'block';
-      $('settingsSuccess').style.display = 'none';
-    }
-  };
-
-  async function addBranch(){
-    const name = ($('branchName').value || '').trim();
-    const errEl = $('settingsError');
-    const sucEl = $('settingsSuccess');
-    errEl.style.display = 'none';
-    sucEl.style.display = 'none';
-    if(!name){
-      errEl.textContent = 'กรุณากรอกชื่อแผนก';
-      errEl.style.display = 'block';
-      return;
-    }
-    try{
-      await api.call('saveBranch', { name });
-      $('branchName').value = '';
-      const bl = await api.call('getBranchesLevels');
-      branches = bl.branches || [];
-      levels   = bl.levels || [];
-      renderBranchLevelSelects();
-      renderBranchesLevelsTables();
-      sucEl.textContent = 'เพิ่มแผนกสำเร็จ';
-      sucEl.style.display = 'block';
-    }catch(err){
-      errEl.textContent = 'เพิ่มแผนกไม่สำเร็จ: ' + err.message;
-      errEl.style.display = 'block';
-    }
-  }
-
-  async function addLevel(){
-    const name = ($('levelName').value || '').trim();
-    const errEl = $('settingsError');
-    const sucEl = $('settingsSuccess');
-    errEl.style.display = 'none';
-    sucEl.style.display = 'none';
-    if(!name){
-      errEl.textContent = 'กรุณากรอกชื่อระดับ';
-      errEl.style.display = 'block';
-      return;
-    }
-    try{
-      await api.call('saveLevel', { name });
-      $('levelName').value = '';
-      const bl = await api.call('getBranchesLevels');
-      branches = bl.branches || [];
-      levels   = bl.levels || [];
-      renderBranchLevelSelects();
-      renderBranchesLevelsTables();
-      sucEl.textContent = 'เพิ่มระดับสำเร็จ';
-      sucEl.style.display = 'block';
-    }catch(err){
-      errEl.textContent = 'เพิ่มระดับไม่สำเร็จ: ' + err.message;
-      errEl.style.display = 'block';
-    }
-  }
-
-  // ====== cache helpers ======
-  function cacheSet(key, obj){
-    try{ sessionStorage.setItem(key, JSON.stringify({ t:Date.now(), v:obj })); }catch{}
-  }
-  function cacheGet(key){
-    try{
-      const raw = sessionStorage.getItem(key);
-      if(!raw) return null;
-      const o = JSON.parse(raw);
-      if(!o || !o.t) return null;
-      if(Date.now() - o.t > HARD.CACHE_TTL_MS) return null;
-      return o.v;
-    }catch{ return null; }
-  }
-
-  // ====== Face enroll ======
-  function fileToBase64(file){
-    return new Promise((resolve,reject)=>{
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
-
-  async function compressImageToJpegBase64(file, maxEdge, quality, maxBytes){
-    const dataUrl = await fileToBase64(file);
-    const img = new Image();
-    img.src = dataUrl;
-    await new Promise((resolve,reject)=>{ img.onload=resolve; img.onerror=reject; });
-
-    const w = img.naturalWidth || img.width;
-    const h = img.naturalHeight || img.height;
-
-    let nw=w, nh=h;
-    if(Math.max(w,h) > maxEdge){
-      const scale = maxEdge / Math.max(w,h);
-      nw = Math.round(w*scale);
-      nh = Math.round(h*scale);
-    }
-
-    const canvas = document.createElement('canvas');
-    canvas.width = nw; canvas.height = nh;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, nw, nh);
-
-    let out = canvas.toDataURL('image/jpeg', quality);
-    if(out.length > maxBytes * 1.37) out = canvas.toDataURL('image/jpeg', Math.max(0.70, quality - 0.08));
-    if(out.length > maxBytes * 1.37) out = canvas.toDataURL('image/jpeg', Math.max(0.62, quality - 0.18));
-    return out;
-  }
-
-  window.openFaceEnroll = function(empId){
-    const emp = employees.find(e => String(e.id) === String(empId));
-    if(!emp) return;
-
-    faceTargetEmp = { id: emp.id, code: emp.code, fullName: emp.fullName };
-    faceBase64 = '';
-
-    $('faceModalSub').innerHTML = `พนักงาน: <b>${escHtml(emp.fullName || '-')}</b> • รหัส <b>${escHtml(emp.code || '-')}</b>`;
-    $('faceError').style.display = 'none';
-    $('faceSuccess').style.display = 'none';
-    $('faceStatusText').textContent = 'ยังไม่เลือกรูป';
-    $('facePreviewImg').src = '';
-    $('facePreviewImg').style.display = 'none';
-    $('facePhotoInput').value = '';
-    $('btnFaceUpload').disabled = false;
-
-    openModal('faceModalBackdrop');
-  };
-
-  async function handleFaceFileSelected(){
-    const file = $('facePhotoInput').files && $('facePhotoInput').files[0];
-    $('faceError').style.display = 'none';
-    $('faceSuccess').style.display = 'none';
-
-    if(!file){
-      faceBase64 = '';
-      $('faceStatusText').textContent = 'ยังไม่เลือกรูป';
-      $('facePreviewImg').src = '';
-      $('facePreviewImg').style.display = 'none';
-      return;
-    }
-
-    try{
-      $('faceStatusText').textContent = 'กำลังเตรียมรูป...';
-      const b64 = await compressImageToJpegBase64(file, HARD.FACE_IMAGE_MAX_EDGE, HARD.FACE_IMAGE_QUALITY, HARD.FACE_MAX_BYTES);
-      faceBase64 = b64;
-
-      $('facePreviewImg').src = b64;
-      $('facePreviewImg').style.display = 'block';
-      const kb = Math.round((b64.length * 3) / 4 / 1024);
-      $('faceStatusText').textContent = `พร้อมส่ง (ประมาณ ${kb} KB)`;
-    }catch(err){
-      console.error(err);
-      faceBase64 = '';
-      $('faceStatusText').textContent = 'เตรียมรูปไม่สำเร็จ';
-      $('faceError').textContent = 'อ่านไฟล์รูปไม่สำเร็จ: ' + err.message;
-      $('faceError').style.display = 'block';
-    }
-  }
-
-  async function uploadEmployeeFace(){
-    const errEl = $('faceError');
-    const sucEl = $('faceSuccess');
-    errEl.style.display = 'none';
-    sucEl.style.display = 'none';
-
-    if(!faceTargetEmp) return;
-    if(!faceBase64){
-      errEl.textContent = 'กรุณาเลือกรูปก่อน';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    $('btnFaceUpload').disabled = true;
-    $('faceStatusText').textContent = 'กำลังอัปโหลด...';
-
-    try{
-      await api.call('uploadEmployeeFace', {
-        id: faceTargetEmp.id || '',
-        code: faceTargetEmp.code || '',
-        photoBase64: faceBase64
-      });
-
-      sucEl.textContent = 'บันทึกใบหน้าสำเร็จ ✅';
-      sucEl.style.display = 'block';
-      $('faceStatusText').textContent = 'สำเร็จ';
-
-      employees = await api.call('getEmployees');
-      renderEmployeesTable();
-    }catch(err){
-      errEl.textContent = 'บันทึกใบหน้าไม่สำเร็จ: ' + err.message;
-      errEl.style.display = 'block';
-      $('faceStatusText').textContent = 'ไม่สำเร็จ';
-    }finally{
-      $('btnFaceUpload').disabled = false;
-    }
-  }
-
-  function clearFaceModal(){
-    faceBase64 = '';
-    $('facePhotoInput').value = '';
-    $('facePreviewImg').src = '';
-    $('facePreviewImg').style.display = 'none';
-    $('faceStatusText').textContent = 'ยังไม่เลือกรูป';
-    $('faceError').style.display = 'none';
-    $('faceSuccess').style.display = 'none';
-  }
-
-  // ====== Log detail modal ======
-  window.openLogDetail = function(index){
-    const r = lastLogsRows && lastLogsRows[index];
-    if(!r) return;
-    logModalRow = r;
-
-    const d = formatDateThai(r.date);
-    $('logModalSub').innerHTML = `วันที่ <b>${escHtml(d)}</b> • รหัส <b>${escHtml(r.code || '-')}</b> • <b>${escHtml(r.fullName || '-')}</b>`;
-
-    const penalty = calcPenaltyFromStatus(r.status || '');
-    const penaltyText = (penalty.kind === 'unknown') ? 'UNKNOWN' : minutesToThai(penalty.minutes || 0);
-
-    const keyLines = [
-      `t1=${r.t1 || '-'}`,
-      `t2=${r.t2 || '-'}`,
-      `t3=${r.t3 || '-'}`,
-      `t4=${r.t4 || '-'}`,
-      `รวมผิดปกติ=${penaltyText}`,
-      `status=${r.status || '-'}`,
-      `method=${r.method || '-'}`,
-      `rawType=${r.rawType || '-'}`,
-      `note=${r.note || '-'}`,
-      `locationText=${r.locationText || '-'}`,
-      `zone=${r.locationZone || r.zone || '-'}`,
-    ];
-    $('logKeyText').textContent = keyLines.join(' | ');
-    $('logRawText').textContent = JSON.stringify(r, null, 2);
-
-    const evidenceUrl = r.evidenceUrl || '';
-    const img = $('logEvidenceImg');
-    const btnOpen = $('btnOpenEvidence');
-
-    if(evidenceUrl){
-      img.src = evidenceUrl;
-      img.style.display = 'block';
-      btnOpen.disabled = false;
-      btnOpen.onclick = () => window.open(evidenceUrl, '_blank', 'noopener');
-    }else{
-      img.src = '';
-      img.style.display = 'none';
-      btnOpen.disabled = true;
-      btnOpen.onclick = null;
-    }
-
-    const note = String(r.note || '');
-    const hint = [];
-    if(note.toUpperCase() === 'UNKNOWN' || note.toUpperCase() === 'UNKNOW') hint.push('หมายเหตุ: UNKNOWN ถือว่า “ปกติ” สำหรับระบบสแกน (ไม่ใช่ error)');
-    if(String(r.method || '').includes('MANUAL')) hint.push('แถวนี้เป็นการบันทึกแบบ MANUAL');
-    $('logModalHint').textContent = hint.join(' • ');
-
-    openModal('logModalBackdrop');
-  };
-
-  async function copyTextToClipboard(text){
-    return navigator.clipboard.writeText(text).catch(()=>{ prompt('คัดลอกข้อความนี้:', text); });
-  }
-
-  window.copyLogQuick = async function(index){
-    const r = lastLogsRows && lastLogsRows[index];
-    if(!r) return;
-    const d = formatDateThai(r.date);
-    const p = calcPenaltyFromStatus(r.status || '');
-    const pText = (p.kind === 'unknown') ? 'UNKNOWN' : minutesToThai(p.minutes || 0);
-
-    const txt = [
-      `วันที่: ${d}`,
-      `รหัส: ${r.code || '-'}`,
-      `ชื่อ: ${r.fullName || '-'}`,
-      `เข้า: ${r.t1 || '-'}`,
-      `ออก: ${r.t4 || '-'}`,
-      `รวมผิดปกติ: ${pText}`,
-      `สถานะ: ${r.status || '-'}`,
-    ].join('\n');
-
-    await copyTextToClipboard(txt);
-    alert('คัดลอกสรุปแล้ว');
-  };
-
-  // ====== init ======
-  async function initAdmin(){
+  // ===== init =====
+  async function initAdmin(force=false){
     const apiUrl = getApiUrl();
     setApiText(apiUrl);
 
@@ -1940,59 +1849,26 @@
       return;
     }
 
-    // cache fast paint
-    const cEmp = cacheGet('adm_employees');
-    const cBL  = cacheGet('adm_branchesLevels');
-    const cToday = cacheGet('adm_today');
-    const cMonth = cacheGet('adm_month');
-
-    if(cEmp) employees = cEmp;
-    if(cBL){ branches=(cBL.branches||[]); levels=(cBL.levels||[]); }
-
-    if(employees.length){
-      renderEmployeesTable();
-      $('statTotalEmployees').textContent = employees.length.toString();
-    }
-    if(branches.length){
-      renderBranchLevelSelects();
-      renderBranchesLevelsTables();
-    }
-    if(cToday || cMonth){
-      renderDashboard(cToday || [], cMonth || { rows:[] });
-    }
-
     try{
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth() + 1;
-
-      const [empRes, blRes, todaySummary, monthSummary] = await Promise.all([
-        api.call('getEmployees'),
-        api.call('getBranchesLevels'),
-        api.call('getTodaySummary'),
-        api.call('getSummaryRange', { year, month, branch:'ALL' }),
-      ]);
-
-      employees = empRes || [];
-      branches  = blRes.branches || [];
-      levels    = blRes.levels || [];
-
-      cacheSet('adm_employees', employees);
-      cacheSet('adm_branchesLevels', { branches, levels });
-      cacheSet('adm_today', todaySummary || []);
-      cacheSet('adm_month', monthSummary || { rows:[] });
-
       setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
 
-      renderBranchLevelSelects();
-      renderEmployeesTable();
-      renderBranchesLevelsTables();
-      renderDashboard(todaySummary, monthSummary);
-
+      // เตรียม selects
       fillYearMonthSelect($('logYearFilter'), $('logMonthFilter'));
       fillYearMonthSelect($('sumYearFilter'), $('sumMonthFilter'));
+      fillYearMonthSelect($('leaveYearFilter'), $('leaveMonthFilter'));
 
-      loaded.core = true;
+      // โหลด branch/level (เพื่อ filters)
+      await loadBranchesLevels();
+
+      // โหลด dashboard + employees (ของหลัก)
+      await loadDashboard();
+      await loadEmployees();
+
+      // โหลดแท็บที่เปิดอยู่ (เพื่อให้แน่ใจ)
+      await refreshCurrentSection(getActiveSection(), true);
+
+      setLastUpdated();
+      startAutoRefresh(getActiveSection());
     }catch(err){
       console.error(err);
       setConnectionStatus(false, err.message);
@@ -2017,6 +1893,10 @@
     $('btnSetUrl').addEventListener('click', openUrlCard);
     $('btnSaveUrl').addEventListener('click', saveUrl);
     $('btnCancelUrl').addEventListener('click', closeUrlCard);
+
+    $('btnRefreshNow').addEventListener('click', async () => {
+      await refreshCurrentSection(getActiveSection());
+    });
 
     $('apiUrlDisplay').addEventListener('click', async () => {
       const full = $('apiUrlDisplay').dataset.full || '';
@@ -2051,25 +1931,25 @@
     $('sumMonthFilter').addEventListener('change', reloadSummary);
     $('sumYearFilter').addEventListener('change', reloadSummary);
 
+    // leave
+    $('btnReloadLeave').addEventListener('click', reloadLeave);
+    $('leaveSearch').addEventListener('keydown', e => { if(e.key === 'Enter') reloadLeave(); });
+    $('leaveBranchFilter').addEventListener('change', reloadLeave);
+    $('leaveMonthFilter').addEventListener('change', reloadLeave);
+    $('leaveYearFilter').addEventListener('change', reloadLeave);
+
+    document.querySelectorAll('.chip').forEach(ch => {
+      ch.addEventListener('click', () => {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        ch.classList.add('active');
+        leaveStatus = ch.dataset.leaveStatus || 'PENDING';
+        reloadLeave();
+      });
+    });
+
     // settings
     $('btnAddBranch').addEventListener('click', addBranch);
     $('btnAddLevel').addEventListener('click', addLevel);
-
-    // face modal
-    $('btnCloseFaceModal').addEventListener('click', () => closeModal('faceModalBackdrop'));
-    $('faceModalBackdrop').addEventListener('click', (e) => { if(e.target === $('faceModalBackdrop')) closeModal('faceModalBackdrop'); });
-    $('facePhotoInput').addEventListener('change', handleFaceFileSelected);
-    $('btnFaceUpload').addEventListener('click', uploadEmployeeFace);
-    $('btnFaceClear').addEventListener('click', clearFaceModal);
-
-    // log modal
-    $('btnCloseLogModal').addEventListener('click', () => closeModal('logModalBackdrop'));
-    $('logModalBackdrop').addEventListener('click', (e) => { if(e.target === $('logModalBackdrop')) closeModal('logModalBackdrop'); });
-    $('btnCopyLogJson').addEventListener('click', async () => {
-      const txt = logModalRow ? JSON.stringify(logModalRow, null, 2) : '';
-      await copyTextToClipboard(txt);
-      alert('คัดลอก JSON แล้ว');
-    });
 
     initAdmin();
   });
