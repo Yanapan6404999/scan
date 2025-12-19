@@ -1604,8 +1604,7 @@
 
     // ✅ โครง: ถ้า API ยังไม่มี จะไม่พัง แต่บอกชัดว่า “ยังไม่พร้อม”
     try{
-      // คุณจะไปทำ GS ทีหลัง: แนะนำ action ชื่อ getLeaveRequests
-      // params: year, month, branch, status, search
+      // แนะนำ action: getLeaveRequests (year, month, branch, status, search)
       const res = await api.call('getLeaveRequests', { year, month, branch, status, search });
       renderLeave(res);
     }catch(err){
