@@ -527,6 +527,7 @@
         <button class="btn ghost" id="btnOpenDrawerPC" type="button">⚙️ ตั้งค่า URL</button>
         <button class="btn" id="btnPing" type="button">📡 ทดสอบ API</button>
         <button class="btn" id="btnLoadInit" type="button">📥 โหลดรายชื่อ</button>
+        <button class="btn" id="btnGoLeaveTop" type="button">🗓️ ใบลา</button>
       </div>
     </div>
   </div>
@@ -555,7 +556,8 @@
             <button class="tab" data-sec="secManual" type="button">📝 บันทึกมือ</button>
             <button class="tab" data-sec="secCheck" type="button">🔎 ตรวจสอบวันนี้</button>
             <button class="tab" data-sec="secSummary" type="button">📊 สรุปวันนี้</button>
-            <button class="tab" data-sec="secLeave" type="button">🗓️ Leave</button>
+            <!-- ✅ กดแท็บ “ลา” แล้วเด้งไป leave.html -->
+            <button class="tab" id="tabGoLeave" type="button">🗓️ Leave</button>
             <button class="tab" data-sec="secHR" type="button">🧩 HR</button>
             <button class="tab" data-sec="secHelp" type="button">📘 วิธีใช้</button>
           </div>
@@ -704,6 +706,7 @@
             <div class="btnbar mt14">
               <button class="btn primary" id="btnCheck" type="button">🔎 เช็คของวันนี้</button>
               <button class="btn" id="btnToSummary" type="button">📊 ไปสรุปวันนี้</button>
+              <button class="btn" id="btnGoLeaveFromCheck" type="button">🗓️ ไปหน้าใบลา</button>
             </div>
 
             <div class="hr"></div>
@@ -739,6 +742,7 @@
                 <div class="btnbar">
                   <button class="btn primary" id="btnLoadSummary" type="button">📊 โหลดสรุปวันนี้</button>
                   <button class="btn" id="btnExportCsv" type="button">⬇️ Export CSV</button>
+                  <button class="btn" id="btnGoLeaveFromSummary" type="button">🗓️ ไปหน้าใบลา</button>
                 </div>
               </div>
             </div>
@@ -759,76 +763,6 @@
                   <tr><td colspan="6" class="muted">ยังไม่ได้โหลด — กด “โหลดสรุปวันนี้”</td></tr>
                 </tbody>
               </table>
-            </div>
-          </section>
-
-          <!-- ===== SECTION: LEAVE (NEW) ===== -->
-          <section class="section" id="secLeave">
-            <div class="info">
-              <div style="font-weight:600">🗓️ ใบลา (Leave)</div>
-              <div class="small muted mt8">
-                กรอกข้อมูล → แนบหลักฐาน (ถ้ามี) → กดส่งใบลา
-                <br><span class="tiny muted">* ตอนนี้เป็นโหมดเตรียมไว้ก่อน (ยังไม่ผูก GS) — เดี๋ยวทำต่อทีหลังได้</span>
-              </div>
-            </div>
-
-            <div class="row mt14">
-              <div class="col">
-                <label>🆔 รหัสพนักงาน</label>
-                <input id="lCode" inputmode="numeric" placeholder="เช่น 1011" list="dlCodes">
-                <div class="small muted mt8" id="lNameLine">ชื่อ: —</div>
-              </div>
-              <div class="col">
-                <label>📌 ประเภทการลา</label>
-                <select id="lType">
-                  <option value="ลาป่วย">ลาป่วย</option>
-                  <option value="ลากิจ">ลากิจ</option>
-                  <option value="ลาพักร้อน">ลาพักร้อน</option>
-                  <option value="ลาอื่นๆ">ลาอื่นๆ</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="row mt12">
-              <div class="col">
-                <label>📅 วันที่เริ่มลา</label>
-                <input id="lStart" type="date">
-              </div>
-              <div class="col">
-                <label>📅 วันที่สิ้นสุดลา</label>
-                <input id="lEnd" type="date">
-              </div>
-            </div>
-
-            <div class="row mt12">
-              <div class="col">
-                <label>⏱️ ช่วงเวลา</label>
-                <select id="lRange">
-                  <option value="เต็มวัน" selected>เต็มวัน</option>
-                  <option value="ครึ่งวันเช้า">ครึ่งวันเช้า</option>
-                  <option value="ครึ่งวันบ่าย">ครึ่งวันบ่าย</option>
-                </select>
-              </div>
-              <div class="col">
-                <label>🧾 แนบหลักฐาน (ถ้ามี)</label>
-                <input id="lEvidenceFile" type="file" accept="image/*">
-              </div>
-            </div>
-
-            <div class="row mt12">
-              <div class="col">
-                <label>📝 เหตุผล / รายละเอียด</label>
-                <textarea id="lReason" placeholder="เช่น ไปโรงพยาบาล / ธุระด่วน / เดินทางต่างจังหวัด"></textarea>
-              </div>
-            </div>
-
-            <div class="btnbar mt14">
-              <button class="btn good" id="btnSubmitLeave" type="button">✅ ส่งใบลา</button>
-              <button class="btn" id="btnGoHelpFromLeave" type="button">📘 ดูวิธีใช้</button>
-            </div>
-
-            <div class="small muted mt12">
-              หมายเหตุ: ตอนผูกกับ GS จริง จะให้ HR/หัวหน้าเห็นรายการ “รออนุมัติ” ได้ (เดี๋ยวทำต่อ)
             </div>
           </section>
 
@@ -857,6 +791,7 @@
               <span class="statusChip" id="hrState"><span class="dot warn" id="hrDot"></span><span id="hrText">ยังไม่ล็อกอิน</span></span>
               <button class="btn" id="btnGoAdmin" type="button" disabled>🧑‍💼 ไปหน้า Admin</button>
               <button class="btn" id="btnLogout" type="button" disabled>ออกจากระบบ</button>
+              <button class="btn" id="btnGoLeaveFromHR" type="button">🗓️ ไปหน้าใบลา</button>
             </div>
 
             <div class="hr"></div>
@@ -938,11 +873,12 @@
 
             <div class="info mt14">
               <div style="font-weight:600">D) ใบลา (Leave)</div>
-              <ol class="mt10 small muted" style="line-height:1.8;margin:0;padding-left:18px">
-                <li>ไปแท็บ “Leave” → กรอกข้อมูลให้ครบ</li>
-                <li>แนบหลักฐาน (ถ้ามี)</li>
-                <li>กด “ส่งใบลา” (ตอนนี้เป็นโหมดเตรียมไว้ก่อน)</li>
-              </ol>
+              <div class="small muted mt10" style="line-height:1.8">
+                หน้านี้จะพาไป <b>leave.html</b> โดยตรง (แยกหน้า) เพื่อจัดการใบลาให้เป็นระบบและไม่ชนกับหน้าหลัก
+              </div>
+              <div class="btnbar mt12">
+                <button class="btn good" id="btnGoLeaveFromHelp" type="button">🗓️ ไปหน้าใบลา</button>
+              </div>
             </div>
 
             <div class="info mt14">
@@ -977,6 +913,7 @@
                 <button class="btn" id="btnOpenDrawerSide" type="button">⚙️ ตั้งค่า URL</button>
                 <button class="btn" id="btnAskGpsSide" type="button">📍 ขอ GPS</button>
                 <button class="btn" id="btnPingSide" type="button">📡 ทดสอบ API</button>
+                <button class="btn" id="btnGoLeaveSide" type="button">🗓️ ใบลา</button>
               </div>
             </div>
 
@@ -1001,7 +938,7 @@
     </div>
 
     <div class="footer">
-      © ระบบเช็คอินพนักงาน • Face/Manual/Leave/HR ✅
+      © ระบบเช็คอินพนักงาน • Face/Manual/HR ✅
     </div>
   </div>
 
@@ -1010,7 +947,12 @@
     <button class="bnBtn" data-sec="secManual" type="button"><div class="bnIcon">📝</div><div class="bnText">บันทึก</div></button>
     <button class="bnBtn" data-sec="secCheck" type="button"><div class="bnIcon">🔎</div><div class="bnText">เช็ค</div></button>
     <button class="bnBtn" data-sec="secSummary" type="button"><div class="bnIcon">📊</div><div class="bnText">สรุป</div></button>
-    <button class="bnBtn" data-sec="secLeave" type="button"><div class="bnIcon">🗓️</div><div class="bnText">ลา</div></button>
+
+    <!-- ✅ ปุ่ม “ลา” เด้งไป leave.html -->
+    <button class="bnBtn" id="bnGoLeave" type="button">
+      <div class="bnIcon">🗓️</div><div class="bnText">ลา</div>
+    </button>
+
     <button class="bnBtn" data-sec="secHR" type="button"><div class="bnIcon">🧩</div><div class="bnText">HR</div></button>
   </nav>
 
@@ -1044,6 +986,7 @@
           <button class="btn" id="btnPingDrawer" type="button">📡 ทดสอบ API</button>
           <button class="btn" id="btnAskGpsDrawer" type="button">📍 ขอ GPS</button>
           <button class="btn" id="btnLoadInitDrawer" type="button">📥 โหลดรายชื่อ</button>
+          <button class="btn" id="btnGoLeaveDrawer" type="button">🗓️ ไปหน้าใบลา</button>
         </div>
       </div>
 
@@ -1076,7 +1019,6 @@
 
       /** =============================
        *  ✅ CONFIG: เวลา “มาตรฐาน” ของ t1-t4
-       *  แก้ตรงนี้จุดเดียวพอ (ให้ตรงกับกติกาใน GS)
        *  ============================= */
       const SLOT_SCHEDULE = {
         t1: "08:00",
@@ -1142,8 +1084,7 @@
           "btnSaveUrl","btnResetUrl",
           "btnLoadInit","btnLoadInitDrawer","btnLoadInitSide",
           "btnLogin","btnGoAdmin","btnLogout",
-          "btnStartReg","btnStopReg","btnCaptureReg",
-          "btnSubmitLeave"
+          "btnStartReg","btnStopReg","btnCaptureReg"
         ];
         ids.forEach(id => {
           const b = $(id);
@@ -1206,25 +1147,57 @@
         secManual: "📝 บันทึกมือ (เลือก AUTO หรือ t1-t4 ได้)",
         secCheck: "🔎 ตรวจสอบวันนี้ (ดูเป็นการ์ด อ่านง่าย)",
         secSummary: "📊 สรุปวันนี้",
-        secLeave: "🗓️ ใบลา (Leave)",
         secHR: "🧩 HR (ล็อกอิน + ลงทะเบียนใบหน้า + ไปหน้า Admin)",
         secHelp: "📘 วิธีใช้"
       };
 
       function showSection(id) {
-        ["secFace","secManual","secCheck","secSummary","secLeave","secHR","secHelp"].forEach(s => {
+        ["secFace","secManual","secCheck","secSummary","secHR","secHelp"].forEach(s => {
           $(s)?.classList.toggle("active", s === id);
         });
-        $$("#tabs .tab").forEach(t => t.classList.toggle("active", t.dataset.sec === id));
-        $$(".bottomNav .bnBtn").forEach(b => b.classList.toggle("active", b.dataset.sec === id));
+        $$("#tabs .tab").forEach(t => {
+          const sec = t.dataset.sec;
+          if (!sec) return;
+          t.classList.toggle("active", sec === id);
+        });
+        $$(".bottomNav .bnBtn").forEach(b => {
+          const sec = b.dataset.sec;
+          if (!sec) return;
+          b.classList.toggle("active", sec === id);
+        });
         $("mainTitle").textContent = titleMap[id] || "ระบบเช็คอินพนักงาน";
       }
 
-      $$("#tabs .tab").forEach(t => t.addEventListener("click", () => showSection(t.dataset.sec)));
-      $$(".bottomNav .bnBtn").forEach(b => b.addEventListener("click", () => showSection(b.dataset.sec)));
+      $$("#tabs .tab").forEach(t => {
+        const sec = t.dataset.sec;
+        if (!sec) return;
+        t.addEventListener("click", () => showSection(sec));
+      });
+      $$(".bottomNav .bnBtn").forEach(b => {
+        const sec = b.dataset.sec;
+        if (!sec) return;
+        b.addEventListener("click", () => showSection(sec));
+      });
 
       $("btnGoCheckFromManual")?.addEventListener("click", () => showSection("secCheck"));
       $("btnToSummary")?.addEventListener("click", () => showSection("secSummary"));
+
+      // ✅ เด้งไปหน้า leave.html
+      function goLeave(){
+        // กันลืมปิดกล้องก่อนย้ายหน้า
+        try{ stopFace(); }catch{}
+        try{ stopReg(); }catch{}
+        location.href = "./leave.html";
+      }
+      $("tabGoLeave")?.addEventListener("click", goLeave);
+      $("bnGoLeave")?.addEventListener("click", goLeave);
+      $("btnGoLeaveDrawer")?.addEventListener("click", () => { closeDrawer(); goLeave(); });
+      $("btnGoLeaveSide")?.addEventListener("click", goLeave);
+      $("btnGoLeaveTop")?.addEventListener("click", goLeave);
+      $("btnGoLeaveFromCheck")?.addEventListener("click", goLeave);
+      $("btnGoLeaveFromSummary")?.addEventListener("click", goLeave);
+      $("btnGoLeaveFromHR")?.addEventListener("click", goLeave);
+      $("btnGoLeaveFromHelp")?.addEventListener("click", goLeave);
 
       async function postAction(action, params = {}) {
         const url = getApiUrl();
@@ -1446,9 +1419,6 @@
           fillCodes(employeesCache);
           if (await loadFaceModels()) rebuildFaceMatcher();
           toast("โหลดรายชื่อแล้ว ✅");
-
-          // อัปเดตชื่อในหน้า Leave ถ้าเคยพิมพ์รหัสค้างไว้
-          try { renderLeaveName(); } catch {}
         }catch(e){
           toast("โหลดรายชื่อไม่สำเร็จ: " + e.message);
         }finally{
@@ -1717,7 +1687,10 @@
           evidenceName = file.name || `manual-${code}-${Date.now()}.jpg`;
         }
 
+        // ✅ NOTE ต้องเป็น “ข้อความที่ผู้ใช้กรอก” (ไม่ใช่โซน)
         const safeReason = reason.replace(/\s+/g," ").slice(0, 120);
+
+        // manualType ใช้ให้ GS ตัดสินใจ AUTO/T1-T4 ได้
         const manualType = `MANUAL:${slot}:${safeReason}`;
 
         try{
@@ -1826,6 +1799,7 @@
 
         try{
           setBusy(true);
+          // ✅ ใช้ action ใหม่: getTodayByCode
           const result = await postAction("getTodayByCode", { code });
           renderCheckUI(result);
           toast("เช็คสำเร็จ ✅");
@@ -2131,74 +2105,6 @@
         renderLast();
       });
 
-      // =========================
-      // ✅ LEAVE (NEW) — โหมดเตรียมไว้ก่อน (ยังไม่ผูก GS)
-      // =========================
-      function renderLeaveName(){
-        const code = ($("lCode")?.value || "").trim();
-        const line = $("lNameLine");
-        if (!line) return;
-        if (!code) { line.textContent = "ชื่อ: —"; return; }
-        const emp = findEmployeeByCode(code);
-        line.textContent = "ชื่อ: " + (emp?.fullName || emp?.fullname || "ไม่พบในรายชื่อ (กดโหลดรายชื่อ)");
-      }
-      $("lCode")?.addEventListener("input", renderLeaveName);
-
-      $("btnGoHelpFromLeave")?.addEventListener("click", () => showSection("secHelp"));
-
-      async function submitLeave(){
-        if (busy) return;
-
-        const code = ($("lCode").value || "").trim();
-        const type = ($("lType").value || "").trim();
-        const start = ($("lStart").value || "").trim();
-        const end = ($("lEnd").value || "").trim();
-        const range = ($("lRange").value || "").trim();
-        const reason = ($("lReason").value || "").trim();
-
-        if (!code) return toast("กรุณากรอกรหัสพนักงาน");
-        if (!start) return toast("กรุณาเลือกวันที่เริ่มลา");
-        if (!end) return toast("กรุณาเลือกวันที่สิ้นสุดลา");
-        if (end < start) return toast("วันที่สิ้นสุดต้องไม่ก่อนวันที่เริ่ม");
-        if (!reason) return toast("กรุณากรอกเหตุผล/รายละเอียด");
-
-        let evidenceBase64 = "";
-        let evidenceName = "";
-        const file = $("lEvidenceFile").files?.[0] || null;
-        if (file) {
-          evidenceBase64 = await fileToDataURL(file);
-          evidenceName = file.name || `leave-${code}-${Date.now()}.jpg`;
-        }
-
-        // ✅ ตอนนี้ยังไม่ผูก GS: แจ้งผลแบบเตรียมไว้ก่อน
-        // (พอคุณพร้อมเดี๋ยวค่อยเปิด postAction submitLeaveRequest ฝั่ง GS)
-        toast(`ส่งใบลา (โหมดเตรียมไว้) ✅ • ${type} • ${start} ถึง ${end} • ${range}`);
-
-        // ====== TODO: เปิดใช้ตอนพร้อม GS ======
-        /*
-        try{
-          setBusy(true);
-          const result = await postAction("submitLeaveRequest", {
-            code,
-            type,
-            startDate: start,
-            endDate: end,
-            range,
-            reason,
-            evidenceBase64,
-            evidenceName,
-            method: "LEAVE"
-          });
-          toast("ส่งใบลาสำเร็จ ✅");
-        }catch(e){
-          toast("ส่งใบลาไม่สำเร็จ: " + e.message);
-        }finally{
-          setBusy(false);
-        }
-        */
-      }
-      $("btnSubmitLeave")?.addEventListener("click", submitLeave);
-
       function escapeHtml(s){
         return String(s ?? "")
           .replaceAll("&","&amp;")
@@ -2230,7 +2136,6 @@
       renderLast();
       setFaceStepUI(0, null);
       renderSlotGuide();
-      renderLeaveName();
 
       if (navigator.mediaDevices?.enumerateDevices) {
         loadCameras($("cameraSelectFace"));
