@@ -280,7 +280,6 @@
       gap:8px;
     }
     .item-actions .btn{ width:100%; padding:10px 12px; }
-    .btn-span-2{ grid-column:1 / -1; }
 
     /* Desktop vs Mobile toggles */
     .desktop-only{ display:block; }
@@ -290,7 +289,7 @@
       .mobile-only{ display:block; }
     }
 
-    /* Bottom nav (mobile) - scroll */
+    /* Bottom nav (mobile) */
     .bottom-nav{
       display:none;
       position:fixed;
@@ -336,7 +335,7 @@
     @media (max-width:1000px){
       .sidebar{ display:none; }
       .page{ flex-direction:column; }
-      main.main{ padding:14px 12px 92px; } /* เผื่อ bottom nav */
+      main.main{ padding:14px 12px 92px; }
       .bottom-nav{ display:block; }
       header.topbar{ padding:10px 12px; }
     }
@@ -456,6 +455,21 @@
       color:#94a3b8;
       font-weight:800;
     }
+
+    details.adv{
+      border:1px dashed rgba(148,163,184,.55);
+      border-radius:16px;
+      padding:10px 12px;
+      background:rgba(248,250,252,.9);
+      margin-top:10px;
+    }
+    details.adv summary{
+      cursor:pointer;
+      font-weight:900;
+      color:#334155;
+      font-size:12px;
+      user-select:none;
+    }
   </style>
 </head>
 
@@ -493,6 +507,7 @@
           <span> | </span>
           <span id="apiUrlDisplay" title="แตะเพื่อคัดลอก URL"></span>
           <span class="tiny" id="lastUpdatedText">• อัปเดตล่าสุด: -</span>
+          <span class="tiny" id="autoModeText">• Live: ทุก 60s (ไม่รีเฟรชหน้า)</span>
         </div>
       </div>
       <div class="topbar-right">
@@ -514,7 +529,7 @@
             <div class="card-header">
               <div>
                 <div class="card-title"><span class="icon">📊</span>ภาพรวมระบบวันนี้</div>
-                <div class="card-subtitle">อัปเดตอัตโนมัติทุกครั้งที่เข้าแท็บ / กดรีเฟรช</div>
+                <div class="card-subtitle">อัปเดตแบบนุ่ม ๆ ตามรอบเวลา • ไม่รีเฟรชหน้า • กันยิงซ้อนแล้ว</div>
               </div>
             </div>
 
@@ -530,9 +545,9 @@
                 <div class="stat-extra"><span class="stat-danger" id="statTodayLate">สาย 0 คน</span></div>
               </div>
               <div class="stat-card">
-                <div class="stat-label">สรุปเดือนนี้ (ปกติ / สาย / ขาด)</div>
+                <div class="stat-label">สรุปเดือนนี้ (ปกติ / สาย / ขาด / ลา)</div>
                 <div class="stat-value" id="statMonthOverview"><div class="skeleton"></div></div>
-                <div class="stat-extra">จาก Summary Range</div>
+                <div class="stat-extra" id="statMonthOverviewExtra">จาก Summary Range + Leave</div>
               </div>
             </div>
 
@@ -568,7 +583,7 @@
               <div>
                 <div class="card-title"><span class="icon">👥</span>พนักงาน</div>
                 <div class="card-subtitle">
-                  ✅ ลบปุ่ม “ใบหน้า” ออกแล้ว เหลือแค่สถานะ “มีใบหน้า/ไม่มีใบหน้า” เท่านั้น
+                  ✅ เหลือแค่สถานะ “มีใบหน้า/ไม่มีใบหน้า”
                 </div>
               </div>
 
@@ -578,7 +593,6 @@
               </div>
             </div>
 
-            <!-- Desktop table -->
             <div class="desktop-only">
               <div class="scroll-x" style="max-height:520px; overflow:auto;">
                 <table class="table-wide">
@@ -599,7 +613,6 @@
               </div>
             </div>
 
-            <!-- Mobile cards -->
             <div class="mobile-only">
               <div id="empMobileList" class="list-mobile">
                 <div class="helper">กำลังโหลด...</div>
@@ -607,7 +620,7 @@
             </div>
 
             <div class="helper mt-10">
-              * หน้า Admin โฟกัส “ข้อมูล + ตรวจสอบ” อย่างเดียว • ฟีเจอร์บันทึกใบหน้าไปทำต่อในหน้าเฉพาะได้ภายหลัง
+              * หน้า Admin โฟกัส “ข้อมูล + ตรวจสอบ”
             </div>
           </div>
         </section>
@@ -618,7 +631,7 @@
             <div class="card-header">
               <div>
                 <div class="card-title"><span class="icon">⏱</span>ประวัติเวลา</div>
-                <div class="card-subtitle">สลับแท็บ = รีเฟรชอัตโนมัติ • ปุ่มรีเฟรชด้านบนก็ใช้ได้</div>
+                <div class="card-subtitle">เข้ามาแท็บนี้จะโหลด 1 ครั้ง • อัปเดตตามรอบเวลา</div>
               </div>
             </div>
 
@@ -674,7 +687,7 @@
             <div class="card-header">
               <div>
                 <div class="card-title"><span class="icon">📈</span>สรุปเวลาทำงานรายบุคคล</div>
-                <div class="card-subtitle">สรุปทั้งเดือน (ปกติ/สาย/ขาด) เพื่อใช้ HR ตรวจสอบ</div>
+                <div class="card-subtitle">สรุปทั้งเดือน (ปกติ/สาย/ขาด)</div>
               </div>
             </div>
 
@@ -725,7 +738,7 @@
               <div>
                 <div class="card-title"><span class="icon">📝</span>ตรวจสอบการลา</div>
                 <div class="card-subtitle">
-                  ✅ ผูกให้ทำงานแล้ว: ดึงรายการลา + อนุมัติ/ไม่อนุมัติ (รองรับหลาย action อัตโนมัติ)
+                  ถ้า action ใน GS ของคุณไม่ตรง → ใส่ “Action ที่ใช้จริง” ใน Advanced แล้วบันทึก ✅
                 </div>
               </div>
             </div>
@@ -759,6 +772,27 @@
 
             <div id="leaveHint" class="helper mt-10"></div>
 
+            <details class="adv">
+              <summary>⚙️ Advanced: ตั้งชื่อ Action (ถ้าหน้านี้ไม่ขึ้นข้อมูล แต่ leave.html ขึ้น)</summary>
+              <div class="mt-10 grid-2">
+                <div>
+                  <div class="helper">Action “ดึงรายการลา” (ตัวอย่าง: getLeaveHistoryAll หรือ listLeaves)</div>
+                  <input id="leaveListActionCustom" class="input" placeholder="ใส่ชื่อ action ที่ใช้จริง" />
+                </div>
+                <div>
+                  <div class="helper">Action “อัปเดตสถานะลา” (ตัวอย่าง: updateLeaveStatus หรือ approveLeave)</div>
+                  <input id="leaveUpdateActionCustom" class="input" placeholder="ใส่ชื่อ action ที่ใช้จริง" />
+                </div>
+              </div>
+              <div class="mt-10" style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn btn-secondary" id="btnSaveLeaveActions">บันทึก Action</button>
+                <button class="btn btn-secondary" id="btnClearLeaveActions">ล้างค่า</button>
+              </div>
+              <div class="helper mt-8">
+                * ถ้าไม่รู้ชื่อ action: เปิดไฟล์ leave.html แล้วค้นคำว่า <b>action:</b> หรือ <b>URLSearchParams({ action</b> แล้วเอาชื่อมาใส่ตรงนี้
+              </div>
+            </details>
+
             <div class="desktop-only mt-10">
               <div class="scroll-x" style="max-height:520px; overflow:auto;">
                 <table class="table-wide">
@@ -789,7 +823,7 @@
             </div>
 
             <div class="helper mt-10">
-              * ถ้าระบบคุณใช้ชื่อ action ต่างจากที่เดาไว้ ตัวหน้านี้จะ “ลองเรียกจนเจอ” แล้วจำไว้ให้เอง ✅
+              * ระบบจะ “จำ action ที่ใช้ได้” ไว้ในเครื่องนี้ให้เอง
             </div>
           </div>
         </section>
@@ -887,7 +921,7 @@
     <div class="modal-header">
       <div style="min-width:0;">
         <div class="modal-title" id="empModalTitle">👤 เพิ่มพนักงาน</div>
-        <div class="modal-sub" id="empModalSub">กรอกข้อมูลพื้นฐาน (ไม่มีอัปโหลดรูป/ไม่มีปุ่มใบหน้า)</div>
+        <div class="modal-sub" id="empModalSub">กรอกข้อมูลพื้นฐาน</div>
       </div>
       <button class="btn btn-secondary btn-small" id="btnCloseEmpModal" type="button">ปิด</button>
     </div>
@@ -932,6 +966,7 @@
 <script>
   const STORAGE_KEY = 'attendance_api_url_v2';
   const STORAGE_LEAVE_ACTIONS_KEY = 'attendance_leave_actions_v1';
+  const STORAGE_LEAVE_CUSTOM_KEY = 'attendance_leave_actions_custom_v1';
 
   function $(id){ return document.getElementById(id); }
 
@@ -941,9 +976,9 @@
     else localStorage.setItem(STORAGE_KEY, url);
   }
 
-  // ====== API wrapper (รองรับลองหลาย action) ======
+  // ====== API wrapper (รองรับ Abort + callFirst) ======
   const api = {
-    async call(action, params = {}){
+    async call(action, params = {}, opts = {}){
       const apiUrl = getApiUrl();
       if(!apiUrl) throw new Error('ยังไม่ได้ตั้งค่า URL API');
 
@@ -951,7 +986,8 @@
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8' },
-        body
+        body,
+        signal: opts.signal
       });
 
       const text = await res.text();
@@ -965,12 +1001,11 @@
       return data.result;
     },
 
-    // ลองเรียก action หลายชื่อ (ใช้กับระบบลา)
     async callFirst(actions, params = {}, opts = {}){
       const errors = [];
       for(const act of actions){
         try{
-          const result = await this.call(act, params);
+          const result = await this.call(act, params, opts);
           if(opts.onSuccess) opts.onSuccess(act, result);
           return { action: act, result };
         }catch(err){
@@ -988,13 +1023,16 @@
   let levels = [];
   let editingEmpId = null;
 
-  // logs / leave
-  let lastLogsRows = [];
-  let leaveStatus = 'PENDING'; // PENDING | APPROVED | REJECTED | ALL
+  // leave
+  let leaveStatus = 'PENDING';
 
-  // auto refresh
+  // ===== Auto refresh (กันยิงรัว) =====
   let autoTimer = null;
-  const AUTO_REFRESH_MS = 30000;
+  let refreshInFlight = false;
+  let refreshAbort = null;
+
+  // ปรับได้: 60s = ไม่รัว (ตามที่ขอ)
+  const AUTO_REFRESH_MS = 60000;
 
   function escHtml(s){
     return String(s ?? '')
@@ -1067,8 +1105,9 @@
     document.querySelectorAll('.bottom-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
     document.querySelectorAll('.section').forEach(el => el.classList.toggle('active', el.id === 'section-' + section));
 
-    refreshCurrentSection(section);
-    startAutoRefresh(section);
+    // โหลด 1 ครั้งตอนเข้าแท็บ
+    refreshCurrentSection(section, true);
+    startAutoRefresh();
   }
 
   function getActiveSection(){
@@ -1076,33 +1115,46 @@
     return active ? active.dataset.section : 'dashboard';
   }
 
-  function startAutoRefresh(section){
+  function startAutoRefresh(){
     if(autoTimer) clearInterval(autoTimer);
     autoTimer = setInterval(() => {
+      if(document.visibilityState !== 'visible') return; // หยุดตอนแท็บไม่อยู่หน้าเว็บ
       const cur = getActiveSection();
-      refreshCurrentSection(cur, true);
+      refreshCurrentSection(cur, true, true);
     }, AUTO_REFRESH_MS);
   }
 
-  async function refreshCurrentSection(section, silent=false){
+  async function refreshCurrentSection(section, silent=false, isAuto=false){
+    if(refreshInFlight) return; // กันยิงรัว/ซ้อน
+    refreshInFlight = true;
+
+    if(refreshAbort) refreshAbort.abort();
+    refreshAbort = new AbortController();
+    const signal = refreshAbort.signal;
+
     try{
       if(section === 'dashboard'){
-        await loadDashboard();
+        await loadDashboard({ signal });
       }else if(section === 'employees'){
-        await loadEmployees();
+        await loadEmployees({ signal });
       }else if(section === 'logs'){
-        await reloadLogs();
+        await reloadLogs({ signal });
       }else if(section === 'summary'){
-        await reloadSummary();
+        await reloadSummary({ signal });
       }else if(section === 'settings'){
-        await loadBranchesLevels();
+        await loadBranchesLevels({ signal });
       }else if(section === 'leave'){
-        await reloadLeave();
+        await reloadLeave({ signal });
       }
       setLastUpdated();
+      if(!isAuto) setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
     }catch(err){
+      if(err.name === 'AbortError') return;
       console.error(err);
+      setConnectionStatus(false, 'เชื่อมต่อผิดพลาด');
       if(!silent) alert('รีเฟรชไม่สำเร็จ: ' + err.message);
+    }finally{
+      refreshInFlight = false;
     }
   }
 
@@ -1149,13 +1201,11 @@
     const s = String(v).trim();
     if(!s) return null;
 
-    // ISO / yyyy-mm-dd
     if(/^\d{4}-\d{2}-\d{2}/.test(s)){
       const iso = s.replace(' ', 'T');
       const d = new Date(iso);
       if(!isNaN(d.getTime())) return d;
     }
-    // dd/mm/yyyy (BE or AD)
     if(/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)){
       const [dd,mm,yy] = s.split('/').map(x=>Number(x));
       const y = (yy > 2400) ? (yy - 543) : yy;
@@ -1232,14 +1282,15 @@
   }
 
   function fillYearMonthSelect(yearSel, monthSel){
+    // *** value = พ.ศ. เพื่อให้เข้ากับหน้า leave ที่คุณใช้ (แก้จุดนี้ให้ชัวร์) ***
     const now = new Date();
-    const curYear = now.getFullYear();
-    const years = [curYear-1, curYear, curYear+1];
+    const curYearAD = now.getFullYear();
+    const yearsAD = [curYearAD-1, curYearAD, curYearAD+1];
 
-    yearSel.innerHTML = years.map(y => {
+    yearSel.innerHTML = yearsAD.map(y => {
       const be = y + 543;
-      const sel = (y === curYear) ? 'selected' : '';
-      return `<option value="${y}" ${sel}>${be}</option>`;
+      const sel = (y === curYearAD) ? 'selected' : '';
+      return `<option value="${be}" ${sel}>${be}</option>`;
     }).join('');
 
     const monthNames = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
@@ -1247,6 +1298,12 @@
       const sel = (i === now.getMonth()) ? 'selected' : '';
       return `<option value="${i+1}" ${sel}>${m}</option>`;
     }).join('');
+  }
+
+  function beToAd(beYear){
+    const n = Number(beYear);
+    if(!n) return beYear;
+    return (n > 2400) ? (n - 543) : n;
   }
 
   // ===== Employees =====
@@ -1327,37 +1384,66 @@
     }).join('');
   }
 
-  async function loadEmployees(){
+  async function loadEmployees(opts={}){
     $('empTableBody').innerHTML = '<tr><td colspan="6" class="text-center">กำลังโหลด...</td></tr>';
     $('empMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
 
-    employees = await api.call('getEmployees');
+    employees = await api.call('getEmployees', {}, opts);
     renderEmployeesTable();
     $('statTotalEmployees').textContent = String(employees.length);
   }
 
-  // ===== Dashboard =====
-  async function loadDashboard(){
+  // ===== Dashboard (เพิ่มลา) =====
+  async function loadDashboard(opts={}){
     $('dashboardTodayBody').innerHTML = '<tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>';
     $('dashboardLocationSummary').innerHTML = '';
 
     const now = new Date();
-    const year = now.getFullYear();
+    const yearBE = now.getFullYear() + 543;
     const month = now.getMonth() + 1;
+    const yearAD = now.getFullYear();
 
     const [empRes, todaySummary, monthSummary] = await Promise.all([
-      api.call('getEmployees'),
-      api.call('getTodaySummary'),
-      api.call('getSummaryRange', { year, month, branch:'ALL' }),
+      api.call('getEmployees', {}, opts),
+      api.call('getTodaySummary', {}, opts),
+      api.call('getSummaryRange', { year: yearAD, month, branch:'ALL' }, opts),
     ]);
 
     employees = empRes || employees;
     $('statTotalEmployees').textContent = String(employees.length);
 
-    renderDashboard(todaySummary || [], monthSummary || { rows:[] });
+    // นับ “ลา X คน” แบบปลอดภัย (ถ้า action ลาไม่ตรง ก็ไม่ทำให้หน้าแตก)
+    const leaveCount = await safeGetLeaveCountForMonth({ yearBE, yearAD, month, signal: opts.signal });
+
+    renderDashboard(todaySummary || [], monthSummary || { rows:[] }, leaveCount);
   }
 
-  function renderDashboard(todaySummary, monthSummary){
+  async function safeGetLeaveCountForMonth({yearBE, yearAD, month, signal}){
+    try{
+      const params = {
+        year: yearBE, yearBE, yearAD,
+        month,
+        branch: 'ALL',
+        status: 'ALL',
+        statusEN: 'ALL',
+        statusTH: 'ทั้งหมด'
+      };
+      const { result } = await callLeaveList(params, { signal, silent: true });
+      const rows = pickArr(result);
+      const uniq = new Set();
+      rows.forEach(r => {
+        const st = normalizeLeaveStatus(r.status || r.leaveStatus || r.state || r.approvalStatus || '');
+        if(st === 'REJECTED' || st === 'CANCELLED') return;
+        const code = r.code || r.empCode || r.employeeCode || '';
+        if(code) uniq.add(String(code));
+      });
+      return uniq.size;
+    }catch(e){
+      return null;
+    }
+  }
+
+  function renderDashboard(todaySummary, monthSummary, leaveCount){
     const todayRows = todaySummary || [];
     const loggedRows = todayRows.filter(hasAnyLogRow);
     $('statTodayCount').textContent = String(loggedRows.length);
@@ -1376,14 +1462,15 @@
       late   += Number(r.lateCount || 0);
       absent += Number(r.absentCount || 0);
     });
-    $('statMonthOverview').textContent = `${normal} ปกติ / ${late} สาย / ${absent} ขาด`;
+
+    const leaveText = (leaveCount == null) ? '-' : String(leaveCount);
+    $('statMonthOverview').textContent = `${normal} ปกติ / ${late} สาย / ${absent} ขาด / ${leaveText} ลา`;
 
     const tbody = $('dashboardTodayBody');
     if(!todayRows.length){
       tbody.innerHTML = '<tr><td colspan="8" class="text-center">ยังไม่มีข้อมูลวันนี้</td></tr>';
     }else{
-      tbody.innerHTML = todayRows.map(r => {
-        return `
+      tbody.innerHTML = todayRows.map(r => `
           <tr>
             <td>${escHtml(r.code || '')}</td>
             <td>${escHtml(r.fullName || '')}</td>
@@ -1394,8 +1481,7 @@
             <td>${penaltyHtmlFromRow(r)}</td>
             <td>${statusBadgeHtml(r.status || '')}</td>
           </tr>
-        `;
-      }).join('');
+      `).join('');
     }
 
     const locBox = $('dashboardLocationSummary');
@@ -1414,8 +1500,6 @@
   // ===== Logs =====
   function renderLogsTable(res){
     const rows = (res && res.rows) || [];
-    lastLogsRows = rows;
-
     const tb = $('logsTableBody');
     const mobileList = $('logsMobileList');
 
@@ -1481,16 +1565,17 @@
     }).join('');
   }
 
-  async function reloadLogs(){
+  async function reloadLogs(opts={}){
     $('logsTableBody').innerHTML = '<tr><td colspan="10" class="text-center">กำลังโหลด...</td></tr>';
     $('logsMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
 
-    const year  = $('logYearFilter').value;
+    const yearBE  = $('logYearFilter').value;
+    const yearAD = beToAd(yearBE);
     const month = $('logMonthFilter').value;
     const branch = $('logBranchFilter').value || 'ALL';
     const search = ($('logSearch').value || '').trim();
 
-    const res = await api.call('getLogsRange', { year, month, branch, search });
+    const res = await api.call('getLogsRange', { year: yearAD, month, branch, search }, opts);
     renderLogsTable(res);
   }
 
@@ -1542,40 +1627,44 @@
     `).join('');
   }
 
-  async function reloadSummary(){
+  async function reloadSummary(opts={}){
     $('summaryTableBody').innerHTML = '<tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>';
     $('summaryMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
 
-    const year  = $('sumYearFilter').value;
+    const yearBE  = $('sumYearFilter').value;
+    const yearAD = beToAd(yearBE);
     const month = $('sumMonthFilter').value;
     const branch = $('sumBranchFilter').value || 'ALL';
 
-    const res = await api.call('getSummaryRange', { year, month, branch });
+    const res = await api.call('getSummaryRange', { year: yearAD, month, branch }, opts);
     renderSummaryTable(res);
   }
 
   // =========================================================
-  // ===================== LEAVE (ทำงานจริง) =================
+  // ===================== LEAVE (แก้ให้ใช้ได้จริง) ==========
   // =========================================================
-
-  // เก็บ action ที่เคยเจอแล้วว่าใช้ได้ (กันลองใหม่ทุกครั้ง)
   function getLeaveActionsCache(){
-    try{
-      return JSON.parse(localStorage.getItem(STORAGE_LEAVE_ACTIONS_KEY) || '{}') || {};
-    }catch(e){ return {}; }
+    try{ return JSON.parse(localStorage.getItem(STORAGE_LEAVE_ACTIONS_KEY) || '{}') || {}; }
+    catch(e){ return {}; }
   }
   function setLeaveActionsCache(obj){
     localStorage.setItem(STORAGE_LEAVE_ACTIONS_KEY, JSON.stringify(obj || {}));
   }
 
-  // normalize status ให้รองรับทั้ง EN/TH
+  function getLeaveCustom(){
+    try{ return JSON.parse(localStorage.getItem(STORAGE_LEAVE_CUSTOM_KEY) || '{}') || {}; }
+    catch(e){ return {}; }
+  }
+  function setLeaveCustom(obj){
+    localStorage.setItem(STORAGE_LEAVE_CUSTOM_KEY, JSON.stringify(obj || {}));
+  }
+
   function normalizeLeaveStatus(s){
     const raw = String(s || '').trim();
     if(!raw) return 'PENDING';
     const up = raw.toUpperCase();
-
-    if(up === 'PENDING' || raw.includes('รอดำเนินการ') || raw.includes('รอดำเนิน')) return 'PENDING';
-    if(up === 'APPROVED' || raw.includes('อนุมัติ')) return 'APPROVED';
+    if(up === 'PENDING' || raw.includes('รอดำเนิน')) return 'PENDING';
+    if(up === 'APPROVED' || raw === 'อนุมัติ') return 'APPROVED';
     if(up === 'REJECTED' || raw.includes('ไม่อนุมัติ') || raw.includes('ปฏิเสธ')) return 'REJECTED';
     if(raw.includes('ยกเลิก') || up === 'CANCELLED' || up === 'CANCELED') return 'CANCELLED';
     return up || raw;
@@ -1587,6 +1676,7 @@
     if(n === 'APPROVED') return 'อนุมัติ';
     if(n === 'REJECTED') return 'ไม่อนุมัติ';
     if(n === 'CANCELLED') return 'ยกเลิก';
+    if(n === 'ALL') return 'ทั้งหมด';
     return st || '-';
   }
 
@@ -1600,7 +1690,6 @@
   }
 
   function pickArr(res){
-    // รองรับหลายรูปแบบ
     if(Array.isArray(res)) return res;
     if(res && Array.isArray(res.rows)) return res.rows;
     if(res && Array.isArray(res.items)) return res.items;
@@ -1612,77 +1701,57 @@
   function getLeaveId(r){
     return r.id || r.leaveId || r.requestId || r.uuid || r._id || r.key || '';
   }
-
   function getLeaveCreatedAt(r){
     return r.createdAt || r.requestDate || r.submittedAt || r.timestamp || r.created || r.date || '';
   }
-
   function getLeaveType(r){
     return r.leaveType || r.type || r.leave_name || r.leaveName || r.kind || '-';
   }
-
   function getLeaveReason(r){
     return r.reason || r.detail || r.note || r.remark || '-';
   }
-
   function getLeaveRange(r){
-    // เคสที่มี start/end
     const s = r.startDate || r.dateStart || r.fromDate || r.from || r.start || '';
     const e = r.endDate || r.dateEnd || r.toDate || r.to || r.end || '';
     if(s && e){
-      // ถ้าเป็นวันเดียวกัน ก็โชว์วันเดียว
       const ds = String(s).slice(0,10);
       const de = String(e).slice(0,10);
       if(ds === de) return ds;
       return `${ds} → ${de}`;
     }
-    // เคสที่มี range ตรงๆ
     return r.range || r.dateRange || r.period || r.dates || '-';
   }
-
   function getLeaveAttachUrl(r){
     return r.attachUrl || r.attachmentUrl || r.fileUrl || r.evidenceUrl || r.photoUrl || r.file || r.attach || '';
   }
 
-  // ชื่อ action ที่เป็นไปได้ (ให้มันลอง)
+  // เพิ่มชุดเดาให้กว้างขึ้น (เผื่อ GS ของคุณใช้ชื่อแปลก)
   const LEAVE_LIST_ACTIONS = [
-    // ที่คุณตั้งใจไว้
-    'getLeaveRequests',
-    // ชื่อที่มักเจอใน leave.html
-    'getLeaveHistory',
-    'getLeaveHistoryAll',
-    'listLeaveRequests',
-    'listLeaves',
-    'getLeaves',
-    'getLeaveList',
-    'leave_getRequests',
-    'leave_list',
-    'getLeaveAdmin',
+    'getLeaveRequests','getLeaveHistory','getLeaveHistoryAll','listLeaveRequests','listLeaves',
+    'getLeaves','getLeaveList','getLeaveAdmin','getLeaveAdminList','getLeaveRequestsAll',
+    'leave_list','leave_getHistory','leave_getHistoryAll','leave_getRequests','leave_getAll',
+    'getLeavesRange','getLeaveRange','leave_getRange'
   ];
 
   const LEAVE_UPDATE_ACTIONS = [
-    'updateLeaveStatus',
-    'setLeaveStatus',
-    'updateLeaveRequest',
-    'setLeaveRequestStatus',
-    'approveLeave',     // บางระบบแยก
-    'rejectLeave',      // บางระบบแยก
-    'leave_updateStatus',
-    'leave_setStatus',
+    'updateLeaveStatus','setLeaveStatus','updateLeaveRequest','setLeaveRequestStatus',
+    'approveLeave','rejectLeave','approveLeaveRequest','rejectLeaveRequest',
+    'leave_updateStatus','leave_setStatus','leave_approve','leave_reject'
   ];
 
   function buildLeaveQueryParams(){
-    const year  = $('leaveYearFilter').value;
+    const yearBE  = $('leaveYearFilter').value;
+    const yearAD = beToAd(yearBE);
     const month = $('leaveMonthFilter').value;
     const branch = $('leaveBranchFilter').value || 'ALL';
     const search = ($('leaveSearch').value || '').trim();
 
-    // ส่งทั้ง EN และ TH เผื่อฝั่ง GS รับแบบใดแบบหนึ่ง
     const statusEN = leaveStatus;
     const statusTH = statusToThaiChip(leaveStatus);
 
     return {
-      year, month, branch, search,
+      year: yearBE, yearBE, yearAD,
+      month, branch, search,
       status: statusEN,
       statusEN,
       statusTH,
@@ -1691,33 +1760,39 @@
     };
   }
 
-  async function callLeaveList(params){
+  async function callLeaveList(params, opts = {}){
     const cache = getLeaveActionsCache();
-    const prefer = cache.listAction ? [cache.listAction] : [];
+    const custom = getLeaveCustom();
+
+    const prefer = [];
+    if(custom.listAction) prefer.push(custom.listAction);
+    else if(cache.listAction) prefer.push(cache.listAction);
+
     const actions = prefer.concat(LEAVE_LIST_ACTIONS.filter(a => !prefer.includes(a)));
 
     const { action, result } = await api.callFirst(actions, params, {
       failMessage: 'โหลดรายการลาไม่สำเร็จ',
-      onSuccess: (act) => {
-        cache.listAction = act;
-        setLeaveActionsCache(cache);
-      }
+      onSuccess: (act) => { cache.listAction = act; setLeaveActionsCache(cache); },
+      signal: opts.signal
     });
 
     return { action, result };
   }
 
-  async function callLeaveUpdate(params){
+  async function callLeaveUpdate(params, opts = {}){
     const cache = getLeaveActionsCache();
-    const prefer = cache.updateAction ? [cache.updateAction] : [];
+    const custom = getLeaveCustom();
+
+    const prefer = [];
+    if(custom.updateAction) prefer.push(custom.updateAction);
+    else if(cache.updateAction) prefer.push(cache.updateAction);
+
     const actions = prefer.concat(LEAVE_UPDATE_ACTIONS.filter(a => !prefer.includes(a)));
 
     const { action, result } = await api.callFirst(actions, params, {
       failMessage: 'อัปเดตสถานะใบลาไม่สำเร็จ',
-      onSuccess: (act) => {
-        cache.updateAction = act;
-        setLeaveActionsCache(cache);
-      }
+      onSuccess: (act) => { cache.updateAction = act; setLeaveActionsCache(cache); },
+      signal: opts.signal
     });
 
     return { action, result };
@@ -1816,7 +1891,7 @@
     }).join('');
   }
 
-  async function reloadLeave(){
+  async function reloadLeave(opts={}){
     $('leaveTableBody').innerHTML = '<tr><td colspan="9" class="text-center">กำลังโหลด...</td></tr>';
     $('leaveMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
     $('leaveHint').textContent = '';
@@ -1824,10 +1899,10 @@
     const params = buildLeaveQueryParams();
 
     try{
-      const { action, result } = await callLeaveList(params);
+      const { action, result } = await callLeaveList(params, opts);
       const rows = pickArr(result);
 
-      $('leaveHint').textContent = `ดึงข้อมูลสำเร็จ (action: ${action}) • พบ ${rows.length} รายการ • สถานะที่กรอง: ${statusToThaiChip(leaveStatus)}`;
+      $('leaveHint').textContent = `ดึงข้อมูลสำเร็จ (action: ${action}) • พบ ${rows.length} รายการ • สถานะ: ${statusToThaiChip(leaveStatus)}`;
       renderLeave(result);
     }catch(err){
       console.error(err);
@@ -1837,10 +1912,9 @@
     }
   }
 
-  async function updateLeaveStatus(id, statusEN){
+  async function updateLeaveStatus(id, statusEN, opts={}){
     if(!id) throw new Error('ไม่พบ id ใบลา');
 
-    // ใส่หมายเหตุได้ (optional)
     const remark = prompt(
       (statusEN === 'APPROVED' ? 'อนุมัติใบลา' : 'ไม่อนุมัติใบลา') + '\nใส่หมายเหตุ (ปล่อยว่างได้):',
       ''
@@ -1848,7 +1922,6 @@
 
     const statusTH = statusToThaiChip(statusEN);
 
-    // ส่งหลายฟิลด์ เผื่อฝั่ง GS รับชื่อใดชื่อหนึ่ง
     const payload = {
       id,
       leaveId: id,
@@ -1859,6 +1932,8 @@
       newStatus: statusEN,
       new_status: statusEN,
       decision: statusEN,
+      approved: statusEN === 'APPROVED',
+      rejected: statusEN === 'REJECTED',
       remark,
       note: remark,
       adminRemark: remark,
@@ -1866,9 +1941,7 @@
       rejectedRemark: remark,
     };
 
-    // ถ้าฝั่ง server แยก action อนุมัติ/ปฏิเสธ ให้ลองด้วย
-    // แต่เราจะให้ callLeaveUpdate ไปลองเอง
-    const { action } = await callLeaveUpdate(payload);
+    const { action } = await callLeaveUpdate(payload, opts);
     return action;
   }
 
@@ -1918,8 +1991,8 @@
       : '<tr><td colspan="2" class="text-center">ยังไม่มีระดับ</td></tr>';
   }
 
-  async function loadBranchesLevels(){
-    const bl = await api.call('getBranchesLevels');
+  async function loadBranchesLevels(opts={}){
+    const bl = await api.call('getBranchesLevels', {}, opts);
     branches = bl.branches || [];
     levels   = bl.levels || [];
     renderBranchLevelSelects();
@@ -2019,7 +2092,7 @@
   function resetEmpForm(keepMsg){
     editingEmpId = null;
     $('empModalTitle').textContent = '👤 เพิ่มพนักงาน';
-    $('empModalSub').textContent = 'กรอกข้อมูลพื้นฐาน (ไม่มีอัปโหลดรูป/ไม่มีปุ่มใบหน้า)';
+    $('empModalSub').textContent = 'กรอกข้อมูลพื้นฐาน';
     $('empCode').value = '';
     $('empFullName').value = '';
     $('empEmail').value = '';
@@ -2076,7 +2149,7 @@
       await api.call('saveEmployee', {
         id: editingEmpId || '',
         code, fullName, branch, level, email,
-        photoBase64: '' // กัน GS เดิมยังรับไว้
+        photoBase64: ''
       });
 
       await loadEmployees();
@@ -2126,19 +2199,34 @@
       fillYearMonthSelect($('leaveYearFilter'), $('leaveMonthFilter'));
 
       await loadBranchesLevels();
-
-      await loadDashboard();
-      await loadEmployees();
-
       await refreshCurrentSection(getActiveSection(), true);
 
       setLastUpdated();
-      startAutoRefresh(getActiveSection());
+      startAutoRefresh();
     }catch(err){
       console.error(err);
       setConnectionStatus(false, err.message);
       alert('เชื่อมต่อ API ไม่สำเร็จ: ' + err.message);
     }
+  }
+
+  // ===== Leave custom actions UI =====
+  function loadLeaveCustomToUI(){
+    const c = getLeaveCustom();
+    $('leaveListActionCustom').value = c.listAction || '';
+    $('leaveUpdateActionCustom').value = c.updateAction || '';
+  }
+
+  function saveLeaveCustomFromUI(){
+    const listAction = ($('leaveListActionCustom').value || '').trim();
+    const updateAction = ($('leaveUpdateActionCustom').value || '').trim();
+    setLeaveCustom({ listAction, updateAction });
+  }
+
+  function clearLeaveCustom(){
+    localStorage.removeItem(STORAGE_LEAVE_CUSTOM_KEY);
+    $('leaveListActionCustom').value = '';
+    $('leaveUpdateActionCustom').value = '';
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -2158,7 +2246,7 @@
     $('btnCancelUrl').addEventListener('click', closeUrlCard);
 
     $('btnRefreshNow').addEventListener('click', async () => {
-      await refreshCurrentSection(getActiveSection());
+      await refreshCurrentSection(getActiveSection(), false);
     });
 
     $('apiUrlDisplay').addEventListener('click', async () => {
@@ -2182,24 +2270,24 @@
     $('btnSaveEmployee').addEventListener('click', saveEmployee);
 
     // logs
-    $('btnReloadLogs').addEventListener('click', reloadLogs);
+    $('btnReloadLogs').addEventListener('click', () => reloadLogs());
     $('logSearch').addEventListener('keydown', e => { if(e.key === 'Enter') reloadLogs(); });
-    $('logBranchFilter').addEventListener('change', reloadLogs);
-    $('logMonthFilter').addEventListener('change', reloadLogs);
-    $('logYearFilter').addEventListener('change', reloadLogs);
+    $('logBranchFilter').addEventListener('change', () => reloadLogs());
+    $('logMonthFilter').addEventListener('change', () => reloadLogs());
+    $('logYearFilter').addEventListener('change', () => reloadLogs());
 
     // summary
-    $('btnReloadSummary').addEventListener('click', reloadSummary);
-    $('sumBranchFilter').addEventListener('change', reloadSummary);
-    $('sumMonthFilter').addEventListener('change', reloadSummary);
-    $('sumYearFilter').addEventListener('change', reloadSummary);
+    $('btnReloadSummary').addEventListener('click', () => reloadSummary());
+    $('sumBranchFilter').addEventListener('change', () => reloadSummary());
+    $('sumMonthFilter').addEventListener('change', () => reloadSummary());
+    $('sumYearFilter').addEventListener('change', () => reloadSummary());
 
     // leave
-    $('btnReloadLeave').addEventListener('click', reloadLeave);
+    $('btnReloadLeave').addEventListener('click', () => reloadLeave());
     $('leaveSearch').addEventListener('keydown', e => { if(e.key === 'Enter') reloadLeave(); });
-    $('leaveBranchFilter').addEventListener('change', reloadLeave);
-    $('leaveMonthFilter').addEventListener('change', reloadLeave);
-    $('leaveYearFilter').addEventListener('change', reloadLeave);
+    $('leaveBranchFilter').addEventListener('change', () => reloadLeave());
+    $('leaveMonthFilter').addEventListener('change', () => reloadLeave());
+    $('leaveYearFilter').addEventListener('change', () => reloadLeave());
 
     document.querySelectorAll('.chip').forEach(ch => {
       ch.addEventListener('click', () => {
@@ -2210,9 +2298,30 @@
       });
     });
 
+    // leave advanced actions
+    loadLeaveCustomToUI();
+    $('btnSaveLeaveActions').addEventListener('click', async () => {
+      saveLeaveCustomFromUI();
+      alert('บันทึก Action แล้ว ✅');
+      await reloadLeave();
+    });
+    $('btnClearLeaveActions').addEventListener('click', async () => {
+      clearLeaveCustom();
+      alert('ล้างค่าแล้ว ✅');
+      await reloadLeave();
+    });
+
     // settings
     $('btnAddBranch').addEventListener('click', addBranch);
     $('btnAddLevel').addEventListener('click', addLevel);
+
+    // pause/resume auto refresh when tab hidden/visible
+    document.addEventListener('visibilitychange', () => {
+      if(document.visibilityState === 'visible'){
+        startAutoRefresh();
+        refreshCurrentSection(getActiveSection(), true, true);
+      }
+    });
 
     initAdmin();
   });
