@@ -725,7 +725,7 @@
               <div>
                 <div class="card-title"><span class="icon">📝</span>ตรวจสอบการลา</div>
                 <div class="card-subtitle">
-                  โครงแท็บพร้อมแล้ว ✅ (รอผูกข้อมูลจาก GS/DB) • มีสถานะ: รอดำเนินการ / อนุมัติ / ไม่อนุมัติ
+                  ✅ ผูกให้ทำงานแล้ว: ดึงรายการลา + อนุมัติ/ไม่อนุมัติ (รองรับหลาย action อัตโนมัติ)
                 </div>
               </div>
             </div>
@@ -770,12 +770,13 @@
                       <th>ประเภทลา</th>
                       <th>ช่วงวันลา</th>
                       <th>เหตุผล</th>
+                      <th>แนบไฟล์</th>
                       <th>สถานะ</th>
                       <th>จัดการ</th>
                     </tr>
                   </thead>
                   <tbody id="leaveTableBody">
-                    <tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>
+                    <tr><td colspan="9" class="text-center">กำลังโหลด...</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -788,7 +789,7 @@
             </div>
 
             <div class="helper mt-10">
-              * ปุ่ม “อนุมัติ/ไม่อนุมัติ” ตอนนี้เป็นโครง (พร้อมผูก API) • เดี๋ยวไปทำ leave.html ต่อได้เลย
+              * ถ้าระบบคุณใช้ชื่อ action ต่างจากที่เดาไว้ ตัวหน้านี้จะ “ลองเรียกจนเจอ” แล้วจำไว้ให้เอง ✅
             </div>
           </div>
         </section>
@@ -930,6 +931,7 @@
 
 <script>
   const STORAGE_KEY = 'attendance_api_url_v2';
+  const STORAGE_LEAVE_ACTIONS_KEY = 'attendance_leave_actions_v1';
 
   function $(id){ return document.getElementById(id); }
 
@@ -939,6 +941,7 @@
     else localStorage.setItem(STORAGE_KEY, url);
   }
 
+  // ====== API wrapper (รองรับลองหลาย action) ======
   const api = {
     async call(action, params = {}){
       const apiUrl = getApiUrl();
@@ -960,6 +963,22 @@
       }
       if(!data.ok) throw new Error(data.error || 'ไม่ทราบสาเหตุจากเซิร์ฟเวอร์');
       return data.result;
+    },
+
+    // ลองเรียก action หลายชื่อ (ใช้กับระบบลา)
+    async callFirst(actions, params = {}, opts = {}){
+      const errors = [];
+      for(const act of actions){
+        try{
+          const result = await this.call(act, params);
+          if(opts.onSuccess) opts.onSuccess(act, result);
+          return { action: act, result };
+        }catch(err){
+          errors.push({ act, msg: err.message });
+        }
+      }
+      const msg = errors.map(e => `- ${e.act}: ${e.msg}`).join('\n');
+      throw new Error((opts.failMessage || 'เรียก API ไม่สำเร็จ') + '\n' + msg);
     }
   };
 
@@ -973,9 +992,9 @@
   let lastLogsRows = [];
   let leaveStatus = 'PENDING'; // PENDING | APPROVED | REJECTED | ALL
 
-  // Auto refresh control
+  // auto refresh
   let autoTimer = null;
-  const AUTO_REFRESH_MS = 30000; // 30s
+  const AUTO_REFRESH_MS = 30000;
 
   function escHtml(s){
     return String(s ?? '')
@@ -1048,10 +1067,7 @@
     document.querySelectorAll('.bottom-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
     document.querySelectorAll('.section').forEach(el => el.classList.toggle('active', el.id === 'section-' + section));
 
-    // ✅ ทุกครั้งที่เข้าแท็บ = รีเฟรชข้อมูลแท็บนั้นทันที
     refreshCurrentSection(section);
-
-    // ✅ เปิด auto refresh เฉพาะแท็บที่กำลังใช้อยู่
     startAutoRefresh(section);
   }
 
@@ -1084,7 +1100,6 @@
         await reloadLeave();
       }
       setLastUpdated();
-      if(!silent) {} // no toast
     }catch(err){
       console.error(err);
       if(!silent) alert('รีเฟรชไม่สำเร็จ: ' + err.message);
@@ -1128,14 +1143,33 @@
     return minutesToThai(m4 - m1);
   }
 
-  function formatDateThai(dateStr){
-    let d;
-    if(dateStr instanceof Date) d = dateStr;
-    else{
-      const parts = String(dateStr).split('-');
-      if(parts.length === 3) d = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
-      else return String(dateStr || '');
+  function parseDateAny(v){
+    if(!v) return null;
+    if(v instanceof Date) return v;
+    const s = String(v).trim();
+    if(!s) return null;
+
+    // ISO / yyyy-mm-dd
+    if(/^\d{4}-\d{2}-\d{2}/.test(s)){
+      const iso = s.replace(' ', 'T');
+      const d = new Date(iso);
+      if(!isNaN(d.getTime())) return d;
     }
+    // dd/mm/yyyy (BE or AD)
+    if(/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)){
+      const [dd,mm,yy] = s.split('/').map(x=>Number(x));
+      const y = (yy > 2400) ? (yy - 543) : yy;
+      const d = new Date(y, mm-1, dd);
+      if(!isNaN(d.getTime())) return d;
+    }
+    const d = new Date(s);
+    if(!isNaN(d.getTime())) return d;
+    return null;
+  }
+
+  function formatDateThai(dateStr){
+    const d = parseDateAny(dateStr);
+    if(!d) return String(dateStr || '');
     const dd = d.getDate().toString().padStart(2,'0');
     const mm = (d.getMonth()+1).toString().padStart(2,'0');
     const yy = d.getFullYear() + 543;
@@ -1520,41 +1554,217 @@
     renderSummaryTable(res);
   }
 
-  // ===== Leave (โครง + hook) =====
+  // =========================================================
+  // ===================== LEAVE (ทำงานจริง) =================
+  // =========================================================
+
+  // เก็บ action ที่เคยเจอแล้วว่าใช้ได้ (กันลองใหม่ทุกครั้ง)
+  function getLeaveActionsCache(){
+    try{
+      return JSON.parse(localStorage.getItem(STORAGE_LEAVE_ACTIONS_KEY) || '{}') || {};
+    }catch(e){ return {}; }
+  }
+  function setLeaveActionsCache(obj){
+    localStorage.setItem(STORAGE_LEAVE_ACTIONS_KEY, JSON.stringify(obj || {}));
+  }
+
+  // normalize status ให้รองรับทั้ง EN/TH
+  function normalizeLeaveStatus(s){
+    const raw = String(s || '').trim();
+    if(!raw) return 'PENDING';
+    const up = raw.toUpperCase();
+
+    if(up === 'PENDING' || raw.includes('รอดำเนินการ') || raw.includes('รอดำเนิน')) return 'PENDING';
+    if(up === 'APPROVED' || raw.includes('อนุมัติ')) return 'APPROVED';
+    if(up === 'REJECTED' || raw.includes('ไม่อนุมัติ') || raw.includes('ปฏิเสธ')) return 'REJECTED';
+    if(raw.includes('ยกเลิก') || up === 'CANCELLED' || up === 'CANCELED') return 'CANCELLED';
+    return up || raw;
+  }
+
+  function statusToThaiChip(st){
+    const n = normalizeLeaveStatus(st);
+    if(n === 'PENDING') return 'รอดำเนินการ';
+    if(n === 'APPROVED') return 'อนุมัติ';
+    if(n === 'REJECTED') return 'ไม่อนุมัติ';
+    if(n === 'CANCELLED') return 'ยกเลิก';
+    return st || '-';
+  }
+
   function leaveStatusBadge(status){
-    const s = String(status || '').toUpperCase();
-    if(s === 'PENDING') return '<span class="badge-status badge-other">รอดำเนินการ</span>';
-    if(s === 'APPROVED') return '<span class="badge-status badge-normal">อนุมัติ</span>';
-    if(s === 'REJECTED') return '<span class="badge-status badge-absent">ไม่อนุมัติ</span>';
-    return '<span class="badge-status badge-unknown">UNKNOWN</span>';
+    const n = normalizeLeaveStatus(status);
+    if(n === 'PENDING') return '<span class="badge-status badge-other">รอดำเนินการ</span>';
+    if(n === 'APPROVED') return '<span class="badge-status badge-normal">อนุมัติ</span>';
+    if(n === 'REJECTED') return '<span class="badge-status badge-absent">ไม่อนุมัติ</span>';
+    if(n === 'CANCELLED') return '<span class="badge-status badge-unknown">ยกเลิก</span>';
+    return '<span class="badge-status badge-unknown">'+escHtml(statusToThaiChip(status))+'</span>';
+  }
+
+  function pickArr(res){
+    // รองรับหลายรูปแบบ
+    if(Array.isArray(res)) return res;
+    if(res && Array.isArray(res.rows)) return res.rows;
+    if(res && Array.isArray(res.items)) return res.items;
+    if(res && Array.isArray(res.data)) return res.data;
+    if(res && Array.isArray(res.list)) return res.list;
+    return [];
+  }
+
+  function getLeaveId(r){
+    return r.id || r.leaveId || r.requestId || r.uuid || r._id || r.key || '';
+  }
+
+  function getLeaveCreatedAt(r){
+    return r.createdAt || r.requestDate || r.submittedAt || r.timestamp || r.created || r.date || '';
+  }
+
+  function getLeaveType(r){
+    return r.leaveType || r.type || r.leave_name || r.leaveName || r.kind || '-';
+  }
+
+  function getLeaveReason(r){
+    return r.reason || r.detail || r.note || r.remark || '-';
+  }
+
+  function getLeaveRange(r){
+    // เคสที่มี start/end
+    const s = r.startDate || r.dateStart || r.fromDate || r.from || r.start || '';
+    const e = r.endDate || r.dateEnd || r.toDate || r.to || r.end || '';
+    if(s && e){
+      // ถ้าเป็นวันเดียวกัน ก็โชว์วันเดียว
+      const ds = String(s).slice(0,10);
+      const de = String(e).slice(0,10);
+      if(ds === de) return ds;
+      return `${ds} → ${de}`;
+    }
+    // เคสที่มี range ตรงๆ
+    return r.range || r.dateRange || r.period || r.dates || '-';
+  }
+
+  function getLeaveAttachUrl(r){
+    return r.attachUrl || r.attachmentUrl || r.fileUrl || r.evidenceUrl || r.photoUrl || r.file || r.attach || '';
+  }
+
+  // ชื่อ action ที่เป็นไปได้ (ให้มันลอง)
+  const LEAVE_LIST_ACTIONS = [
+    // ที่คุณตั้งใจไว้
+    'getLeaveRequests',
+    // ชื่อที่มักเจอใน leave.html
+    'getLeaveHistory',
+    'getLeaveHistoryAll',
+    'listLeaveRequests',
+    'listLeaves',
+    'getLeaves',
+    'getLeaveList',
+    'leave_getRequests',
+    'leave_list',
+    'getLeaveAdmin',
+  ];
+
+  const LEAVE_UPDATE_ACTIONS = [
+    'updateLeaveStatus',
+    'setLeaveStatus',
+    'updateLeaveRequest',
+    'setLeaveRequestStatus',
+    'approveLeave',     // บางระบบแยก
+    'rejectLeave',      // บางระบบแยก
+    'leave_updateStatus',
+    'leave_setStatus',
+  ];
+
+  function buildLeaveQueryParams(){
+    const year  = $('leaveYearFilter').value;
+    const month = $('leaveMonthFilter').value;
+    const branch = $('leaveBranchFilter').value || 'ALL';
+    const search = ($('leaveSearch').value || '').trim();
+
+    // ส่งทั้ง EN และ TH เผื่อฝั่ง GS รับแบบใดแบบหนึ่ง
+    const statusEN = leaveStatus;
+    const statusTH = statusToThaiChip(leaveStatus);
+
+    return {
+      year, month, branch, search,
+      status: statusEN,
+      statusEN,
+      statusTH,
+      filterStatus: statusEN,
+      filter_status: statusEN,
+    };
+  }
+
+  async function callLeaveList(params){
+    const cache = getLeaveActionsCache();
+    const prefer = cache.listAction ? [cache.listAction] : [];
+    const actions = prefer.concat(LEAVE_LIST_ACTIONS.filter(a => !prefer.includes(a)));
+
+    const { action, result } = await api.callFirst(actions, params, {
+      failMessage: 'โหลดรายการลาไม่สำเร็จ',
+      onSuccess: (act) => {
+        cache.listAction = act;
+        setLeaveActionsCache(cache);
+      }
+    });
+
+    return { action, result };
+  }
+
+  async function callLeaveUpdate(params){
+    const cache = getLeaveActionsCache();
+    const prefer = cache.updateAction ? [cache.updateAction] : [];
+    const actions = prefer.concat(LEAVE_UPDATE_ACTIONS.filter(a => !prefer.includes(a)));
+
+    const { action, result } = await api.callFirst(actions, params, {
+      failMessage: 'อัปเดตสถานะใบลาไม่สำเร็จ',
+      onSuccess: (act) => {
+        cache.updateAction = act;
+        setLeaveActionsCache(cache);
+      }
+    });
+
+    return { action, result };
   }
 
   function renderLeave(res){
-    const rows = (res && res.rows) || [];
+    const rows = pickArr(res);
     const tb = $('leaveTableBody');
     const mobileList = $('leaveMobileList');
 
     if(!rows.length){
-      tb.innerHTML = '<tr><td colspan="8" class="text-center">ยังไม่มีรายการ</td></tr>';
+      tb.innerHTML = '<tr><td colspan="9" class="text-center">ยังไม่มีรายการ</td></tr>';
       mobileList.innerHTML = '<div class="helper">ยังไม่มีรายการ</div>';
       return;
     }
 
     tb.innerHTML = rows.map(r => {
-      const status = leaveStatusBadge(r.status);
+      const id = getLeaveId(r);
+      const createdAt = getLeaveCreatedAt(r);
+      const code = r.code || r.empCode || r.employeeCode || '-';
+      const fullName = r.fullName || r.name || r.employeeName || '-';
+      const type = getLeaveType(r);
+      const range = getLeaveRange(r);
+      const reason = getLeaveReason(r);
+      const attach = getLeaveAttachUrl(r);
+      const statusRaw = r.status || r.leaveStatus || r.state || r.approvalStatus || '';
+      const status = leaveStatusBadge(statusRaw);
+
+      const nst = normalizeLeaveStatus(statusRaw);
+      const canAct = (nst === 'PENDING');
+
+      const attachCell = attach ? `<a href="${escHtml(attach)}" target="_blank" rel="noopener">เปิดไฟล์แนบ</a>` : '-';
+
       return `
         <tr>
-          <td>${escHtml(formatDateThai(r.createdAt || r.requestDate || r.date || '-'))}</td>
-          <td>${escHtml(r.code || '-')}</td>
-          <td>${escHtml(r.fullName || '-')}</td>
-          <td>${escHtml(r.leaveType || r.type || '-')}</td>
-          <td>${escHtml(r.range || r.dateRange || '-')}</td>
-          <td style="max-width:340px; white-space:normal;">${escHtml(r.reason || '-')}</td>
+          <td>${escHtml(formatDateThai(createdAt || '-'))}</td>
+          <td>${escHtml(code)}</td>
+          <td>${escHtml(fullName)}</td>
+          <td style="max-width:220px; white-space:normal;">${escHtml(type)}</td>
+          <td>${escHtml(range)}</td>
+          <td style="max-width:340px; white-space:normal;">${escHtml(reason)}</td>
+          <td>${attachCell}</td>
           <td>${status}</td>
           <td>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              <button class="btn btn-primary btn-small" onclick="approveLeave('${escHtml(r.id || '')}')">อนุมัติ</button>
-              <button class="btn btn-danger btn-small" onclick="rejectLeave('${escHtml(r.id || '')}')">ไม่อนุมัติ</button>
+              <button class="btn btn-primary btn-small" ${canAct?'':'disabled'} onclick="approveLeave('${escHtml(id)}')">อนุมัติ</button>
+              <button class="btn btn-danger btn-small" ${canAct?'':'disabled'} onclick="rejectLeave('${escHtml(id)}')">ไม่อนุมัติ</button>
             </div>
           </td>
         </tr>
@@ -1562,29 +1772,44 @@
     }).join('');
 
     mobileList.innerHTML = rows.map(r => {
-      const status = leaveStatusBadge(r.status);
+      const id = getLeaveId(r);
+      const createdAt = getLeaveCreatedAt(r);
+      const code = r.code || r.empCode || r.employeeCode || '-';
+      const fullName = r.fullName || r.name || r.employeeName || '-';
+      const type = getLeaveType(r);
+      const range = getLeaveRange(r);
+      const reason = getLeaveReason(r);
+      const attach = getLeaveAttachUrl(r);
+      const statusRaw = r.status || r.leaveStatus || r.state || r.approvalStatus || '';
+      const status = leaveStatusBadge(statusRaw);
+
+      const nst = normalizeLeaveStatus(statusRaw);
+      const canAct = (nst === 'PENDING');
+      const attachText = attach ? `<a href="${escHtml(attach)}" target="_blank" rel="noopener">เปิดไฟล์แนบ</a>` : '-';
+
       return `
         <div class="item">
           <div class="item-top">
             <div style="min-width:0;">
-              <div class="item-title">${escHtml(r.fullName || '-')}</div>
+              <div class="item-title">${escHtml(fullName)}</div>
               <div class="item-meta">
-                <span class="tag">รหัส ${escHtml(r.code || '-')}</span>
-                <span class="tag">${escHtml(r.leaveType || r.type || '-')}</span>
+                <span class="tag">รหัส ${escHtml(code)}</span>
+                <span class="tag">${escHtml(type)}</span>
                 ${status}
               </div>
             </div>
-            <div class="code-badge">${escHtml(formatDateThai(r.createdAt || r.requestDate || r.date || '-'))}</div>
+            <div class="code-badge">${escHtml(formatDateThai(createdAt || '-'))}</div>
           </div>
 
           <div class="kv">
-            <div class="k">ช่วงลา</div><div class="v">${escHtml(r.range || r.dateRange || '-')}</div>
-            <div class="k">เหตุผล</div><div class="v">${escHtml(r.reason || '-')}</div>
+            <div class="k">ช่วงลา</div><div class="v">${escHtml(range)}</div>
+            <div class="k">เหตุผล</div><div class="v">${escHtml(reason)}</div>
+            <div class="k">แนบไฟล์</div><div class="v">${attachText}</div>
           </div>
 
           <div class="item-actions">
-            <button class="btn btn-primary" onclick="approveLeave('${escHtml(r.id || '')}')">อนุมัติ</button>
-            <button class="btn btn-danger" onclick="rejectLeave('${escHtml(r.id || '')}')">ไม่อนุมัติ</button>
+            <button class="btn btn-primary" ${canAct?'':'disabled'} onclick="approveLeave('${escHtml(id)}')">อนุมัติ</button>
+            <button class="btn btn-danger" ${canAct?'':'disabled'} onclick="rejectLeave('${escHtml(id)}')">ไม่อนุมัติ</button>
           </div>
         </div>
       `;
@@ -1592,35 +1817,81 @@
   }
 
   async function reloadLeave(){
-    $('leaveTableBody').innerHTML = '<tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>';
+    $('leaveTableBody').innerHTML = '<tr><td colspan="9" class="text-center">กำลังโหลด...</td></tr>';
     $('leaveMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
     $('leaveHint').textContent = '';
 
-    const year  = $('leaveYearFilter').value;
-    const month = $('leaveMonthFilter').value;
-    const branch = $('leaveBranchFilter').value || 'ALL';
-    const search = ($('leaveSearch').value || '').trim();
-    const status = leaveStatus;
+    const params = buildLeaveQueryParams();
 
-    // ✅ โครง: ถ้า API ยังไม่มี จะไม่พัง แต่บอกชัดว่า “ยังไม่พร้อม”
     try{
-      // แนะนำ action: getLeaveRequests (year, month, branch, status, search)
-      const res = await api.call('getLeaveRequests', { year, month, branch, status, search });
-      renderLeave(res);
+      const { action, result } = await callLeaveList(params);
+      const rows = pickArr(result);
+
+      $('leaveHint').textContent = `ดึงข้อมูลสำเร็จ (action: ${action}) • พบ ${rows.length} รายการ • สถานะที่กรอง: ${statusToThaiChip(leaveStatus)}`;
+      renderLeave(result);
     }catch(err){
-      $('leaveHint').textContent =
-        'ยังไม่ได้ผูก API สำหรับการลา (action: getLeaveRequests) — ตอนนี้เป็นโครงหน้าไว้ก่อน ✅';
-      $('leaveTableBody').innerHTML = '<tr><td colspan="8" class="text-center">ยังไม่พร้อม (รอทำ GS/DB)</td></tr>';
-      $('leaveMobileList').innerHTML = '<div class="helper">ยังไม่พร้อม (รอทำ GS/DB)</div>';
+      console.error(err);
+      $('leaveHint').textContent = 'โหลดรายการลาไม่สำเร็จ: ' + err.message;
+      $('leaveTableBody').innerHTML = '<tr><td colspan="9" class="text-center">โหลดไม่สำเร็จ</td></tr>';
+      $('leaveMobileList').innerHTML = '<div class="helper">โหลดไม่สำเร็จ</div>';
     }
   }
 
-  // โครงอนุมัติ/ไม่อนุมัติ (ผูก API ทีหลัง)
+  async function updateLeaveStatus(id, statusEN){
+    if(!id) throw new Error('ไม่พบ id ใบลา');
+
+    // ใส่หมายเหตุได้ (optional)
+    const remark = prompt(
+      (statusEN === 'APPROVED' ? 'อนุมัติใบลา' : 'ไม่อนุมัติใบลา') + '\nใส่หมายเหตุ (ปล่อยว่างได้):',
+      ''
+    ) ?? '';
+
+    const statusTH = statusToThaiChip(statusEN);
+
+    // ส่งหลายฟิลด์ เผื่อฝั่ง GS รับชื่อใดชื่อหนึ่ง
+    const payload = {
+      id,
+      leaveId: id,
+      requestId: id,
+      status: statusEN,
+      statusEN,
+      statusTH,
+      newStatus: statusEN,
+      new_status: statusEN,
+      decision: statusEN,
+      remark,
+      note: remark,
+      adminRemark: remark,
+      approvedRemark: remark,
+      rejectedRemark: remark,
+    };
+
+    // ถ้าฝั่ง server แยก action อนุมัติ/ปฏิเสธ ให้ลองด้วย
+    // แต่เราจะให้ callLeaveUpdate ไปลองเอง
+    const { action } = await callLeaveUpdate(payload);
+    return action;
+  }
+
   window.approveLeave = async function(id){
-    alert('โครงปุ่มอนุมัติ ✅ เดี๋ยวไปทำ GS/DB ตอนทำ leave.html');
+    try{
+      if(!confirm('ยืนยัน “อนุมัติ” ใบลานี้?')) return;
+      const act = await updateLeaveStatus(id, 'APPROVED');
+      alert('อนุมัติสำเร็จ ✅ (action: ' + act + ')');
+      await reloadLeave();
+    }catch(err){
+      alert('อนุมัติไม่สำเร็จ: ' + err.message);
+    }
   };
+
   window.rejectLeave = async function(id){
-    alert('โครงปุ่มไม่อนุมัติ ✅ เดี๋ยวไปทำ GS/DB ตอนทำ leave.html');
+    try{
+      if(!confirm('ยืนยัน “ไม่อนุมัติ” ใบลานี้?')) return;
+      const act = await updateLeaveStatus(id, 'REJECTED');
+      alert('ไม่อนุมัติสำเร็จ ✅ (action: ' + act + ')');
+      await reloadLeave();
+    }catch(err){
+      alert('ไม่อนุมัติไม่สำเร็จ: ' + err.message);
+    }
   };
 
   // ===== Settings =====
@@ -1802,7 +2073,6 @@
     }
 
     try{
-      // ✅ ไม่มี photoBase64 แล้ว (ให้ UI โล่ง)
       await api.call('saveEmployee', {
         id: editingEmpId || '',
         code, fullName, branch, level, email,
@@ -1851,19 +2121,15 @@
     try{
       setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
 
-      // เตรียม selects
       fillYearMonthSelect($('logYearFilter'), $('logMonthFilter'));
       fillYearMonthSelect($('sumYearFilter'), $('sumMonthFilter'));
       fillYearMonthSelect($('leaveYearFilter'), $('leaveMonthFilter'));
 
-      // โหลด branch/level (เพื่อ filters)
       await loadBranchesLevels();
 
-      // โหลด dashboard + employees (ของหลัก)
       await loadDashboard();
       await loadEmployees();
 
-      // โหลดแท็บที่เปิดอยู่ (เพื่อให้แน่ใจ)
       await refreshCurrentSection(getActiveSection(), true);
 
       setLastUpdated();
@@ -1876,9 +2142,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    // sidebar click
     document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => switchSection(el.dataset.section)));
-    // bottom nav click
     document.querySelectorAll('.bottom-item').forEach(el => el.addEventListener('click', () => switchSection(el.dataset.section)));
 
     $('btnBackToFront').addEventListener('click', () => window.location.href = 'index.html');
