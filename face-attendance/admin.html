@@ -492,7 +492,7 @@
     </nav>
 
     <div class="sidebar-footer">
-      <div>TIP: ตั้งค่า URL ที่หน้าแรก แล้วจึงเข้าหน้า Admin</div>
+      <div id="adminMiniText">TIP: ตั้งค่า URL ที่หน้าแรก แล้วจึงเข้าหน้า Admin</div>
       <button class="btn btn-ghost" id="btnBackToFront">กลับหน้าแรก</button>
       <button class="btn btn-danger" id="btnLogout">ออกจากระบบ</button>
     </div>
@@ -503,7 +503,7 @@
       <div class="topbar-left">
         <div class="topbar-title">แผงควบคุมระบบลงเวลา</div>
         <div class="topbar-sub">
-          <span>Admin Panel</span>
+          <span id="adminNameText">Admin Panel</span>
           <span> | </span>
           <span id="apiUrlDisplay" title="แตะเพื่อคัดลอก URL"></span>
           <span class="tiny" id="lastUpdatedText">• อัปเดตล่าสุด: -</span>
@@ -583,7 +583,7 @@
               <div>
                 <div class="card-title"><span class="icon">👥</span>พนักงาน</div>
                 <div class="card-subtitle">
-                  ✅ เหลือแค่สถานะ “มีใบหน้า/ไม่มีใบหน้า”
+                  ✅ แสดงสถานะ “มีใบหน้า/ไม่มีใบหน้า”
                 </div>
               </div>
 
@@ -738,8 +738,12 @@
               <div>
                 <div class="card-title"><span class="icon">📝</span>ตรวจสอบการลา</div>
                 <div class="card-subtitle">
-                  ถ้า action ใน GS ของคุณไม่ตรง → ใส่ “Action ที่ใช้จริง” ใน Advanced แล้วบันทึก ✅
+                  ✅ โหมด “เดา action อัตโนมัติ + จำ action ที่เคยใช้ได้” (เหมือน leave.html)
                 </div>
+              </div>
+
+              <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <button class="btn btn-secondary" id="btnOpenLeaveStandalone">เปิด leave.html</button>
               </div>
             </div>
 
@@ -773,15 +777,15 @@
             <div id="leaveHint" class="helper mt-10"></div>
 
             <details class="adv">
-              <summary>⚙️ Advanced: ตั้งชื่อ Action (ถ้าหน้านี้ไม่ขึ้นข้อมูล แต่ leave.html ขึ้น)</summary>
+              <summary>⚙️ Advanced: ตั้งชื่อ Action เอง (กรณี GS ใช้ชื่อเฉพาะ)</summary>
               <div class="mt-10 grid-2">
                 <div>
-                  <div class="helper">Action “ดึงรายการลา” (ตัวอย่าง: getLeaveHistoryAll หรือ listLeaves)</div>
-                  <input id="leaveListActionCustom" class="input" placeholder="ใส่ชื่อ action ที่ใช้จริง" />
+                  <div class="helper">Action “ดึงรายการลา”</div>
+                  <input id="leaveListActionCustom" class="input" placeholder="เช่น getLeaveHistoryAll / listLeaves" />
                 </div>
                 <div>
-                  <div class="helper">Action “อัปเดตสถานะลา” (ตัวอย่าง: updateLeaveStatus หรือ approveLeave)</div>
-                  <input id="leaveUpdateActionCustom" class="input" placeholder="ใส่ชื่อ action ที่ใช้จริง" />
+                  <div class="helper">Action “อัปเดตสถานะลา”</div>
+                  <input id="leaveUpdateActionCustom" class="input" placeholder="เช่น updateLeaveStatus / approveLeave" />
                 </div>
               </div>
               <div class="mt-10" style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -789,7 +793,7 @@
                 <button class="btn btn-secondary" id="btnClearLeaveActions">ล้างค่า</button>
               </div>
               <div class="helper mt-8">
-                * ถ้าไม่รู้ชื่อ action: เปิดไฟล์ leave.html แล้วค้นคำว่า <b>action:</b> หรือ <b>URLSearchParams({ action</b> แล้วเอาชื่อมาใส่ตรงนี้
+                * ถ้าไม่รู้ชื่อ action: เปิดไฟล์ leave.html แล้วค้นคำว่า <b>action:</b> หรือ <b>URLSearchParams({ action</b>
               </div>
             </details>
 
@@ -963,10 +967,49 @@
   </div>
 </div>
 
+<!-- MODAL: LOGIN (รองรับ loginAdmin ถ้า GS มี) -->
+<div class="modal-backdrop" id="loginModalBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle" style="max-width:520px;">
+    <div class="modal-header">
+      <div style="min-width:0;">
+        <div class="modal-title" id="loginModalTitle">🔐 เข้าสู่ระบบแอดมิน</div>
+        <div class="modal-sub" id="loginModalSub">กรอกข้อมูลเพื่อใช้งาน Admin</div>
+      </div>
+      <button class="btn btn-secondary btn-small" id="btnCloseLogin" type="button">ปิด</button>
+    </div>
+    <div class="modal-body">
+      <div class="grid-2">
+        <div>
+          <div class="helper">ผู้ใช้ (ถ้า GS ใช้)</div>
+          <input id="loginUser" class="input" placeholder="เช่น admin" autocomplete="username" />
+        </div>
+        <div>
+          <div class="helper">รหัสผ่าน</div>
+          <input id="loginPass" class="input" placeholder="••••••••" type="password" autocomplete="current-password" />
+        </div>
+      </div>
+      <div class="helper mt-10">
+        * ถ้า GS ของคุณ “ไม่ต้องล็อกอิน” หน้านี้จะไม่เด้งเอง
+      </div>
+      <div id="loginError" class="error-text" style="display:none;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btnClearToken" type="button">ล้าง Token</button>
+      <button class="btn btn-primary" id="btnDoLogin" type="button">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const STORAGE_KEY = 'attendance_api_url_v2';
+
+  // จำ action leave + custom (เหมือน leave.html)
   const STORAGE_LEAVE_ACTIONS_KEY = 'attendance_leave_actions_v1';
   const STORAGE_LEAVE_CUSTOM_KEY = 'attendance_leave_actions_custom_v1';
+
+  // token admin (ถ้า GS มี loginAdmin)
+  const STORAGE_ADMIN_TOKEN_KEY = 'attendance_admin_token_v1';
+  const STORAGE_ADMIN_NAME_KEY  = 'attendance_admin_name_v1';
 
   function $(id){ return document.getElementById(id); }
 
@@ -976,13 +1019,31 @@
     else localStorage.setItem(STORAGE_KEY, url);
   }
 
+  function getAdminToken(){ return localStorage.getItem(STORAGE_ADMIN_TOKEN_KEY) || ''; }
+  function setAdminToken(t){
+    if(!t) localStorage.removeItem(STORAGE_ADMIN_TOKEN_KEY);
+    else localStorage.setItem(STORAGE_ADMIN_TOKEN_KEY, t);
+  }
+  function getAdminName(){ return localStorage.getItem(STORAGE_ADMIN_NAME_KEY) || ''; }
+  function setAdminName(n){
+    if(!n) localStorage.removeItem(STORAGE_ADMIN_NAME_KEY);
+    else localStorage.setItem(STORAGE_ADMIN_NAME_KEY, n);
+  }
+
   // ====== API wrapper (รองรับ Abort + callFirst) ======
   const api = {
     async call(action, params = {}, opts = {}){
       const apiUrl = getApiUrl();
       if(!apiUrl) throw new Error('ยังไม่ได้ตั้งค่า URL API');
 
-      const body = new URLSearchParams({ action, ...params }).toString();
+      // แนบ token ไปด้วย "เสมอ" (ถ้าไม่มี ก็ไม่เป็นไร)
+      const token = getAdminToken();
+      const body = new URLSearchParams({
+        action,
+        ...params,
+        ...(token ? { token, adminToken: token, sessionToken: token } : {})
+      }).toString();
+
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8' },
@@ -997,7 +1058,13 @@
         console.error('API response is not JSON:', text);
         throw new Error('API ส่งผลลัพธ์ไม่ใช่ JSON (เช็คว่า URL ลงท้ายด้วย /exec แล้วหรือยัง)');
       }
-      if(!data.ok) throw new Error(data.error || 'ไม่ทราบสาเหตุจากเซิร์ฟเวอร์');
+      if(!data.ok){
+        // ถ้า GS ตอบแนว “ต้องล็อกอิน” ให้เราจับไปเด้ง login modal ได้
+        const em = data.error || 'ไม่ทราบสาเหตุจากเซิร์ฟเวอร์';
+        const err = new Error(em);
+        err._server = data;
+        throw err;
+      }
       return data.result;
     },
 
@@ -1031,7 +1098,7 @@
   let refreshInFlight = false;
   let refreshAbort = null;
 
-  // ปรับได้: 60s = ไม่รัว (ตามที่ขอ)
+  // ปรับได้: 60s
   const AUTO_REFRESH_MS = 60000;
 
   function escHtml(s){
@@ -1077,6 +1144,12 @@
     el.dataset.full = url || '';
   }
 
+  function setAdminText(){
+    const name = getAdminName();
+    $('adminNameText').textContent = name ? `Admin: ${name}` : 'Admin Panel';
+    $('adminMiniText').textContent = name ? `ผู้ใช้งาน: ${name}` : 'TIP: ตั้งค่า URL ที่หน้าแรก แล้วจึงเข้าหน้า Admin';
+  }
+
   // ===== URL Card =====
   function openUrlCard(){
     $('inputApiUrl').value = getApiUrl();
@@ -1099,13 +1172,67 @@
     initAdmin(true);
   }
 
+  // ===== Modals =====
+  function openModal(id){
+    const el = $(id);
+    if(!el) return;
+    el.style.display = 'flex';
+    el.setAttribute('aria-hidden','false');
+  }
+  function closeModal(id){
+    const el = $(id);
+    if(!el) return;
+    el.style.display = 'none';
+    el.setAttribute('aria-hidden','true');
+  }
+
+  // ===== Login (ถ้า GS มี action loginAdmin) =====
+  async function tryLoginAdmin(username, password){
+    // รองรับหลายชื่อ param เผื่อ GS ใช้ต่างกัน
+    const res = await api.call('loginAdmin', {
+      username, user: username, admin: username,
+      password, pass: password, pin: password
+    });
+
+    // รูปแบบผลลัพธ์รองรับหลายแบบ
+    const token = res.token || res.adminToken || res.sessionToken || res.accessToken || '';
+    const name = res.name || res.adminName || res.fullName || username || 'Admin';
+
+    if(token){
+      setAdminToken(token);
+      setAdminName(name);
+      setAdminText();
+    }else{
+      // ถ้า GS ไม่มี token แต่ ok ก็ให้ผ่าน
+      setAdminName(name);
+      setAdminText();
+    }
+    return res;
+  }
+
+  function shouldAskLoginByMessage(msg){
+    const s = String(msg || '').toLowerCase();
+    return s.includes('unauthor') || s.includes('permission') || s.includes('login') || s.includes('token')
+      || s.includes('สิทธิ์') || s.includes('เข้าสู่ระบบ') || s.includes('ไม่มีสิทธิ') || s.includes('token');
+  }
+
+  async function ensureLoginIfNeeded(err){
+    // ถ้า error บอกให้ล็อกอิน -> เปิด modal
+    if(err && shouldAskLoginByMessage(err.message)){
+      openModal('loginModalBackdrop');
+      $('loginError').style.display = 'block';
+      $('loginError').textContent = 'ต้องเข้าสู่ระบบก่อนใช้งาน (หรือ token ไม่ถูกต้อง)';
+      return true;
+    }
+    return false;
+  }
+
   // ===== Section nav =====
   function switchSection(section){
     document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
     document.querySelectorAll('.bottom-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
     document.querySelectorAll('.section').forEach(el => el.classList.toggle('active', el.id === 'section-' + section));
 
-    // โหลด 1 ครั้งตอนเข้าแท็บ
     refreshCurrentSection(section, true);
     startAutoRefresh();
   }
@@ -1118,14 +1245,14 @@
   function startAutoRefresh(){
     if(autoTimer) clearInterval(autoTimer);
     autoTimer = setInterval(() => {
-      if(document.visibilityState !== 'visible') return; // หยุดตอนแท็บไม่อยู่หน้าเว็บ
+      if(document.visibilityState !== 'visible') return;
       const cur = getActiveSection();
       refreshCurrentSection(cur, true, true);
     }, AUTO_REFRESH_MS);
   }
 
   async function refreshCurrentSection(section, silent=false, isAuto=false){
-    if(refreshInFlight) return; // กันยิงรัว/ซ้อน
+    if(refreshInFlight) return;
     refreshInFlight = true;
 
     if(refreshAbort) refreshAbort.abort();
@@ -1152,6 +1279,10 @@
       if(err.name === 'AbortError') return;
       console.error(err);
       setConnectionStatus(false, 'เชื่อมต่อผิดพลาด');
+
+      const asked = await ensureLoginIfNeeded(err);
+      if(asked) return;
+
       if(!silent) alert('รีเฟรชไม่สำเร็จ: ' + err.message);
     }finally{
       refreshInFlight = false;
@@ -1282,7 +1413,6 @@
   }
 
   function fillYearMonthSelect(yearSel, monthSel){
-    // *** value = พ.ศ. เพื่อให้เข้ากับหน้า leave ที่คุณใช้ (แก้จุดนี้ให้ชัวร์) ***
     const now = new Date();
     const curYearAD = now.getFullYear();
     const yearsAD = [curYearAD-1, curYearAD, curYearAD+1];
@@ -1384,9 +1514,38 @@
     }).join('');
   }
 
+  // ========== โหลด initial data แบบ “ตรง GS” (ถ้ามี getInitialData) ==========
+  async function loadInitialData(opts={}){
+    // ถ้า GS ไม่มี action นี้ ก็จะ catch แล้วไปโหลดแบบเดิม
+    const init = await api.call('getInitialData', {}, opts);
+    // รองรับหลายรูปแบบ key
+    employees = init.employees || init.employeeList || init.emp || employees || [];
+    branches  = init.branches  || init.branchList  || init.departments || branches || [];
+    levels    = init.levels    || init.levelList   || init.positions   || levels || [];
+
+    // ถ้า branches/levels เป็น array ของ string ให้แปลงเป็น {name}
+    if(branches.length && typeof branches[0] === 'string') branches = branches.map(x => ({ name: x }));
+    if(levels.length && typeof levels[0] === 'string') levels = levels.map(x => ({ name: x }));
+
+    renderBranchLevelSelects();
+    renderBranchesLevelsTables();
+    renderEmployeesTable();
+
+    $('statTotalEmployees').textContent = String(employees.length);
+    return init;
+  }
+
   async function loadEmployees(opts={}){
     $('empTableBody').innerHTML = '<tr><td colspan="6" class="text-center">กำลังโหลด...</td></tr>';
     $('empMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
+
+    // พยายามใช้ getInitialData ก่อน เพื่อให้ “ตรง GS”
+    try{
+      await loadInitialData(opts);
+      return;
+    }catch(e){
+      // fall back
+    }
 
     employees = await api.call('getEmployees', {}, opts);
     renderEmployeesTable();
@@ -1403,16 +1562,26 @@
     const month = now.getMonth() + 1;
     const yearAD = now.getFullYear();
 
-    const [empRes, todaySummary, monthSummary] = await Promise.all([
-      api.call('getEmployees', {}, opts),
+    // ดึง employee จาก getInitialData ถ้าได้ จะช่วยให้ “ตรง GS”
+    let empRes = null;
+    try{
+      const init = await api.call('getInitialData', {}, opts);
+      empRes = init.employees || init.employeeList || null;
+      if(empRes && Array.isArray(empRes)) employees = empRes;
+    }catch(e){
+      // ignore
+    }
+
+    const [todaySummary, monthSummary] = await Promise.all([
       api.call('getTodaySummary', {}, opts),
       api.call('getSummaryRange', { year: yearAD, month, branch:'ALL' }, opts),
     ]);
 
-    employees = empRes || employees;
-    $('statTotalEmployees').textContent = String(employees.length);
+    if(employees && Array.isArray(employees)){
+      $('statTotalEmployees').textContent = String(employees.length);
+    }
 
-    // นับ “ลา X คน” แบบปลอดภัย (ถ้า action ลาไม่ตรง ก็ไม่ทำให้หน้าแตก)
+    // นับ “ลา X คน” แบบปลอดภัย
     const leaveCount = await safeGetLeaveCountForMonth({ yearBE, yearAD, month, signal: opts.signal });
 
     renderDashboard(todaySummary || [], monthSummary || { rows:[] }, leaveCount);
@@ -1641,7 +1810,7 @@
   }
 
   // =========================================================
-  // ===================== LEAVE (แก้ให้ใช้ได้จริง) ==========
+  // ===================== LEAVE (ให้ 100% แบบ leave.html) ===
   // =========================================================
   function getLeaveActionsCache(){
     try{ return JSON.parse(localStorage.getItem(STORAGE_LEAVE_ACTIONS_KEY) || '{}') || {}; }
@@ -1667,6 +1836,7 @@
     if(up === 'APPROVED' || raw === 'อนุมัติ') return 'APPROVED';
     if(up === 'REJECTED' || raw.includes('ไม่อนุมัติ') || raw.includes('ปฏิเสธ')) return 'REJECTED';
     if(raw.includes('ยกเลิก') || up === 'CANCELLED' || up === 'CANCELED') return 'CANCELLED';
+    if(up === 'ALL' || raw === 'ทั้งหมด') return 'ALL';
     return up || raw;
   }
 
@@ -1725,11 +1895,14 @@
     return r.attachUrl || r.attachmentUrl || r.fileUrl || r.evidenceUrl || r.photoUrl || r.file || r.attach || '';
   }
 
-  // เพิ่มชุดเดาให้กว้างขึ้น (เผื่อ GS ของคุณใช้ชื่อแปลก)
+  // ชุดเดา action (กว้าง ๆ) + จำ action ที่ใช้ได้
   const LEAVE_LIST_ACTIONS = [
+    // ชื่อที่เจอบ่อย
     'getLeaveRequests','getLeaveHistory','getLeaveHistoryAll','listLeaveRequests','listLeaves',
     'getLeaves','getLeaveList','getLeaveAdmin','getLeaveAdminList','getLeaveRequestsAll',
+    // เผื่อ namespace
     'leave_list','leave_getHistory','leave_getHistoryAll','leave_getRequests','leave_getAll',
+    // เผื่อ filter range
     'getLeavesRange','getLeaveRange','leave_getRange'
   ];
 
@@ -1749,6 +1922,7 @@
     const statusEN = leaveStatus;
     const statusTH = statusToThaiChip(leaveStatus);
 
+    // ส่งให้ครบทั้ง BE/AD + หลายชื่อ param เพื่อให้ “ตรง GS ที่ทำไว้” ไม่ว่าจะตั้งชื่อยังไง
     return {
       year: yearBE, yearBE, yearAD,
       month, branch, search,
@@ -1906,7 +2080,11 @@
       renderLeave(result);
     }catch(err){
       console.error(err);
-      $('leaveHint').textContent = 'โหลดรายการลาไม่สำเร็จ: ' + err.message;
+
+      const asked = await ensureLoginIfNeeded(err);
+      if(asked) return;
+
+      $('leaveHint').textContent = 'โหลดรายการลาไม่สำเร็จ: ' + err.message + ' (แนะนำ: กดเปิด leave.html หรือใส่ Action ใน Advanced)';
       $('leaveTableBody').innerHTML = '<tr><td colspan="9" class="text-center">โหลดไม่สำเร็จ</td></tr>';
       $('leaveMobileList').innerHTML = '<div class="helper">โหลดไม่สำเร็จ</div>';
     }
@@ -1922,18 +2100,23 @@
 
     const statusTH = statusToThaiChip(statusEN);
 
+    // payload “กว้าง” ให้ตรง GS ที่ทำไว้ได้หลายรูปแบบ
     const payload = {
       id,
       leaveId: id,
       requestId: id,
+
       status: statusEN,
       statusEN,
       statusTH,
+
       newStatus: statusEN,
       new_status: statusEN,
       decision: statusEN,
+
       approved: statusEN === 'APPROVED',
       rejected: statusEN === 'REJECTED',
+
       remark,
       note: remark,
       adminRemark: remark,
@@ -1952,6 +2135,8 @@
       alert('อนุมัติสำเร็จ ✅ (action: ' + act + ')');
       await reloadLeave();
     }catch(err){
+      const asked = await ensureLoginIfNeeded(err);
+      if(asked) return;
       alert('อนุมัติไม่สำเร็จ: ' + err.message);
     }
   };
@@ -1963,6 +2148,8 @@
       alert('ไม่อนุมัติสำเร็จ ✅ (action: ' + act + ')');
       await reloadLeave();
     }catch(err){
+      const asked = await ensureLoginIfNeeded(err);
+      if(asked) return;
       alert('ไม่อนุมัติไม่สำเร็จ: ' + err.message);
     }
   };
@@ -1992,9 +2179,20 @@
   }
 
   async function loadBranchesLevels(opts={}){
+    // พยายามใช้ getInitialData ก่อน (ตรง GS)
+    try{
+      await loadInitialData(opts);
+      return;
+    }catch(e){
+      // fallback
+    }
+
     const bl = await api.call('getBranchesLevels', {}, opts);
     branches = bl.branches || [];
     levels   = bl.levels || [];
+    if(branches.length && typeof branches[0] === 'string') branches = branches.map(x => ({ name: x }));
+    if(levels.length && typeof levels[0] === 'string') levels = levels.map(x => ({ name: x }));
+
     renderBranchLevelSelects();
     renderBranchesLevelsTables();
   }
@@ -2008,6 +2206,8 @@
       $('settingsSuccess').style.display = 'block';
       $('settingsError').style.display = 'none';
     }catch(err){
+      const asked = await ensureLoginIfNeeded(err);
+      if(asked) return;
       $('settingsError').textContent = 'ลบแผนกไม่สำเร็จ: ' + err.message;
       $('settingsError').style.display = 'block';
       $('settingsSuccess').style.display = 'none';
@@ -2023,6 +2223,8 @@
       $('settingsSuccess').style.display = 'block';
       $('settingsError').style.display = 'none';
     }catch(err){
+      const asked = await ensureLoginIfNeeded(err);
+      if(asked) return;
       $('settingsError').textContent = 'ลบระดับไม่สำเร็จ: ' + err.message;
       $('settingsError').style.display = 'block';
       $('settingsSuccess').style.display = 'none';
@@ -2047,6 +2249,8 @@
       sucEl.textContent = 'เพิ่มแผนกสำเร็จ';
       sucEl.style.display = 'block';
     }catch(err){
+      const asked = await ensureLoginIfNeeded(err);
+      if(asked) return;
       errEl.textContent = 'เพิ่มแผนกไม่สำเร็จ: ' + err.message;
       errEl.style.display = 'block';
     }
@@ -2070,25 +2274,14 @@
       sucEl.textContent = 'เพิ่มระดับสำเร็จ';
       sucEl.style.display = 'block';
     }catch(err){
+      const asked = await ensureLoginIfNeeded(err);
+      if(asked) return;
       errEl.textContent = 'เพิ่มระดับไม่สำเร็จ: ' + err.message;
       errEl.style.display = 'block';
     }
   }
 
   // ===== Employee modal =====
-  function openModal(id){
-    const el = $(id);
-    if(!el) return;
-    el.style.display = 'flex';
-    el.setAttribute('aria-hidden','false');
-  }
-  function closeModal(id){
-    const el = $(id);
-    if(!el) return;
-    el.style.display = 'none';
-    el.setAttribute('aria-hidden','true');
-  }
-
   function resetEmpForm(keepMsg){
     editingEmpId = null;
     $('empModalTitle').textContent = '👤 เพิ่มพนักงาน';
@@ -2162,6 +2355,8 @@
         resetEmpForm(false);
       }, 250);
     }catch(err){
+      const asked = await ensureLoginIfNeeded(err);
+      if(asked) return;
       errEl.textContent = 'บันทึกไม่สำเร็จ: ' + err.message;
       errEl.style.display = 'block';
     }
@@ -2177,6 +2372,8 @@
       await loadEmployees();
       alert('ลบพนักงานสำเร็จ');
     }catch(err){
+      const asked = await ensureLoginIfNeeded(err);
+      if(asked) return;
       alert('ลบไม่สำเร็จ: ' + err.message);
     }
   };
@@ -2185,6 +2382,7 @@
   async function initAdmin(force=false){
     const apiUrl = getApiUrl();
     setApiText(apiUrl);
+    setAdminText();
 
     if(!apiUrl){
       setConnectionStatus(false, 'ยังไม่ได้ตั้งค่า URL');
@@ -2192,20 +2390,24 @@
     }
 
     try{
-      setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
-
       fillYearMonthSelect($('logYearFilter'), $('logMonthFilter'));
       fillYearMonthSelect($('sumYearFilter'), $('sumMonthFilter'));
       fillYearMonthSelect($('leaveYearFilter'), $('leaveMonthFilter'));
 
+      // โหลด data (ตรง GS ก่อน)
       await loadBranchesLevels();
       await refreshCurrentSection(getActiveSection(), true);
 
       setLastUpdated();
+      setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
       startAutoRefresh();
     }catch(err){
       console.error(err);
       setConnectionStatus(false, err.message);
+
+      const asked = await ensureLoginIfNeeded(err);
+      if(asked) return;
+
       alert('เชื่อมต่อ API ไม่สำเร็จ: ' + err.message);
     }
   }
@@ -2235,8 +2437,10 @@
 
     $('btnBackToFront').addEventListener('click', () => window.location.href = 'index.html');
     $('btnLogout').addEventListener('click', () => {
-      if(confirm('ต้องการออกจากระบบ (ลบ URL API ที่บันทึกไว้) หรือไม่?')){
+      if(confirm('ต้องการออกจากระบบ (ลบ URL API + Token) หรือไม่?')){
         setApiUrl('');
+        setAdminToken('');
+        setAdminName('');
         window.location.href = 'index.html';
       }
     });
@@ -2311,9 +2515,48 @@
       await reloadLeave();
     });
 
+    // เปิด leave.html (standalone) เผื่ออยากเทียบ/ใช้งานตรง ๆ
+    $('btnOpenLeaveStandalone').addEventListener('click', () => {
+      // ไม่บังคับส่ง param เพราะเราเก็บ URL ใน localStorage เหมือนกัน
+      window.location.href = 'leave.html';
+    });
+
     // settings
     $('btnAddBranch').addEventListener('click', addBranch);
     $('btnAddLevel').addEventListener('click', addLevel);
+
+    // login modal events
+    $('btnCloseLogin').addEventListener('click', () => closeModal('loginModalBackdrop'));
+    $('loginModalBackdrop').addEventListener('click', (e) => { if(e.target === $('loginModalBackdrop')) closeModal('loginModalBackdrop'); });
+
+    $('btnClearToken').addEventListener('click', () => {
+      setAdminToken('');
+      setAdminName('');
+      setAdminText();
+      alert('ล้าง Token แล้ว ✅');
+    });
+
+    $('btnDoLogin').addEventListener('click', async () => {
+      const u = ($('loginUser').value || '').trim();
+      const p = ($('loginPass').value || '').trim();
+      $('loginError').style.display = 'none';
+
+      if(!p){
+        $('loginError').style.display = 'block';
+        $('loginError').textContent = 'กรุณากรอกรหัสผ่าน';
+        return;
+      }
+
+      try{
+        await tryLoginAdmin(u, p);
+        closeModal('loginModalBackdrop');
+        await initAdmin(true);
+        alert('เข้าสู่ระบบสำเร็จ ✅');
+      }catch(err){
+        $('loginError').style.display = 'block';
+        $('loginError').textContent = 'เข้าสู่ระบบไม่สำเร็จ: ' + err.message;
+      }
+    });
 
     // pause/resume auto refresh when tab hidden/visible
     document.addEventListener('visibilitychange', () => {
