@@ -323,6 +323,7 @@
           <span class="tag" id="empBranchTag">แผนก: -</span>
           <span class="tag" id="empLevelTag">ระดับ: -</span>
           <span class="pill" id="empCodeTag">รหัส: -</span>
+          <span class="pill" id="modeTag" title="โหมดการทำงานของหน้า Leave">MODE: -</span>
         </div>
       </div>
 
@@ -334,7 +335,10 @@
       <div class="card-header">
         <div>
           <div class="card-title"><span class="icon">🧾</span>จัดการใบลา</div>
-          <div class="card-sub">สลับแท็บ/กดรีเฟรช = ดึงสถานะล่าสุด • แก้ไข/ยกเลิกได้เฉพาะ “รอดำเนินการ”</div>
+          <div class="card-sub">
+            รองรับ 2 โหมดอัตโนมัติ:
+            <b>LEAVE-API</b> (ถ้า GS มี action ใบลา) หรือ <b>FALLBACK</b> (บันทึกผ่าน Logs/ManualLog)
+          </div>
         </div>
         <div class="tabs">
           <div class="tab active" data-tab="submit">ยื่นใบลา</div>
@@ -361,7 +365,7 @@
           <div class="card-header" style="margin-bottom:6px;">
             <div>
               <div class="card-title"><span class="icon">📌</span>สถานะล่าสุดของฉัน</div>
-              <div class="card-sub">ดูได้เลยว่าใบลาของคุณ “อนุมัติ/ไม่อนุมัติ/รอดำเนินการ” (ดึงจากประวัติ)</div>
+              <div class="card-sub">ดึงจาก “ประวัติ” (และทำงานได้ทั้ง 2 โหมด)</div>
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <button class="btn btn-secondary btn-small" id="btnRefreshLatest">รีเฟรชสถานะ</button>
@@ -417,7 +421,6 @@
               </select>
             </div>
 
-            <!-- ✅ แสดงตลอด แต่ disabled จนกว่าจะเลือก CUSTOM -->
             <div id="hourlyCustomWrap">
               <div class="helper">ชั่วโมง (กำหนดเอง)</div>
               <input class="input" id="hourlyCustomHours" type="number" min="0.5" step="0.5" placeholder="เช่น 1.5" disabled />
@@ -442,7 +445,7 @@
           <div class="card-header" style="margin-bottom:6px;">
             <div>
               <div class="card-title"><span class="icon">🌓</span>รายละเอียดครึ่งวัน</div>
-              <div class="card-sub">ครึ่งวัน = เข้า 13:00 (ลง t3) ตามโลจิคที่คุณวาง</div>
+              <div class="card-sub">ครึ่งวัน = เข้า 13:00 (ลง t3) ตามโลจิคเดิม</div>
             </div>
           </div>
 
@@ -497,7 +500,6 @@
           <input class="input" id="evidenceFile" type="file" accept="image/*,application/pdf" />
           <div class="helper mt-8" id="evidenceHint">* ถ้าเลือก “ลาป่วย (มีใบรับรองแพทย์)” จะบังคับแนบไฟล์</div>
 
-          <!-- ✅ ตอนแก้ไข: ถ้ามีไฟล์เดิม จะโชว์ตรงนี้ -->
           <div id="existingEvidenceRow" class="mt-10 hide">
             <div class="helper">ไฟล์แนบเดิม</div>
             <div class="tag" id="existingEvidenceTag">-</div>
@@ -515,7 +517,7 @@
           <div class="card-header" style="margin-bottom:6px;">
             <div>
               <div class="card-title"><span class="icon">✅</span>สรุปก่อนยืนยัน</div>
-              <div class="card-sub">ส่งแล้วจะเป็น “รอดำเนินการ” และสามารถแก้ไข/ยกเลิกได้จนกว่า Admin จะอนุมัติ</div>
+              <div class="card-sub">ส่งแล้วจะเป็น “รอดำเนินการ” • แก้ไข/ยกเลิกได้จนกว่าจะถูกเปลี่ยนสถานะ</div>
             </div>
           </div>
 
@@ -592,9 +594,19 @@
 </main>
 
 <script>
+  // =========================================
+  // CONFIG
+  // =========================================
   const STORAGE_KEY = 'attendance_api_url_v2';
   const $ = (id) => document.getElementById(id);
 
+  // Prefix สำหรับ FALLBACK ที่จะเขียนลง Logs ผ่าน saveManualLog
+  // รูปแบบ note:  LEAVE|<requestId>|<status>|<json>
+  const FB_PREFIX = 'LEAVE|';
+
+  // =========================================
+  // Small utils
+  // =========================================
   function getApiUrl(){ return localStorage.getItem(STORAGE_KEY) || ''; }
   function setApiUrl(url){
     if(!url) localStorage.removeItem(STORAGE_KEY);
@@ -629,12 +641,15 @@
     }
   }
 
-  function setLastUpdated(){
+  function nowHMS(){
     const d = new Date();
     const hh = String(d.getHours()).padStart(2,'0');
     const mm = String(d.getMinutes()).padStart(2,'0');
     const ss = String(d.getSeconds()).padStart(2,'0');
-    $('lastUpdated').textContent = `• อัปเดตล่าสุด: ${hh}:${mm}:${ss}`;
+    return `${hh}:${mm}:${ss}`;
+  }
+  function setLastUpdated(){
+    $('lastUpdated').textContent = `• อัปเดตล่าสุด: ${nowHMS()}`;
   }
 
   function setConn(online, msg){
@@ -649,32 +664,94 @@
     }
   }
 
+  function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+  function makeRequestId(){
+    const t = Date.now();
+    const r = Math.random().toString(16).slice(2,8).toUpperCase();
+    return `${t}-${r}`;
+  }
+
+  function toISODate(d){
+    // d = Date
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function monthRange(year, month){
+    // month: 1..12
+    const y = Number(year);
+    const m = Number(month);
+    const start = new Date(y, m-1, 1);
+    const end = new Date(y, m, 0); // last day
+    return { start: toISODate(start), end: toISODate(end) };
+  }
+
+  function dataUrlParts(dataUrl){
+    // returns { mime, base64 }
+    if(!dataUrl) return { mime:'', base64:'' };
+    const m = String(dataUrl).match(/^data:([^;]+);base64,(.+)$/);
+    if(!m) return { mime:'', base64:'' };
+    return { mime: m[1] || '', base64: m[2] || '' };
+  }
+
+  // =========================================
+  // API call (รองรับ doPost router แบบ {action,...} -> {ok,result})
+  // =========================================
   const api = {
     async call(action, params = {}){
       const apiUrl = getApiUrl();
       if(!apiUrl) throw new Error('ยังไม่ได้ตั้งค่า URL API');
+
+      // ส่งเผื่อหลายแบบ: json + flat keys (GS จะเลือกใช้เอง/ignore)
       const body = new URLSearchParams({ action, ...params }).toString();
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8' },
         body
       });
+
       const text = await res.text();
       let data;
       try{ data = JSON.parse(text); }
       catch(e){
-        console.error(text);
+        console.error('NON-JSON:', text);
         throw new Error('API ส่งผลลัพธ์ไม่ใช่ JSON (เช็ค URL /exec หรือ GS)');
       }
       if(!data.ok) throw new Error(data.error || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
       return data.result;
+    },
+
+    async tryCall(actionList, params){
+      let lastErr = null;
+      for(const action of actionList){
+        try{
+          const r = await this.call(action, params);
+          return { ok:true, actionUsed: action, result: r };
+        }catch(e){
+          lastErr = e;
+          const msg = String(e?.message || '');
+          // ถ้าเป็น action ไม่รู้จัก ให้ลองตัวถัดไป
+          const unknown = /unknown action|not found|no such action|ไม่พบ action|action/i.test(msg);
+          if(!unknown){
+            // ถ้าไม่ใช่ unknown action (เช่น permission/logic error) ให้หยุดทันที
+            return { ok:false, actionUsed: action, error: e };
+          }
+        }
+      }
+      return { ok:false, actionUsed: '', error: (lastErr || new Error('เรียก API ไม่สำเร็จ')) };
     }
   };
 
-  // ===== State =====
+  // =========================================
+  // State
+  // =========================================
   let emp = null;
 
-  let evidenceBase64 = '';
+  // evidence
+  let evidenceDataUrl = '';
   let evidenceName = '';
   let evidenceMime = '';
 
@@ -687,10 +764,20 @@
     status: ''
   };
 
+  // Cache initialData (สำหรับ fallback โหลดพนักงาน)
+  let initialDataCache = null;
+
+  // Mode detection
+  // LEAVE-API = GS มี action submitLeaveRequest/getMyLeaveRequests/...
+  // FALLBACK = ใช้ saveManualLog + getLogsRange
+  let MODE = 'AUTO'; // 'LEAVE-API' | 'FALLBACK' | 'AUTO'
+
   let autoTimer = null;
   const AUTO_REFRESH_MS = 25000;
 
-  // ===== UI helpers =====
+  // =========================================
+  // UI helpers
+  // =========================================
   function openUrlCard(){
     $('inputApiUrl').value = getApiUrl();
     $('urlErr').style.display = 'none';
@@ -710,6 +797,10 @@
     el.style.display = 'block';
   }
   function hideOk(id){ $(id).style.display = 'none'; }
+
+  function setModeTag(){
+    $('modeTag').textContent = 'MODE: ' + (MODE === 'AUTO' ? 'AUTO' : MODE);
+  }
 
   function setTab(tab){
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
@@ -733,6 +824,9 @@
     }, AUTO_REFRESH_MS);
   }
 
+  // =========================================
+  // Text mapping
+  // =========================================
   function leaveTypeText(v){
     if(v === 'PERSONAL') return 'ลากิจ';
     if(v === 'SICK_WITH_NOTE') return 'ลาป่วย (มีใบรับรองแพทย์)';
@@ -756,7 +850,9 @@
     return '<span class="status-badge st-unknown">UNKNOWN</span>';
   }
 
-  // ===== Forms behavior =====
+  // =========================================
+  // Forms behavior
+  // =========================================
   function toggleDurationBoxes(){
     const dt = $('durationType').value;
     $('boxHourly').classList.toggle('hide', dt !== 'HOURLY');
@@ -765,9 +861,9 @@
 
     const hint = $('durationHint');
     if(dt === 'HOURLY'){
-      hint.textContent = 'รายชั่วโมง: เหมาะกับ “ลา 1–3 ชม.” และระบบจะนำไปผูกโลจิคลง t1–t4 ใน GS';
+      hint.textContent = 'รายชั่วโมง: เหมาะกับ “ลา 1–3 ชม.”';
     }else if(dt === 'HALF_DAY'){
-      hint.textContent = 'ครึ่งวัน: เข้า 13:00 ลง t3 และสถานะ “ลาครึ่งวัน”';
+      hint.textContent = 'ครึ่งวัน: เข้า 13:00 (t3) ตามโลจิคเดิม';
     }else{
       hint.textContent = 'ทั้งวัน: เลือกช่วงวันเริ่ม–วันจบ เหมาะกับลาหลายวัน';
     }
@@ -789,7 +885,6 @@
     updateSummary();
   }
 
-  // ✅ แสดงช่อง custom ตลอด แต่ enable/disable ตาม dropdown
   function toggleCustomHours(){
     const v = $('hourlyHours').value;
     const input = $('hourlyCustomHours');
@@ -802,7 +897,7 @@
     }else{
       input.disabled = true;
       hint.textContent = '* เลือก “กำหนดเอง” เพื่อกรอกช่องนี้';
-      input.value = ''; // กันสรุปเพี้ยน
+      input.value = '';
     }
     updateSummary();
   }
@@ -831,7 +926,7 @@
   }
 
   function updateSummary(){
-    $('sumEmp').textContent = emp ? `${emp.fullName || '-'} (รหัส ${emp.code || '-'})` : '-';
+    $('sumEmp').textContent = emp ? `${emp.fullName || emp.name || '-'} (รหัส ${emp.code || '-'})` : '-';
     $('sumType').textContent = leaveTypeText($('leaveType').value);
     $('sumDuration').textContent = durationText($('durationType').value);
     $('sumRange').textContent = getRangeText();
@@ -886,10 +981,7 @@
     $('durationType').value = 'HOURLY';
 
     const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth()+1).padStart(2,'0');
-    const dd = String(today.getDate()).padStart(2,'0');
-    const iso = `${yyyy}-${mm}-${dd}`;
+    const iso = toISODate(today);
 
     $('hourlyDate').value = iso;
     $('halfDate').value = iso;
@@ -905,7 +997,7 @@
     $('reason').value = '';
 
     $('evidenceFile').value = '';
-    evidenceBase64 = '';
+    evidenceDataUrl = '';
     evidenceName = '';
     evidenceMime = '';
     $('evidencePreview').classList.add('hide');
@@ -920,7 +1012,9 @@
     updateSummary();
   }
 
-  // ===== Evidence upload (base64) =====
+  // =========================================
+  // Evidence upload (base64)
+  // =========================================
   function readFileAsBase64(file){
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -932,7 +1026,7 @@
 
   async function handleEvidenceChange(){
     const file = $('evidenceFile').files && $('evidenceFile').files[0];
-    evidenceBase64 = '';
+    evidenceDataUrl = '';
     evidenceName = '';
     evidenceMime = '';
     $('evidencePreview').classList.add('hide');
@@ -949,7 +1043,7 @@
     }
 
     const dataUrl = await readFileAsBase64(file);
-    evidenceBase64 = dataUrl;
+    evidenceDataUrl = dataUrl;
     evidenceName = file.name || 'evidence';
     evidenceMime = file.type || '';
 
@@ -963,7 +1057,59 @@
     updateSummary();
   }
 
-  // ===== Employee =====
+  // =========================================
+  // GS compatibility: load initialData (fallback)
+  // =========================================
+  async function ensureInitialData(){
+    if(initialDataCache) return initialDataCache;
+    const r = await api.tryCall(['getInitialData','getInitData','getData'], {});
+    if(!r.ok) throw r.error;
+
+    // รูปแบบที่คาด: { employees:[], branches:[], levels:[] } หรือ { employees:[] } หรือ { result:... }
+    initialDataCache = r.result || {};
+    return initialDataCache;
+  }
+
+  function normalizeEmployee(raw){
+    if(!raw) return null;
+    return {
+      code: String(raw.code || raw.empCode || raw.employeeCode || '').trim(),
+      fullName: raw.fullName || raw.name || raw.empName || raw.employeeName || '',
+      branch: raw.branch || raw.department || raw.branchName || '',
+      level: raw.level || raw.positionLevel || raw.levelName || ''
+    };
+  }
+
+  // =========================================
+  // Mode detection (LEAVE-API vs FALLBACK)
+  // =========================================
+  async function detectMode(){
+    if(MODE !== 'AUTO') return MODE;
+
+    // ทดสอบเบาๆ ว่า GS มี action ใบลาหรือไม่
+    // (ยิงแบบ safe: ถ้า unknown action จะลองต่อ)
+    const probe = await api.tryCall(['getMyLeaveRequests','leave_getMy','getMyLeaves'], {
+      empCode: '0',
+      year: String(new Date().getFullYear()),
+      month: String(new Date().getMonth()+1),
+      status: 'ALL'
+    });
+
+    if(probe.ok){
+      MODE = 'LEAVE-API';
+      setModeTag();
+      return MODE;
+    }
+
+    // ถ้าไม่มี action ใบลา ให้ไป FALLBACK
+    MODE = 'FALLBACK';
+    setModeTag();
+    return MODE;
+  }
+
+  // =========================================
+  // Employee
+  // =========================================
   async function loadEmployee(){
     hideError('empErr'); hideOk('empOk');
 
@@ -974,8 +1120,24 @@
     }
 
     try{
-      const result = await api.call('getEmployeeByCode', { code });
-      emp = result;
+      // 1) ลอง action ตรงๆ ก่อน (บางเวอร์ชันมี getEmployeeByCode)
+      const r1 = await api.tryCall(['getEmployeeByCode','getEmpByCode','employeeByCode'], { code, empCode: code });
+      let e = null;
+      if(r1.ok) e = normalizeEmployee(r1.result);
+
+      // 2) ถ้าไม่มี ให้ fallback ไปดึง initialData แล้วหาใน list
+      if(!e || !e.code){
+        const init = await ensureInitialData();
+        const list = init.employees || init.employeeList || init.Employees || [];
+        const found = list.find(x => String(x.code || x.empCode || x.employeeCode || '').trim() === code);
+        e = normalizeEmployee(found);
+      }
+
+      if(!e || !e.code){
+        throw new Error('ไม่พบรหัสพนักงานนี้ในระบบ');
+      }
+
+      emp = e;
 
       $('empName').value = emp.fullName || '';
       $('empBranchTag').textContent = 'แผนก: ' + (emp.branch || '-');
@@ -983,13 +1145,13 @@
       $('empCodeTag').textContent   = 'รหัส: ' + (emp.code || code);
       $('empInfoRow').style.display = 'block';
 
+      await detectMode();
+
       showOk('empOk', 'ดึงข้อมูลพนักงานสำเร็จ');
       setConn(true, 'เชื่อมต่อสำเร็จ');
-
-      updateSummary();
       setLastUpdated();
 
-      // โหลดสถานะล่าสุดทันที
+      updateSummary();
       loadLatestStatus(true);
     }catch(err){
       emp = null;
@@ -1011,7 +1173,9 @@
     resetForm();
   }
 
-  // ===== Validation & payload =====
+  // =========================================
+  // Validation & payload
+  // =========================================
   function validateBeforeSubmit(){
     hideError('submitErr'); hideOk('submitOk');
 
@@ -1022,11 +1186,9 @@
     const lt = $('leaveType').value;
     const dt = $('durationType').value;
     const reason = ($('reason').value || '').trim();
-
     if(!reason) return 'กรุณากรอกเหตุผลการลา';
 
-    // ถ้าเป็น sick with note: ยอมรับไฟล์เดิมตอนแก้ไขได้
-    const hasEvidenceNow = !!evidenceBase64;
+    const hasEvidenceNow = !!evidenceDataUrl;
     const hasEvidenceOld = !!editing.existingEvidenceUrl || !!editing.existingEvidenceName;
     if(lt === 'SICK_WITH_NOTE' && !(hasEvidenceNow || hasEvidenceOld)){
       return 'ลาป่วย (มีใบรับรองแพทย์) ต้องมีไฟล์แนบ';
@@ -1058,7 +1220,6 @@
       if(e < s) return 'วันที่สิ้นสุดต้องไม่ก่อนวันที่เริ่ม';
     }
 
-    // edit mode: กันแก้ไขถ้า status ไม่ใช่ pending (ฝั่ง GS ต้องเช็คซ้ำ)
     if(editing.on && String(editing.status).toUpperCase() !== 'PENDING'){
       return 'ใบลานี้ไม่อยู่สถานะ “รอดำเนินการ” จึงแก้ไขไม่ได้';
     }
@@ -1070,9 +1231,10 @@
     const lt = $('leaveType').value;
     const dt = $('durationType').value;
 
+    const { mime, base64 } = dataUrlParts(evidenceDataUrl);
+
     const payload = {
-      // edit meta
-      requestId: editing.on ? editing.requestId : '',
+      requestId: editing.on ? (editing.requestId || '') : makeRequestId(),
 
       empCode: emp.code,
       empName: emp.fullName || '',
@@ -1091,13 +1253,14 @@
       halfPart: '',
 
       evidenceName: evidenceName || '',
-      evidenceMime: evidenceMime || '',
-      evidenceBase64: evidenceBase64 || '',
+      evidenceMime: evidenceMime || mime || '',
+      evidenceBase64: evidenceDataUrl || '',      // เผื่อ GS เวอร์ชันเก่าใช้ทั้ง dataURL
+      evidenceBase64Raw: base64 || '',            // เผื่อ GS เวอร์ชันใหม่ใช้ raw base64
 
-      // keep old evidence if no new upload
       existingEvidenceUrl: editing.existingEvidenceUrl || '',
       existingEvidenceName: editing.existingEvidenceName || '',
 
+      status: editing.on ? (editing.status || 'PENDING') : 'PENDING',
       clientTime: new Date().toISOString(),
       summaryText: [leaveTypeText(lt), durationText(dt), getRangeText()].join(' • ')
     };
@@ -1121,45 +1284,242 @@
     return payload;
   }
 
-  async function submitLeave(){
-    const err = validateBeforeSubmit();
-    if(err){
-      showError('submitErr', err);
-      return;
+  // =========================================
+  // LEAVE-API calls (ถ้า GS มี action ใบลา)
+  // =========================================
+  async function leaveApi_submit(payload){
+    const json = JSON.stringify(payload);
+    const r = await api.tryCall(['submitLeaveRequest','leave_submit','submitLeave'], { json });
+    if(!r.ok) throw r.error;
+    return r.result;
+  }
+
+  async function leaveApi_update(payload){
+    const json = JSON.stringify(payload);
+    const r = await api.tryCall(['updateLeaveRequest','leave_update','updateLeave'], { json });
+    if(!r.ok) throw r.error;
+    return r.result;
+  }
+
+  async function leaveApi_cancel(requestId){
+    const r = await api.tryCall(['cancelLeaveRequest','leave_cancel','cancelLeave'], { requestId, id: requestId });
+    if(!r.ok) throw r.error;
+    return r.result;
+  }
+
+  async function leaveApi_list(empCode, year, month, status){
+    const r = await api.tryCall(['getMyLeaveRequests','leave_getMy','getMyLeaves'], { empCode, year, month, status });
+    if(!r.ok) throw r.error;
+    return r.result;
+  }
+
+  // =========================================
+  // FALLBACK: บันทึกเป็น ManualLog note + อ่านจาก LogsRange
+  // =========================================
+  function fb_makeNote(payload){
+    // status เก็บใน note เพื่อให้แก้/ยกเลิกได้จากฝั่งหน้าเว็บ
+    // NOTE: ห้ามยาวเกินไปมากนัก แต่โดยทั่วไป Sheets รับได้เยอะพอ
+    const status = String(payload.status || 'PENDING').toUpperCase();
+    return `${FB_PREFIX}${payload.requestId}|${status}|${JSON.stringify(payload)}`;
+  }
+
+  function fb_parseNote(note){
+    const s = String(note || '');
+    if(!s.startsWith(FB_PREFIX)) return null;
+    const rest = s.slice(FB_PREFIX.length);
+    const parts = rest.split('|');
+    if(parts.length < 3) return null;
+    const requestId = parts[0] || '';
+    const status = parts[1] || 'PENDING';
+    const json = parts.slice(2).join('|'); // กันกรณี json มี '|'
+    try{
+      const payload = JSON.parse(json);
+      return { requestId, status, payload };
+    }catch(e){
+      return { requestId, status, payload: null };
+    }
+  }
+
+  async function fb_writeManualLog(payload){
+    // ใช้ saveManualLog ที่ระบบเดิมมีอยู่
+    // ส่งทั้ง json และฟิลด์ซ้ำๆ เผื่อ GS เขียนคนละแบบ
+    const note = fb_makeNote(payload);
+    const json = JSON.stringify({
+      empCode: payload.empCode,
+      code: payload.empCode,
+      note,
+      // date/time เพื่อให้ admin หาได้ง่าย (แต่ GS จะใช้หรือไม่ใช้ก็ได้)
+      dateFrom: payload.dateFrom,
+      dateTo: payload.dateTo,
+      timeFrom: payload.timeFrom,
+      timeTo: payload.timeTo,
+      // แนบไฟล์เผื่อระบบ manual log รองรับ evidence
+      evidenceName: payload.evidenceName,
+      evidenceMime: payload.evidenceMime,
+      evidenceBase64: payload.evidenceBase64,
+      evidenceBase64Raw: payload.evidenceBase64Raw
+    });
+
+    const r = await api.tryCall(['saveManualLog','manualLog','saveLog'], {
+      json,
+      empCode: payload.empCode,
+      code: payload.empCode,
+      note,
+      evidenceName: payload.evidenceName || '',
+      evidenceMime: payload.evidenceMime || '',
+      evidenceBase64: payload.evidenceBase64 || '',
+      evidenceBase64Raw: payload.evidenceBase64Raw || '',
+      date: payload.dateFrom || '',
+      dateFrom: payload.dateFrom || '',
+      dateTo: payload.dateTo || ''
+    });
+
+    if(!r.ok) throw r.error;
+    return r.result;
+  }
+
+  async function fb_listFromLogs(empCode, year, month, statusFilter){
+    const { start, end } = monthRange(year, month);
+
+    // getLogsRange ของเดิม
+    const r = await api.tryCall(['getLogsRange','getLogRange','logsRange'], {
+      startDate: start, endDate: end,
+      from: start, to: end,
+      empCode
+    });
+    if(!r.ok) throw r.error;
+
+    const rows = (r.result && (r.result.rows || r.result.logs || r.result.data)) || r.result || [];
+    // พยายาม normalize จากหลายรูปแบบ:
+    // row: {empCode, date, note, ...} หรือ array
+    const out = [];
+    for(const row of rows){
+      let note = '';
+      let code = '';
+      let date = '';
+      let time = '';
+      let id = '';
+
+      if(Array.isArray(row)){
+        // ถ้าเป็น array เราเดา index: [timestamp,date,code,name,branch,zone,note,...]
+        // จะไม่ชัวร์ แต่พยายามอ่าน note จากท้าย
+        note = String(row[row.length-1] || '');
+        code = String(row[2] || row[1] || '');
+        date = String(row[1] || row[0] || '');
+      }else{
+        note = String(row.note || row.Note || row[ 'หมายเหตุ' ] || '');
+        code = String(row.empCode || row.code || row.employeeCode || '');
+        date = String(row.date || row.workDate || row.day || row.createdAt || '');
+        time = String(row.time || row.createdTime || '');
+      }
+
+      if(String(code).trim() !== String(empCode).trim()) continue;
+
+      const parsed = fb_parseNote(note);
+      if(!parsed || !parsed.requestId) continue;
+
+      const st = String(parsed.status || 'PENDING').toUpperCase();
+      if(statusFilter && statusFilter !== 'ALL' && st !== String(statusFilter).toUpperCase()) continue;
+
+      const p = parsed.payload || {};
+      out.push({
+        id: parsed.requestId,
+        requestId: parsed.requestId,
+        status: st,
+        leaveType: p.leaveType || '',
+        durationType: p.durationType || '',
+        dateFrom: p.dateFrom || '',
+        dateTo: p.dateTo || '',
+        timeFrom: p.timeFrom || '',
+        timeTo: p.timeTo || '',
+        hours: p.hours || '',
+        halfPart: p.halfPart || '',
+        reason: p.reason || '',
+        evidenceUrl: p.existingEvidenceUrl || '',   // fallback ไม่รู้ URL จริง
+        evidenceName: p.existingEvidenceName || '',
+        adminNote: p.adminNote || '',
+        createdAt: p.clientTime || date || time || ''
+      });
     }
 
+    // เรียงใหม่ล่าสุดก่อน
+    out.sort((a,b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+    return { rows: out };
+  }
+
+  async function fb_submit(payload){
+    // เขียนเป็น PENDING
+    payload.status = 'PENDING';
+    return fb_writeManualLog(payload);
+  }
+
+  async function fb_update(payload){
+    // ใน fallback: "update" = เขียน log ใหม่ด้วย status PENDING + requestId เดิม
+    payload.status = 'PENDING';
+    return fb_writeManualLog(payload);
+  }
+
+  async function fb_cancel(requestId){
+    // ใน fallback: "cancel" = เขียน log ใหม่ด้วย status CANCELED (อ้าง requestId เดิม)
     const payload = buildPayload();
-    const jsonString = JSON.stringify(payload);
+    payload.requestId = requestId;
+    payload.status = 'CANCELED';
+    return fb_writeManualLog(payload);
+  }
+
+  // =========================================
+  // Submit main
+  // =========================================
+  async function submitLeave(){
+    const err = validateBeforeSubmit();
+    if(err){ showError('submitErr', err); return; }
 
     try{
-      if(editing.on){
-        // ✅ ต้องมีใน GS: updateLeaveRequest
-        await api.call('updateLeaveRequest', { json: jsonString });
-        showOk('submitOk', 'บันทึกการแก้ไขสำเร็จ ✅ (ยังรอดำเนินการ)');
+      await detectMode();
+
+      const payload = buildPayload();
+
+      if(MODE === 'LEAVE-API'){
+        if(editing.on){
+          // ใช้ requestId เดิม
+          payload.requestId = editing.requestId;
+          await leaveApi_update(payload);
+          showOk('submitOk', 'บันทึกการแก้ไขสำเร็จ ✅ (ยังรอดำเนินการ)');
+        }else{
+          await leaveApi_submit(payload);
+          showOk('submitOk', 'ส่งใบลาสำเร็จ ✅ (สถานะ: รอดำเนินการ)');
+        }
       }else{
-        // ✅ ต้องมีใน GS: submitLeaveRequest
-        await api.call('submitLeaveRequest', { json: jsonString });
-        showOk('submitOk', 'ส่งใบลาสำเร็จ ✅ (สถานะ: รอดำเนินการ)');
+        // FALLBACK
+        if(editing.on){
+          payload.requestId = editing.requestId;
+          await fb_update(payload);
+          showOk('submitOk', 'บันทึกการแก้ไขสำเร็จ ✅ (FALLBACK)');
+        }else{
+          await fb_submit(payload);
+          showOk('submitOk', 'ส่งใบลาสำเร็จ ✅ (FALLBACK)');
+        }
       }
 
       hideError('submitErr');
 
-      // reset form + ไปดูสถานะ
       resetForm();
+      await sleep(150);
       loadLatestStatus(true);
-
       setTab('history');
       await loadHistory(true);
 
       setConn(true, 'เชื่อมต่อสำเร็จ');
       setLastUpdated();
     }catch(e){
-      showError('submitErr', 'ทำรายการไม่สำเร็จ: ' + e.message + ' (รอทำ GS action ให้ครบ)');
+      showError('submitErr', 'ทำรายการไม่สำเร็จ: ' + e.message);
       hideOk('submitOk');
     }
   }
 
-  // ===== History / Latest =====
+  // =========================================
+  // History / Latest
+  // =========================================
   function fillYearMonth(){
     const now = new Date();
     const curYear = now.getFullYear();
@@ -1186,13 +1546,20 @@
       return;
     }
 
-    // ใช้ action เดียวกับ history ก็ได้
     const now = new Date();
     const year = String(now.getFullYear());
     const month = String(now.getMonth()+1);
 
     try{
-      const res = await api.call('getMyLeaveRequests', { empCode: emp.code, year, month, status: 'ALL' });
+      await detectMode();
+
+      let res;
+      if(MODE === 'LEAVE-API'){
+        res = await leaveApi_list(emp.code, year, month, 'ALL');
+      }else{
+        res = await fb_listFromLogs(emp.code, year, month, 'ALL');
+      }
+
       const rows = (res && res.rows) || [];
       if(!rows.length){
         box.innerHTML = '<div class="helper">ยังไม่มีใบลาในเดือนนี้</div>';
@@ -1222,29 +1589,25 @@
       setLastUpdated();
     }catch(e){
       if(!silent) console.error(e);
-      box.innerHTML = '<div class="helper">ยังไม่พร้อม (รอ GS action getMyLeaveRequests)</div>';
+      box.innerHTML = '<div class="helper">โหลดสถานะไม่สำเร็จ</div>';
     }
   }
 
   function toFormFromRequest(r){
-    // เตรียมเข้า edit mode
     setEditMode(true, r);
 
-    // set base values
     $('leaveType').value = r.leaveType || r.type || 'PERSONAL';
     $('durationType').value = r.durationType || r.duration || 'HOURLY';
     toggleLeaveTypeHint();
     toggleDurationBoxes();
 
-    // clear new evidence
     $('evidenceFile').value = '';
-    evidenceBase64 = '';
+    evidenceDataUrl = '';
     evidenceName = '';
     evidenceMime = '';
     $('evidencePreview').classList.add('hide');
     $('previewBox').innerHTML = '';
 
-    // reason
     $('reason').value = r.reason || '';
 
     const dt = $('durationType').value;
@@ -1275,8 +1638,6 @@
     }
 
     updateSummary();
-
-    // switch to submit
     setTab('submit');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -1287,13 +1648,20 @@
     if(!ok) return;
 
     try{
-      await api.call('cancelLeaveRequest', { requestId: id });
+      await detectMode();
+
+      if(MODE === 'LEAVE-API'){
+        await leaveApi_cancel(id);
+      }else{
+        await fb_cancel(id);
+      }
+
       alert('ยกเลิกใบลาสำเร็จ');
       loadLatestStatus(true);
       loadHistory(true);
       setLastUpdated();
     }catch(e){
-      alert('ยกเลิกไม่สำเร็จ: ' + e.message + ' (รอทำ GS action cancelLeaveRequest)');
+      alert('ยกเลิกไม่สำเร็จ: ' + e.message);
     }
   }
 
@@ -1314,9 +1682,16 @@
     const status = $('histStatus').value || 'ALL';
 
     try{
-      const res = await api.call('getMyLeaveRequests', { empCode: emp.code, year, month, status });
-      const rows = (res && res.rows) || [];
+      await detectMode();
 
+      let res;
+      if(MODE === 'LEAVE-API'){
+        res = await leaveApi_list(emp.code, year, month, status);
+      }else{
+        res = await fb_listFromLogs(emp.code, year, month, status);
+      }
+
+      const rows = (res && res.rows) || [];
       if(!rows.length){
         list.innerHTML = '<div class="helper">ยังไม่มีรายการ</div>';
         return;
@@ -1330,7 +1705,9 @@
         const stRaw = String(r.status || 'PENDING').toUpperCase();
         const st = statusBadge(stRaw);
         const createdAt = r.createdAt || r.requestDate || '';
-        const file = r.evidenceUrl ? `<a href="${esc(r.evidenceUrl)}" target="_blank" rel="noopener">เปิดไฟล์แนบ</a>` : '-';
+        const file = r.evidenceUrl
+          ? `<a href="${esc(r.evidenceUrl)}" target="_blank" rel="noopener">เปิดไฟล์แนบ</a>`
+          : (r.evidenceName ? esc(r.evidenceName) : '-');
 
         const canEdit = (stRaw === 'PENDING') && !!id;
 
@@ -1367,11 +1744,6 @@
           const action = btn.dataset.action;
           const id = btn.dataset.id;
 
-          // หา row original เพื่อเอาข้อมูลมา prefill
-          const year = $('histYear').value;
-          const month = $('histMonth').value;
-          const status = 'ALL';
-
           if(action === 'cancel'){
             await cancelRequestById(id);
             return;
@@ -1379,10 +1751,18 @@
 
           if(action === 'edit'){
             try{
-              // ดึงรายการทั้งหมดอีกครั้งเพื่อหา record ที่ตรง id (กันข้อมูลหลุด)
-              const res = await api.call('getMyLeaveRequests', { empCode: emp.code, year, month, status });
-              const rows = (res && res.rows) || [];
-              const found = rows.find(x => String(x.id || x.requestId || '') === String(id));
+              const year = $('histYear').value;
+              const month = $('histMonth').value;
+
+              await detectMode();
+              let res2;
+              if(MODE === 'LEAVE-API'){
+                res2 = await leaveApi_list(emp.code, year, month, 'ALL');
+              }else{
+                res2 = await fb_listFromLogs(emp.code, year, month, 'ALL');
+              }
+              const rows2 = (res2 && res2.rows) || [];
+              const found = rows2.find(x => String(x.id || x.requestId || '') === String(id));
               if(!found){
                 alert('ไม่พบใบลาที่เลือก');
                 return;
@@ -1402,22 +1782,19 @@
       setConn(true, 'เชื่อมต่อสำเร็จ');
       setLastUpdated();
     }catch(e){
-      list.innerHTML = '<div class="helper">ยังไม่พร้อม (รอทำ GS/DB)</div>';
-      hint.textContent = 'ต้องมี GS action: getMyLeaveRequests / updateLeaveRequest / cancelLeaveRequest';
+      list.innerHTML = '<div class="helper">โหลดประวัติไม่สำเร็จ</div>';
+      hint.textContent = 'ถ้า GS ไม่มี action ใบลา ระบบจะใช้ FALLBACK (Logs/ManualLog) อัตโนมัติ';
       if(!silent) console.error(e);
     }
   }
 
-  // ===== init =====
+  // =========================================
+  // Init
+  // =========================================
   function initDefaults(){
     fillYearMonth();
 
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth()+1).padStart(2,'0');
-    const dd = String(today.getDate()).padStart(2,'0');
-    const iso = `${yyyy}-${mm}-${dd}`;
-
+    const iso = toISODate(new Date());
     $('hourlyDate').value = iso;
     $('halfDate').value = iso;
     $('fullStart').value = iso;
@@ -1433,6 +1810,7 @@
     const url = getApiUrl();
     setApiDisplay(url);
     setConn(!!url, url ? 'พร้อมใช้งาน' : 'ยังไม่ได้ตั้งค่า URL');
+    setModeTag();
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -1453,6 +1831,8 @@
       setApiDisplay(url);
       closeUrlCard();
       setConn(true, 'พร้อมใช้งาน');
+      MODE = 'AUTO';
+      setModeTag();
       setLastUpdated();
     });
 
