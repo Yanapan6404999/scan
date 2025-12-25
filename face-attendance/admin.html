@@ -1032,7 +1032,6 @@
       const apiUrl = getApiUrl();
       if(!apiUrl) throw new Error('ยังไม่ได้ตั้งค่า URL API');
 
-      // แนบ token ไปด้วย "เสมอ" (ถ้าไม่มี ก็ไม่เป็นไร)
       const token = getAdminToken();
       const body = new URLSearchParams({
         action,
@@ -1156,14 +1155,24 @@
   }
   function closeUrlCard(){ $('urlCard').style.display = 'none'; }
   function saveUrl(){
-    const url = ($('inputApiUrl').value || '').trim();
+    let url = ($('inputApiUrl').value || '').trim();
     const errEl = $('urlError');
     errEl.style.display = 'none';
+
     if(!url){
       errEl.textContent = 'กรุณากรอก URL';
       errEl.style.display = 'block';
       return;
     }
+    // ใจดีนิด: ถ้าลืม /exec ให้เตือน แต่ไม่บังคับ
+    if(!/\/exec(\?|$)/.test(url)){
+      // ถ้าผู้ใช้ใส่ /dev ให้ผ่าน
+      if(!/\/dev(\?|$)/.test(url)){
+        // ไม่ throw เพื่อไม่ทำให้ใช้งานไม่ได้ แค่เตือน
+        console.warn('URL ไม่ลงท้าย /exec (ถ้าเรียกไม่ได้ให้แก้เป็น /exec)');
+      }
+    }
+
     setApiUrl(url);
     setApiText(url);
     closeUrlCard();
@@ -1230,7 +1239,6 @@
     document.querySelectorAll('.bottom-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
     document.querySelectorAll('.section').forEach(el => el.classList.toggle('active', el.id === 'section-' + section));
 
-    // โหลดเฉพาะแท็บที่อยู่จริง
     refreshCurrentSection(section, true);
   }
 
@@ -1467,6 +1475,8 @@
           ? `<span class="emp-face-badge">มีใบหน้า</span>`
           : `<span class="emp-face-badge off">ไม่มีใบหน้า</span>`;
 
+        const idJS = JSON.stringify(String(e.id || ''));
+
         return `
           <tr>
             <td>${escHtml(e.code || '')}</td>
@@ -1476,8 +1486,8 @@
             <td>${faceBadge}</td>
             <td>
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                <button class="btn btn-secondary btn-small" onclick="editEmployee('${escHtml(e.id || '')}')">✏️ แก้ไข</button>
-                <button class="btn btn-danger btn-small" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">🗑️ ลบ</button>
+                <button class="btn btn-secondary btn-small" onclick='editEmployee(${idJS})'>✏️ แก้ไข</button>
+                <button class="btn btn-danger btn-small" onclick='deleteEmployeeConfirm(${idJS})'>🗑️ ลบ</button>
               </div>
             </td>
           </tr>
@@ -1491,6 +1501,8 @@
         const faceBadge = faceOk
           ? `<span class="emp-face-badge">มีใบหน้า</span>`
           : `<span class="emp-face-badge off">ไม่มีใบหน้า</span>`;
+
+        const idJS = JSON.stringify(String(e.id || ''));
 
         return `
           <div class="item">
@@ -1507,8 +1519,8 @@
             </div>
 
             <div class="item-actions">
-              <button class="btn btn-secondary" onclick="editEmployee('${escHtml(e.id || '')}')">✏️ แก้ไข</button>
-              <button class="btn btn-danger" onclick="deleteEmployeeConfirm('${escHtml(e.id || '')}')">🗑️ ลบ</button>
+              <button class="btn btn-secondary" onclick='editEmployee(${idJS})'>✏️ แก้ไข</button>
+              <button class="btn btn-danger" onclick='deleteEmployeeConfirm(${idJS})'>🗑️ ลบ</button>
             </div>
           </div>
         `;
@@ -1995,6 +2007,8 @@
     if(tb){
       tb.innerHTML = rows.map(r => {
         const id = getLeaveId(r);
+        const idJS = JSON.stringify(String(id || ''));
+
         const createdAt = getLeaveCreatedAt(r);
         const code = r.code || r.empCode || r.employeeCode || '-';
         const fullName = r.fullName || r.name || r.employeeName || '-';
@@ -2022,8 +2036,8 @@
             <td>${status}</td>
             <td>
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                <button class="btn btn-primary btn-small" ${canAct?'':'disabled'} onclick="approveLeave('${escHtml(id)}')">อนุมัติ</button>
-                <button class="btn btn-danger btn-small" ${canAct?'':'disabled'} onclick="rejectLeave('${escHtml(id)}')">ไม่อนุมัติ</button>
+                <button class="btn btn-primary btn-small" ${canAct?'':'disabled'} onclick='approveLeave(${idJS})'>อนุมัติ</button>
+                <button class="btn btn-danger btn-small" ${canAct?'':'disabled'} onclick='rejectLeave(${idJS})'>ไม่อนุมัติ</button>
               </div>
             </td>
           </tr>
@@ -2034,6 +2048,8 @@
     if(mobileList){
       mobileList.innerHTML = rows.map(r => {
         const id = getLeaveId(r);
+        const idJS = JSON.stringify(String(id || ''));
+
         const createdAt = getLeaveCreatedAt(r);
         const code = r.code || r.empCode || r.employeeCode || '-';
         const fullName = r.fullName || r.name || r.employeeName || '-';
@@ -2069,8 +2085,8 @@
             </div>
 
             <div class="item-actions">
-              <button class="btn btn-primary" ${canAct?'':'disabled'} onclick="approveLeave('${escHtml(id)}')">อนุมัติ</button>
-              <button class="btn btn-danger" ${canAct?'':'disabled'} onclick="rejectLeave('${escHtml(id)}')">ไม่อนุมัติ</button>
+              <button class="btn btn-primary" ${canAct?'':'disabled'} onclick='approveLeave(${idJS})'>อนุมัติ</button>
+              <button class="btn btn-danger" ${canAct?'':'disabled'} onclick='rejectLeave(${idJS})'>ไม่อนุมัติ</button>
             </div>
           </div>
         `;
@@ -2173,29 +2189,34 @@
 
     if(bt){
       bt.innerHTML = branches.length
-        ? branches.map(b => `
-            <tr>
-              <td>${escHtml(b.name)}</td>
-              <td class="text-right"><button class="btn btn-danger btn-small" onclick="deleteBranch('${escHtml(b.name)}')">ลบ</button></td>
-            </tr>
-          `).join('')
+        ? branches.map(b => {
+            const nameJS = JSON.stringify(String(b.name));
+            return `
+              <tr>
+                <td>${escHtml(b.name)}</td>
+                <td class="text-right"><button class="btn btn-danger btn-small" onclick='deleteBranch(${nameJS})'>ลบ</button></td>
+              </tr>
+            `;
+          }).join('')
         : '<tr><td colspan="2" class="text-center">ยังไม่มีแผนก</td></tr>';
     }
 
     if(lt){
       lt.innerHTML = levels.length
-        ? levels.map(l => `
-            <tr>
-              <td>${escHtml(l.name)}</td>
-              <td class="text-right"><button class="btn btn-danger btn-small" onclick="deleteLevel('${escHtml(l.name)}')">ลบ</button></td>
-            </tr>
-          `).join('')
+        ? levels.map(l => {
+            const nameJS = JSON.stringify(String(l.name));
+            return `
+              <tr>
+                <td>${escHtml(l.name)}</td>
+                <td class="text-right"><button class="btn btn-danger btn-small" onclick='deleteLevel(${nameJS})'>ลบ</button></td>
+              </tr>
+            `;
+          }).join('')
         : '<tr><td colspan="2" class="text-center">ยังไม่มีระดับ</td></tr>';
     }
   }
 
   async function loadBranchesLevels(opts={}){
-    // พยายามใช้ getInitialData ก่อน (ตรง GS)
     try{
       await loadInitialData(opts);
       return;
@@ -2203,7 +2224,6 @@
       // fallback
     }
 
-    // fallback กว้าง ๆ กัน action ไม่ตรง
     const { result } = await api.callFirst(
       ['getBranchesLevels','getBranchesAndLevels','getMeta','getMasterData'],
       {},
