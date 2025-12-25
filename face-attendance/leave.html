@@ -252,7 +252,6 @@
     .ok{ font-size:12px; color:var(--success); font-weight:900; margin-top:8px; }
     .hide{ display:none !important; }
 
-    /* Edit banner */
     .edit-banner{
       border:1px solid rgba(37,99,235,.25);
       background:rgba(37,99,235,.08);
@@ -349,7 +348,6 @@
       <!-- SUBMIT TAB -->
       <div id="tab-submit">
 
-        <!-- edit banner -->
         <div id="editBanner" class="edit-banner hide">
           <div>
             <div class="title" id="editBannerTitle">กำลังแก้ไขใบลา</div>
@@ -360,7 +358,6 @@
           </div>
         </div>
 
-        <!-- status latest -->
         <div class="card" style="margin-bottom:12px;">
           <div class="card-header" style="margin-bottom:6px;">
             <div>
@@ -489,7 +486,6 @@
           </div>
         </div>
 
-        <!-- Reason + Evidence -->
         <div class="mt-12">
           <div class="helper">เหตุผลการลา</div>
           <textarea class="textarea" id="reason" placeholder="พิมพ์เหตุผลสั้น ๆ เช่น ไปทำธุระ / ป่วย / พักร้อน"></textarea>
@@ -512,7 +508,6 @@
           </div>
         </div>
 
-        <!-- Summary -->
         <div class="card mt-12" style="margin-bottom:0;">
           <div class="card-header" style="margin-bottom:6px;">
             <div>
@@ -673,7 +668,6 @@
   }
 
   function toISODate(d){
-    // d = Date
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth()+1).padStart(2,'0');
     const dd = String(d.getDate()).padStart(2,'0');
@@ -681,16 +675,14 @@
   }
 
   function monthRange(year, month){
-    // month: 1..12
     const y = Number(year);
     const m = Number(month);
     const start = new Date(y, m-1, 1);
-    const end = new Date(y, m, 0); // last day
+    const end = new Date(y, m, 0);
     return { start: toISODate(start), end: toISODate(end) };
   }
 
   function dataUrlParts(dataUrl){
-    // returns { mime, base64 }
     if(!dataUrl) return { mime:'', base64:'' };
     const m = String(dataUrl).match(/^data:([^;]+);base64,(.+)$/);
     if(!m) return { mime:'', base64:'' };
@@ -705,7 +697,6 @@
       const apiUrl = getApiUrl();
       if(!apiUrl) throw new Error('ยังไม่ได้ตั้งค่า URL API');
 
-      // ส่งเผื่อหลายแบบ: json + flat keys (GS จะเลือกใช้เอง/ignore)
       const body = new URLSearchParams({ action, ...params }).toString();
       const res = await fetch(apiUrl, {
         method: 'POST',
@@ -733,10 +724,8 @@
         }catch(e){
           lastErr = e;
           const msg = String(e?.message || '');
-          // ถ้าเป็น action ไม่รู้จัก ให้ลองตัวถัดไป
           const unknown = /unknown action|not found|no such action|ไม่พบ action|action/i.test(msg);
           if(!unknown){
-            // ถ้าไม่ใช่ unknown action (เช่น permission/logic error) ให้หยุดทันที
             return { ok:false, actionUsed: action, error: e };
           }
         }
@@ -750,12 +739,10 @@
   // =========================================
   let emp = null;
 
-  // evidence
   let evidenceDataUrl = '';
   let evidenceName = '';
   let evidenceMime = '';
 
-  // edit mode
   let editing = {
     on: false,
     requestId: '',
@@ -764,16 +751,16 @@
     status: ''
   };
 
-  // Cache initialData (สำหรับ fallback โหลดพนักงาน)
   let initialDataCache = null;
 
-  // Mode detection
-  // LEAVE-API = GS มี action submitLeaveRequest/getMyLeaveRequests/...
-  // FALLBACK = ใช้ saveManualLog + getLogsRange
   let MODE = 'AUTO'; // 'LEAVE-API' | 'FALLBACK' | 'AUTO'
 
-  let autoTimer = null;
-  const AUTO_REFRESH_MS = 25000;
+  // ====== เปลี่ยนจาก setInterval มาเป็น “รีเฟรชเมื่อจำเป็น” ======
+  // - ตอนสลับแท็บ
+  // - ตอนกดปุ่ม
+  // - ตอนกลับเข้าหน้า (visibilitychange/focus)
+  // เพื่อให้ไม่หนัก/ไม่ยิงถี่แบบเดิม
+  // ============================================================
 
   // =========================================
   // UI helpers
@@ -802,26 +789,28 @@
     $('modeTag').textContent = 'MODE: ' + (MODE === 'AUTO' ? 'AUTO' : MODE);
   }
 
+  function getActiveTab(){
+    return document.querySelector('.tab.active')?.dataset.tab || 'submit';
+  }
+
+  async function softRefreshCurrentTab(){
+    updateSummary();
+    const tab = getActiveTab();
+    if(tab === 'history') await loadHistory(true);
+    if(tab === 'submit') await loadLatestStatus(true);
+    setLastUpdated();
+  }
+
   function setTab(tab){
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     $('tab-submit').classList.toggle('hide', tab !== 'submit');
     $('tab-history').classList.toggle('hide', tab !== 'history');
 
+    // รีเฟรชตามแท็บทันที (ไม่ใช้ interval)
     if(tab === 'history') loadHistory(true);
     if(tab === 'submit') loadLatestStatus(true);
 
-    startAutoRefresh(tab);
     setLastUpdated();
-  }
-
-  function startAutoRefresh(tab){
-    if(autoTimer) clearInterval(autoTimer);
-    autoTimer = setInterval(() => {
-      if(tab === 'history') loadHistory(true);
-      if(tab === 'submit') loadLatestStatus(true);
-      updateSummary();
-      setLastUpdated();
-    }, AUTO_REFRESH_MS);
   }
 
   // =========================================
@@ -1064,8 +1053,6 @@
     if(initialDataCache) return initialDataCache;
     const r = await api.tryCall(['getInitialData','getInitData','getData'], {});
     if(!r.ok) throw r.error;
-
-    // รูปแบบที่คาด: { employees:[], branches:[], levels:[] } หรือ { employees:[] } หรือ { result:... }
     initialDataCache = r.result || {};
     return initialDataCache;
   }
@@ -1086,10 +1073,18 @@
   async function detectMode(){
     if(MODE !== 'AUTO') return MODE;
 
-    // ทดสอบเบาๆ ว่า GS มี action ใบลาหรือไม่
-    // (ยิงแบบ safe: ถ้า unknown action จะลองต่อ)
+    // ถ้ายังไม่มี URL ก็ยังไม่ต้อง detect
+    if(!getApiUrl()){
+      MODE = 'AUTO';
+      setModeTag();
+      return MODE;
+    }
+
+    // ใช้ emp จริงถ้ามี (ลดโอกาส GS บางตัว reject empCode=0)
+    const probeEmp = emp?.code ? String(emp.code) : '0';
+
     const probe = await api.tryCall(['getMyLeaveRequests','leave_getMy','getMyLeaves'], {
-      empCode: '0',
+      empCode: probeEmp,
       year: String(new Date().getFullYear()),
       month: String(new Date().getMonth()+1),
       status: 'ALL'
@@ -1101,7 +1096,6 @@
       return MODE;
     }
 
-    // ถ้าไม่มี action ใบลา ให้ไป FALLBACK
     MODE = 'FALLBACK';
     setModeTag();
     return MODE;
@@ -1120,12 +1114,10 @@
     }
 
     try{
-      // 1) ลอง action ตรงๆ ก่อน (บางเวอร์ชันมี getEmployeeByCode)
       const r1 = await api.tryCall(['getEmployeeByCode','getEmpByCode','employeeByCode'], { code, empCode: code });
       let e = null;
       if(r1.ok) e = normalizeEmployee(r1.result);
 
-      // 2) ถ้าไม่มี ให้ fallback ไปดึง initialData แล้วหาใน list
       if(!e || !e.code){
         const init = await ensureInitialData();
         const list = init.employees || init.employeeList || init.Employees || [];
@@ -1145,6 +1137,7 @@
       $('empCodeTag').textContent   = 'รหัส: ' + (emp.code || code);
       $('empInfoRow').style.display = 'block';
 
+      MODE = 'AUTO';
       await detectMode();
 
       showOk('empOk', 'ดึงข้อมูลพนักงานสำเร็จ');
@@ -1170,6 +1163,8 @@
     $('empInfoRow').style.display = 'none';
     hideError('empErr'); hideOk('empOk');
     $('latestBox').innerHTML = '<div class="helper">ยังไม่มีข้อมูล</div>';
+    MODE = 'AUTO';
+    setModeTag();
     resetForm();
   }
 
@@ -1254,8 +1249,8 @@
 
       evidenceName: evidenceName || '',
       evidenceMime: evidenceMime || mime || '',
-      evidenceBase64: evidenceDataUrl || '',      // เผื่อ GS เวอร์ชันเก่าใช้ทั้ง dataURL
-      evidenceBase64Raw: base64 || '',            // เผื่อ GS เวอร์ชันใหม่ใช้ raw base64
+      evidenceBase64: evidenceDataUrl || '',
+      evidenceBase64Raw: base64 || '',
 
       existingEvidenceUrl: editing.existingEvidenceUrl || '',
       existingEvidenceName: editing.existingEvidenceName || '',
@@ -1285,7 +1280,7 @@
   }
 
   // =========================================
-  // LEAVE-API calls (ถ้า GS มี action ใบลา)
+  // LEAVE-API calls
   // =========================================
   async function leaveApi_submit(payload){
     const json = JSON.stringify(payload);
@@ -1314,11 +1309,9 @@
   }
 
   // =========================================
-  // FALLBACK: บันทึกเป็น ManualLog note + อ่านจาก LogsRange
+  // FALLBACK: ManualLog + LogsRange
   // =========================================
   function fb_makeNote(payload){
-    // status เก็บใน note เพื่อให้แก้/ยกเลิกได้จากฝั่งหน้าเว็บ
-    // NOTE: ห้ามยาวเกินไปมากนัก แต่โดยทั่วไป Sheets รับได้เยอะพอ
     const status = String(payload.status || 'PENDING').toUpperCase();
     return `${FB_PREFIX}${payload.requestId}|${status}|${JSON.stringify(payload)}`;
   }
@@ -1331,7 +1324,7 @@
     if(parts.length < 3) return null;
     const requestId = parts[0] || '';
     const status = parts[1] || 'PENDING';
-    const json = parts.slice(2).join('|'); // กันกรณี json มี '|'
+    const json = parts.slice(2).join('|');
     try{
       const payload = JSON.parse(json);
       return { requestId, status, payload };
@@ -1341,19 +1334,15 @@
   }
 
   async function fb_writeManualLog(payload){
-    // ใช้ saveManualLog ที่ระบบเดิมมีอยู่
-    // ส่งทั้ง json และฟิลด์ซ้ำๆ เผื่อ GS เขียนคนละแบบ
     const note = fb_makeNote(payload);
     const json = JSON.stringify({
       empCode: payload.empCode,
       code: payload.empCode,
       note,
-      // date/time เพื่อให้ admin หาได้ง่าย (แต่ GS จะใช้หรือไม่ใช้ก็ได้)
       dateFrom: payload.dateFrom,
       dateTo: payload.dateTo,
       timeFrom: payload.timeFrom,
       timeTo: payload.timeTo,
-      // แนบไฟล์เผื่อระบบ manual log รองรับ evidence
       evidenceName: payload.evidenceName,
       evidenceMime: payload.evidenceMime,
       evidenceBase64: payload.evidenceBase64,
@@ -1381,7 +1370,6 @@
   async function fb_listFromLogs(empCode, year, month, statusFilter){
     const { start, end } = monthRange(year, month);
 
-    // getLogsRange ของเดิม
     const r = await api.tryCall(['getLogsRange','getLogRange','logsRange'], {
       startDate: start, endDate: end,
       from: start, to: end,
@@ -1390,24 +1378,20 @@
     if(!r.ok) throw r.error;
 
     const rows = (r.result && (r.result.rows || r.result.logs || r.result.data)) || r.result || [];
-    // พยายาม normalize จากหลายรูปแบบ:
-    // row: {empCode, date, note, ...} หรือ array
     const out = [];
+
     for(const row of rows){
       let note = '';
       let code = '';
       let date = '';
       let time = '';
-      let id = '';
 
       if(Array.isArray(row)){
-        // ถ้าเป็น array เราเดา index: [timestamp,date,code,name,branch,zone,note,...]
-        // จะไม่ชัวร์ แต่พยายามอ่าน note จากท้าย
         note = String(row[row.length-1] || '');
         code = String(row[2] || row[1] || '');
         date = String(row[1] || row[0] || '');
       }else{
-        note = String(row.note || row.Note || row[ 'หมายเหตุ' ] || '');
+        note = String(row.note || row.Note || row['หมายเหตุ'] || '');
         code = String(row.empCode || row.code || row.employeeCode || '');
         date = String(row.date || row.workDate || row.day || row.createdAt || '');
         time = String(row.time || row.createdTime || '');
@@ -1435,32 +1419,28 @@
         hours: p.hours || '',
         halfPart: p.halfPart || '',
         reason: p.reason || '',
-        evidenceUrl: p.existingEvidenceUrl || '',   // fallback ไม่รู้ URL จริง
+        evidenceUrl: p.existingEvidenceUrl || '',
         evidenceName: p.existingEvidenceName || '',
         adminNote: p.adminNote || '',
         createdAt: p.clientTime || date || time || ''
       });
     }
 
-    // เรียงใหม่ล่าสุดก่อน
     out.sort((a,b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
     return { rows: out };
   }
 
   async function fb_submit(payload){
-    // เขียนเป็น PENDING
     payload.status = 'PENDING';
     return fb_writeManualLog(payload);
   }
 
   async function fb_update(payload){
-    // ใน fallback: "update" = เขียน log ใหม่ด้วย status PENDING + requestId เดิม
     payload.status = 'PENDING';
     return fb_writeManualLog(payload);
   }
 
   async function fb_cancel(requestId){
-    // ใน fallback: "cancel" = เขียน log ใหม่ด้วย status CANCELED (อ้าง requestId เดิม)
     const payload = buildPayload();
     payload.requestId = requestId;
     payload.status = 'CANCELED';
@@ -1481,7 +1461,6 @@
 
       if(MODE === 'LEAVE-API'){
         if(editing.on){
-          // ใช้ requestId เดิม
           payload.requestId = editing.requestId;
           await leaveApi_update(payload);
           showOk('submitOk', 'บันทึกการแก้ไขสำเร็จ ✅ (ยังรอดำเนินการ)');
@@ -1490,7 +1469,6 @@
           showOk('submitOk', 'ส่งใบลาสำเร็จ ✅ (สถานะ: รอดำเนินการ)');
         }
       }else{
-        // FALLBACK
         if(editing.on){
           payload.requestId = editing.requestId;
           await fb_update(payload);
@@ -1505,9 +1483,11 @@
 
       resetForm();
       await sleep(150);
-      loadLatestStatus(true);
+
+      // หลังส่ง: ไปแท็บประวัติให้เห็น PENDING ทันที
       setTab('history');
       await loadHistory(true);
+      await loadLatestStatus(true);
 
       setConn(true, 'เชื่อมต่อสำเร็จ');
       setLastUpdated();
@@ -1657,8 +1637,8 @@
       }
 
       alert('ยกเลิกใบลาสำเร็จ');
-      loadLatestStatus(true);
-      loadHistory(true);
+      await loadLatestStatus(true);
+      await loadHistory(true);
       setLastUpdated();
     }catch(e){
       alert('ยกเลิกไม่สำเร็จ: ' + e.message);
@@ -1738,7 +1718,6 @@
         `;
       }).join('');
 
-      // bind actions
       list.querySelectorAll('button[data-action]').forEach(btn => {
         btn.addEventListener('click', async () => {
           const action = btn.dataset.action;
@@ -1848,12 +1827,7 @@
     });
 
     $('btnBack').addEventListener('click', () => window.location.href = 'index.html');
-    $('btnRefresh').addEventListener('click', () => {
-      updateSummary();
-      loadLatestStatus(true);
-      if(document.querySelector('.tab.active')?.dataset.tab === 'history') loadHistory(true);
-      setLastUpdated();
-    });
+    $('btnRefresh').addEventListener('click', () => softRefreshCurrentTab());
 
     document.querySelectorAll('.tab').forEach(t => {
       t.addEventListener('click', () => setTab(t.dataset.tab));
@@ -1885,8 +1859,13 @@
     $('btnLoadHistory').addEventListener('click', () => loadHistory(false));
     ['histStatus','histMonth','histYear'].forEach(id => $(id).addEventListener('change', () => loadHistory(true)));
 
+    // รีเฟรชเมื่อกลับมาเปิดหน้า/สลับแอป (มือถือสำคัญมาก)
+    document.addEventListener('visibilitychange', () => {
+      if(!document.hidden) softRefreshCurrentTab();
+    });
+    window.addEventListener('focus', () => softRefreshCurrentTab());
+
     setLastUpdated();
-    startAutoRefresh('submit');
   });
 </script>
 </body>
