@@ -471,7 +471,6 @@
       user-select:none;
     }
   </style>
-  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
 
 <body>
@@ -772,29 +771,7 @@
             </div>
 
             <div id="leaveHint" class="helper mt-10"></div>
-
-            <details class="adv">
-              <summary>⚙️ Advanced: ตั้งชื่อ Action เอง (กรณี GS ใช้ชื่อเฉพาะ)</summary>
-              <div class="mt-10 grid-2">
-                <div>
-                  <div class="helper">Action “ดึงรายการลา”</div>
-                  <input id="leaveListActionCustom" class="input" placeholder="เช่น getLeaveHistoryAll / listLeaves" />
-                </div>
-                <div>
-                  <div class="helper">Action “อัปเดตสถานะลา”</div>
-                  <input id="leaveUpdateActionCustom" class="input" placeholder="เช่น updateLeaveStatus / approveLeave" />
-                </div>
-              </div>
-              <div class="mt-10" style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button class="btn btn-secondary" id="btnSaveLeaveActions">บันทึก Action</button>
-                <button class="btn btn-secondary" id="btnClearLeaveActions">ล้างค่า</button>
-              </div>
-              <div class="helper mt-8">
-                * ถ้าไม่รู้ชื่อ action: เปิดไฟล์ leave.html แล้วค้นคำว่า <b>action:</b> หรือ <b>URLSearchParams({ action</b>
-              </div>
-            </details>
-
-            <div class="desktop-only mt-10">
+<div class="desktop-only mt-10">
               <div class="scroll-x" style="max-height:520px; overflow:auto;">
                 <table class="table-wide">
                   <thead>
@@ -1852,14 +1829,6 @@
     localStorage.setItem(STORAGE_LEAVE_ACTIONS_KEY, JSON.stringify(obj || {}));
   }
 
-  function getLeaveCustom(){
-    try{ return JSON.parse(localStorage.getItem(STORAGE_LEAVE_CUSTOM_KEY) || '{}') || {}; }
-    catch(e){ return {}; }
-  }
-  function setLeaveCustom(obj){
-    localStorage.setItem(STORAGE_LEAVE_CUSTOM_KEY, JSON.stringify(obj || {}));
-  }
-
   function normalizeLeaveStatus(s){
     const raw = String(s || '').trim();
     if(!raw) return 'PENDING';
@@ -1922,18 +1891,9 @@
     return r.attachUrl || r.attachmentUrl || r.fileUrl || r.evidenceUrl || r.photoUrl || r.file || r.attach || '';
   }
 
-  const LEAVE_LIST_ACTIONS = [
-    'getLeaveRequests','getLeaveHistory','getLeaveHistoryAll','listLeaveRequests','listLeaves',
-    'getLeaves','getLeaveList','getLeaveAdmin','getLeaveAdminList','getLeaveRequestsAll',
-    'leave_list','leave_getHistory','leave_getHistoryAll','leave_getRequests','leave_getAll',
-    'getLeavesRange','getLeaveRange','leave_getRange'
-  ];
+  const LEAVE_LIST_ACTIONS = ['adminListLeaveRequests'];
 
-  const LEAVE_UPDATE_ACTIONS = [
-    'updateLeaveStatus','setLeaveStatus','updateLeaveRequest','setLeaveRequestStatus',
-    'approveLeave','rejectLeave','approveLeaveRequest','rejectLeaveRequest',
-    'leave_updateStatus','leave_setStatus','leave_approve','leave_reject'
-  ];
+  const LEAVE_UPDATE_ACTIONS = ['adminApproveLeave','adminRejectLeave','adminCancelLeave'];
 
   function buildLeaveQueryParams(){
     const yearBE  = $('leaveYearFilter')?.value;
@@ -1975,26 +1935,26 @@
     return { action, result };
   }
 
-  async function callLeaveUpdate(params, opts = {}){
-    const cache = getLeaveActionsCache();
-    const custom = getLeaveCustom();
+  async function callLeaveUpdate(statusEN, requestId, remark){
+  // admin actions in GS are explicit (no guessing)
+  const actionMap = {
+    'APPROVED': 'adminApproveLeave',
+    'REJECTED': 'adminRejectLeave',
+    'CANCELED': 'adminCancelLeave',
+  };
+  const action = actionMap[String(statusEN||'').toUpperCase()];
+  if(!action) throw new Error('Unsupported leave status: '+statusEN);
 
-    const prefer = [];
-    if(custom.updateAction) prefer.push(custom.updateAction);
-    else if(cache.updateAction) prefer.push(cache.updateAction);
+  const payload = { requestId: String(requestId||'').trim() };
 
-    const actions = prefer.concat(LEAVE_UPDATE_ACTIONS.filter(a => !prefer.includes(a)));
+  // Match GS param names
+  if(action === 'adminApproveLeave') payload.note = String(remark||'').trim();
+  if(action === 'adminRejectLeave') payload.adminNote = String(remark||'').trim();
+  if(action === 'adminCancelLeave') payload.cancelReason = String(remark||'').trim();
 
-    const { action, result } = await api.callFirst(actions, params, {
-      failMessage: 'อัปเดตสถานะใบลาไม่สำเร็จ',
-      onSuccess: (act) => { cache.updateAction = act; setLeaveActionsCache(cache); },
-      signal: opts.signal
-    });
-
-    return { action, result };
-  }
-
-  function renderLeave(res){
+  return api.call(action, payload);
+}
+function renderLeave(res){
     const rows = pickArr(res);
     const tb = $('leaveTableBody');
     const mobileList = $('leaveMobileList');
@@ -2355,126 +2315,9 @@
     if($('empBranch')?.options?.length) $('empBranch').selectedIndex = 0;
     if($('empLevel')?.options?.length) $('empLevel').selectedIndex = 0;
 
-    setEmpFaceUI(null);
-
     if($('empFormError')) $('empFormError').style.display = 'none';
     if(!keepMsg && $('empFormSuccess')) $('empFormSuccess').style.display = 'none';
   }
-
-
-  // ===== Face enrollment (Employees.faceData / photoUrl) =====
-  const FACE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
-  let faceModelsReady = false;
-
-  async function ensureFaceModels(){
-    if(faceModelsReady) return;
-    if(!window.faceapi) throw new Error('โหลด face-api.js ไม่สำเร็จ');
-    await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL),
-      faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODEL_URL),
-      faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODEL_URL),
-    ]);
-    faceModelsReady = true;
-  }
-
-  function setEmpFaceUI(emp){
-    const photoStatus = $('empFacePhotoStatus');
-    const dataStatus  = $('empFaceDataStatus');
-    const preview     = $('empFacePreview');
-    const fileInput   = $('empFaceFile');
-
-    if(fileInput) fileInput.value = '';
-
-    const hasPhoto = !!(emp && emp.photoUrl);
-    const hasData  = !!(emp && emp.faceData && String(emp.faceData).trim().length > 10);
-
-    if(photoStatus) photoStatus.textContent = hasPhoto ? 'มีรูปแล้ว ✅' : 'ยังไม่มีรูป';
-    if(dataStatus)  dataStatus.textContent  = hasData  ? 'มี FaceData แล้ว ✅' : 'ยังไม่มี FaceData';
-
-    if(preview){
-      if(hasPhoto){
-        preview.src = emp.photoUrl;
-        preview.style.display = 'block';
-      }else{
-        preview.removeAttribute('src');
-        preview.style.display = 'none';
-      }
-    }
-  }
-
-  function readFileAsDataURL(file){
-    return new Promise((resolve, reject) => {
-      const fr = new FileReader();
-      fr.onload = () => resolve(String(fr.result || ''));
-      fr.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
-      fr.readAsDataURL(file);
-    });
-  }
-
-  async function uploadEmpFacePhoto(){
-    const code = ( $('empCode')?.value || '' ).trim();
-    const file = $('empFaceFile')?.files?.[0];
-    if(!code) return alert('กรุณากรอกรหัสพนักงานก่อน');
-    if(!file) return alert('กรุณาเลือกรูปก่อน');
-
-    const dataUrl = await readFileAsDataURL(file);
-    const base64 = dataUrl.split(',')[1] || '';
-
-    if(!base64) throw new Error('แปลงรูปเป็น base64 ไม่สำเร็จ');
-
-    const resp = await api.call('uploadEmployeeFace', {
-      code,
-      photoBase64: base64,
-      photoName: file.name || `face_${code}.jpg`,
-      mimeType: file.type || 'image/jpeg'
-    });
-
-    // update local cache if any
-    const emp = (employees || []).find(e => String(e.code) === String(code));
-    if(emp && resp && resp.photoUrl) emp.photoUrl = resp.photoUrl;
-
-    setEmpFaceUI(emp || { photoUrl: resp.photoUrl, faceData: emp?.faceData || '' });
-    alert('อัปโหลดรูปสำเร็จ ✅');
-  }
-
-  async function extractAndSaveEmpFaceData(){
-    const code = ( $('empCode')?.value || '' ).trim();
-    const file = $('empFaceFile')?.files?.[0];
-    if(!code) return alert('กรุณากรอกรหัสพนักงานก่อน');
-    if(!file) return alert('กรุณาเลือกรูปก่อน');
-
-    await ensureFaceModels();
-
-    const dataUrl = await readFileAsDataURL(file);
-
-    const img = new Image();
-    img.src = dataUrl;
-    await new Promise((res, rej) => {
-      img.onload = () => res();
-      img.onerror = () => rej(new Error('โหลดรูปไม่สำเร็จ'));
-    });
-
-    const det = await faceapi
-      .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 }))
-      .withFaceLandmarks()
-      .withFaceDescriptor();
-
-    if(!det || !det.descriptor) throw new Error('ไม่พบใบหน้าในรูป (ลองเปลี่ยนรูปให้หน้าชัดขึ้น)');
-
-    const arr = Array.from(det.descriptor);
-    const faceData = JSON.stringify(arr);
-
-    const resp = await api.call('saveEmployeeFaceDescriptor', { code, faceData });
-
-    // update local cache
-    const emp = (employees || []).find(e => String(e.code) === String(code));
-    if(emp) emp.faceData = faceData;
-
-    setEmpFaceUI(emp || { photoUrl: emp?.photoUrl || '', faceData });
-    alert('บันทึก FaceData สำเร็จ ✅');
-  }
-
-
 
   function openEmpAdd(){
     resetEmpForm(false);
@@ -2497,7 +2340,6 @@
 
     if($('empFormError')) $('empFormError').style.display = 'none';
     if($('empFormSuccess')) $('empFormSuccess').style.display = 'none';
-    setEmpFaceUI(emp);
     openModal('empModalBackdrop');
   };
 
@@ -2600,20 +2442,14 @@
   // ===== Leave custom actions UI =====
   function loadLeaveCustomToUI(){
     const c = getLeaveCustom();
-    if($('leaveListActionCustom')) $('leaveListActionCustom').value = c.listAction || '';
-    if($('leaveUpdateActionCustom')) $('leaveUpdateActionCustom').value = c.updateAction || '';
   }
 
   function saveLeaveCustomFromUI(){
-    const listAction = ( $('leaveListActionCustom')?.value || '' ).trim();
-    const updateAction = ( $('leaveUpdateActionCustom')?.value || '' ).trim();
     setLeaveCustom({ listAction, updateAction });
   }
 
   function clearLeaveCustom(){
     localStorage.removeItem(STORAGE_LEAVE_CUSTOM_KEY);
-    if($('leaveListActionCustom')) $('leaveListActionCustom').value = '';
-    if($('leaveUpdateActionCustom')) $('leaveUpdateActionCustom').value = '';
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -2657,38 +2493,6 @@
     $('empModalBackdrop')?.addEventListener('click', (e) => { if(e.target === $('empModalBackdrop')) closeModal('empModalBackdrop'); });
     $('btnResetEmpForm')?.addEventListener('click', () => resetEmpForm(false));
     $('btnSaveEmployee')?.addEventListener('click', saveEmployee);
-
-    // face enrollment
-    $('btnUploadEmpFace')?.addEventListener('click', async () => {
-      try{ await uploadEmpFacePhoto(); }catch(err){
-        const asked = await ensureLoginIfNeeded(err);
-        if(asked) return;
-        alert('อัปโหลดรูปไม่สำเร็จ: ' + err.message);
-      }
-    });
-
-    $('btnExtractEmpFace')?.addEventListener('click', async () => {
-      try{ await extractAndSaveEmpFaceData(); }catch(err){
-        const asked = await ensureLoginIfNeeded(err);
-        if(asked) return;
-        alert('บันทึก FaceData ไม่สำเร็จ: ' + err.message);
-      }
-    });
-
-    $('empFaceFile')?.addEventListener('change', async () => {
-      const file = $('empFaceFile')?.files?.[0];
-      const preview = $('empFacePreview');
-      if(!preview) return;
-      if(!file){ preview.style.display='none'; preview.removeAttribute('src'); return; }
-      try{
-        const dataUrl = await readFileAsDataURL(file);
-        preview.src = dataUrl;
-        preview.style.display='block';
-      }catch(e){
-        preview.style.display='none';
-        preview.removeAttribute('src');
-      }
-    });
 
     // logs
     $('btnReloadLogs')?.addEventListener('click', () => reloadLogs());
