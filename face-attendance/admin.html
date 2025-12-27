@@ -464,7 +464,13 @@
       <button class="navbtn" data-section="employees" title="พนักงาน">
         <span class="ico">👥</span> Employees <small>CRUD</small>
       </button>
-      <button class="navbtn" data-section="logs" title="รายงานรายวัน">
+      
+      <button class="navbtn" data-section="off" title="วันหยุด/ตารางเวร">
+        <span class="ico">🗓️</span> Off & Holidays
+        <small>จัดตารางหยุด</small>
+      </button>
+
+<button class="navbtn" data-section="logs" title="รายงานรายวัน">
         <span class="ico">🗓️</span> Logs <small>ตามเดือน</small>
       </button>
       <button class="navbtn" data-section="summary" title="สรุป">
@@ -614,7 +620,7 @@
         <div class="panel-body">
           <div class="controls" style="margin-bottom:10px">
             <div class="field" style="min-width:280px">
-              <label>ค้นหา (รหัส/ชื่อ/สาขา/ระดับ)</label>
+              <label>ค้นหา (รหัส/ชื่อ/สาขา/ระดับ/แผนก)</label>
               <input id="empSearch" placeholder="เช่น 001 / สมชาย / สาขา..." />
             </div>
           </div>
@@ -628,18 +634,189 @@
                   <th style="min-width:230px">ชื่อ-สกุล</th>
                   <th style="min-width:160px">สาขา</th>
                   <th style="min-width:140px">ระดับ</th>
+                  <th style="min-width:160px">แผนก</th>
                   <th style="min-width:220px">อีเมล</th>
                   <th style="min-width:230px">การทำงาน</th>
                 </tr>
               </thead>
               <tbody id="empTbody">
-                <tr><td colspan="7" class="muted">กด “รีเฟรช” เพื่อดึงข้อมูล</td></tr>
+                <tr><td colspan="8" class="muted">กด “รีเฟรช” เพื่อดึงข้อมูล</td></tr>
               </tbody>
             </table>
           </div>
 
           <div class="muted" style="margin-top:10px;font-size:12px">
             *เรียก action <span class="mono">getEmployees</span> / <span class="mono">saveEmployee</span> / <span class="mono">deleteEmployee</span> (ต้องมี token) 
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- OFF & HOLIDAYS -->
+    <section class="section" id="section-off">
+      <div class="grid two">
+        <!-- Departments -->
+        <div class="panel">
+          <div class="panel-head">
+            <h3>แผนก (Departments)</h3>
+            <div class="right">
+              <button class="btn sm" id="btnAddDept">เพิ่มแผนก</button>
+              <button class="btn sm" id="btnReloadDept">รีเฟรช</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="min-width:130px">deptId</th>
+                    <th style="min-width:220px">ชื่อแผนก</th>
+                    <th style="min-width:90px">sort</th>
+                    <th style="min-width:220px">note</th>
+                    <th style="min-width:190px">การทำงาน</th>
+                  </tr>
+                </thead>
+                <tbody id="deptTbody">
+                  <tr><td colspan="5" class="muted">กด “รีเฟรช” เพื่อดึงข้อมูล</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="muted" style="margin-top:10px;font-size:12px">
+              *เรียก action <span class="mono">getDepartments</span> / <span class="mono">saveDepartment</span> / <span class="mono">deleteDepartment</span> (ต้องมี token)
+            </div>
+          </div>
+        </div>
+
+        <!-- WeeklyOff -->
+        <div class="panel">
+          <div class="panel-head">
+            <h3>ตารางหยุดรายสัปดาห์ (WeeklyOff)</h3>
+            <div class="right">
+              <button class="btn sm" id="btnLoadWeeklyOff">โหลด</button>
+              <button class="btn sm primary" id="btnSaveWeeklyOff">บันทึก</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="controls" style="margin-bottom:10px">
+              <div class="field" style="min-width:180px">
+                <label>สัปดาห์เริ่ม (วันจันทร์)</label>
+                <input type="date" id="offWeekStart" />
+              </div>
+              <div class="field" style="min-width:220px">
+                <label>แผนก</label>
+                <select id="offDeptFilter"></select>
+              </div>
+              <div class="field" style="min-width:260px">
+                <label>ทิป</label>
+                <div class="muted" style="font-size:12px;line-height:1.35">
+                  เลือก “วันหยุด” ของแต่ละคน (1–7 = จันทร์–อาทิตย์) แล้วกดบันทึก
+                </div>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="min-width:110px">รหัส</th>
+                    <th style="min-width:220px">ชื่อ</th>
+                    <th style="min-width:160px">สาขา</th>
+                    <th style="min-width:140px">แผนก</th>
+                    <th style="min-width:160px">วันหยุด (DOW)</th>
+                  </tr>
+                </thead>
+                <tbody id="weeklyOffTbody">
+                  <tr><td colspan="5" class="muted">กด “โหลด” เพื่อดึงข้อมูล</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="muted" style="margin-top:10px;font-size:12px">
+              *เรียก action <span class="mono">adminGetWeeklyOff</span> / <span class="mono">adminSaveWeeklyOffBulk</span> (ต้องมี token)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EmployeeOffDates -->
+      <div class="panel" style="margin-top:14px">
+        <div class="panel-head">
+          <h3>วันหยุด/วันพิเศษรายบุคคล (EmployeeOffDates)</h3>
+          <div class="right">
+            <button class="btn sm" id="btnReloadEmpOff">รีเฟรช</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="controls" style="margin-bottom:10px">
+            <div class="field" style="min-width:170px">
+              <label>จากวันที่</label>
+              <input type="date" id="empOffFrom" />
+            </div>
+            <div class="field" style="min-width:170px">
+              <label>ถึงวันที่</label>
+              <input type="date" id="empOffTo" />
+            </div>
+            <div class="field" style="min-width:220px">
+              <label>แผนก</label>
+              <select id="empOffDeptFilter"></select>
+            </div>
+            <div class="field" style="min-width:220px">
+              <label>ค้นหาในตาราง (รหัส/ชื่อ)</label>
+              <input id="empOffSearch" placeholder="เช่น 1011 / สมชาย" />
+            </div>
+          </div>
+
+          <div class="controls" style="margin-bottom:10px">
+            <div class="field" style="min-width:170px">
+              <label>วันที่ (เพิ่ม/แก้ไข)</label>
+              <input type="date" id="empOffDate" />
+            </div>
+            <div class="field" style="min-width:260px">
+              <label>พนักงาน</label>
+              <select id="empOffEmpSel"></select>
+            </div>
+            <div class="field" style="min-width:200px">
+              <label>ประเภท</label>
+              <select id="empOffKind">
+                <option value="OFF">OFF (หยุดประจำ/หยุด)</option>
+                <option value="PERSONAL_HOLIDAY">PERSONAL_HOLIDAY (วันหยุดพิเศษ)</option>
+                <option value="COMP_OFF">COMP_OFF (วันหยุดชดเชย)</option>
+                <option value="SICK_OFF">SICK_OFF (ป่วย/ไม่เช็คขาด)</option>
+              </select>
+            </div>
+            <div class="field" style="min-width:320px">
+              <label>หมายเหตุ</label>
+              <input id="empOffNote" placeholder="เช่น ไปธุระ/หยุดชดเชย/..." />
+            </div>
+            <div class="field" style="min-width:140px">
+              <label>&nbsp;</label>
+              <button class="btn sm primary" id="btnSaveEmpOff">บันทึกวันพิเศษ</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="min-width:120px">date</th>
+                  <th style="min-width:110px">code</th>
+                  <th style="min-width:220px">ชื่อ</th>
+                  <th style="min-width:150px">แผนก</th>
+                  <th style="min-width:190px">kind</th>
+                  <th style="min-width:260px">note</th>
+                  <th style="min-width:150px">การทำงาน</th>
+                </tr>
+              </thead>
+              <tbody id="empOffTbody">
+                <tr><td colspan="8" class="muted">กด “รีเฟรช” เพื่อดึงข้อมูล</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="muted" style="margin-top:10px;font-size:12px">
+            *เรียก action <span class="mono">adminListEmployeeOffDates</span> / <span class="mono">adminSaveEmployeeOffDate</span> / <span class="mono">adminDeleteEmployeeOffDate</span> (ต้องมี token)
           </div>
         </div>
       </div>
@@ -908,7 +1085,12 @@
           <label>Level</label>
           <select id="empLevel"></select>
         </div>
-        <div class="field" style="min-width:260px">
+        
+        <div class="field" style="min-width:220px">
+          <label>Department</label>
+          <select id="empDepartment"></select>
+        </div>
+<div class="field" style="min-width:260px">
           <label>Email</label>
           <input id="empEmail" placeholder="example@company.com" />
         </div>
@@ -964,6 +1146,7 @@ let cache = {
   branchesLevels: { t:0, branches:[], levels:[] },
   leaveTypes: { t:0, map:{} },
   employees: { t:0, rows:[] },
+  departments: { t:0, rows:[] },
 };
 
 let leaveState = { status: "PENDING", rows: [], selected: null };
@@ -1110,6 +1293,18 @@ async function ensureBranchesLevels(signal){
   return cache.branchesLevels;
 }
 
+async function ensureDepartments(signal){
+  const age = Date.now() - (cache.departments?.t || 0);
+  if(cache.departments?.rows?.length && age < 5 * 60 * 1000) return cache.departments.rows;
+
+  const res = await apiCall("getDepartments", {}, { signal });
+  const rows = Array.isArray(res) ? res : (res?.rows || []);
+  cache.departments = { t: Date.now(), rows };
+  return rows;
+}
+
+
+
 async function ensureLeaveTypes(signal){
   const age = Date.now() - cache.leaveTypes.t;
   if(age < 300000 && Object.keys(cache.leaveTypes.map||{}).length) return cache.leaveTypes.map;
@@ -1138,6 +1333,7 @@ function setSection(section){
     employees: ["Employees", "จัดการข้อมูลพนักงาน (CRUD)"],
     logs: ["Logs", "รายงานรายวันตามเดือน (เช็คอิน/สถานะ)"],
     summary: ["Summary", "สรุปภาพรวมรายเดือน (ต่อคน)"],
+    off: ["Off & Holidays", "จัดตารางหยุดรายสัปดาห์ + วันหยุดพิเศษรายบุคคล"],
     settings: ["Settings", "จัดการข้อมูลสาขาและระดับ"],
   };
   $("pageTitle").textContent = titleMap[section][0];
@@ -1154,6 +1350,7 @@ async function refreshCurrentSection(silent=false){
     if(ACTIVE === "dashboard") await loadToday(signal);
     if(ACTIVE === "leave") await loadLeave(signal);
     if(ACTIVE === "employees") await loadEmployees(signal);
+    if(ACTIVE === "off") await loadOff(signal);
     if(ACTIVE === "logs") await loadLogs(signal);
     if(ACTIVE === "summary") await loadSummary(signal);
     if(ACTIVE === "settings") await loadSettings(signal);
@@ -1410,12 +1607,26 @@ async function actLeave(action){
 /** =========================================
  *  Employees
  *  ========================================= */
-function bindEmpModalOptions(branches, levels){
+function bindEmpModalOptions(branches, levels, departments){
   const branchSel = $("empBranch");
   const levelSel = $("empLevel");
+  const deptSel = $("empDepartment");
 
-  branchSel.innerHTML = `<option value="">—</option>` + branches.map(b => `<option value="${escapeHtml(b.name || b.branch || b)}">${escapeHtml(b.name || b.branch || b)}</option>`).join("");
-  levelSel.innerHTML = `<option value="">—</option>` + levels.map(l => `<option value="${escapeHtml(l.name || l.level || l)}">${escapeHtml(l.name || l.level || l)}</option>`).join("");
+  branchSel.innerHTML = `<option value="">—</option>` + (branches||[]).map(b => {
+    const v = (b.name || b.branch || b);
+    return `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`;
+  }).join("");
+
+  levelSel.innerHTML = `<option value="">—</option>` + (levels||[]).map(l => {
+    const v = (l.name || l.level || l);
+    return `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`;
+  }).join("");
+
+  deptSel.innerHTML = `<option value="">—</option>` + (departments||[]).map(d => {
+    const v = (d.deptId || d.id || "");
+    const n = (d.deptName || d.name || v);
+    return `<option value="${escapeHtml(v)}">${escapeHtml(n)}${v && n && v!==n ? " ("+escapeHtml(v)+")" : ""}</option>`;
+  }).join("");
 }
 
 function openEmpModal(emp){
@@ -1428,6 +1639,7 @@ function openEmpModal(emp){
 
   $("empBranch").value = emp?.branch || "";
   $("empLevel").value = emp?.level || "";
+  $("empDepartment").value = emp?.department || "";
 
   openModal("empModal");
 }
@@ -1440,9 +1652,10 @@ async function loadEmployees(signal){
 
   // ensure branch/level options for modal
   const bl = await ensureBranchesLevels(signal);
-  bindEmpModalOptions(bl.branches, bl.levels);
+  const depts = await ensureDepartments(signal);
+  bindEmpModalOptions(bl.branches, bl.levels, depts);
 
-  renderEmpTable();
+renderEmpTable();
 }
 
 function renderEmpTable(){
@@ -1454,11 +1667,12 @@ function renderEmpTable(){
            String(r.code||"").toLowerCase().includes(q) ||
            String(r.fullName||r.fullname||"").toLowerCase().includes(q) ||
            String(r.branch||"").toLowerCase().includes(q) ||
-           String(r.level||"").toLowerCase().includes(q);
+           String(r.level||"").toLowerCase().includes(q) ||
+           String(r.department||"").toLowerCase().includes(q);
   });
 
   if(!rows.length){
-    tbody.innerHTML = `<tr><td colspan="7" class="muted">ไม่พบพนักงาน</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="muted">ไม่พบพนักงาน</td></tr>`;
     return;
   }
 
@@ -1470,6 +1684,7 @@ function renderEmpTable(){
       <td>${escapeHtml(r.fullName||r.fullname||"")}</td>
       <td>${escapeHtml(r.branch||"")}</td>
       <td>${escapeHtml(r.level||"")}</td>
+      <td>${escapeHtml(r.department||"")}</td>
       <td>${escapeHtml(r.email||"")}</td>
       <td>
         <div class="row-actions">
@@ -1510,13 +1725,14 @@ async function saveEmp(){
   const fullName = ($("empFullName").value || "").trim();
   const branch = $("empBranch").value || "";
   const level = $("empLevel").value || "";
+  const department = $("empDepartment").value || "";
   const email = ($("empEmail").value || "").trim();
 
-  $("empErr").style.display = "none";
+$("empErr").style.display = "none";
 
   try{
     if(!code || !fullName) throw new Error("กรุณากรอก Code และ Full Name");
-    await apiCall("saveEmployee", { id, code, fullName, branch, level, email }, {});
+    await apiCall("saveEmployee", { id, code, fullName, branch, level, department, email }, {});
     toast("บันทึกพนักงานสำเร็จ ✅");
     closeModal("empModal");
     await loadEmployees(abortRefresh());
@@ -1525,6 +1741,432 @@ async function saveEmp(){
     $("empErr").textContent = err.message;
   }
 }
+
+
+/** =========================================
+ *  Off & Holidays (Departments / WeeklyOff / EmployeeOffDates)
+ *  ========================================= */
+let offState = { weeklyRows: [], empOffRows: [] };
+
+const DOW_LABELS = {
+  1: "จันทร์",
+  2: "อังคาร",
+  3: "พุธ",
+  4: "พฤหัส",
+  5: "ศุกร์",
+  6: "เสาร์",
+  7: "อาทิตย์",
+};
+
+function mondayOf(dateStr){
+  const d = dateStr ? new Date(dateStr + "T00:00:00") : new Date();
+  const day = d.getDay(); // 0=Sun,1=Mon...
+  const diff = (day === 0) ? -6 : (1 - day);
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().slice(0,10);
+}
+
+function todayISO(){
+  return new Date().toISOString().slice(0,10);
+}
+
+async function ensureEmployees(signal){
+  const age = Date.now() - (cache.employees?.t || 0);
+  if(cache.employees?.rows?.length && age < 5 * 60 * 1000) return cache.employees.rows;
+
+  const res = await apiCall("getEmployees", {}, { signal });
+  const rows = Array.isArray(res) ? res : (res?.rows || []);
+  cache.employees = { t: Date.now(), rows };
+  return rows;
+}
+
+function fillDeptSelect(selectEl, includeAll=true){
+  if(!selectEl) return;
+  const depts = (cache.departments?.rows || []);
+  const opts = [];
+  if(includeAll) opts.push(`<option value="ALL">ทั้งหมด</option>`);
+  opts.push(`<option value="">—</option>`);
+  depts.forEach(d=>{
+    const id = d.deptId || d.id || "";
+    const name = d.deptName || d.name || id;
+    opts.push(`<option value="${escapeHtml(id)}">${escapeHtml(name)}${id && name && id!==name ? " ("+escapeHtml(id)+")" : ""}</option>`);
+  });
+  selectEl.innerHTML = opts.join("");
+}
+
+function fillEmpSelect(selectEl, deptId){
+  if(!selectEl) return;
+  const emps = (cache.employees?.rows || []);
+  const filtered = deptId && deptId !== "ALL"
+    ? emps.filter(e => String(e.department||"").trim() === String(deptId).trim())
+    : emps;
+
+  const opts = [`<option value="">— เลือกพนักงาน —</option>`];
+  filtered
+    .slice()
+    .sort((a,b)=>String(a.code||"").localeCompare(String(b.code||"")))
+    .forEach(e=>{
+      const code = String(e.code||"").trim();
+      if(!code) return;
+      const name = String(e.fullName || e.fullname || "");
+      opts.push(`<option value="${escapeHtml(code)}">${escapeHtml(code)} • ${escapeHtml(name)}</option>`);
+    });
+  selectEl.innerHTML = opts.join("");
+}
+
+async function loadOff(signal){
+  // preload
+  await ensureDepartments(signal);
+  await ensureEmployees(signal);
+
+  // defaults
+  if(!$("offWeekStart").value) $("offWeekStart").value = mondayOf(todayISO());
+  if(!$("empOffFrom").value || !$("empOffTo").value){
+    const t = todayISO();
+    $("empOffFrom").value = t.slice(0,8) + "01";
+    $("empOffTo").value = t;
+  }
+  if(!$("empOffDate").value) $("empOffDate").value = todayISO();
+
+  // fill selects
+  fillDeptSelect($("offDeptFilter"), true);
+  fillDeptSelect($("empOffDeptFilter"), true);
+
+  // If user previously selected dept, keep it
+  const savedDept = localStorage.getItem("admin_off_dept") || "ALL";
+  if($("offDeptFilter").value !== savedDept) $("offDeptFilter").value = savedDept;
+  if($("empOffDeptFilter").value !== savedDept) $("empOffDeptFilter").value = savedDept;
+
+  fillEmpSelect($("empOffEmpSel"), $("empOffDeptFilter").value);
+
+  // render dept table immediately (from cache) then refresh
+  renderDeptTable(cache.departments.rows || []);
+  renderWeeklyOffPlaceholder();
+  renderEmpOffPlaceholder();
+
+  // load data
+  await Promise.all([
+    loadDepartmentsTable(signal),
+    loadWeeklyOff(signal),
+    loadEmployeeOffDates(signal),
+  ]);
+}
+
+function renderWeeklyOffPlaceholder(){
+  const tb = $("weeklyOffTbody");
+  if(tb) tb.innerHTML = `<tr><td colspan="5" class="muted">กด “โหลด” เพื่อดึงข้อมูล</td></tr>`;
+}
+
+function renderEmpOffPlaceholder(){
+  const tb = $("empOffTbody");
+  if(tb) tb.innerHTML = `<tr><td colspan="7" class="muted">กด “รีเฟรช” เพื่อดึงข้อมูล</td></tr>`;
+}
+
+async function loadDepartmentsTable(signal){
+  const rows = await ensureDepartments(signal);
+  renderDeptTable(rows);
+}
+
+function renderDeptTable(rows){
+  const tb = $("deptTbody");
+  if(!tb) return;
+  if(!rows || !rows.length){
+    tb.innerHTML = `<tr><td colspan="5" class="muted">ยังไม่มีข้อมูลแผนก</td></tr>`;
+    return;
+  }
+  tb.innerHTML = rows.map(d=>{
+    const deptId = d.deptId || d.id || "";
+    const deptName = d.deptName || d.name || "";
+    const sort = d.sort ?? "";
+    const note = d.note || "";
+    return `<tr>
+      <td class="mono">${escapeHtml(deptId)}</td>
+      <td>${escapeHtml(deptName)}</td>
+      <td class="mono">${escapeHtml(String(sort))}</td>
+      <td>${escapeHtml(note)}</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn sm" data-dept-edit="${escapeHtml(deptId)}">แก้ไข</button>
+          <button class="btn sm danger" data-dept-del="${escapeHtml(deptId)}">ลบ</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join("");
+
+  tb.querySelectorAll("[data-dept-edit]").forEach(btn=>{
+    btn.addEventListener("click", ()=>editDepartment(btn.getAttribute("data-dept-edit")));
+  });
+  tb.querySelectorAll("[data-dept-del]").forEach(btn=>{
+    btn.addEventListener("click", ()=>deleteDepartment(btn.getAttribute("data-dept-del")));
+  });
+}
+
+async function addDepartment(){
+  const deptName = prompt("ชื่อแผนก (deptName) ?");
+  if(!deptName) return;
+  const deptId = prompt("รหัสแผนก (deptId) (เว้นว่างให้ระบบสร้างอัตโนมัติ) ?", "");
+  const sortStr = prompt("sort (ตัวเลข) ?", "0");
+  const note = prompt("note (ถ้ามี) ?", "");
+
+  await apiCall("saveDepartment", {
+    deptId: (deptId||"").trim(),
+    deptName: deptName.trim(),
+    sort: Number(sortStr||0) || 0,
+    note: (note||"").trim(),
+  }, {});
+
+  cache.departments.t = 0;
+  toast("บันทึกแผนกแล้ว ✅");
+  await loadDepartmentsTable(abortRefresh());
+  // refresh selects
+  fillDeptSelect($("offDeptFilter"), true);
+  fillDeptSelect($("empOffDeptFilter"), true);
+  // also refresh employee modal options (if already loaded)
+  const bl = await ensureBranchesLevels(abortRefresh());
+  const depts = await ensureDepartments(abortRefresh());
+  bindEmpModalOptions(bl.branches, bl.levels, depts);
+}
+
+async function editDepartment(deptId){
+  const rows = await ensureDepartments(abortRefresh());
+  const cur = rows.find(r => String(r.deptId||r.id||"") === String(deptId));
+  if(!cur) return;
+
+  const deptName = prompt("ชื่อแผนก (deptName) ?", cur.deptName || "");
+  if(!deptName) return;
+  const sortStr = prompt("sort (ตัวเลข) ?", String(cur.sort ?? 0));
+  const note = prompt("note (ถ้ามี) ?", cur.note || "");
+
+  await apiCall("saveDepartment", {
+    deptId: String(deptId||"").trim(),
+    deptName: deptName.trim(),
+    sort: Number(sortStr||0) || 0,
+    note: (note||"").trim(),
+  }, {});
+
+  cache.departments.t = 0;
+  toast("อัปเดตแผนกแล้ว ✅");
+  await loadDepartmentsTable(abortRefresh());
+  fillDeptSelect($("offDeptFilter"), true);
+  fillDeptSelect($("empOffDeptFilter"), true);
+}
+
+async function deleteDepartment(deptId){
+  if(!confirm(`ลบแผนก ${deptId} ?`)) return;
+  await apiCall("deleteDepartment", { deptId }, {});
+  cache.departments.t = 0;
+  toast("ลบแผนกแล้ว ✅");
+  await loadDepartmentsTable(abortRefresh());
+  fillDeptSelect($("offDeptFilter"), true);
+  fillDeptSelect($("empOffDeptFilter"), true);
+}
+
+async function loadWeeklyOff(signal){
+  const weekStart = ($("offWeekStart").value || "").trim() || mondayOf(todayISO());
+  const department = $("offDeptFilter").value || "ALL";
+  localStorage.setItem("admin_off_dept", department);
+
+  const res = await apiCall("adminGetWeeklyOff", { weekStart, department }, { signal });
+  const rows = res?.rows || [];
+  offState.weeklyRows = rows;
+  renderWeeklyOffTable(rows);
+}
+
+function renderWeeklyOffTable(rows){
+  const tb = $("weeklyOffTbody");
+  if(!tb) return;
+
+  if(!rows || !rows.length){
+    tb.innerHTML = `<tr><td colspan="5" class="muted">ไม่พบพนักงานในเงื่อนไขนี้</td></tr>`;
+    return;
+  }
+
+  tb.innerHTML = rows.map(r=>{
+    const code = String(r.code||"");
+    const offDow = String(r.offDow||"");
+    const sel = [`<option value="">—</option>`]
+      .concat([1,2,3,4,5,6,7].map(n => `<option value="${n}" ${String(n)===offDow?"selected":""}>${n} • ${DOW_LABELS[n]}</option>`))
+      .join("");
+
+    return `<tr data-weekly-code="${escapeHtml(code)}" data-weekly-dept="${escapeHtml(r.department||"")}">
+      <td class="mono">${escapeHtml(code)}</td>
+      <td>${escapeHtml(r.fullName||"")}</td>
+      <td>${escapeHtml(r.branch||"")}</td>
+      <td>${escapeHtml(r.department||"")}</td>
+      <td>
+        <select class="weeklyOffSel">${sel}</select>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+async function saveWeeklyOff(){
+  const weekStart = ($("offWeekStart").value || "").trim() || mondayOf(todayISO());
+
+  const rows = Array.from($("weeklyOffTbody").querySelectorAll("tr[data-weekly-code]")).map(tr=>{
+    const code = tr.getAttribute("data-weekly-code");
+    const department = tr.getAttribute("data-weekly-dept") || "";
+    const offDow = tr.querySelector(".weeklyOffSel")?.value || "";
+    return { code, department, offDow };
+  });
+
+  await apiCall("adminSaveWeeklyOffBulk", { weekStart, items: JSON.stringify(rows) }, {});
+  toast("บันทึกตารางหยุดแล้ว ✅");
+  await loadWeeklyOff(abortRefresh());
+}
+
+async function loadEmployeeOffDates(signal){
+  const dateFrom = ($("empOffFrom").value || "").trim();
+  const dateTo = ($("empOffTo").value || "").trim();
+  const department = $("empOffDeptFilter").value || "";
+  localStorage.setItem("admin_off_dept", $("empOffDeptFilter").value || "ALL");
+
+  const params = { dateFrom, dateTo };
+  if(department && department !== "ALL") params.department = department;
+
+  const res = await apiCall("adminListEmployeeOffDates", params, { signal });
+  const rows = res?.rows || [];
+  offState.empOffRows = rows;
+
+  renderEmpOffTable(rows);
+}
+
+function renderEmpOffTable(rows){
+  const tb = $("empOffTbody");
+  if(!tb) return;
+
+  const emps = cache.employees?.rows || [];
+  const map = {};
+  emps.forEach(e=>{
+    const c = String(e.code||"").trim();
+    if(c) map[c] = e;
+  });
+
+  const q = ($("empOffSearch").value || "").trim().toLowerCase();
+  const filtered = !q ? rows : rows.filter(r=>{
+    const code = String(r.code||"").toLowerCase();
+    const emp = map[String(r.code||"")] || {};
+    const name = String(emp.fullName || emp.fullname || "").toLowerCase();
+    return code.includes(q) || name.includes(q);
+  });
+
+  if(!filtered.length){
+    tb.innerHTML = `<tr><td colspan="7" class="muted">ไม่พบข้อมูลในช่วงวันที่/เงื่อนไขนี้</td></tr>`;
+    return;
+  }
+
+  tb.innerHTML = filtered.map(r=>{
+    const emp = map[String(r.code||"")] || {};
+    const name = emp.fullName || emp.fullname || "";
+    const dept = emp.department || "";
+    return `<tr data-offdate-date="${escapeHtml(r.date||"")}" data-offdate-code="${escapeHtml(r.code||"")}">
+      <td class="mono">${escapeHtml(r.date||"")}</td>
+      <td class="mono">${escapeHtml(r.code||"")}</td>
+      <td>${escapeHtml(name)}</td>
+      <td>${escapeHtml(dept)}</td>
+      <td>${escapeHtml(r.label || r.kind || "")}</td>
+      <td>${escapeHtml(r.note || "")}</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn sm" data-offdate-edit="1">แก้ไข</button>
+          <button class="btn sm danger" data-offdate-del="1">ลบ</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join("");
+
+  tb.querySelectorAll("[data-offdate-del]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const tr = btn.closest("tr");
+      if(!tr) return;
+      const date = tr.getAttribute("data-offdate-date");
+      const code = tr.getAttribute("data-offdate-code");
+      deleteEmployeeOffDate(date, code);
+    });
+  });
+  tb.querySelectorAll("[data-offdate-edit]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const tr = btn.closest("tr");
+      if(!tr) return;
+      const date = tr.getAttribute("data-offdate-date");
+      const code = tr.getAttribute("data-offdate-code");
+      editEmployeeOffDate(date, code);
+    });
+  });
+}
+
+async function saveEmployeeOffDate(){
+  const date = ($("empOffDate").value || "").trim();
+  const code = ($("empOffEmpSel").value || "").trim();
+  const kind = ($("empOffKind").value || "OFF").trim();
+  const note = ($("empOffNote").value || "").trim();
+
+  if(!date) return toast("กรุณาเลือกวันที่", "warn");
+  if(!code) return toast("กรุณาเลือกพนักงาน", "warn");
+
+  await apiCall("adminSaveEmployeeOffDate", { date, code, kind, note }, {});
+  toast("บันทึกวันพิเศษแล้ว ✅");
+  await loadEmployeeOffDates(abortRefresh());
+}
+
+async function editEmployeeOffDate(date, code){
+  const res = await apiCall("adminListEmployeeOffDates", { dateFrom: date, dateTo: date, code }, {});
+  const row = (res?.rows || [])[0];
+  $("empOffDate").value = date;
+  $("empOffEmpSel").value = code;
+  if(row?.kind) $("empOffKind").value = row.kind;
+  $("empOffNote").value = row?.note || "";
+  toast("แก้ไขค่าด้านบนแล้วกด “บันทึกวันพิเศษ”", "ok");
+}
+
+async function deleteEmployeeOffDate(date, code){
+  if(!confirm(`ลบวันพิเศษ ${code} @ ${date} ?`)) return;
+  await apiCall("adminDeleteEmployeeOffDate", { date, code }, {});
+  toast("ลบแล้ว ✅");
+  await loadEmployeeOffDates(abortRefresh());
+}
+
+function wireOffEvents(){
+  $("btnReloadDept")?.addEventListener("click", ()=>loadDepartmentsTable(abortRefresh()));
+  $("btnAddDept")?.addEventListener("click", async ()=>{
+    try{
+      await addDepartment();
+    }catch(err){
+      toast(err.message || "บันทึกไม่สำเร็จ", "warn");
+    }
+  });
+
+  $("btnLoadWeeklyOff")?.addEventListener("click", ()=>loadWeeklyOff(abortRefresh()));
+  $("btnSaveWeeklyOff")?.addEventListener("click", async ()=>{
+    try{
+      await saveWeeklyOff();
+    }catch(err){
+      toast(err.message || "บันทึกไม่สำเร็จ", "warn");
+    }
+  });
+
+  $("offDeptFilter")?.addEventListener("change", ()=>loadWeeklyOff(abortRefresh()));
+  $("offWeekStart")?.addEventListener("change", ()=>loadWeeklyOff(abortRefresh()));
+
+  $("btnReloadEmpOff")?.addEventListener("click", ()=>loadEmployeeOffDates(abortRefresh()));
+  $("empOffDeptFilter")?.addEventListener("change", ()=>{
+    const dept = $("empOffDeptFilter").value;
+    fillEmpSelect($("empOffEmpSel"), dept);
+    loadEmployeeOffDates(abortRefresh());
+  });
+  $("empOffSearch")?.addEventListener("input", ()=>renderEmpOffTable(offState.empOffRows));
+  $("empOffFrom")?.addEventListener("change", ()=>loadEmployeeOffDates(abortRefresh()));
+  $("empOffTo")?.addEventListener("change", ()=>loadEmployeeOffDates(abortRefresh()));
+
+  $("btnSaveEmpOff")?.addEventListener("click", async ()=>{
+    try{
+      await saveEmployeeOffDate();
+    }catch(err){
+      toast(err.message || "บันทึกไม่สำเร็จ", "warn");
+    }
+  });
+}
+
 
 /** =========================================
  *  Logs
@@ -1878,6 +2520,8 @@ function wireEvents(){
   document.addEventListener("visibilitychange", ()=>{
     if(document.visibilityState === "visible") refreshCurrentSection(true);
   });
+  wireOffEvents();
+
   window.addEventListener("focus", ()=> refreshCurrentSection(true));
 }
 
