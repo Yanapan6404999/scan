@@ -3,1100 +3,1926 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>HR Attendance • Admin Panel</title>
+  <title>HRM Admin • Attendance + Leave</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
     :root{
-      --bg:#0b1220;
-      --panel:#0f172a;
-      --card:#0b1220;
-      --card2:#0f172a;
-      --text:#e5e7eb;
-      --muted:#94a3b8;
-      --border:#1f2a44;
-      --white:#ffffff;
-      --accent:#22c55e;
-      --accent2:#16a34a;
-      --blue:#3b82f6;
-      --blue2:#2563eb;
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:#e5e7eb;
+
+      --blue:#2563eb;
+      --blue2:#1d4ed8;
+      --green:#16a34a;
       --amber:#f59e0b;
       --red:#ef4444;
 
-      --radius:18px;
-      --shadow: 0 20px 50px rgba(0,0,0,.35);
+      --shadow: 0 10px 24px rgba(15,23,42,.08);
+      --radius: 16px;
     }
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
     body{
       margin:0;
-      font-family:"Prompt", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background:
-        radial-gradient(1200px 800px at 20% -20%, rgba(59,130,246,.25), transparent 60%),
-        radial-gradient(900px 700px at 120% 10%, rgba(34,197,94,.18), transparent 55%),
-        radial-gradient(900px 600px at 40% 120%, rgba(245,158,11,.14), transparent 55%),
-        linear-gradient(180deg, #071022 0%, #050914 100%);
+      font-family:"Prompt", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans Thai", sans-serif;
+      background: linear-gradient(180deg,#f8fafc 0%, #f6f8fb 55%, #f6f8fb 100%);
       color:var(--text);
     }
-
-    a{color:inherit}
+    a{ color:inherit; text-decoration:none; }
+    button, input, select, textarea{ font:inherit; }
     .app{
+      min-height:100%;
       display:grid;
-      grid-template-columns: 290px 1fr;
-      min-height:100vh;
+      grid-template-columns: 280px 1fr;
     }
 
     /* Sidebar */
     .sidebar{
-      position:sticky;
-      top:0;
-      height:100vh;
-      padding:18px 14px;
-      background: linear-gradient(180deg, rgba(15,23,42,.92), rgba(8,12,26,.92));
-      border-right: 1px solid var(--border);
+      position:sticky; top:0; height:100vh;
+      background: rgba(255,255,255,.9);
       backdrop-filter: blur(10px);
+      border-right:1px solid var(--border);
+      padding:18px 14px;
+      display:flex; flex-direction:column; gap:14px;
     }
     .brand{
       display:flex; align-items:center; gap:10px;
-      padding:10px 10px 14px 10px;
+      padding:12px 12px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background: #fff;
+      box-shadow: 0 8px 18px rgba(2,6,23,.05);
     }
     .logo{
       width:38px; height:38px; border-radius:12px;
-      background: radial-gradient(circle at 30% 30%, rgba(59,130,246,.95), rgba(34,197,94,.8));
-      box-shadow: 0 10px 25px rgba(59,130,246,.25);
+      background: linear-gradient(135deg,var(--blue),var(--blue2));
+      display:grid; place-items:center; color:#fff; font-weight:800;
+      letter-spacing:.5px;
     }
-    .brand h1{margin:0; font-size:16px; font-weight:800; letter-spacing:.2px}
-    .brand p{margin:0; font-size:12px; color:var(--muted)}
+    .brand h1{
+      margin:0; font-size:14px; line-height:1.15;
+    }
+    .brand p{ margin:2px 0 0; font-size:12px; color:var(--muted); }
+
+    .side-meta{
+      padding:10px 12px;
+      border:1px dashed var(--border);
+      border-radius:14px;
+      background: #fff;
+    }
+    .meta-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .meta-row + .meta-row{ margin-top:8px; }
+    .meta-k{ font-size:12px; color:var(--muted); }
+    .meta-v{
+      font-size:12px;
+      color:var(--text);
+      max-width:160px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      cursor:pointer;
+    }
+
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--muted);
+      user-select:none;
+    }
+    .dot{
+      width:8px; height:8px; border-radius:99px;
+      background: #cbd5e1;
+    }
+    .badge.ok{ color:var(--green); border-color:rgba(22,163,74,.25); background: rgba(22,163,74,.06); }
+    .badge.ok .dot{ background: var(--green); }
+    .badge.bad{ color:var(--red); border-color:rgba(239,68,68,.25); background: rgba(239,68,68,.06); }
+    .badge.bad .dot{ background: var(--red); }
+    .badge.warn{ color:var(--amber); border-color:rgba(245,158,11,.25); background: rgba(245,158,11,.07); }
+    .badge.warn .dot{ background: var(--amber); }
+
     .nav{
-      margin-top:8px;
       display:flex; flex-direction:column; gap:6px;
     }
     .nav button{
       width:100%;
-      border:1px solid transparent;
-      background: transparent;
-      color:var(--text);
-      text-align:left;
-      padding:11px 12px;
-      border-radius:14px;
-      font-size:14px;
-      cursor:pointer;
       display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid transparent;
+      background:transparent;
+      color:var(--text);
+      cursor:pointer;
+      text-align:left;
     }
-    .nav button:hover{background: rgba(148,163,184,.08); border-color: rgba(148,163,184,.14)}
-    .nav button.active{background: rgba(59,130,246,.16); border-color: rgba(59,130,246,.32)}
-    .nav .icon{width:20px; opacity:.9}
+    .nav button:hover{ background: rgba(37,99,235,.06); }
+    .nav button.active{
+      background: rgba(37,99,235,.10);
+      border-color: rgba(37,99,235,.20);
+    }
+    .ico{
+      width:18px; height:18px; flex:0 0 18px;
+      display:inline-block;
+    }
+    .nav small{ color:var(--muted); font-size:12px; margin-left:auto; }
 
-    .sidebar .bottom{
-      position:absolute;
-      left:14px; right:14px; bottom:18px;
+    .side-actions{
+      margin-top:auto;
       display:flex; flex-direction:column; gap:10px;
     }
-    .pill{
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
       padding:10px 12px;
-      border-radius: 16px;
-      background: rgba(2,6,23,.45);
-      border:1px solid rgba(148,163,184,.14);
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.45;
-    }
-    .pill b{color:var(--text); font-weight:700}
-    .dangerBtn{
-      border:none;
-      border-radius: 16px;
-      padding:12px 14px;
-      font-weight:700;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:#fff;
       cursor:pointer;
-      background: rgba(239,68,68,.92);
-      color:#fff;
-      box-shadow: 0 18px 40px rgba(239,68,68,.25);
+      transition: transform .05s ease, background .15s ease;
+      user-select:none;
     }
-    .dangerBtn:hover{filter:brightness(1.03)}
+    .btn:hover{ background:#f8fafc; }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{ background: linear-gradient(135deg,var(--blue),var(--blue2)); color:#fff; border-color: transparent; }
+    .btn.primary:hover{ filter: brightness(1.03); }
+    .btn.danger{ background: rgba(239,68,68,.08); color:#b91c1c; border-color: rgba(239,68,68,.25); }
+    .btn.ghost{ background: transparent; }
+    .btn:disabled{ opacity:.55; cursor:not-allowed; }
 
     /* Main */
     .main{
-      padding:18px 18px 34px 18px;
+      padding:18px;
     }
     .topbar{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      padding:10px 12px;
-      border-radius: var(--radius);
-      background: rgba(15,23,42,.55);
-      border:1px solid rgba(148,163,184,.14);
-      backdrop-filter: blur(10px);
+      display:flex; align-items:flex-start; justify-content:space-between; gap:14px;
+      margin-bottom:14px;
     }
-    .topbar .left{
-      display:flex; flex-direction:column; gap:4px;
-      min-width:0;
+    .title h2{ margin:0; font-size:18px; }
+    .title p{ margin:6px 0 0; color:var(--muted); font-size:13px; }
+    .top-actions{
+      display:flex; align-items:center; gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
     }
-    .titleRow{
-      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-    }
-    .titleRow h2{
-      margin:0;
-      font-size:16px;
-      font-weight:800;
-      letter-spacing:.2px;
-    }
-    .meta{
-      font-size:12px;
-      color:var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:72vw;
-    }
-    .actions{
-      display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
-    }
-    .btn{
-      border:1px solid rgba(148,163,184,.20);
-      background: rgba(2,6,23,.35);
-      color:var(--text);
-      padding:10px 12px;
-      border-radius: 999px;
-      font-weight:700;
-      cursor:pointer;
-      font-size:13px;
-      display:inline-flex; gap:8px; align-items:center;
-      user-select:none;
-    }
-    .btn:hover{border-color: rgba(148,163,184,.34); background: rgba(2,6,23,.50)}
-    .btn.primary{background: rgba(59,130,246,.92); border-color: rgba(59,130,246,.92); color:#fff}
-    .btn.primary:hover{filter:brightness(1.03)}
-    .btn.good{background: rgba(34,197,94,.90); border-color: rgba(34,197,94,.90); color:#fff}
-    .btn.warn{background: rgba(245,158,11,.92); border-color: rgba(245,158,11,.92); color:#111827}
-    .btn.bad{background: rgba(239,68,68,.92); border-color: rgba(239,68,68,.92); color:#fff}
-    .grid{
-      margin-top:16px;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:14px;
-    }
-    .card{
-      background: rgba(15,23,42,.48);
-      border: 1px solid rgba(148,163,184,.14);
+
+    .panel{
+      background: #fff;
+      border:1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow:hidden;
     }
-    .cardHeader{
-      padding:14px 14px 10px 14px;
+    .panel-head{
+      padding:14px 14px 10px;
+      border-bottom:1px solid var(--border);
       display:flex; align-items:center; justify-content:space-between; gap:10px;
-      border-bottom:1px solid rgba(148,163,184,.12);
+      flex-wrap:wrap;
     }
-    .cardHeader h3{margin:0; font-size:15px; font-weight:800}
-    .cardHeader .sub{font-size:12px; color:var(--muted); margin-top:2px}
-    .cardBody{padding:14px}
-    .row{
-      display:grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr auto;
-      gap:10px;
-      align-items:end;
+    .panel-head h3{
+      margin:0;
+      font-size:14px;
     }
-    .field label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
-    .field input, .field select{
-      width:100%;
-      background: rgba(2,6,23,.35);
-      border:1px solid rgba(148,163,184,.18);
-      color:var(--text);
-      padding:10px 12px;
-      border-radius:14px;
-      outline:none;
-      font-family:inherit;
-      font-size:13px;
+    .panel-head .right{
+      display:flex; align-items:center; gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
     }
-    .field input:focus, .field select:focus{border-color: rgba(59,130,246,.55); box-shadow: 0 0 0 4px rgba(59,130,246,.12)}
-    .hint{font-size:12px; color:var(--muted); margin-top:10px; line-height:1.45}
+    .panel-body{ padding:14px; }
 
-    /* Table */
-    .tableWrap{
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+    .grid.two{ grid-template-columns: 1fr 1fr; }
+    @media (max-width: 980px){
+      .app{ grid-template-columns: 1fr; }
+      .sidebar{ position:fixed; left:0; top:0; z-index:40; transform: translateX(-110%); transition: transform .2s ease; width: 86vw; max-width:320px; }
+      .sidebar.open{ transform: translateX(0); }
+      .main{ padding:14px; padding-bottom:80px; }
+      .mobilebar{
+        position:fixed; left:12px; right:12px; bottom:12px;
+        z-index:30;
+        background: rgba(255,255,255,.92);
+        border:1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        padding:10px;
+        display:flex; align-items:center; justify-content:space-between; gap:8px;
+        backdrop-filter: blur(10px);
+      }
+      .mobilebar .mini{
+        display:flex; align-items:center; gap:8px;
+      }
+      .mobilebar .mini .pill{
+        border:1px solid var(--border);
+        border-radius:999px;
+        padding:7px 10px;
+        font-size:12px;
+        background:#fff;
+      }
+      .mobilebar button{ border-radius:14px; }
+    }
+    @media (min-width: 981px){
+      .mobilebar{ display:none; }
+    }
+
+    /* Controls */
+    .controls{
+      display:flex; gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .controls .field{
+      display:flex; flex-direction:column; gap:6px;
+      min-width:160px;
+    }
+    .controls label{
+      font-size:12px; color:var(--muted);
+    }
+    .controls input, .controls select{
+      height:40px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      padding:0 12px;
+      background:#fff;
+      outline:none;
+    }
+    .controls input:focus, .controls select:focus{
+      border-color: rgba(37,99,235,.35);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.10);
+    }
+
+    /* Tables */
+    .table-wrap{
       overflow:auto;
-      border-radius: 16px;
-      border: 1px solid rgba(148,163,184,.14);
-      background: rgba(2,6,23,.26);
+      border:1px solid var(--border);
+      border-radius: 14px;
     }
-    table{width:100%; border-collapse:separate; border-spacing:0; min-width: 980px}
-    thead th{
-      position:sticky; top:0;
-      background: rgba(8,12,26,.95);
-      color: var(--muted);
-      font-size:12px;
-      text-align:left;
-      padding:12px 12px;
-      border-bottom: 1px solid rgba(148,163,184,.14);
-      z-index:2;
-      white-space:nowrap;
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width: 760px;
+      background:#fff;
     }
-    tbody td{
-      padding:12px 12px;
-      border-bottom: 1px solid rgba(148,163,184,.10);
+    th, td{
+      padding:10px 10px;
+      border-bottom:1px solid var(--border);
       font-size:13px;
       vertical-align:top;
     }
-    tbody tr:hover td{background: rgba(148,163,184,.06)}
-    .badge{
-      display:inline-flex; align-items:center; gap:6px;
-      padding:6px 10px;
-      border-radius: 999px;
+    th{
       font-size:12px;
-      font-weight:800;
+      color: var(--muted);
+      text-align:left;
+      background: #f8fafc;
+      position:sticky; top:0;
+      z-index:1;
+    }
+    tr:hover td{ background: rgba(2,6,23,.02); }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    .chip{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--muted);
       white-space:nowrap;
     }
-    .bWait{background: rgba(245,158,11,.18); color: #fbbf24; border:1px solid rgba(245,158,11,.28)}
-    .bOk{background: rgba(34,197,94,.16); color: #4ade80; border:1px solid rgba(34,197,94,.26)}
-    .bNo{background: rgba(239,68,68,.14); color: #fca5a5; border:1px solid rgba(239,68,68,.22)}
-    .bInfo{background: rgba(59,130,246,.14); color: #93c5fd; border:1px solid rgba(59,130,246,.22)}
-    .miniBtns{display:flex; gap:8px; flex-wrap:wrap}
-    .miniBtns .btn{padding:8px 10px; font-size:12px}
-    .link{
-      color:#93c5fd;
-      text-decoration:underline;
-      text-underline-offset: 2px;
+    .chip.blue{ color: var(--blue2); border-color: rgba(37,99,235,.25); background: rgba(37,99,235,.06); }
+    .chip.green{ color: var(--green); border-color: rgba(22,163,74,.25); background: rgba(22,163,74,.06); }
+    .chip.red{ color: #b91c1c; border-color: rgba(239,68,68,.25); background: rgba(239,68,68,.07); }
+    .chip.amber{ color: #b45309; border-color: rgba(245,158,11,.25); background: rgba(245,158,11,.07); }
+
+    .row-actions{
+      display:flex; gap:8px; flex-wrap:wrap;
     }
+    .btn.sm{
+      padding:7px 10px;
+      border-radius:12px;
+      font-size:12px;
+    }
+    .btn.icon{
+      gap:8px;
+    }
+
+    /* Segmented */
+    .seg{
+      display:flex; gap:6px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .seg button{
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--muted);
+      padding:8px 10px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:12px;
+    }
+    .seg button.active{
+      color: var(--blue2);
+      border-color: rgba(37,99,235,.25);
+      background: rgba(37,99,235,.06);
+      font-weight:600;
+    }
+
+    /* Sections */
+    .section{ display:none; }
+    .section.active{ display:block; }
 
     /* Toast */
     .toast{
       position:fixed;
-      left:50%; transform: translateX(-50%);
-      bottom:20px;
-      background: rgba(2,6,23,.90);
-      border:1px solid rgba(148,163,184,.18);
-      color:var(--text);
+      left:50%;
+      transform: translateX(-50%);
+      bottom: 90px;
+      z-index:50;
+      background: rgba(15,23,42,.92);
+      color:#fff;
       padding:10px 12px;
-      border-radius: 999px;
-      font-size:13px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.45);
-      opacity:0; pointer-events:none;
-      transition: opacity .18s ease, transform .18s ease;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
       max-width: 92vw;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      display:none;
+      font-size:13px;
     }
-    .toast.show{opacity:1; transform: translateX(-50%) translateY(-6px)}
-    .toast.good{border-color: rgba(34,197,94,.35)}
-    .toast.bad{border-color: rgba(239,68,68,.35)}
 
     /* Modal */
     .backdrop{
       position:fixed; inset:0;
-      background: rgba(0,0,0,.55);
+      background: rgba(2,6,23,.55);
       display:none;
+      z-index:60;
+      padding: 16px;
       align-items:center; justify-content:center;
-      padding:18px;
-      z-index:50;
     }
-    .backdrop.show{display:flex}
     .modal{
-      width:min(560px, 100%);
-      background: rgba(15,23,42,.92);
-      border:1px solid rgba(148,163,184,.16);
-      border-radius: 22px;
-      box-shadow: 0 28px 80px rgba(0,0,0,.55);
+      width:min(720px, 100%);
+      background:#fff;
+      border-radius: 18px;
+      border:1px solid var(--border);
+      box-shadow: var(--shadow);
       overflow:hidden;
     }
-    .modalHeader{
-      padding:14px 14px 10px 14px;
-      border-bottom:1px solid rgba(148,163,184,.12);
+    .modal-head{
+      padding:14px;
+      border-bottom:1px solid var(--border);
       display:flex; align-items:center; justify-content:space-between; gap:10px;
     }
-    .modalHeader h4{margin:0; font-size:15px; font-weight:900}
-    .modalBody{padding:14px}
-    .modalBody p{margin:0 0 10px 0; color:var(--muted); font-size:13px; line-height:1.5}
-    .modalFooter{
+    .modal-head h4{ margin:0; font-size:14px; }
+    .modal-body{ padding:14px; }
+    .modal-body p{ margin:0 0 10px; color:var(--muted); font-size:13px; }
+    .modal-foot{
       padding:14px;
-      border-top:1px solid rgba(148,163,184,.12);
+      border-top:1px solid var(--border);
       display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;
     }
-
-    /* Responsive */
-    @media (max-width: 980px){
-      .app{grid-template-columns: 1fr}
-      .sidebar{
-        position:fixed; inset:auto 0 0 0; height:auto;
-        z-index:40;
-        border-right:none; border-top:1px solid rgba(148,163,184,.14);
-        padding:10px 10px 14px 10px;
-      }
-      .brand{display:none}
-      .nav{
-        flex-direction:row;
-        justify-content:space-between;
-        gap:8px;
-        margin:0;
-      }
-      .nav button{
-        flex:1;
-        justify-content:center;
-        text-align:center;
-        padding:10px 10px;
-        border-radius: 16px;
-      }
-      .sidebar .bottom{display:none}
-      .main{padding:16px 12px 120px 12px}
-      .meta{max-width: 90vw}
-      .row{grid-template-columns: 1fr 1fr; align-items:stretch}
-      .row .field:nth-child(5){grid-column: 1 / -1}
+    textarea{
+      width:100%;
+      min-height: 90px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      outline:none;
+      resize: vertical;
     }
+    textarea:focus{
+      border-color: rgba(37,99,235,.35);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.10);
+    }
+
+    /* Small helpers */
+    .muted{ color:var(--muted); }
+    .kpi{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .kpi .card{
+      flex:1 1 220px;
+      border:1px solid var(--border);
+      border-radius: 16px;
+      background:#fff;
+      padding:12px;
+      box-shadow: 0 10px 18px rgba(2,6,23,.05);
+    }
+    .kpi .card b{ font-size:18px; }
+    .kpi .card span{ display:block; color:var(--muted); font-size:12px; margin-top:4px; }
   </style>
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="logo"></div>
-        <div>
-          <h1>แผงควบคุมระบบลงเวลา</h1>
-          <p>HR Attendance Panel</p>
-        </div>
-      </div>
 
-      <div class="nav" id="nav">
-        <button class="active" data-view="dash">
-          <span class="icon">📊</span> ภาพรวม
-        </button>
-        <button data-view="leave">
-          <span class="icon">📝</span> ตรวจสอบการลา
-        </button>
-        <button data-view="settings">
-          <span class="icon">⚙️</span> ตั้งค่า
-        </button>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">HR</div>
+      <div>
+        <h1>HRM Admin Panel</h1>
+        <p>Attendance + Leave (GS Router)</p>
       </div>
+    </div>
 
-      <div class="bottom">
-        <div class="pill">
-          <div><b>API</b>: <span id="apiMini">-</span></div>
-          <div><b>สถานะ</b>: <span id="miniStatus">ยังไม่เชื่อมต่อ</span></div>
-          <div><b>อัปเดตล่าสุด</b>: <span id="miniUpdated">-</span></div>
-        </div>
-        <button class="dangerBtn" id="btnLogout">ออกจากระบบ</button>
+    <div class="side-meta">
+      <div class="meta-row">
+        <div class="meta-k">API</div>
+        <div class="meta-v" id="apiText" title="คลิกเพื่อตั้งค่า">ยังไม่ได้ตั้งค่า</div>
       </div>
-    </aside>
-
-    <main class="main">
-      <div class="topbar">
-        <div class="left">
-          <div class="titleRow">
-            <h2 id="pageTitle">ภาพรวมระบบวันนี้</h2>
-            <span class="badge bInfo" id="liveBadge">Live</span>
-          </div>
-          <div class="meta" id="metaLine">Admin Panel • API: <span id="apiText">-</span></div>
-        </div>
-        <div class="actions">
-          <button class="btn" id="btnSetUrl">ตั้งค่า URL</button>
-          <button class="btn good" id="btnRefresh">รีเฟรช</button>
-          <a class="btn primary" id="btnOpenLeave" href="leave.html" target="_blank" rel="noopener">เปิด leave.html</a>
-        </div>
+      <div class="meta-row">
+        <div class="meta-k">HR Token</div>
+        <div class="meta-v" id="tokenText" title="คลิกเพื่อคัดลอก/ตรวจสอบ">ยังไม่ล็อกอิน</div>
       </div>
+      <div class="meta-row">
+        <div class="meta-k">สถานะ</div>
+        <div class="badge warn" id="connBadge"><span class="dot"></span><span id="connText">ยังไม่ได้เชื่อมต่อ</span></div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-k">อัปเดต</div>
+        <div class="meta-v" id="lastUpdated">—</div>
+      </div>
+    </div>
 
+    <nav class="nav">
+      <button class="navbtn active" data-section="dashboard" title="ภาพรวม">
+        <span class="ico">📊</span> Dashboard <small>วันนี้</small>
+      </button>
+      <button class="navbtn" data-section="leave" title="อนุมัติการลา">
+        <span class="ico">🧾</span> Leave Approvals <small>Approve</small>
+      </button>
+      <button class="navbtn" data-section="employees" title="พนักงาน">
+        <span class="ico">👥</span> Employees <small>CRUD</small>
+      </button>
+      <button class="navbtn" data-section="logs" title="รายงานรายวัน">
+        <span class="ico">🗓️</span> Logs <small>ตามเดือน</small>
+      </button>
+      <button class="navbtn" data-section="summary" title="สรุป">
+        <span class="ico">📈</span> Summary <small>ตามเดือน</small>
+      </button>
+      <button class="navbtn" data-section="settings" title="ตั้งค่า">
+        <span class="ico">⚙️</span> Settings <small>สาขา/ระดับ</small>
+      </button>
+    </nav>
+
+    <div class="side-actions">
+      <button class="btn primary" id="btnRefresh">รีเฟรชข้อมูล</button>
+      <button class="btn" id="btnSetApi">ตั้งค่า API URL</button>
+      <button class="btn danger" id="btnLogout">ล้าง Token/ออกจากระบบ</button>
+      <button class="btn ghost" id="btnGoIndex">กลับหน้าเช็คอิน</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="title">
+        <h2 id="pageTitle">Dashboard</h2>
+        <p id="pageHint">ดูภาพรวมและสถานะวันนี้ • โหลดไว ไม่สุ่มเรียก action</p>
+      </div>
+      <div class="top-actions">
+        <div class="badge" id="miniBadge"><span class="dot"></span><span id="miniText">พร้อม</span></div>
+        <button class="btn" id="btnOpenSidebar" style="display:none">เมนู</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section class="section active" id="section-dashboard">
       <div class="grid">
-        <!-- Dashboard -->
-        <section class="card" id="view-dash">
-          <div class="cardHeader">
-            <div>
-              <h3>สรุประบบ</h3>
-              <div class="sub">โหลดจาก API เพียงเท่าที่จำเป็น (ไม่วนยิงถี่)</div>
-            </div>
-            <div class="miniBtns">
-              <button class="btn" id="btnPing">ทดสอบการเชื่อมต่อ</button>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>สรุปวันนี้ (Today Summary)</h3>
+            <div class="right">
+              <button class="btn sm" id="btnLoadToday">โหลด/รีเฟรช</button>
             </div>
           </div>
-          <div class="cardBody">
-            <div class="row" style="grid-template-columns: 1fr 1fr 1fr;">
-              <div class="card" style="box-shadow:none; background: rgba(2,6,23,.22); border-color: rgba(148,163,184,.12);">
-                <div class="cardBody">
-                  <div style="font-size:12px; color:var(--muted)">สถานะ API</div>
-                  <div style="font-size:20px; font-weight:900; margin-top:6px" id="dashApiStatus">-</div>
-                </div>
-              </div>
-              <div class="card" style="box-shadow:none; background: rgba(2,6,23,.22); border-color: rgba(148,163,184,.12);">
-                <div class="cardBody">
-                  <div style="font-size:12px; color:var(--muted)">คำขอลารออนุมัติ</div>
-                  <div style="font-size:20px; font-weight:900; margin-top:6px" id="dashPending">-</div>
-                </div>
-              </div>
-              <div class="card" style="box-shadow:none; background: rgba(2,6,23,.22); border-color: rgba(148,163,184,.12);">
-                <div class="cardBody">
-                  <div style="font-size:12px; color:var(--muted)">อัปเดตล่าสุด</div>
-                  <div style="font-size:20px; font-weight:900; margin-top:6px" id="dashUpdated">-</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="hint" id="dashHint">
-              หน้านี้ “ไม่เดา action” — ใช้ action ที่ฝั่ง GS นิยามไว้แน่นอนเฉพาะกลุ่ม Leave:
-              <b>leave_getInitialData</b>, <b>leave_getAdminQueue</b>, <b>leave_approveRequest</b>, <b>leave_rejectRequest</b>, <b>leave_getHistoryRange</b>.
-              <br>ถ้า API URL ถูกต้อง แต่ยังโหลดไม่ขึ้น ให้ดู “รายละเอียดข้อผิดพลาด” ในแท็บ ตั้งค่า → สถานะระบบ
-            </div>
-          </div>
-        </section>
-
-        <!-- Leave -->
-        <section class="card" id="view-leave" style="display:none;">
-          <div class="cardHeader">
-            <div>
-              <h3>ตรวจสอบการลา</h3>
-              <div class="sub">รออนุมัติ / อนุมัติ / ไม่อนุมัติ / ทั้งหมด + ประวัติช่วงเวลา</div>
-            </div>
-            <div class="miniBtns">
-              <button class="btn good" id="btnLoadQueue">โหลดคิวรออนุมัติ</button>
-              <button class="btn" id="btnLoadHistory">โหลดประวัติ</button>
-            </div>
-          </div>
-
-          <div class="cardBody">
-            <div class="row" style="grid-template-columns: 2fr 1fr 1fr 1fr auto;">
-              <div class="field">
-                <label>ค้นหา (รหัส/ชื่อ/เหตุผล)</label>
-                <input id="qSearch" placeholder="เช่น 1011, สมชาย, ลาป่วย" />
-              </div>
-              <div class="field">
-                <label>สาขา</label>
-                <select id="qBranch">
-                  <option value="">ทุกสาขา</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>เดือน</label>
-                <select id="qMonth"></select>
-              </div>
-              <div class="field">
-                <label>ปี (พ.ศ.)</label>
-                <input id="qYear" inputmode="numeric" placeholder="2568" />
-              </div>
-              <div class="field" style="display:flex; gap:10px; justify-content:flex-end; align-items:end;">
-                <button class="btn primary" id="btnApplyFilter">กรอง/ค้นหา</button>
-              </div>
-            </div>
-
-            <div class="hint">
-              • คิวรออนุมัติ: เรียก <b>leave_getAdminQueue</b> (ไม่เดา action)<br>
-              • ประวัติ: เลือกช่วงวันที่แล้วกด “โหลดประวัติ” (ใช้ <b>leave_getHistoryRange</b>)
-            </div>
-
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin: 12px 0 10px;">
-              <button class="btn" data-status="pending" id="tabPending">รอดำเนินการ</button>
-              <button class="btn" data-status="approved" id="tabApproved">อนุมัติ</button>
-              <button class="btn" data-status="rejected" id="tabRejected">ไม่อนุมัติ</button>
-              <button class="btn" data-status="all" id="tabAll">ทั้งหมด</button>
-              <span class="badge bInfo" id="leaveCount">0 รายการ</span>
-            </div>
-
-            <div class="tableWrap">
+          <div class="panel-body">
+            <div class="kpi" id="kpiWrap"></div>
+            <div style="height:12px"></div>
+            <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>วันที่ยื่น</th>
-                    <th>รหัส</th>
-                    <th>ชื่อ</th>
-                    <th>ประเภท</th>
-                    <th>ช่วงเวลา</th>
-                    <th>เหตุผล</th>
-                    <th>ไฟล์</th>
-                    <th>สถานะ</th>
-                    <th>จัดการ</th>
+                    <th style="min-width:110px">วันที่</th>
+                    <th style="min-width:110px">รหัส</th>
+                    <th style="min-width:220px">ชื่อ-สกุล</th>
+                    <th style="min-width:150px">สาขา</th>
+                    <th style="min-width:140px">ระดับ</th>
+                    <th style="min-width:170px">สถานะ</th>
+                    <th style="min-width:220px">หมายเหตุ/ลา</th>
                   </tr>
                 </thead>
-                <tbody id="leaveTbody">
-                  <tr><td colspan="9" style="color:var(--muted);">ยังไม่มีข้อมูล</td></tr>
+                <tbody id="todayTbody">
+                  <tr><td colspan="7" class="muted">กด “โหลด/รีเฟรช” เพื่อดึงข้อมูล</td></tr>
                 </tbody>
               </table>
             </div>
-
-            <details style="margin-top:12px;">
-              <summary style="cursor:pointer; color:var(--muted); font-weight:800">Advanced: ช่วงเวลาประวัติ (สำหรับผู้ดูแล)</summary>
-              <div style="margin-top:10px" class="row">
-                <div class="field">
-                  <label>ตั้งแต่ (YYYY-MM-DD)</label>
-                  <input id="hFrom" placeholder="2025-12-01" />
-                </div>
-                <div class="field">
-                  <label>ถึง (YYYY-MM-DD)</label>
-                  <input id="hTo" placeholder="2025-12-31" />
-                </div>
-                <div class="field" style="grid-column: 1 / -1;">
-                  <label>หมายเหตุผู้อนุมัติ (แนบไปกับ approve/reject)</label>
-                  <input id="adminNote" placeholder="เช่น อนุมัติตามสิทธิ / เอกสารไม่ครบ ฯลฯ" />
-                </div>
-              </div>
-            </details>
-          </div>
-        </section>
-
-        <!-- Settings -->
-        <section class="card" id="view-settings" style="display:none;">
-          <div class="cardHeader">
-            <div>
-              <h3>ตั้งค่า & สถานะระบบ</h3>
-              <div class="sub">ดูการเชื่อมต่อ / ดู error จริงจาก API</div>
-            </div>
-            <div class="miniBtns">
-              <button class="btn" id="btnClearCache">ล้างแคช</button>
+            <div class="muted" style="margin-top:10px;font-size:12px">
+              *ข้อมูลนี้เรียก action <span class="mono">getTodaySummary</span> (public)
             </div>
           </div>
-          <div class="cardBody">
-            <div class="row" style="grid-template-columns: 2fr 1fr;">
-              <div class="field">
-                <label>API URL (script.google.com/macros/.../exec)</label>
-                <input id="apiInput" placeholder="วาง URL ที่ deploy แล้ว" />
-              </div>
-              <div class="field" style="display:flex; gap:10px; align-items:end; justify-content:flex-end;">
-                <button class="btn primary" id="btnSaveUrl">บันทึก</button>
-              </div>
-            </div>
-
-            <div class="hint">
-              Key ที่ใช้เก็บในเครื่อง: <b>attendance_api_url_v2</b> (เหมือนหน้า index/leave)
-            </div>
-
-            <div class="card" style="margin-top:12px; box-shadow:none; background: rgba(2,6,23,.22); border-color: rgba(148,163,184,.12);">
-              <div class="cardBody">
-                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                  <span class="badge bInfo">Actions ที่หน้านี้เรียกเท่านั้น</span>
-                  <code style="color:#93c5fd; font-size:12px; white-space:nowrap; overflow:auto; max-width:100%">
-                    leave_getInitialData • leave_getAdminQueue • leave_approveRequest • leave_rejectRequest • leave_getHistoryRange
-                  </code>
-                </div>
-                <div style="margin-top:10px; font-size:12px; color:var(--muted); line-height:1.55" id="sysLog">
-                  ยังไม่มีการเชื่อมต่อ
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-      </div>
-    </main>
-  </div>
-
-  <!-- Modal: API URL -->
-  <div class="backdrop" id="modalUrl">
-    <div class="modal">
-      <div class="modalHeader">
-        <h4>ตั้งค่า API URL</h4>
-        <button class="btn" id="btnCloseUrl">ปิด</button>
-      </div>
-      <div class="modalBody">
-        <p>วาง URL ของ Google Apps Script ที่ “Deploy > Web app” แล้ว</p>
-        <div class="field">
-          <label>API URL</label>
-          <input id="modalApiInput" placeholder="https://script.google.com/macros/s/XXXX/exec" />
         </div>
-        <div class="hint">บันทึกแล้ว หน้าจะโหลดข้อมูลให้ทันที</div>
       </div>
-      <div class="modalFooter">
-        <button class="btn primary" id="btnModalSaveUrl">บันทึก</button>
+    </section>
+
+    <!-- LEAVE -->
+    <section class="section" id="section-leave">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>อนุมัติใบลา (Admin)</h3>
+          <div class="right">
+            <button class="btn sm" id="btnOpenLeavePage">เปิดหน้า Leave (พนักงาน)</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="controls" style="margin-bottom:10px">
+            <div class="field">
+              <label>ปี</label>
+              <select id="leaveYear"></select>
+            </div>
+            <div class="field">
+              <label>เดือน</label>
+              <select id="leaveMonth"></select>
+            </div>
+            <div class="field" style="min-width:260px">
+              <label>ค้นหา (รหัส/ชื่อ/ประเภท/ช่วงวันที่)</label>
+              <input id="leaveSearch" placeholder="เช่น 001 / สมชาย / ลาป่วย / 2025-12-27" />
+            </div>
+            <div class="field" style="min-width:220px">
+              <label>สถานะ</label>
+              <div class="seg" id="leaveStatusSeg">
+                <button data-st="PENDING" class="active">PENDING</button>
+                <button data-st="APPROVED">APPROVED</button>
+                <button data-st="REJECTED">REJECTED</button>
+                <button data-st="CANCELED">CANCELED</button>
+                <button data-st="ALL">ALL</button>
+              </div>
+            </div>
+            <div class="field" style="min-width:140px">
+              <label>&nbsp;</label>
+              <button class="btn" id="btnReloadLeave">โหลดใบลา</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="min-width:160px">ส่งเมื่อ</th>
+                  <th style="min-width:110px">รหัส</th>
+                  <th style="min-width:220px">ชื่อ</th>
+                  <th style="min-width:150px">ประเภท</th>
+                  <th style="min-width:220px">ช่วงลา</th>
+                  <th style="min-width:110px">รวม</th>
+                  <th style="min-width:140px">สถานะ</th>
+                  <th style="min-width:240px">การทำงาน</th>
+                </tr>
+              </thead>
+              <tbody id="leaveTbody">
+                <tr><td colspan="8" class="muted">กด “โหลดใบลา” เพื่อดึงข้อมูล</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="muted" style="margin-top:10px;font-size:12px">
+            *เรียก action <span class="mono">adminListLeaveRequests</span> / <span class="mono">adminApproveLeave</span> / <span class="mono">adminRejectLeave</span> / <span class="mono">adminCancelLeave</span> (ต้องมี token) 
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EMPLOYEES -->
+    <section class="section" id="section-employees">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>พนักงาน (Employees)</h3>
+          <div class="right">
+            <button class="btn sm" id="btnAddEmp">เพิ่มพนักงาน</button>
+            <button class="btn sm" id="btnReloadEmp">รีเฟรช</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="controls" style="margin-bottom:10px">
+            <div class="field" style="min-width:280px">
+              <label>ค้นหา (รหัส/ชื่อ/สาขา/ระดับ)</label>
+              <input id="empSearch" placeholder="เช่น 001 / สมชาย / สาขา..." />
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="min-width:90px">ID</th>
+                  <th style="min-width:110px">รหัส</th>
+                  <th style="min-width:230px">ชื่อ-สกุล</th>
+                  <th style="min-width:160px">สาขา</th>
+                  <th style="min-width:140px">ระดับ</th>
+                  <th style="min-width:220px">อีเมล</th>
+                  <th style="min-width:230px">การทำงาน</th>
+                </tr>
+              </thead>
+              <tbody id="empTbody">
+                <tr><td colspan="7" class="muted">กด “รีเฟรช” เพื่อดึงข้อมูล</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="muted" style="margin-top:10px;font-size:12px">
+            *เรียก action <span class="mono">getEmployees</span> / <span class="mono">saveEmployee</span> / <span class="mono">deleteEmployee</span> (ต้องมี token) 
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGS -->
+    <section class="section" id="section-logs">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Logs รายวัน (ตามเดือน)</h3>
+          <div class="right">
+            <button class="btn sm" id="btnReloadLogs">โหลด Logs</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="controls" style="margin-bottom:10px">
+            <div class="field">
+              <label>ปี</label>
+              <select id="logsYear"></select>
+            </div>
+            <div class="field">
+              <label>เดือน</label>
+              <select id="logsMonth"></select>
+            </div>
+            <div class="field" style="min-width:200px">
+              <label>สาขา</label>
+              <select id="logsBranch"></select>
+            </div>
+            <div class="field" style="min-width:260px">
+              <label>ค้นหา (รหัส/ชื่อ)</label>
+              <input id="logsSearch" placeholder="เช่น 001 / สมชาย" />
+            </div>
+            <div class="field" style="min-width:180px">
+              <label>รวมคนขาด</label>
+              <select id="logsIncludeAbsents">
+                <option value="1">รวม</option>
+                <option value="0">ไม่รวม (เฉพาะมีข้อมูล)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="min-width:110px">วันที่</th>
+                  <th style="min-width:110px">รหัส</th>
+                  <th style="min-width:220px">ชื่อ</th>
+                  <th style="min-width:160px">สาขา</th>
+                  <th style="min-width:140px">ระดับ</th>
+                  <th style="min-width:90px">t1</th>
+                  <th style="min-width:90px">t2</th>
+                  <th style="min-width:90px">t3</th>
+                  <th style="min-width:90px">t4</th>
+                  <th style="min-width:180px">สถานะ</th>
+                </tr>
+              </thead>
+              <tbody id="logsTbody">
+                <tr><td colspan="10" class="muted">กด “โหลด Logs” เพื่อดึงข้อมูล</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="muted" style="margin-top:10px;font-size:12px">
+            *เรียก action <span class="mono">getLogsRange</span> (ต้องมี token) 
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SUMMARY -->
+    <section class="section" id="section-summary">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Summary สรุป (ตามเดือน)</h3>
+          <div class="right">
+            <button class="btn sm" id="btnReloadSummary">โหลด Summary</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="controls" style="margin-bottom:10px">
+            <div class="field">
+              <label>ปี</label>
+              <select id="sumYear"></select>
+            </div>
+            <div class="field">
+              <label>เดือน</label>
+              <select id="sumMonth"></select>
+            </div>
+            <div class="field" style="min-width:260px">
+              <label>ค้นหา (รหัส/ชื่อ)</label>
+              <input id="sumSearch" placeholder="เช่น 001 / สมชาย" />
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="min-width:110px">รหัส</th>
+                  <th style="min-width:220px">ชื่อ</th>
+                  <th style="min-width:160px">สาขา</th>
+                  <th style="min-width:140px">ระดับ</th>
+                  <th style="min-width:110px">ปกติ</th>
+                  <th style="min-width:110px">สาย</th>
+                  <th style="min-width:110px">ขาด</th>
+                  <th style="min-width:150px">หมายเหตุ</th>
+                </tr>
+              </thead>
+              <tbody id="sumTbody">
+                <tr><td colspan="8" class="muted">กด “โหลด Summary” เพื่อดึงข้อมูล</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="muted" style="margin-top:10px;font-size:12px">
+            *เรียก action <span class="mono">getSummaryRange</span> (ต้องมี token) 
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="section" id="section-settings">
+      <div class="grid two">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>สาขา (Branches)</h3>
+            <div class="right">
+              <button class="btn sm" id="btnAddBranch">เพิ่มสาขา</button>
+              <button class="btn sm" id="btnReloadBL">รีเฟรช</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table style="min-width:520px">
+                <thead><tr><th>ชื่อสาขา</th><th style="min-width:160px">การทำงาน</th></tr></thead>
+                <tbody id="branchTbody">
+                  <tr><td colspan="2" class="muted">กด “รีเฟรช”</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>ระดับ (Levels)</h3>
+            <div class="right">
+              <button class="btn sm" id="btnAddLevel">เพิ่มระดับ</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table style="min-width:520px">
+                <thead><tr><th>ชื่อระดับ</th><th style="min-width:160px">การทำงาน</th></tr></thead>
+                <tbody id="levelTbody">
+                  <tr><td colspan="2" class="muted">กด “รีเฟรช”</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="muted" style="margin-top:10px;font-size:12px">
+              *เรียก action <span class="mono">getBranchesLevels</span> / <span class="mono">saveBranch</span> / <span class="mono">deleteBranch</span> / <span class="mono">saveLevel</span> / <span class="mono">deleteLevel</span> (ต้องมี token) 
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MOBILE BAR -->
+<div class="mobilebar" id="mobilebar">
+  <div class="mini">
+    <button class="btn sm" id="btnMobileMenu">เมนู</button>
+    <div class="pill" id="mobileSection">Dashboard</div>
+  </div>
+  <button class="btn sm primary" id="btnMobileRefresh">รีเฟรช</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL: API URL -->
+<div class="backdrop" id="apiModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h4>ตั้งค่า API URL (Google Apps Script Web App)</h4>
+      <button class="btn sm" data-close="apiModal">ปิด</button>
+    </div>
+    <div class="modal-body">
+      <p>วางลิงก์ Web App ที่ลงท้ายด้วย <span class="mono">/exec</span> แล้วกดบันทึก</p>
+      <div class="controls">
+        <div class="field" style="min-width:100%">
+          <label>API URL</label>
+          <input id="apiInput" placeholder="https://script.google.com/macros/s/...../exec" />
+        </div>
+      </div>
+      <div class="muted" style="margin-top:10px;font-size:12px">
+        *หน้า index.html / leave.html ใช้ key เดียวกัน: <span class="mono">attendance_api_url_v2</span>
       </div>
     </div>
+    <div class="modal-foot">
+      <button class="btn" data-close="apiModal">ยกเลิก</button>
+      <button class="btn primary" id="btnSaveApi">บันทึก</button>
+    </div>
   </div>
+</div>
 
-  <div class="toast" id="toast">-</div>
+<!-- MODAL: LOGIN -->
+<div class="backdrop" id="loginModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h4>เข้าสู่ระบบ HR/Admin</h4>
+      <button class="btn sm" data-close="loginModal">ปิด</button>
+    </div>
+    <div class="modal-body">
+      <p>หน้านี้ต้องใช้ token เพื่อเรียก action ฝั่ง Admin (เช่น approve/reject ใบลา)</p>
+      <div class="controls">
+        <div class="field" style="min-width:220px">
+          <label>Username</label>
+          <input id="loginUser" placeholder="เช่น admin" />
+        </div>
+        <div class="field" style="min-width:220px">
+          <label>Password</label>
+          <input id="loginPass" type="password" placeholder="••••••••" />
+        </div>
+      </div>
+      <div id="loginErr" class="muted" style="margin-top:10px;color:#b91c1c;display:none"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="btnClearToken2">ล้าง Token</button>
+      <button class="btn primary" id="btnDoLogin">ล็อกอิน</button>
+    </div>
+  </div>
+</div>
 
-  <script>
-    // =========================
-    // Storage & Utils
-    // =========================
-    const LS_API_KEY = "attendance_api_url_v2";
-    const LS_USER_KEY = "attendance_admin_user"; // optional
-    const cache = {
-      initial: null,
-      queueRaw: [],
-      filtered: [],
-      status: "pending",
-      lastUpdated: null,
-      branches: [],
-    };
+<!-- MODAL: EMP FORM -->
+<div class="backdrop" id="empModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h4 id="empModalTitle">เพิ่ม/แก้ไขพนักงาน</h4>
+      <button class="btn sm" data-close="empModal">ปิด</button>
+    </div>
+    <div class="modal-body">
+      <p>Required: code, fullName (id จะสร้างอัตโนมัติถ้าไม่ใส่)</p>
+      <div class="controls">
+        <div class="field" style="min-width:160px">
+          <label>ID</label>
+          <input id="empId" placeholder="(auto)" />
+        </div>
+        <div class="field" style="min-width:160px">
+          <label>Code</label>
+          <input id="empCode" placeholder="เช่น 001" />
+        </div>
+        <div class="field" style="min-width:260px">
+          <label>Full Name</label>
+          <input id="empFullName" placeholder="ชื่อ-สกุล" />
+        </div>
+        <div class="field" style="min-width:220px">
+          <label>Branch</label>
+          <select id="empBranch"></select>
+        </div>
+        <div class="field" style="min-width:220px">
+          <label>Level</label>
+          <select id="empLevel"></select>
+        </div>
+        <div class="field" style="min-width:260px">
+          <label>Email</label>
+          <input id="empEmail" placeholder="example@company.com" />
+        </div>
+      </div>
+      <div id="empErr" class="muted" style="margin-top:10px;color:#b91c1c;display:none"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close="empModal">ยกเลิก</button>
+      <button class="btn primary" id="btnSaveEmp">บันทึก</button>
+    </div>
+  </div>
+</div>
 
-    const el = (id) => document.getElementById(id);
-    const fmtTime = (d=new Date()) => d.toLocaleString("th-TH", { hour12:false });
-    const pad2 = (n) => String(n).padStart(2,"0");
+<!-- MODAL: LEAVE DETAIL & NOTE -->
+<div class="backdrop" id="leaveModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h4 id="leaveModalTitle">รายละเอียดใบลา</h4>
+      <button class="btn sm" data-close="leaveModal">ปิด</button>
+    </div>
+    <div class="modal-body">
+      <p id="leaveModalSub" class="muted"></p>
+      <div id="leaveDetail" style="font-size:13px;line-height:1.55"></div>
+      <div style="height:12px"></div>
+      <label class="muted" style="font-size:12px">หมายเหตุผู้ดูแล (adminNote / cancelReason)</label>
+      <textarea id="leaveAdminNote" placeholder="พิมพ์เหตุผล/หมายเหตุ..."></textarea>
+      <div id="leaveErr" class="muted" style="margin-top:10px;color:#b91c1c;display:none"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close="leaveModal">ปิด</button>
+      <button class="btn sm" id="btnLeaveApprove">อนุมัติ</button>
+      <button class="btn sm danger" id="btnLeaveReject">ปฏิเสธ</button>
+      <button class="btn sm danger" id="btnLeaveCancel">ยกเลิกใบลา</button>
+    </div>
+  </div>
+</div>
 
-    function toast(msg, type=""){
-      const t = el("toast");
-      t.textContent = msg;
-      t.className = "toast" + (type ? (" " + type) : "");
-      requestAnimationFrame(()=> t.classList.add("show"));
-      clearTimeout(toast._tm);
-      toast._tm = setTimeout(()=> t.classList.remove("show"), 2400);
+<script>
+/** =========================================
+ *  Storage keys (ให้ตรงกับ index.html)
+ *  ========================================= */
+const LS_API    = "attendance_api_url_v2";
+const LS_HR     = "attendance_hr_token_v1";
+const LS_HR_OK  = "attendance_hr_logged_v1";
+
+/** =========================================
+ *  State
+ *  ========================================= */
+let ACTIVE = "dashboard";
+let refreshAbort = null;
+
+let cache = {
+  branchesLevels: { t:0, branches:[], levels:[] },
+  leaveTypes: { t:0, map:{} },
+  employees: { t:0, rows:[] },
+};
+
+let leaveState = { status: "PENDING", rows: [], selected: null };
+let empState = { rows: [] };
+let logsState = { rows: [] };
+let sumState = { rows: [] };
+
+/** =========================================
+ *  DOM helpers
+ *  ========================================= */
+const $ = (id) => document.getElementById(id);
+
+function toast(msg){
+  const el = $("toast");
+  el.textContent = msg;
+  el.style.display = "block";
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => (el.style.display = "none"), 2600);
+}
+
+function setConn(kind, msg){
+  const badge = $("connBadge");
+  const text = $("connText");
+  badge.classList.remove("ok","bad","warn");
+  badge.classList.add(kind);
+  text.textContent = msg || (kind==="ok" ? "เชื่อมต่อสำเร็จ" : kind==="bad" ? "เชื่อมต่อผิดพลาด" : "รอเชื่อมต่อ");
+  $("miniBadge").classList.remove("ok","bad","warn");
+  $("miniBadge").classList.add(kind);
+  $("miniText").textContent = msg || "—";
+}
+
+function setLastUpdated(){
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2,"0");
+  const mm = String(d.getMinutes()).padStart(2,"0");
+  const ss = String(d.getSeconds()).padStart(2,"0");
+  $("lastUpdated").textContent = `${hh}:${mm}:${ss}`;
+}
+
+function getApiUrl(){ return (localStorage.getItem(LS_API) || "").trim(); }
+function setApiUrl(url){ localStorage.setItem(LS_API, (url||"").trim()); }
+
+function getToken(){ return (localStorage.getItem(LS_HR) || "").trim(); }
+function setToken(t){ localStorage.setItem(LS_HR, (t||"").trim()); }
+function isLogged(){ return localStorage.getItem(LS_HR_OK) === "1" && !!getToken(); }
+function setLogged(ok){ localStorage.setItem(LS_HR_OK, ok ? "1" : "0"); }
+
+function ellipsize(s, n=42){
+  s = String(s||"");
+  if(s.length <= n) return s;
+  return s.slice(0, Math.max(10, n-12)) + "…" + s.slice(-10);
+}
+
+function updateMetaUI(){
+  const api = getApiUrl();
+  $("apiText").textContent = api ? ellipsize(api, 46) : "ยังไม่ได้ตั้งค่า";
+  $("apiText").dataset.full = api || "";
+  const tk = getToken();
+  $("tokenText").textContent = tk ? ("มี Token ✓ (" + ellipsize(tk, 30) + ")") : "ยังไม่ล็อกอิน";
+  $("tokenText").dataset.full = tk || "";
+}
+
+/** =========================================
+ *  API layer (NO random/fallback actions)
+ *  - ทุก call จะส่ง token ไปด้วย (ถ้ามี)
+ *  - มี Abort + timeout
+ *  ========================================= */
+function shouldAskLoginByMessage(msg){
+  const s = String(msg||"").toLowerCase();
+  return s.includes("unauthor") || s.includes("permission") || s.includes("login") || s.includes("token") ||
+         s.includes("สิทธิ") || s.includes("เข้าสู่ระบบ") || s.includes("ไม่มีสิทธิ");
+}
+
+async function apiCall(action, params={}, opts={}){
+  const apiUrl = getApiUrl();
+  if(!apiUrl) throw new Error("ยังไม่ได้ตั้งค่า URL API");
+  const token = getToken();
+  const payload = { action, ...params };
+  if(token) payload.token = token;
+
+  const controller = opts.signal ? null : new AbortController();
+  const signal = opts.signal || controller.signal;
+
+  const timeoutMs = opts.timeoutMs || 20000;
+  let timer = null;
+  if(!opts.signal){
+    timer = setTimeout(() => controller.abort(new DOMException("Timeout","AbortError")), timeoutMs);
+  }
+
+  try{
+    const body = new URLSearchParams(payload).toString();
+    const res = await fetch(apiUrl, {
+      method:"POST",
+      headers:{ "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
+      body,
+      signal
+    });
+    const text = await res.text();
+    let data;
+    try{ data = JSON.parse(text); }
+    catch(e){
+      console.error("NON-JSON:", text);
+      throw new Error("API ส่งผลลัพธ์ไม่ใช่ JSON (เช็ค URL /exec หรือการ Deploy)");
+    }
+    if(!data.ok) throw new Error(data.error || "เกิดข้อผิดพลาดจากเซิร์ฟเวอร์");
+    return data.result;
+  }finally{
+    if(timer) clearTimeout(timer);
+  }
+}
+
+function abortRefresh(){
+  if(refreshAbort) refreshAbort.abort();
+  refreshAbort = new AbortController();
+  return refreshAbort.signal;
+}
+
+/** =========================================
+ *  Init selects (ปี/เดือน)
+ *  ========================================= */
+function fillYearMonth(yearSel, monthSel){
+  const now = new Date();
+  const yNow = now.getFullYear();
+  const mNow = now.getMonth() + 1;
+
+  const years = [];
+  for(let y = yNow - 2; y <= yNow + 1; y++) years.push(y);
+
+  yearSel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
+  monthSel.innerHTML = Array.from({length:12}, (_,i)=>i+1).map(m => `<option value="${m}">${String(m).padStart(2,'0')}</option>`).join("");
+
+  yearSel.value = String(yNow);
+  monthSel.value = String(mNow);
+}
+
+/** =========================================
+ *  Load meta (branches/levels, leaveTypes) with cache
+ *  ========================================= */
+async function ensureBranchesLevels(signal){
+  const age = Date.now() - cache.branchesLevels.t;
+  if(age < 120000 && cache.branchesLevels.branches.length) return cache.branchesLevels; // 2 min
+  const r = await apiCall("getBranchesLevels", {}, { signal });
+  cache.branchesLevels = { t: Date.now(), branches: r.branches || [], levels: r.levels || [] };
+  return cache.branchesLevels;
+}
+
+async function ensureLeaveTypes(signal){
+  const age = Date.now() - cache.leaveTypes.t;
+  if(age < 300000 && Object.keys(cache.leaveTypes.map||{}).length) return cache.leaveTypes.map;
+  const rows = await apiCall("getLeaveTypes", {}, { signal });
+  const map = {};
+  (rows || []).forEach(x => {
+    const id = String(x.leaveTypeId || x.id || x.code || "").trim();
+    if(id) map[id] = x;
+  });
+  cache.leaveTypes = { t: Date.now(), map };
+  return map;
+}
+
+/** =========================================
+ *  Section switching
+ *  ========================================= */
+function setSection(section){
+  ACTIVE = section;
+  document.querySelectorAll(".navbtn").forEach(b => b.classList.toggle("active", b.dataset.section === section));
+  document.querySelectorAll(".section").forEach(s => s.classList.toggle("active", s.id === "section-" + section));
+  $("mobileSection").textContent = section.charAt(0).toUpperCase() + section.slice(1);
+
+  const titleMap = {
+    dashboard: ["Dashboard", "ดูภาพรวมและสถานะวันนี้ • โหลดไว ไม่สุ่มเรียก action"],
+    leave: ["Leave Approvals", "อนุมัติ/ปฏิเสธ/ยกเลิกใบลาจากหน้า Admin"],
+    employees: ["Employees", "จัดการข้อมูลพนักงาน (CRUD)"],
+    logs: ["Logs", "รายงานรายวันตามเดือน (เช็คอิน/สถานะ)"],
+    summary: ["Summary", "สรุปภาพรวมรายเดือน (ต่อคน)"],
+    settings: ["Settings", "จัดการข้อมูลสาขาและระดับ"],
+  };
+  $("pageTitle").textContent = titleMap[section][0];
+  $("pageHint").textContent = titleMap[section][1];
+
+  // load section (lazy) — no polling
+  refreshCurrentSection(true);
+}
+
+async function refreshCurrentSection(silent=false){
+  const signal = abortRefresh();
+
+  try{
+    if(ACTIVE === "dashboard") await loadToday(signal);
+    if(ACTIVE === "leave") await loadLeave(signal);
+    if(ACTIVE === "employees") await loadEmployees(signal);
+    if(ACTIVE === "logs") await loadLogs(signal);
+    if(ACTIVE === "summary") await loadSummary(signal);
+    if(ACTIVE === "settings") await loadSettings(signal);
+
+    setConn("ok", "เชื่อมต่อสำเร็จ");
+    setLastUpdated();
+  }catch(err){
+    if(err.name === "AbortError") return;
+    console.error(err);
+
+    if(shouldAskLoginByMessage(err.message)){
+      openModal("loginModal");
+      $("loginErr").style.display = "block";
+      $("loginErr").textContent = "ต้องเข้าสู่ระบบก่อนใช้งาน (token หาย/หมดอายุ)";
+      setConn("warn", "ต้องล็อกอิน");
+      if(!silent) toast("ต้องล็อกอินก่อนใช้งาน");
+      return;
     }
 
-    function setSysLog(html){
-      el("sysLog").innerHTML = html;
-    }
+    setConn("bad", "เชื่อมต่อผิดพลาด");
+    if(!silent) alert("โหลดไม่สำเร็จ: " + err.message);
+  }
+}
 
-    function getApiUrl(){
-      return (localStorage.getItem(LS_API_KEY) || "").trim();
-    }
-    function setApiUrl(url){
-      localStorage.setItem(LS_API_KEY, (url||"").trim());
-      syncApiUI();
-    }
-    function syncApiUI(){
-      const api = getApiUrl();
-      el("apiText").textContent = api || "-";
-      el("apiMini").textContent = api ? (api.slice(0, 30) + (api.length>30 ? "…" : "")) : "-";
-      el("apiInput").value = api || "";
-      el("modalApiInput").value = api || "";
-    }
+/** =========================================
+ *  Dashboard (today summary)
+ *  ========================================= */
+function statusChip(status){
+  const s = String(status||"").trim();
+  const up = s.toUpperCase();
+  if(!s) return `<span class="chip">—</span>`;
+  if(up.includes("APPROV")) return `<span class="chip green">APPROVED</span>`;
+  if(up.includes("REJECT")) return `<span class="chip red">REJECTED</span>`;
+  if(up.includes("CANCEL")) return `<span class="chip red">CANCELED</span>`;
+  if(up.includes("PENDING")) return `<span class="chip amber">PENDING</span>`;
+  if(s === "ปกติ") return `<span class="chip green">ปกติ</span>`;
+  if(s.includes("สาย")) return `<span class="chip amber">${escapeHtml(s)}</span>`;
+  if(s.includes("ขาด")) return `<span class="chip red">${escapeHtml(s)}</span>`;
+  return `<span class="chip blue">${escapeHtml(s)}</span>`;
+}
 
-    function toBEYear(thYear){
-      // รับ พ.ศ. -> ค.ศ.
-      const y = Number(thYear);
-      if(!Number.isFinite(y)) return null;
-      return (y > 2400) ? (y - 543) : y;
+function escapeHtml(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+}
+
+function buildKpi(rows){
+  const total = rows.length;
+  let normal=0, late=0, absent=0, leave=0, other=0;
+  rows.forEach(r=>{
+    const st = String(r.status||"").trim();
+    if(st === "ปกติ") normal++;
+    else if(st.includes("สาย")) late++;
+    else if(st === "ขาด") absent++;
+    else if(st.toUpperCase().includes("LEAVE") || st.includes("ลา")) leave++;
+    else other++;
+  });
+  $("kpiWrap").innerHTML = [
+    `<div class="card"><b>${total}</b><span>ทั้งหมด</span></div>`,
+    `<div class="card"><b>${normal}</b><span>ปกติ</span></div>`,
+    `<div class="card"><b>${late}</b><span>สาย/ผิดเงื่อนไข</span></div>`,
+    `<div class="card"><b>${absent}</b><span>ขาด</span></div>`,
+    `<div class="card"><b>${leave}</b><span>ลา/อนุมัติ</span></div>`
+  ].join("");
+}
+
+async function loadToday(signal){
+  const rows = await apiCall("getTodaySummary", {}, { signal });
+  const tbody = $("todayTbody");
+  const list = Array.isArray(rows) ? rows : (rows?.rows || []);
+  buildKpi(list);
+
+  if(!list.length){
+    tbody.innerHTML = `<tr><td colspan="7" class="muted">ยังไม่มีข้อมูลของวันนี้</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(r=>{
+    const date = escapeHtml(r.date || r.day || "");
+    const code = escapeHtml(r.code || r.empCode || "");
+    const name = escapeHtml(r.fullName || r.empName || "");
+    const br = escapeHtml(r.branch || "");
+    const lv = escapeHtml(r.level || "");
+    const st = r.status || "";
+    const note = escapeHtml(r.note || r.leaveText || r.leaveReason || r.rawType || "");
+    return `<tr>
+      <td>${date}</td>
+      <td class="mono">${code}</td>
+      <td>${name}</td>
+      <td>${br}</td>
+      <td>${lv}</td>
+      <td>${statusChip(st)}</td>
+      <td class="muted">${note || "-"}</td>
+    </tr>`;
+  }).join("");
+}
+
+/** =========================================
+ *  Leave approvals
+ *  ========================================= */
+function leaveStatusToChip(st){
+  const s = String(st||"").toUpperCase();
+  if(s === "APPROVED") return `<span class="chip green">APPROVED</span>`;
+  if(s === "REJECTED") return `<span class="chip red">REJECTED</span>`;
+  if(s === "CANCELED") return `<span class="chip red">CANCELED</span>`;
+  return `<span class="chip amber">PENDING</span>`;
+}
+
+function openLeaveModal(row){
+  leaveState.selected = row;
+  $("leaveModalTitle").textContent = `ใบลา #${row.id || row.requestId || ""}`;
+  $("leaveModalSub").textContent = `${row.empCode || ""} • ${row.empName || ""} • ${row.leaveTypeName || row.leaveTypeId || ""} • ${row.rangeText || ""}`;
+  $("leaveAdminNote").value = "";
+  $("leaveErr").style.display = "none";
+
+  const lines = [];
+  const keys = [
+    ["สถานะ", row.status],
+    ["ส่งเมื่อ", row.submitAt || row.createdAt],
+    ["ประเภท", row.leaveTypeName || row.leaveTypeId],
+    ["ช่วงลา", row.rangeText],
+    ["รวม", row.totalDays || row.total || row.hours || ""],
+    ["เหตุผล", row.reason || row.note || ""],
+    ["ติดต่อ", row.contact || ""],
+    ["ไฟล์แนบ", row.attachmentUrl || row.evidenceUrl || ""],
+    ["ผู้อนุมัติ", row.actionBy || row.approverUser || ""],
+    ["เวลาทำรายการ", row.actionAt || ""],
+    ["หมายเหตุแอดมิน", row.adminNote || ""],
+  ];
+  keys.forEach(([k,v])=>{
+    if(v === undefined || v === null || v === "") return;
+    if(String(k).includes("ไฟล์") && v){
+      lines.push(`<div><b>${escapeHtml(k)}</b>: <a href="${escapeHtml(v)}" target="_blank" rel="noopener">${escapeHtml(v)}</a></div>`);
+    }else{
+      lines.push(`<div><b>${escapeHtml(k)}</b>: ${escapeHtml(v)}</div>`);
     }
+  });
+  $("leaveDetail").innerHTML = lines.join("") || `<div class="muted">ไม่มีรายละเอียดเพิ่มเติม</div>`;
 
-    function statusBadge(status){
-      const s = String(status||"").toLowerCase();
-      if(s.includes("อนุมัติ") || s==="approved") return `<span class="badge bOk">อนุมัติ</span>`;
-      if(s.includes("ไม่") || s==="rejected") return `<span class="badge bNo">ไม่อนุมัติ</span>`;
-      if(s.includes("รอ") || s==="pending") return `<span class="badge bWait">รอดำเนินการ</span>`;
-      return `<span class="badge bInfo">${escapeHtml(status||"-")}</span>`;
+  // enable/disable actions by status
+  const st = String(row.status||"PENDING").toUpperCase();
+  $("btnLeaveApprove").disabled = (st === "APPROVED" || st === "CANCELED");
+  $("btnLeaveReject").disabled  = (st === "REJECTED" || st === "CANCELED");
+  $("btnLeaveCancel").disabled  = (st === "CANCELED");
+  openModal("leaveModal");
+}
+
+async function loadLeave(signal){
+  const year = Number($("leaveYear").value);
+  const month = Number($("leaveMonth").value);
+  const search = ($("leaveSearch").value || "").trim();
+  const status = leaveState.status;
+
+  // leave types map (optional for display)
+  const leaveTypes = await ensureLeaveTypes(signal);
+
+  const res = await apiCall("adminListLeaveRequests", { year, month, status, search }, { signal });
+  const rows = (res && res.rows) ? res.rows : [];
+  leaveState.rows = rows;
+
+  const tbody = $("leaveTbody");
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="8" class="muted">ไม่พบใบลา</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(row=>{
+    const id = row.id || row.requestId || "";
+    const typeId = String(row.leaveTypeId || "").trim();
+    const typeName = row.leaveTypeName || leaveTypes[typeId]?.name || leaveTypes[typeId]?.leaveTypeName || typeId || "-";
+    row.leaveTypeName = typeName;
+
+    const total = row.totalDays || row.total || row.hours || row.totalHours || "-";
+    const canAct = String(row.status||"PENDING").toUpperCase() !== "CANCELED";
+
+    return `<tr>
+      <td class="mono">${escapeHtml(row.createdAt || row.submitAt || "")}</td>
+      <td class="mono">${escapeHtml(row.empCode || row.code || "")}</td>
+      <td>${escapeHtml(row.empName || row.fullName || "")}</td>
+      <td>${escapeHtml(typeName)}</td>
+      <td>${escapeHtml(row.rangeText || "")}</td>
+      <td class="mono">${escapeHtml(total)}</td>
+      <td>${leaveStatusToChip(row.status)}</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn sm" data-leave-view="${escapeHtml(id)}">ดู</button>
+          <button class="btn sm" data-leave-approve="${escapeHtml(id)}" ${canAct ? "" : "disabled"}>อนุมัติ</button>
+          <button class="btn sm danger" data-leave-reject="${escapeHtml(id)}" ${canAct ? "" : "disabled"}>ปฏิเสธ</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join("");
+
+  // bind buttons
+  tbody.querySelectorAll("[data-leave-view]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-leave-view");
+      const row = leaveState.rows.find(r => String(r.id||r.requestId||"") === String(id));
+      if(row) openLeaveModal(row);
+    });
+  });
+  tbody.querySelectorAll("[data-leave-approve]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const id = btn.getAttribute("data-leave-approve");
+      const row = leaveState.rows.find(r => String(r.id||r.requestId||"") === String(id));
+      if(!row) return;
+      openLeaveModal(row);
+      $("leaveAdminNote").focus();
+    });
+  });
+  tbody.querySelectorAll("[data-leave-reject]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const id = btn.getAttribute("data-leave-reject");
+      const row = leaveState.rows.find(r => String(r.id||r.requestId||"") === String(id));
+      if(!row) return;
+      openLeaveModal(row);
+      $("leaveAdminNote").focus();
+    });
+  });
+}
+
+async function actLeave(action){
+  const row = leaveState.selected;
+  if(!row) return;
+  const id = row.id || row.requestId || "";
+  const note = ($("leaveAdminNote").value || "").trim();
+
+  $("leaveErr").style.display = "none";
+
+  try{
+    if(action === "approve"){
+      await apiCall("adminApproveLeave", { id, adminNote: note }, {});
+      toast("อนุมัติสำเร็จ ✅");
+    }else if(action === "reject"){
+      if(!note) throw new Error("กรุณาใส่เหตุผล/หมายเหตุสำหรับการปฏิเสธ");
+      await apiCall("adminRejectLeave", { id, adminNote: note }, {});
+      toast("ปฏิเสธสำเร็จ ✅");
+    }else if(action === "cancel"){
+      if(!note) throw new Error("กรุณาใส่เหตุผลสำหรับการยกเลิก");
+      await apiCall("adminCancelLeave", { id, cancelReason: note }, {});
+      toast("ยกเลิกใบลาสำเร็จ ✅");
     }
+    closeModal("leaveModal");
+    await loadLeave(abortRefresh()); // refresh leave only
+  }catch(err){
+    $("leaveErr").style.display = "block";
+    $("leaveErr").textContent = err.message;
+  }
+}
 
-    function escapeHtml(str){
-      return String(str ?? "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
+/** =========================================
+ *  Employees
+ *  ========================================= */
+function bindEmpModalOptions(branches, levels){
+  const branchSel = $("empBranch");
+  const levelSel = $("empLevel");
 
-    // =========================
-    // API Call (NO guessing)
-    // =========================
-    async function apiCall(action, payload={}){
-      const url = getApiUrl();
-      if(!url) throw new Error("ยังไม่ได้ตั้งค่า API URL");
-      const body = JSON.stringify({ action, ...payload });
-      const t0 = performance.now();
-      let res, json;
+  branchSel.innerHTML = `<option value="">—</option>` + branches.map(b => `<option value="${escapeHtml(b.name || b.branch || b)}">${escapeHtml(b.name || b.branch || b)}</option>`).join("");
+  levelSel.innerHTML = `<option value="">—</option>` + levels.map(l => `<option value="${escapeHtml(l.name || l.level || l)}">${escapeHtml(l.name || l.level || l)}</option>`).join("");
+}
 
-      // Primary: JSON POST
+function openEmpModal(emp){
+  $("empErr").style.display = "none";
+  $("empModalTitle").textContent = emp ? "แก้ไขพนักงาน" : "เพิ่มพนักงาน";
+  $("empId").value = emp?.id || "";
+  $("empCode").value = emp?.code || "";
+  $("empFullName").value = emp?.fullName || emp?.fullname || "";
+  $("empEmail").value = emp?.email || "";
+
+  $("empBranch").value = emp?.branch || "";
+  $("empLevel").value = emp?.level || "";
+
+  openModal("empModal");
+}
+
+async function loadEmployees(signal){
+  const res = await apiCall("getEmployees", {}, { signal });
+  const rows = Array.isArray(res) ? res : (res?.rows || []);
+  cache.employees = { t: Date.now(), rows };
+  empState.rows = rows;
+
+  // ensure branch/level options for modal
+  const bl = await ensureBranchesLevels(signal);
+  bindEmpModalOptions(bl.branches, bl.levels);
+
+  renderEmpTable();
+}
+
+function renderEmpTable(){
+  const q = ($("empSearch").value || "").trim().toLowerCase();
+  const tbody = $("empTbody");
+  const rows = (empState.rows || []).filter(r=>{
+    if(!q) return true;
+    return String(r.id||"").toLowerCase().includes(q) ||
+           String(r.code||"").toLowerCase().includes(q) ||
+           String(r.fullName||r.fullname||"").toLowerCase().includes(q) ||
+           String(r.branch||"").toLowerCase().includes(q) ||
+           String(r.level||"").toLowerCase().includes(q);
+  });
+
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="7" class="muted">ไม่พบพนักงาน</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r=>{
+    const id = escapeHtml(r.id||"");
+    return `<tr>
+      <td class="mono">${id}</td>
+      <td class="mono">${escapeHtml(r.code||"")}</td>
+      <td>${escapeHtml(r.fullName||r.fullname||"")}</td>
+      <td>${escapeHtml(r.branch||"")}</td>
+      <td>${escapeHtml(r.level||"")}</td>
+      <td>${escapeHtml(r.email||"")}</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn sm" data-emp-edit="${id}">แก้ไข</button>
+          <button class="btn sm danger" data-emp-del="${id}">ลบ</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join("");
+
+  tbody.querySelectorAll("[data-emp-edit]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-emp-edit");
+      const emp = empState.rows.find(x => String(x.id||"") === String(id));
+      openEmpModal(emp);
+    });
+  });
+  tbody.querySelectorAll("[data-emp-del]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const id = btn.getAttribute("data-emp-del");
+      const emp = empState.rows.find(x => String(x.id||"") === String(id));
+      if(!emp) return;
+      if(!confirm(`ลบพนักงาน ${emp.code} - ${emp.fullName || ""} ?`)) return;
       try{
-        res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body,
-          mode: "cors",
-          credentials: "omit",
-          redirect: "follow",
-        });
-      }catch(e){
-        // Fallback: form POST (บางโปรเจคใช้ doPost(e) parse parameter)
-        const form = new URLSearchParams();
-        form.set("action", action);
-        Object.entries(payload||{}).forEach(([k,v])=>{
-          if(v===undefined) return;
-          form.set(k, typeof v === "object" ? JSON.stringify(v) : String(v));
-        });
-        res = await fetch(url, { method:"POST", body: form, mode:"cors", credentials:"omit" });
-      }
-
-      const text = await res.text();
-      try{ json = JSON.parse(text); }catch(e){
-        throw new Error(`API ตอบกลับไม่ใช่ JSON (${res.status}) :: ${text.slice(0,200)}`);
-      }
-
-      const ms = Math.round(performance.now()-t0);
-      cache.lastUpdated = new Date();
-      el("miniUpdated").textContent = fmtTime(cache.lastUpdated);
-      el("dashUpdated").textContent = fmtTime(cache.lastUpdated);
-
-      if(!res.ok){
-        throw new Error(json?.error || json?.message || `HTTP ${res.status}`);
-      }
-      if(json?.ok === false){
-        throw new Error(json?.error || json?.message || "ไม่สำเร็จ");
-      }
-
-      setSysLog(`✅ เรียก <b>${action}</b> สำเร็จ • ${ms}ms • ${fmtTime(cache.lastUpdated)}<br><span style="color:var(--muted)">Keys: ${Object.keys(json||{}).join(", ")}</span>`);
-      return json;
-    }
-
-    // =========================
-    // Views
-    // =========================
-    function setView(view){
-      ["dash","leave","settings"].forEach(v=>{
-        el("view-"+v).style.display = (v===view) ? "" : "none";
-      });
-      const titles = { dash:"ภาพรวมระบบวันนี้", leave:"ตรวจสอบการลา", settings:"ตั้งค่า" };
-      el("pageTitle").textContent = titles[view] || "Admin";
-      document.querySelectorAll("#nav button").forEach(b=>{
-        b.classList.toggle("active", b.dataset.view===view);
-      });
-    }
-
-    // =========================
-    // Leave rendering & filtering
-    // =========================
-    function normalizeReq(r){
-      // รองรับทั้งชื่อคอลัมน์แบบเก่า/ใหม่
-      const get = (...keys) => {
-        for(const k of keys){
-          if(r && (k in r) && r[k]!=="" && r[k]!==null && r[k]!==undefined) return r[k];
-        }
-        return "";
-      };
-      return {
-        requestId: get("requestId","id","reqId"),
-        submitAt: get("submitAt","submittedAt","createdAt","timestamp"),
-        code: get("code","empCode"),
-        fullName: get("fullName","empName","name"),
-        branch: get("branch"),
-        level: get("level"),
-        leaveType: get("leaveTypeId","leaveType","type"),
-        startDate: get("startDate","dateFrom"),
-        endDate: get("endDate","dateTo"),
-        startHalf: get("startHalf","halfFrom","startPart"),
-        endHalf: get("endHalf","halfTo","endPart"),
-        totalDays: get("totalDays","days","qty"),
-        reason: get("reason","note","remark"),
-        contact: get("contact"),
-        attachmentUrl: get("attachmentUrl","evidenceUrl","fileUrl"),
-        status: get("status"),
-        adminNote: get("adminNote"),
-      };
-    }
-
-    function statusToBucket(status){
-      const s = String(status||"").toLowerCase();
-      if(s.includes("approved") || s.includes("อนุมัติ") || s==="ok") return "approved";
-      if(s.includes("rejected") || s.includes("ไม่") || s.includes("deny")) return "rejected";
-      if(s.includes("pending") || s.includes("รอ") || s==="wait") return "pending";
-      return "pending";
-    }
-
-    function applyFilter(){
-      const q = el("qSearch").value.trim().toLowerCase();
-      const b = el("qBranch").value;
-      const month = el("qMonth").value; // unused for local filter
-      const year = el("qYear").value.trim();
-      const st = cache.status;
-
-      let arr = cache.queueRaw.map(normalizeReq);
-
-      if(b){
-        arr = arr.filter(x => String(x.branch||"") === b);
-      }
-      if(q){
-        arr = arr.filter(x =>
-          String(x.code||"").toLowerCase().includes(q) ||
-          String(x.fullName||"").toLowerCase().includes(q) ||
-          String(x.reason||"").toLowerCase().includes(q) ||
-          String(x.leaveType||"").toLowerCase().includes(q)
-        );
-      }
-      if(st !== "all"){
-        arr = arr.filter(x => statusToBucket(x.status) === st);
-      }
-
-      cache.filtered = arr;
-      renderLeaveTable();
-    }
-
-    function renderLeaveTable(){
-      const tbody = el("leaveTbody");
-      const rows = cache.filtered;
-
-      el("leaveCount").textContent = `${rows.length} รายการ`;
-      el("dashPending").textContent = `${cache.queueRaw.filter(r=>statusToBucket(normalizeReq(r).status)==="pending").length}`;
-
-      if(!rows.length){
-        tbody.innerHTML = `<tr><td colspan="9" style="color:var(--muted);">ไม่พบข้อมูล</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = rows.map(r=>{
-        const period = [r.startDate, r.endDate].filter(Boolean).join(" → ");
-        const type = r.leaveType || "-";
-        const reason = escapeHtml(r.reason || "-");
-        const fileCell = r.attachmentUrl ? `<a class="link" href="${escapeHtml(r.attachmentUrl)}" target="_blank" rel="noopener">เปิดไฟล์</a>` : `<span style="color:var(--muted)">-</span>`;
-        const st = statusToBucket(r.status);
-        const canAct = (st==="pending");
-        const btns = canAct ? `
-          <div class="miniBtns">
-            <button class="btn good" data-act="approve" data-id="${escapeHtml(r.requestId)}">อนุมัติ</button>
-            <button class="btn bad" data-act="reject" data-id="${escapeHtml(r.requestId)}">ไม่อนุมัติ</button>
-          </div>` : `<span style="color:var(--muted)">-</span>`;
-        return `
-          <tr>
-            <td>${escapeHtml(r.submitAt || "-")}</td>
-            <td><b>${escapeHtml(r.code || "-")}</b></td>
-            <td>${escapeHtml(r.fullName || "-")}<div style="color:var(--muted); font-size:12px; margin-top:2px">${escapeHtml(r.branch||"")}${r.level?(" • "+escapeHtml(r.level)):""}</div></td>
-            <td>${escapeHtml(type)}</td>
-            <td>${escapeHtml(period)}${r.totalDays?(`<div style="color:var(--muted); font-size:12px; margin-top:2px">รวม ${escapeHtml(r.totalDays)} วัน</div>`):""}</td>
-            <td style="min-width:220px">${reason}</td>
-            <td>${fileCell}</td>
-            <td>${statusBadge(r.status)}</td>
-            <td>${btns}</td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    // =========================
-    // Data loaders (NO guessing)
-    // =========================
-    async function loadInitial(){
-      syncApiUI();
-      const api = getApiUrl();
-      el("dashApiStatus").textContent = api ? "กำลังเชื่อมต่อ..." : "ยังไม่ได้ตั้งค่า";
-
-      if(!api){
-        showUrlModal(true);
-        return;
-      }
-
-      try{
-        const json = await apiCall("leave_getInitialData", {});
-        cache.initial = json?.data || json;
-
-        // branch list (รองรับหลายรูปแบบ)
-        const branches = (cache.initial?.branches || cache.initial?.data?.branches || cache.initial?.Branchs || cache.initial?.branchList || []);
-        cache.branches = Array.isArray(branches) ? branches : [];
-        fillBranchOptions(cache.branches);
-
-        el("dashApiStatus").textContent = "เชื่อมต่อแล้ว";
-        el("miniStatus").textContent = "เชื่อมต่อแล้ว";
-        toast("เชื่อมต่อ API สำเร็จ", "good");
+        await apiCall("deleteEmployee", { id }, {});
+        toast("ลบสำเร็จ ✅");
+        await loadEmployees(abortRefresh());
       }catch(err){
-        el("dashApiStatus").textContent = "เชื่อมต่อไม่สำเร็จ";
-        el("miniStatus").textContent = "เชื่อมต่อไม่สำเร็จ";
-        setSysLog(`❌ <b>leave_getInitialData</b> ไม่ผ่าน: ${escapeHtml(err.message)}<br><span style="color:var(--muted)">ตรวจสอบว่า URL เป็นตัว /exec ที่ deploy แล้ว และแชร์สิทธิ์ถูกต้อง</span>`);
-        toast(err.message, "bad");
+        alert("ลบไม่สำเร็จ: " + err.message);
       }
-    }
+    });
+  });
+}
 
-    function fillBranchOptions(branches){
-      const sel = el("qBranch");
-      const current = sel.value;
-      const opts = ['<option value="">ทุกสาขา</option>'].concat(
-        (branches||[]).map(b=>{
-          const name = (typeof b==="string") ? b : (b?.name || b?.branch || "");
-          return name ? `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>` : "";
-        }).filter(Boolean)
-      ).join("");
-      sel.innerHTML = opts;
-      if(current) sel.value = current;
-    }
+async function saveEmp(){
+  const id = ($("empId").value || "").trim();
+  const code = ($("empCode").value || "").trim();
+  const fullName = ($("empFullName").value || "").trim();
+  const branch = $("empBranch").value || "";
+  const level = $("empLevel").value || "";
+  const email = ($("empEmail").value || "").trim();
 
-    async function loadAdminQueue(){
-      // ใช้ month/year เผื่อฝั่ง GS ใช้กรอง (ถ้าไม่ใช้ ก็ไม่เป็นไร)
-      const m = Number(el("qMonth").value);
-      const thYear = el("qYear").value.trim();
-      const yearBE = toBEYear(thYear);
-      const payload = {};
-      if(Number.isFinite(m)) payload.month = m;
-      if(Number.isFinite(yearBE)) payload.year = yearBE;
+  $("empErr").style.display = "none";
 
-      try{
-        const json = await apiCall("leave_getAdminQueue", payload);
-        const arr = json?.data?.requests || json?.requests || json?.data || [];
-        cache.queueRaw = Array.isArray(arr) ? arr : [];
-        cache.status = "pending";
-        setStatusTabs();
-        applyFilter();
-        toast("โหลดคิวลาเรียบร้อย", "good");
-      }catch(err){
-        setSysLog(`❌ <b>leave_getAdminQueue</b> ไม่ผ่าน: ${escapeHtml(err.message)}<br><span style="color:var(--muted)">ถ้า leave.html ใช้ได้ แต่หน้านี้ไม่ได้: ให้เทียบว่า URL เดียวกัน และ action ต้องเป็น leave_getAdminQueue เท่านั้น</span>`);
-        toast(err.message, "bad");
-      }
-    }
+  try{
+    if(!code || !fullName) throw new Error("กรุณากรอก Code และ Full Name");
+    await apiCall("saveEmployee", { id, code, fullName, branch, level, email }, {});
+    toast("บันทึกพนักงานสำเร็จ ✅");
+    closeModal("empModal");
+    await loadEmployees(abortRefresh());
+  }catch(err){
+    $("empErr").style.display = "block";
+    $("empErr").textContent = err.message;
+  }
+}
 
-    async function loadHistoryRange(){
-      const from = el("hFrom").value.trim();
-      const to = el("hTo").value.trim();
-      if(!from || !to){
-        toast("กรอกวันที่ from/to ก่อน", "bad");
-        return;
-      }
-      try{
-        const json = await apiCall("leave_getHistoryRange", { from, to });
-        const arr = json?.data?.requests || json?.requests || json?.data || [];
-        cache.queueRaw = Array.isArray(arr) ? arr : [];
-        cache.status = "all";
-        setStatusTabs();
-        applyFilter();
-        toast("โหลดประวัติเรียบร้อย", "good");
-      }catch(err){
-        setSysLog(`❌ <b>leave_getHistoryRange</b> ไม่ผ่าน: ${escapeHtml(err.message)}`);
-        toast(err.message, "bad");
-      }
-    }
+/** =========================================
+ *  Logs
+ *  ========================================= */
+async function loadLogs(signal){
+  const y = Number($("logsYear").value);
+  const m = Number($("logsMonth").value);
+  const branch = $("logsBranch").value || "ALL";
+  const search = ($("logsSearch").value || "").trim();
+  const includeAbsents = $("logsIncludeAbsents").value;
 
-    async function approveOrReject(act, requestId){
-      const note = el("adminNote").value.trim();
-      const action = (act==="approve") ? "leave_approveRequest" : "leave_rejectRequest";
-      try{
-        await apiCall(action, { requestId, adminNote: note });
-        // update local
-        const idx = cache.queueRaw.findIndex(r => String(normalizeReq(r).requestId) === String(requestId));
-        if(idx>-1){
-          if(typeof cache.queueRaw[idx] === "object" && cache.queueRaw[idx]){
-            cache.queueRaw[idx].status = (act==="approve") ? "APPROVED" : "REJECTED";
-            cache.queueRaw[idx].adminNote = note;
-          }
-        }
-        applyFilter();
-        toast(act==="approve" ? "อนุมัติแล้ว" : "ไม่อนุมัติแล้ว", "good");
-      }catch(err){
-        setSysLog(`❌ <b>${action}</b> ไม่ผ่าน: ${escapeHtml(err.message)}`);
-        toast(err.message, "bad");
-      }
-    }
+  const res = await apiCall("getLogsRange", { year:y, month:m, branch, search, includeAbsents }, { signal });
+  const rows = (res && res.rows) ? res.rows : [];
+  logsState.rows = rows;
 
-    function setStatusTabs(){
-      const map = {
-        pending: el("tabPending"),
-        approved: el("tabApproved"),
-        rejected: el("tabRejected"),
-        all: el("tabAll")
-      };
-      Object.entries(map).forEach(([k,btn])=>{
-        btn.classList.toggle("primary", cache.status===k);
-      });
-    }
+  const tbody = $("logsTbody");
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="10" class="muted">ไม่พบข้อมูล</td></tr>`;
+    return;
+  }
 
-    // =========================
-    // Events
-    // =========================
-    function showUrlModal(force=false){
-      syncApiUI();
-      el("modalUrl").classList.add("show");
-      if(force){
-        // prevent closing by clicking outside? (simple)
-      }
-      setView("settings");
-    }
-    function hideUrlModal(){
-      el("modalUrl").classList.remove("show");
-    }
+  tbody.innerHTML = rows.map(r=>{
+    return `<tr>
+      <td class="mono">${escapeHtml(r.date||"")}</td>
+      <td class="mono">${escapeHtml(r.code||"")}</td>
+      <td>${escapeHtml(r.fullName||"")}</td>
+      <td>${escapeHtml(r.branch||"")}</td>
+      <td>${escapeHtml(r.level||"")}</td>
+      <td class="mono">${escapeHtml(r.t1||"")}</td>
+      <td class="mono">${escapeHtml(r.t2||"")}</td>
+      <td class="mono">${escapeHtml(r.t3||"")}</td>
+      <td class="mono">${escapeHtml(r.t4||"")}</td>
+      <td>${statusChip(r.status||"")}</td>
+    </tr>`;
+  }).join("");
+}
 
-    function initMonthYear(){
-      const mSel = el("qMonth");
-      const monthsTH = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
-      mSel.innerHTML = monthsTH.map((name,i)=>`<option value="${i+1}">${name}</option>`).join("");
-      const now = new Date();
-      mSel.value = String(now.getMonth()+1);
-      el("qYear").value = String(now.getFullYear()+543);
+/** =========================================
+ *  Summary
+ *  ========================================= */
+async function loadSummary(signal){
+  const y = Number($("sumYear").value);
+  const m = Number($("sumMonth").value);
+  const search = ($("sumSearch").value || "").trim();
 
-      // default history range: this month
-      const y = now.getFullYear();
-      const mm = pad2(now.getMonth()+1);
-      el("hFrom").value = `${y}-${mm}-01`;
-      el("hTo").value = `${y}-${mm}-${pad2(new Date(y, now.getMonth()+1, 0).getDate())}`;
-    }
+  const res = await apiCall("getSummaryRange", { year:y, month:m, search }, { signal });
+  const rows = (res && res.rows) ? res.rows : [];
+  sumState.rows = rows;
 
-    function wireNav(){
-      el("nav").addEventListener("click", (e)=>{
-        const btn = e.target.closest("button[data-view]");
-        if(!btn) return;
-        setView(btn.dataset.view);
-      });
-    }
+  const tbody = $("sumTbody");
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="8" class="muted">ไม่พบข้อมูล</td></tr>`;
+    return;
+  }
 
-    function wireButtons(){
-      el("btnSetUrl").addEventListener("click", ()=> showUrlModal(false));
-      el("btnCloseUrl").addEventListener("click", hideUrlModal);
+  tbody.innerHTML = rows.map(r=>{
+    return `<tr>
+      <td class="mono">${escapeHtml(r.code||"")}</td>
+      <td>${escapeHtml(r.fullName||"")}</td>
+      <td>${escapeHtml(r.branch||"")}</td>
+      <td>${escapeHtml(r.level||"")}</td>
+      <td class="mono">${escapeHtml(r.normalCount ?? r.normal ?? r.ok ?? r.present ?? 0)}</td>
+      <td class="mono">${escapeHtml(r.lateCount ?? r.late ?? 0)}</td>
+      <td class="mono">${escapeHtml(r.absentCount ?? r.absent ?? 0)}</td>
+      <td class="muted">${escapeHtml(r.issuePoints ?? r.note ?? "")}</td>
+    </tr>`;
+  }).join("");
+}
 
-      el("btnSaveUrl").addEventListener("click", ()=>{
-        const v = el("apiInput").value.trim();
-        if(!v){ toast("กรอก API URL ก่อน", "bad"); return; }
-        setApiUrl(v);
-        hideUrlModal();
-        toast("บันทึกแล้ว", "good");
-        loadInitial().then(()=> loadAdminQueue());
-      });
+/** =========================================
+ *  Settings (branches/levels)
+ *  ========================================= */
+async function loadSettings(signal){
+  const bl = await ensureBranchesLevels(signal);
 
-      el("btnModalSaveUrl").addEventListener("click", ()=>{
-        const v = el("modalApiInput").value.trim();
-        if(!v){ toast("กรอก API URL ก่อน", "bad"); return; }
-        setApiUrl(v);
-        hideUrlModal();
-        toast("บันทึกแล้ว", "good");
-        loadInitial().then(()=> loadAdminQueue());
-      });
+  // fill branch select for logs
+  const branchSelect = $("logsBranch");
+  const options = ['ALL', ...(bl.branches || []).map(b => (b.name || b.branch || b))];
+  branchSelect.innerHTML = options.map(x => `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
 
-      el("btnRefresh").addEventListener("click", ()=>{
-        loadInitial().then(()=> loadAdminQueue());
-      });
+  // render lists
+  renderBranchLevel(bl.branches || [], bl.levels || []);
+}
 
-      el("btnPing").addEventListener("click", async ()=>{
+function renderBranchLevel(branches, levels){
+  const bt = $("branchTbody");
+  if(!branches.length){
+    bt.innerHTML = `<tr><td colspan="2" class="muted">ยังไม่มีสาขา</td></tr>`;
+  }else{
+    bt.innerHTML = branches.map(b=>{
+      const name = escapeHtml(b.name || b.branch || b);
+      return `<tr>
+        <td>${name}</td>
+        <td>
+          <button class="btn sm danger" data-del-branch="${name}">ลบ</button>
+        </td>
+      </tr>`;
+    }).join("");
+    bt.querySelectorAll("[data-del-branch]").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        const name = btn.getAttribute("data-del-branch");
+        if(!confirm(`ลบสาขา "${name}" ?`)) return;
         try{
-          await apiCall("leave_getInitialData", {});
-          toast("API พร้อมใช้งาน", "good");
+          await apiCall("deleteBranch", { name }, {});
+          toast("ลบสาขาสำเร็จ ✅");
+          cache.branchesLevels.t = 0;
+          await loadSettings(abortRefresh());
         }catch(err){
-          toast(err.message, "bad");
+          alert("ลบไม่สำเร็จ: " + err.message);
         }
       });
+    });
+  }
 
-      el("btnLoadQueue").addEventListener("click", loadAdminQueue);
-      el("btnLoadHistory").addEventListener("click", loadHistoryRange);
-
-      el("btnApplyFilter").addEventListener("click", applyFilter);
-      el("qSearch").addEventListener("keydown", (e)=>{ if(e.key==="Enter") applyFilter(); });
-
-      // status tabs
-      ["tabPending","tabApproved","tabRejected","tabAll"].forEach(id=>{
-        el(id).addEventListener("click", ()=>{
-          cache.status = el(id).dataset.status;
-          setStatusTabs();
-          applyFilter();
-        });
+  const lt = $("levelTbody");
+  if(!levels.length){
+    lt.innerHTML = `<tr><td colspan="2" class="muted">ยังไม่มีระดับ</td></tr>`;
+  }else{
+    lt.innerHTML = levels.map(l=>{
+      const name = escapeHtml(l.name || l.level || l);
+      return `<tr>
+        <td>${name}</td>
+        <td>
+          <button class="btn sm danger" data-del-level="${name}">ลบ</button>
+        </td>
+      </tr>`;
+    }).join("");
+    lt.querySelectorAll("[data-del-level]").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        const name = btn.getAttribute("data-del-level");
+        if(!confirm(`ลบระดับ "${name}" ?`)) return;
+        try{
+          await apiCall("deleteLevel", { name }, {});
+          toast("ลบระดับสำเร็จ ✅");
+          cache.branchesLevels.t = 0;
+          await loadSettings(abortRefresh());
+        }catch(err){
+          alert("ลบไม่สำเร็จ: " + err.message);
+        }
       });
+    });
+  }
 
-      // table actions
-      el("leaveTbody").addEventListener("click", (e)=>{
-        const b = e.target.closest("button[data-act]");
-        if(!b) return;
-        const act = b.dataset.act;
-        const id = b.dataset.id;
-        if(!id){ toast("ไม่พบ requestId", "bad"); return; }
-        approveOrReject(act, id);
-      });
+  // also update employee modal selects if open
+  bindEmpModalOptions(branches, levels);
+}
 
-      el("btnClearCache").addEventListener("click", ()=>{
-        cache.initial = null;
-        cache.queueRaw = [];
-        cache.filtered = [];
-        toast("ล้างแคชแล้ว", "good");
-        setSysLog("ล้างแคชแล้ว — กดรีเฟรชเพื่อโหลดใหม่");
-      });
+async function addBranch(){
+  const name = prompt("เพิ่มสาขา: ใส่ชื่อสาขา");
+  if(!name) return;
+  try{
+    await apiCall("saveBranch", { name: name.trim() }, {});
+    toast("เพิ่มสาขาสำเร็จ ✅");
+    cache.branchesLevels.t = 0;
+    await loadSettings(abortRefresh());
+  }catch(err){
+    alert("เพิ่มไม่สำเร็จ: " + err.message);
+  }
+}
 
-      el("btnLogout").addEventListener("click", ()=>{
-        // ไม่รู้ว่าโปรเจคคุณ logout ทำยังไง — จึงทำแบบปลอดภัย: ล้าง user key (ไม่ล้าง API)
-        localStorage.removeItem(LS_USER_KEY);
-        toast("ออกจากระบบ (ล้างข้อมูลผู้ใช้ในเครื่อง)", "good");
-        // ถ้าอยากกลับหน้า index:
-        try{ window.location.href = "index.html"; }catch(_){}
-      });
-    }
+async function addLevel(){
+  const name = prompt("เพิ่มระดับ: ใส่ชื่อระดับ");
+  if(!name) return;
+  try{
+    await apiCall("saveLevel", { name: name.trim() }, {});
+    toast("เพิ่มระดับสำเร็จ ✅");
+    cache.branchesLevels.t = 0;
+    await loadSettings(abortRefresh());
+  }catch(err){
+    alert("เพิ่มไม่สำเร็จ: " + err.message);
+  }
+}
 
-    // =========================
-    // Boot
-    // =========================
-    (function boot(){
-      syncApiUI();
-      initMonthYear();
-      wireNav();
-      wireButtons();
-      setView("dash");
-      setStatusTabs();
+/** =========================================
+ *  Modal helpers
+ *  ========================================= */
+function openModal(id){
+  const el = $(id);
+  el.style.display = "flex";
+  el.setAttribute("aria-hidden","false");
+}
+function closeModal(id){
+  const el = $(id);
+  el.style.display = "none";
+  el.setAttribute("aria-hidden","true");
+}
+document.querySelectorAll("[data-close]").forEach(btn=>{
+  btn.addEventListener("click", ()=> closeModal(btn.getAttribute("data-close")));
+});
+document.querySelectorAll(".backdrop").forEach(bg=>{
+  bg.addEventListener("click", (e)=>{
+    if(e.target === bg) closeModal(bg.id);
+  });
+});
 
-      // Auto-load once (no interval)
-      loadInitial().then(()=> loadAdminQueue());
+/** =========================================
+ *  Login flow
+ *  ========================================= */
+async function doLogin(){
+  const u = ($("loginUser").value || "").trim();
+  const p = ($("loginPass").value || "").trim();
+  $("loginErr").style.display = "none";
+  try{
+    if(!u || !p) throw new Error("กรุณากรอก Username/Password");
+    const res = await apiCall("loginAdmin", { username:u, password:p }, { timeoutMs: 20000 });
+    const token = res?.token || "";
+    if(!token) throw new Error("loginAdmin ไม่ส่ง token กลับมา");
+    setToken(token);
+    setLogged(true);
+    updateMetaUI();
+    closeModal("loginModal");
+    toast("ล็อกอินสำเร็จ ✅");
+    await refreshCurrentSection(true);
+  }catch(err){
+    $("loginErr").style.display = "block";
+    $("loginErr").textContent = "ล็อกอินไม่สำเร็จ: " + err.message;
+  }
+}
 
-      // small UI info
-      el("miniUpdated").textContent = "-";
-      el("dashUpdated").textContent = "-";
-    })();
-  </script>
+function doLogout(){
+  setToken("");
+  setLogged(false);
+  updateMetaUI();
+  toast("ล้าง Token แล้ว");
+  setConn("warn","ยังไม่ได้ล็อกอิน");
+}
+
+/** =========================================
+ *  Events
+ *  ========================================= */
+function wireEvents(){
+  // nav
+  document.querySelectorAll(".navbtn").forEach(btn=>{
+    btn.addEventListener("click", ()=> setSection(btn.dataset.section));
+  });
+
+  // copy api / token
+  $("apiText").addEventListener("click", ()=>{
+    openModal("apiModal");
+    $("apiInput").value = getApiUrl();
+  });
+  $("tokenText").addEventListener("click", ()=>{
+    const tk = getToken();
+    if(!tk) return toast("ยังไม่มี Token");
+    navigator.clipboard?.writeText(tk).then(()=>toast("คัดลอก Token แล้ว")).catch(()=>toast("คัดลอกไม่สำเร็จ"));
+  });
+
+  // sidebar/mobile
+  const sidebar = $("sidebar");
+  const openSide = ()=>{
+    sidebar.classList.add("open");
+  };
+  const closeSide = ()=>{
+    sidebar.classList.remove("open");
+  };
+  $("btnMobileMenu").addEventListener("click", openSide);
+  $("btnOpenSidebar").addEventListener("click", openSide);
+  $("mobilebar").addEventListener("click", (e)=>{
+    // tap outside buttons -> close
+    if(e.target.id === "mobilebar") closeSide();
+  });
+  // click outside sidebar on mobile to close
+  document.addEventListener("click", (e)=>{
+    if(window.innerWidth > 980) return;
+    if(!sidebar.classList.contains("open")) return;
+    const inside = sidebar.contains(e.target) || e.target === $("btnMobileMenu") || e.target === $("btnOpenSidebar");
+    if(!inside) closeSide();
+  });
+
+  // refresh buttons
+  $("btnRefresh").addEventListener("click", ()=> refreshCurrentSection());
+  $("btnMobileRefresh").addEventListener("click", ()=> refreshCurrentSection());
+  $("btnLoadToday").addEventListener("click", ()=> loadToday(abortRefresh()).then(()=>{ setConn("ok","เชื่อมต่อสำเร็จ"); setLastUpdated(); }).catch(()=>{}));
+
+  // api modal
+  $("btnSetApi").addEventListener("click", ()=>{
+    openModal("apiModal");
+    $("apiInput").value = getApiUrl();
+  });
+  $("btnSaveApi").addEventListener("click", ()=>{
+    const url = ($("apiInput").value || "").trim();
+    if(!url) return alert("กรุณากรอก URL");
+    setApiUrl(url);
+    updateMetaUI();
+    closeModal("apiModal");
+    toast("บันทึก URL แล้ว ✅");
+    refreshCurrentSection(true);
+  });
+
+  // login modal
+  $("btnDoLogin").addEventListener("click", doLogin);
+  $("btnClearToken2").addEventListener("click", doLogout);
+
+  // logout + navigation
+  $("btnLogout").addEventListener("click", doLogout);
+  $("btnGoIndex").addEventListener("click", ()=> location.href = "./index.html");
+
+  // Leave
+  $("btnOpenLeavePage").addEventListener("click", ()=> location.href = "./leave.html");
+  $("btnReloadLeave").addEventListener("click", ()=> loadLeave(abortRefresh()).then(()=>{ setConn("ok","เชื่อมต่อสำเร็จ"); setLastUpdated(); }).catch(()=>{}));
+  $("leaveSearch").addEventListener("keydown", (e)=>{ if(e.key === "Enter") $("btnReloadLeave").click(); });
+  $("leaveYear").addEventListener("change", ()=> $("btnReloadLeave").click());
+  $("leaveMonth").addEventListener("change", ()=> $("btnReloadLeave").click());
+
+  $("leaveStatusSeg").querySelectorAll("button").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      $("leaveStatusSeg").querySelectorAll("button").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      leaveState.status = b.dataset.st;
+      $("btnReloadLeave").click();
+    });
+  });
+
+  $("btnLeaveApprove").addEventListener("click", ()=> actLeave("approve"));
+  $("btnLeaveReject").addEventListener("click", ()=> actLeave("reject"));
+  $("btnLeaveCancel").addEventListener("click", ()=>{
+    if(!confirm("ยืนยันยกเลิกใบลานี้?")) return;
+    actLeave("cancel");
+  });
+
+  // Employees
+  $("btnReloadEmp").addEventListener("click", ()=> loadEmployees(abortRefresh()).then(()=>{ setConn("ok","เชื่อมต่อสำเร็จ"); setLastUpdated(); }).catch(()=>{}));
+  $("btnAddEmp").addEventListener("click", async ()=>{
+    const bl = await ensureBranchesLevels(abortRefresh());
+    bindEmpModalOptions(bl.branches, bl.levels);
+    openEmpModal(null);
+  });
+  $("btnSaveEmp").addEventListener("click", saveEmp);
+  $("empSearch").addEventListener("input", renderEmpTable);
+
+  // Logs
+  $("btnReloadLogs").addEventListener("click", ()=> loadLogs(abortRefresh()).then(()=>{ setConn("ok","เชื่อมต่อสำเร็จ"); setLastUpdated(); }).catch(()=>{}));
+  ["logsYear","logsMonth","logsBranch","logsIncludeAbsents"].forEach(id=>{
+    $(id).addEventListener("change", ()=> $("btnReloadLogs").click());
+  });
+  $("logsSearch").addEventListener("keydown", (e)=>{ if(e.key==="Enter") $("btnReloadLogs").click(); });
+
+  // Summary
+  $("btnReloadSummary").addEventListener("click", ()=> loadSummary(abortRefresh()).then(()=>{ setConn("ok","เชื่อมต่อสำเร็จ"); setLastUpdated(); }).catch(()=>{}));
+  ["sumYear","sumMonth"].forEach(id=>{
+    $(id).addEventListener("change", ()=> $("btnReloadSummary").click());
+  });
+  $("sumSearch").addEventListener("keydown", (e)=>{ if(e.key==="Enter") $("btnReloadSummary").click(); });
+
+  // Settings
+  $("btnReloadBL").addEventListener("click", ()=> loadSettings(abortRefresh()).then(()=>{ setConn("ok","เชื่อมต่อสำเร็จ"); setLastUpdated(); }).catch(()=>{}));
+  $("btnAddBranch").addEventListener("click", addBranch);
+  $("btnAddLevel").addEventListener("click", addLevel);
+
+  // Visibility refresh (one-shot)
+  document.addEventListener("visibilitychange", ()=>{
+    if(document.visibilityState === "visible") refreshCurrentSection(true);
+  });
+  window.addEventListener("focus", ()=> refreshCurrentSection(true));
+}
+
+/** =========================================
+ *  Boot
+ *  ========================================= */
+(function boot(){
+  // show mobile menu button on small screens
+  function updateMobileBtn(){
+    $("btnOpenSidebar").style.display = (window.innerWidth <= 980) ? "inline-flex" : "none";
+  }
+  window.addEventListener("resize", updateMobileBtn);
+  updateMobileBtn();
+
+  // init year/month selects
+  fillYearMonth($("leaveYear"), $("leaveMonth"));
+  fillYearMonth($("logsYear"), $("logsMonth"));
+  fillYearMonth($("sumYear"), $("sumMonth"));
+
+  // defaults
+  updateMetaUI();
+  setConn("warn", "รอเชื่อมต่อ");
+
+  // Wire events
+  wireEvents();
+
+  // If no API URL -> open modal now
+  if(!getApiUrl()){
+    openModal("apiModal");
+    $("apiInput").value = "";
+    toast("ตั้งค่า API URL ก่อน");
+    return;
+  }
+
+  // If not logged -> still allow dashboard (public), but other sections require token
+  // We'll preload dashboard only
+  loadToday(abortRefresh()).then(()=>{
+    setConn("ok","เชื่อมต่อสำเร็จ");
+    setLastUpdated();
+  }).catch(err=>{
+    console.error(err);
+    setConn("bad","เชื่อมต่อผิดพลาด");
+  });
+})();
+</script>
+
 </body>
 </html>
