@@ -1,2596 +1,1102 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <title>ระบบจัดการเวลาทำงาน – Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>HR Attendance • Admin Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root{
-      --primary:#2563eb;
-      --primary2:#1d4ed8;
-      --primary-soft:#dbeafe;
+      --bg:#0b1220;
+      --panel:#0f172a;
+      --card:#0b1220;
+      --card2:#0f172a;
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+      --border:#1f2a44;
+      --white:#ffffff;
+      --accent:#22c55e;
+      --accent2:#16a34a;
+      --blue:#3b82f6;
+      --blue2:#2563eb;
+      --amber:#f59e0b;
+      --red:#ef4444;
 
-      --bg:#f3f4f6;
-      --card:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --border:#e5e7eb;
-
-      --success:#16a34a;
-      --danger:#ef4444;
-      --warning:#f59e0b;
-
-      --sidebar:#020617;
-      --sidebar2:#111827;
-
-      --shadow: 0 18px 40px rgba(15,23,42,.08);
-      --shadow2: 0 30px 80px rgba(15,23,42,.18);
+      --radius:18px;
+      --shadow: 0 20px 50px rgba(0,0,0,.35);
     }
 
-    *{ box-sizing:border-box; font-family:"Prompt",system-ui,-apple-system,"Segoe UI",sans-serif; }
-    html,body{ margin:0; padding:0; width:100%; overflow-x:hidden; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
-      color:var(--text);
+      margin:0;
+      font-family:"Prompt", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background:
-        radial-gradient(circle at 20% 10%, #e0e7ff 0, transparent 55%),
-        radial-gradient(circle at 80% 90%, #e5f5ff 0, transparent 55%),
-        var(--bg);
+        radial-gradient(1200px 800px at 20% -20%, rgba(59,130,246,.25), transparent 60%),
+        radial-gradient(900px 700px at 120% 10%, rgba(34,197,94,.18), transparent 55%),
+        radial-gradient(900px 600px at 40% 120%, rgba(245,158,11,.14), transparent 55%),
+        linear-gradient(180deg, #071022 0%, #050914 100%);
+      color:var(--text);
     }
 
-    a{ color:var(--primary); text-decoration:none; }
-    a:hover{ text-decoration:underline; }
-
-    /* Buttons */
-    .btn{
-      border:none; cursor:pointer; border-radius:999px;
-      padding:10px 14px; font-size:13px; font-weight:600;
-      display:inline-flex; align-items:center; justify-content:center; gap:8px;
-      transition:transform .08s ease, box-shadow .08s ease, background .1s ease, opacity .1s ease;
-      white-space:nowrap;
+    a{color:inherit}
+    .app{
+      display:grid;
+      grid-template-columns: 290px 1fr;
+      min-height:100vh;
     }
-    .btn:active{ transform:translateY(1px) scale(.99); }
-    .btn:disabled{ opacity:.55; cursor:default; transform:none; }
-    .btn-primary{ background:linear-gradient(135deg,var(--primary),var(--primary2)); color:#fff; box-shadow:0 14px 30px rgba(37,99,235,.25); }
-    .btn-secondary{ background:#fff; border:1px solid var(--border); color:#111827; }
-    .btn-danger{ background:var(--danger); color:#fff; }
-    .btn-ghost{ background:transparent; border:1px solid rgba(148,163,184,.35); color:#cbd5e1; }
-    .btn-small{ padding:7px 11px; font-size:12px; }
 
-    /* Layout */
-    .page{ display:flex; min-height:100vh; width:100%; overflow-x:hidden; }
+    /* Sidebar */
     .sidebar{
-      width:250px; flex-shrink:0;
-      background:radial-gradient(circle at top, var(--sidebar2), var(--sidebar));
-      color:#e5e7eb;
-      padding:16px 14px;
-      display:flex; flex-direction:column;
-      box-shadow:10px 0 34px rgba(15,23,42,.45), 0 0 0 1px rgba(15,23,42,.55);
-      position:relative; z-index:30;
+      position:sticky;
+      top:0;
+      height:100vh;
+      padding:18px 14px;
+      background: linear-gradient(180deg, rgba(15,23,42,.92), rgba(8,12,26,.92));
+      border-right: 1px solid var(--border);
+      backdrop-filter: blur(10px);
     }
-    .sidebar::after{
-      content:""; position:absolute; inset:0;
-      background:radial-gradient(circle at bottom, rgba(37,99,235,.18), transparent 62%);
-      pointer-events:none;
-    }
-    .sidebar-header{ padding:6px 6px 16px; border-bottom:1px solid rgba(55,65,81,.9); margin-bottom:10px; position:relative; z-index:1;}
-    .sidebar-title{ font-weight:800; font-size:18px; margin-bottom:2px; letter-spacing:.2px;}
-    .sidebar-sub{ font-size:11px; color:#94a3b8; }
-    .nav{ margin-top:12px; display:flex; flex-direction:column; gap:6px; flex:1; min-height:0; position:relative; z-index:1;}
-    .nav-item{
+    .brand{
       display:flex; align-items:center; gap:10px;
-      padding:10px 12px; border-radius:16px;
-      cursor:pointer; border:1px solid transparent;
-      color:#e5e7eb; font-size:14px; font-weight:600;
-      transition:background .12s ease, transform .08s ease;
+      padding:10px 10px 14px 10px;
     }
-    .nav-item .icon{ width:22px; display:inline-flex; justify-content:center; }
-    .nav-item:hover{ background:rgba(31,41,55,.85); transform:translateY(-1px); }
-    .nav-item.active{
-      background:rgba(15,23,42,.98);
-      border-color:rgba(59,130,246,.70);
-      box-shadow:0 14px 26px rgba(15,23,42,.65);
+    .logo{
+      width:38px; height:38px; border-radius:12px;
+      background: radial-gradient(circle at 30% 30%, rgba(59,130,246,.95), rgba(34,197,94,.8));
+      box-shadow: 0 10px 25px rgba(59,130,246,.25);
     }
-    .sidebar-footer{
-      padding-top:10px; border-top:1px solid rgba(55,65,81,.9);
-      font-size:11px; color:#9ca3af;
-      position:relative; z-index:1;
+    .brand h1{margin:0; font-size:16px; font-weight:800; letter-spacing:.2px}
+    .brand p{margin:0; font-size:12px; color:var(--muted)}
+    .nav{
+      margin-top:8px;
+      display:flex; flex-direction:column; gap:6px;
     }
-    .sidebar-footer .btn{ width:100%; margin-top:8px; }
-
-    .content{ flex:1; display:flex; flex-direction:column; min-width:0; max-width:100%; overflow-x:hidden; }
-
-    header.topbar{
-      padding:12px 18px;
-      background:rgba(2,6,23,.86);
-      color:#e5e7eb;
-      border-bottom:1px solid rgba(15,23,42,.45);
-      display:flex; align-items:center; justify-content:space-between;
-      position:sticky; top:0; z-index:20;
-      backdrop-filter:blur(14px);
-      gap:10px;
-    }
-    .topbar-left{ display:flex; flex-direction:column; gap:3px; min-width:0; }
-    .topbar-title{ font-size:18px; font-weight:800; letter-spacing:.2px; }
-    .topbar-sub{ font-size:12px; color:#94a3b8; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-    #apiUrlDisplay{ cursor:pointer; word-break:break-all; overflow-wrap:anywhere; }
-    .topbar-right{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
-
-    main.main{ padding:18px 18px 22px; }
-    .main-inner{ max-width:1280px; margin:0 auto; width:100%; }
-
-    /* Cards */
-    .card{
-      background:rgba(255,255,255,.92);
-      border-radius:18px;
-      padding:14px 14px 12px;
-      box-shadow:var(--shadow), 0 0 0 1px rgba(226,232,240,.92);
-      border:1px solid rgba(226,232,240,.92);
-      margin-bottom:14px;
+    .nav button{
       width:100%;
-      overflow:hidden;
-    }
-    .card-header{
-      display:flex; justify-content:space-between; align-items:flex-start;
-      gap:12px; flex-wrap:wrap; margin-bottom:10px;
-    }
-    .card-title{
-      font-size:15px; font-weight:800;
-      display:flex; align-items:center; gap:8px;
-    }
-    .card-title .icon{
-      width:24px; height:24px; border-radius:999px;
-      display:inline-flex; align-items:center; justify-content:center;
-      font-size:13px;
-      background:var(--primary-soft);
-      color:var(--primary);
-    }
-    .card-subtitle{ font-size:12px; color:var(--muted); line-height:1.5; }
-
-    /* Inputs */
-    .input{
-      width:100%;
-      border-radius:14px;
-      border:1px solid var(--border);
-      padding:11px 12px;
-      font-size:14px;
-      outline:none;
-      background:#fff;
-    }
-    .input:focus{
-      border-color:var(--primary);
-      box-shadow:0 0 0 3px rgba(37,99,235,.14);
-    }
-    select.input{ appearance:none; }
-
-    .helper{ font-size:12px; color:var(--muted); }
-    .mt-8{ margin-top:8px; }
-    .mt-10{ margin-top:10px; }
-    .mt-12{ margin-top:12px; }
-
-    /* Status badges */
-    .badge-status{ font-size:11px; padding:4px 10px; border-radius:999px; display:inline-block; font-weight:700; }
-    .badge-normal{ background:#dcfce7; color:#166534; }
-    .badge-late{ background:#fee2e2; color:#b91c1c; }
-    .badge-absent{ background:#ffe4e6; color:#be123c; }
-    .badge-other{ background:#fef3c7; color:#92400e; }
-    .badge-unknown{ background:#0b1220; color:#e5e7eb; border:1px solid rgba(148,163,184,.35); }
-    .pill{ font-size:11px; padding:4px 10px; border-radius:999px; background:#eef2ff; color:#1d4ed8; border:1px solid rgba(37,99,235,.18); font-weight:700; }
-    .tag{ font-size:11px; padding:4px 10px; border-radius:999px; background:#f1f5f9; color:#334155; border:1px solid rgba(148,163,184,.30); font-weight:700; }
-
-    .emp-face-badge{
-      font-size:11px; padding:4px 10px; border-radius:999px;
-      border:1px solid rgba(16,185,129,.22);
-      background:rgba(16,185,129,.10);
-      color:#047857;
-      font-weight:800;
-      white-space:nowrap;
-    }
-    .emp-face-badge.off{
-      border-color:rgba(239,68,68,.22);
-      background:rgba(239,68,68,.10);
-      color:#b91c1c;
-    }
-
-    /* Tables */
-    table{ width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
-    thead{ background:#f3f4f6; }
-    th,td{ padding:10px 10px; border-bottom:1px solid #e5e7eb; text-align:left; white-space:nowrap; vertical-align:top; }
-    th{ font-weight:800; color:#334155; font-size:12px; }
-    tbody tr:hover{ background:#f8fafc; }
-    .scroll-x{ width:100%; overflow:auto; -webkit-overflow-scrolling:touch; }
-    .table-wide{ width:max-content; min-width:820px; }
-    .text-center{ text-align:center; }
-    .text-right{ text-align:right; }
-
-    /* Connection badge */
-    .badge-connection{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 12px; border-radius:999px;
-      font-size:11px; font-weight:800;
-      background:rgba(15,118,110,.14);
-      color:#a5f3fc;
-      border:1px solid rgba(34,197,94,.75);
-    }
-    .badge-connection.offline{
-      background:rgba(127,29,29,.30);
-      color:#fecaca;
-      border-color:rgba(248,113,113,.85);
-    }
-    .dot{
-      width:8px; height:8px; border-radius:999px;
-      background:#22c55e;
-      box-shadow:0 0 10px rgba(34,197,94,.75);
-    }
-    .badge-connection.offline .dot{
-      background:#f97373;
-      box-shadow:0 0 10px rgba(248,113,113,.75);
-    }
-
-    /* Sections */
-    .section{ display:none; }
-    .section.active{ display:block; }
-
-    /* Mobile cards */
-    .list-mobile{
-      display:flex; flex-direction:column; gap:10px;
-      padding:6px 2px 2px;
-    }
-    .item{
-      border:1px solid rgba(226,232,240,.95);
-      border-radius:18px;
-      padding:12px 12px 10px;
-      background:#fff;
-      box-shadow:0 12px 24px rgba(15,23,42,.06);
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .item-top{
-      display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
-    }
-    .item-title{ font-weight:800; font-size:14px; line-height:1.25; }
-    .item-meta{
-      font-size:12px; color:var(--muted);
-      display:flex; flex-wrap:wrap; gap:6px; align-items:center;
-    }
-    .code-badge{
-      font-size:11px; padding:4px 10px; border-radius:999px;
-      background:rgba(37,99,235,.12);
-      color:var(--primary);
-      border:1px solid rgba(37,99,235,.22);
-      font-weight:800;
-      white-space:nowrap;
-      height:fit-content;
-    }
-    .kv{
-      display:grid;
-      grid-template-columns:96px 1fr;
-      gap:6px 10px;
-      font-size:12px;
-      color:#0f172a;
-    }
-    .kv .k{ color:var(--muted); }
-    .kv .v{ font-weight:700; }
-
-    .item-actions{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:8px;
-    }
-    .item-actions .btn{ width:100%; padding:10px 12px; }
-
-    /* Desktop vs Mobile toggles */
-    .desktop-only{ display:block; }
-    .mobile-only{ display:none; }
-    @media (max-width:900px){
-      .desktop-only{ display:none; }
-      .mobile-only{ display:block; }
-    }
-
-    /* Bottom nav (mobile) */
-    .bottom-nav{
-      display:none;
-      position:fixed;
-      left:10px; right:10px; bottom:10px;
-      z-index:40;
-      background:rgba(2,6,23,.92);
-      border:1px solid rgba(31,41,55,.85);
-      border-radius:18px;
-      padding:8px;
-      backdrop-filter:blur(12px);
-      box-shadow:0 16px 44px rgba(15,23,42,.35);
-      overflow:hidden;
-    }
-    .bottom-nav-inner{
-      display:flex;
-      gap:6px;
-      overflow-x:auto;
-      padding-bottom:2px;
-      -webkit-overflow-scrolling:touch;
-      scrollbar-width:none;
-    }
-    .bottom-nav-inner::-webkit-scrollbar{ display:none; }
-    .bottom-item{
-      min-width:82px;
-      border:none;
-      background:transparent;
-      color:#cbd5e1;
-      border-radius:14px;
-      padding:8px 8px;
-      cursor:pointer;
-      display:flex; flex-direction:column; align-items:center; gap:2px;
-      font-size:10px; font-weight:800;
       border:1px solid transparent;
+      background: transparent;
+      color:var(--text);
+      text-align:left;
+      padding:11px 12px;
+      border-radius:14px;
+      font-size:14px;
+      cursor:pointer;
+      display:flex; align-items:center; gap:10px;
     }
-    .bottom-item .bicon{ font-size:16px; }
-    .bottom-item.active{
-      background:rgba(37,99,235,.18);
+    .nav button:hover{background: rgba(148,163,184,.08); border-color: rgba(148,163,184,.14)}
+    .nav button.active{background: rgba(59,130,246,.16); border-color: rgba(59,130,246,.32)}
+    .nav .icon{width:20px; opacity:.9}
+
+    .sidebar .bottom{
+      position:absolute;
+      left:14px; right:14px; bottom:18px;
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .pill{
+      padding:10px 12px;
+      border-radius: 16px;
+      background: rgba(2,6,23,.45);
+      border:1px solid rgba(148,163,184,.14);
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .pill b{color:var(--text); font-weight:700}
+    .dangerBtn{
+      border:none;
+      border-radius: 16px;
+      padding:12px 14px;
+      font-weight:700;
+      cursor:pointer;
+      background: rgba(239,68,68,.92);
       color:#fff;
-      border-color:rgba(59,130,246,.45);
-      box-shadow:0 10px 18px rgba(37,99,235,.22);
+      box-shadow: 0 18px 40px rgba(239,68,68,.25);
     }
+    .dangerBtn:hover{filter:brightness(1.03)}
 
-    @media (max-width:1000px){
-      .sidebar{ display:none; }
-      .page{ flex-direction:column; }
-      main.main{ padding:14px 12px 92px; }
-      .bottom-nav{ display:block; }
-      header.topbar{ padding:10px 12px; }
+    /* Main */
+    .main{
+      padding:18px 18px 34px 18px;
     }
-    @media (max-width:640px){
-      header.topbar{ flex-direction:column; align-items:flex-start; }
-      .topbar-right{ width:100%; display:flex; justify-content:space-between; }
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:10px 12px;
+      border-radius: var(--radius);
+      background: rgba(15,23,42,.55);
+      border:1px solid rgba(148,163,184,.14);
+      backdrop-filter: blur(10px);
     }
-
-    /* URL card (floating) */
-    #urlCard{
-      position:fixed;
-      right:16px;
-      bottom:92px;
-      max-width:420px;
-      width:calc(100% - 32px);
-      z-index:45;
-      display:none;
-    }
-    @media (min-width:1001px){
-      #urlCard{ bottom:16px; }
-    }
-    @media (max-width:640px){
-      #urlCard{ left:12px; right:12px; width:auto; }
-    }
-
-    /* Modals */
-    .modal-backdrop{
-      position:fixed; inset:0;
-      background:rgba(2,6,23,.55);
-      display:none;
-      align-items:center; justify-content:center;
-      padding:14px;
-      z-index:60;
-      backdrop-filter:blur(6px);
-    }
-    .modal{
-      width:100%;
-      max-width:560px;
-      background:#fff;
-      border-radius:18px;
-      border:1px solid rgba(226,232,240,.9);
-      box-shadow:var(--shadow2);
-      overflow:hidden;
-    }
-    .modal-header{
-      padding:12px 14px;
-      border-bottom:1px solid #e5e7eb;
-      display:flex; justify-content:space-between; gap:10px;
-      background:#f8fafc;
-    }
-    .modal-title{ font-weight:900; font-size:14px; }
-    .modal-sub{ font-size:12px; color:var(--muted); margin-top:2px; }
-    .modal-body{ padding:12px 14px 14px; }
-    .modal-footer{
-      padding:12px 14px;
-      border-top:1px solid #e5e7eb;
-      display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap;
-      background:#fafafa;
-    }
-
-    .grid-2{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-    .grid-3{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
-    @media (max-width:800px){
-      .grid-2,.grid-3{ grid-template-columns:1fr; }
-    }
-
-    .stat-card{
-      padding:12px 12px; border-radius:16px;
-      background:#f9fafb; border:1px solid #e5e7eb;
+    .topbar .left{
       display:flex; flex-direction:column; gap:4px;
       min-width:0;
     }
-    .stat-label{ font-size:12px; color:var(--muted); font-weight:700; }
-    .stat-value{ font-size:22px; font-weight:900; letter-spacing:.2px; }
-    .stat-extra{ font-size:11px; color:var(--muted); }
-    .stat-accent{ color:#16a34a; }
-    .stat-danger{ color:#b91c1c; }
-
-    .skeleton{
-      background:linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 37%,#f3f4f6 63%);
-      background-size:400% 100%;
-      animation:sk 1.2s ease infinite;
-      border-radius:12px;
-      height:14px;
-      width:100%;
+    .titleRow{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
     }
-    @keyframes sk{ 0%{background-position:100% 0} 100%{background-position:0 0} }
-
-    .error-text{ font-size:12px; color:var(--danger); margin-top:8px; font-weight:700; }
-    .success-text{ font-size:12px; color:var(--success); margin-top:8px; font-weight:700; }
-
-    /* Leave status chips */
-    .chips{ display:flex; gap:8px; flex-wrap:wrap; }
-    .chip{
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,.35);
-      background:#fff;
-      color:#334155;
-      font-size:12px;
-      font-weight:900;
-      cursor:pointer;
-      user-select:none;
-      transition:transform .08s ease, box-shadow .12s ease, background .12s ease;
-    }
-    .chip:active{ transform:translateY(1px); }
-    .chip.active{
-      background:rgba(37,99,235,.10);
-      border-color:rgba(37,99,235,.35);
-      color:#1d4ed8;
-      box-shadow:0 10px 18px rgba(37,99,235,.12);
-    }
-
-    /* Small text in topbar */
-    .tiny{
-      font-size:11px;
-      color:#94a3b8;
+    .titleRow h2{
+      margin:0;
+      font-size:16px;
       font-weight:800;
+      letter-spacing:.2px;
+    }
+    .meta{
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:72vw;
+    }
+    .actions{
+      display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
+    }
+    .btn{
+      border:1px solid rgba(148,163,184,.20);
+      background: rgba(2,6,23,.35);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius: 999px;
+      font-weight:700;
+      cursor:pointer;
+      font-size:13px;
+      display:inline-flex; gap:8px; align-items:center;
+      user-select:none;
+    }
+    .btn:hover{border-color: rgba(148,163,184,.34); background: rgba(2,6,23,.50)}
+    .btn.primary{background: rgba(59,130,246,.92); border-color: rgba(59,130,246,.92); color:#fff}
+    .btn.primary:hover{filter:brightness(1.03)}
+    .btn.good{background: rgba(34,197,94,.90); border-color: rgba(34,197,94,.90); color:#fff}
+    .btn.warn{background: rgba(245,158,11,.92); border-color: rgba(245,158,11,.92); color:#111827}
+    .btn.bad{background: rgba(239,68,68,.92); border-color: rgba(239,68,68,.92); color:#fff}
+    .grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+    .card{
+      background: rgba(15,23,42,.48);
+      border: 1px solid rgba(148,163,184,.14);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .cardHeader{
+      padding:14px 14px 10px 14px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      border-bottom:1px solid rgba(148,163,184,.12);
+    }
+    .cardHeader h3{margin:0; font-size:15px; font-weight:800}
+    .cardHeader .sub{font-size:12px; color:var(--muted); margin-top:2px}
+    .cardBody{padding:14px}
+    .row{
+      display:grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap:10px;
+      align-items:end;
+    }
+    .field label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
+    .field input, .field select{
+      width:100%;
+      background: rgba(2,6,23,.35);
+      border:1px solid rgba(148,163,184,.18);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      outline:none;
+      font-family:inherit;
+      font-size:13px;
+    }
+    .field input:focus, .field select:focus{border-color: rgba(59,130,246,.55); box-shadow: 0 0 0 4px rgba(59,130,246,.12)}
+    .hint{font-size:12px; color:var(--muted); margin-top:10px; line-height:1.45}
+
+    /* Table */
+    .tableWrap{
+      overflow:auto;
+      border-radius: 16px;
+      border: 1px solid rgba(148,163,184,.14);
+      background: rgba(2,6,23,.26);
+    }
+    table{width:100%; border-collapse:separate; border-spacing:0; min-width: 980px}
+    thead th{
+      position:sticky; top:0;
+      background: rgba(8,12,26,.95);
+      color: var(--muted);
+      font-size:12px;
+      text-align:left;
+      padding:12px 12px;
+      border-bottom: 1px solid rgba(148,163,184,.14);
+      z-index:2;
+      white-space:nowrap;
+    }
+    tbody td{
+      padding:12px 12px;
+      border-bottom: 1px solid rgba(148,163,184,.10);
+      font-size:13px;
+      vertical-align:top;
+    }
+    tbody tr:hover td{background: rgba(148,163,184,.06)}
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px;
+      border-radius: 999px;
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .bWait{background: rgba(245,158,11,.18); color: #fbbf24; border:1px solid rgba(245,158,11,.28)}
+    .bOk{background: rgba(34,197,94,.16); color: #4ade80; border:1px solid rgba(34,197,94,.26)}
+    .bNo{background: rgba(239,68,68,.14); color: #fca5a5; border:1px solid rgba(239,68,68,.22)}
+    .bInfo{background: rgba(59,130,246,.14); color: #93c5fd; border:1px solid rgba(59,130,246,.22)}
+    .miniBtns{display:flex; gap:8px; flex-wrap:wrap}
+    .miniBtns .btn{padding:8px 10px; font-size:12px}
+    .link{
+      color:#93c5fd;
+      text-decoration:underline;
+      text-underline-offset: 2px;
     }
 
-    details.adv{
-      border:1px dashed rgba(148,163,184,.55);
-      border-radius:16px;
+    /* Toast */
+    .toast{
+      position:fixed;
+      left:50%; transform: translateX(-50%);
+      bottom:20px;
+      background: rgba(2,6,23,.90);
+      border:1px solid rgba(148,163,184,.18);
+      color:var(--text);
       padding:10px 12px;
-      background:rgba(248,250,252,.9);
-      margin-top:10px;
+      border-radius: 999px;
+      font-size:13px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.45);
+      opacity:0; pointer-events:none;
+      transition: opacity .18s ease, transform .18s ease;
+      max-width: 92vw;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
-    details.adv summary{
-      cursor:pointer;
-      font-weight:900;
-      color:#334155;
-      font-size:12px;
-      user-select:none;
+    .toast.show{opacity:1; transform: translateX(-50%) translateY(-6px)}
+    .toast.good{border-color: rgba(34,197,94,.35)}
+    .toast.bad{border-color: rgba(239,68,68,.35)}
+
+    /* Modal */
+    .backdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center; justify-content:center;
+      padding:18px;
+      z-index:50;
+    }
+    .backdrop.show{display:flex}
+    .modal{
+      width:min(560px, 100%);
+      background: rgba(15,23,42,.92);
+      border:1px solid rgba(148,163,184,.16);
+      border-radius: 22px;
+      box-shadow: 0 28px 80px rgba(0,0,0,.55);
+      overflow:hidden;
+    }
+    .modalHeader{
+      padding:14px 14px 10px 14px;
+      border-bottom:1px solid rgba(148,163,184,.12);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .modalHeader h4{margin:0; font-size:15px; font-weight:900}
+    .modalBody{padding:14px}
+    .modalBody p{margin:0 0 10px 0; color:var(--muted); font-size:13px; line-height:1.5}
+    .modalFooter{
+      padding:14px;
+      border-top:1px solid rgba(148,163,184,.12);
+      display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;
+    }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .app{grid-template-columns: 1fr}
+      .sidebar{
+        position:fixed; inset:auto 0 0 0; height:auto;
+        z-index:40;
+        border-right:none; border-top:1px solid rgba(148,163,184,.14);
+        padding:10px 10px 14px 10px;
+      }
+      .brand{display:none}
+      .nav{
+        flex-direction:row;
+        justify-content:space-between;
+        gap:8px;
+        margin:0;
+      }
+      .nav button{
+        flex:1;
+        justify-content:center;
+        text-align:center;
+        padding:10px 10px;
+        border-radius: 16px;
+      }
+      .sidebar .bottom{display:none}
+      .main{padding:16px 12px 120px 12px}
+      .meta{max-width: 90vw}
+      .row{grid-template-columns: 1fr 1fr; align-items:stretch}
+      .row .field:nth-child(5){grid-column: 1 / -1}
     }
   </style>
 </head>
-
 <body>
-<div class="page">
-  <!-- SIDEBAR (Desktop) -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-title">ระบบจัดการเวลาทำงาน</div>
-      <div class="sidebar-sub">HR Attendance Panel</div>
-    </div>
-
-    <nav class="nav">
-      <div class="nav-item active" data-section="dashboard"><span class="icon">📊</span><span>ภาพรวมระบบ</span></div>
-      <div class="nav-item" data-section="employees"><span class="icon">👥</span><span>พนักงาน</span></div>
-      <div class="nav-item" data-section="logs"><span class="icon">⏱</span><span>ประวัติเวลา</span></div>
-      <div class="nav-item" data-section="summary"><span class="icon">📈</span><span>สรุปเวลาทำงาน</span></div>
-      <div class="nav-item" data-section="leave"><span class="icon">📝</span><span>ตรวจสอบการลา</span></div>
-      <div class="nav-item" data-section="settings"><span class="icon">⚙️</span><span>ตั้งค่า (แผนก/ระดับ)</span></div>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div id="adminMiniText">TIP: ตั้งค่า URL ที่หน้าแรก แล้วจึงเข้าหน้า Admin</div>
-      <button class="btn btn-ghost" id="btnBackToFront">กลับหน้าแรก</button>
-      <button class="btn btn-danger" id="btnLogout">ออกจากระบบ</button>
-    </div>
-  </aside>
-
-  <div class="content">
-    <header class="topbar">
-      <div class="topbar-left">
-        <div class="topbar-title">แผงควบคุมระบบลงเวลา</div>
-        <div class="topbar-sub">
-          <span id="adminNameText">Admin Panel</span>
-          <span> | </span>
-          <span id="apiUrlDisplay" title="แตะเพื่อคัดลอก URL"></span>
-          <span class="tiny" id="lastUpdatedText">• อัปเดตล่าสุด: -</span>
-          <span class="tiny" id="autoModeText">• Live: อัปเดตเมื่อสลับแท็บ/กดรีเฟรช (ไม่รีเฟรชหน้า)</span>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>แผงควบคุมระบบลงเวลา</h1>
+          <p>HR Attendance Panel</p>
         </div>
       </div>
-      <div class="topbar-right">
-        <div id="connectionBadge" class="badge-connection offline">
-          <span class="dot"></span>
-          <span id="connectionText">ยังไม่ได้เชื่อมต่อ</span>
-        </div>
-        <button class="btn btn-secondary" id="btnRefreshNow">รีเฟรช</button>
-        <button class="btn btn-secondary" id="btnSetUrl">ตั้งค่า URL</button>
+
+      <div class="nav" id="nav">
+        <button class="active" data-view="dash">
+          <span class="icon">📊</span> ภาพรวม
+        </button>
+        <button data-view="leave">
+          <span class="icon">📝</span> ตรวจสอบการลา
+        </button>
+        <button data-view="settings">
+          <span class="icon">⚙️</span> ตั้งค่า
+        </button>
       </div>
-    </header>
+
+      <div class="bottom">
+        <div class="pill">
+          <div><b>API</b>: <span id="apiMini">-</span></div>
+          <div><b>สถานะ</b>: <span id="miniStatus">ยังไม่เชื่อมต่อ</span></div>
+          <div><b>อัปเดตล่าสุด</b>: <span id="miniUpdated">-</span></div>
+        </div>
+        <button class="dangerBtn" id="btnLogout">ออกจากระบบ</button>
+      </div>
+    </aside>
 
     <main class="main">
-      <div class="main-inner">
-
-        <!-- DASHBOARD -->
-        <section class="section active" id="section-dashboard">
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title"><span class="icon">📊</span>ภาพรวมระบบวันนี้</div>
-                <div class="card-subtitle">อัปเดตแบบ “ตามจำเป็น” • กันยิงซ้อนแล้ว • ไม่ใช้รีเฟรชทุก 60 วิ</div>
-              </div>
-            </div>
-
-            <div class="grid-3">
-              <div class="stat-card">
-                <div class="stat-label">จำนวนพนักงานทั้งหมด</div>
-                <div class="stat-value" id="statTotalEmployees"><div class="skeleton"></div></div>
-                <div class="stat-extra">ข้อมูลจากชีต Employees</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-label">จำนวนคนที่มีบันทึกวันนี้</div>
-                <div class="stat-value stat-accent" id="statTodayCount"><div class="skeleton"></div></div>
-                <div class="stat-extra"><span class="stat-danger" id="statTodayLate">สาย 0 คน</span></div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-label">สรุปเดือนนี้ (ปกติ / สาย / ขาด / ลา)</div>
-                <div class="stat-value" id="statMonthOverview"><div class="skeleton"></div></div>
-                <div class="stat-extra" id="statMonthOverviewExtra">จาก Summary Range + Leave</div>
-              </div>
-            </div>
-
-            <div class="mt-12">
-              <div class="card-subtitle">ตัวอย่างข้อมูลวันนี้</div>
-              <div class="scroll-x mt-8">
-                <table class="table-wide">
-                  <thead>
-                    <tr>
-                      <th>รหัส</th><th>ชื่อ</th>
-                      <th>เข้าเช้า</th><th>ออกเที่ยง</th><th>เข้าเที่ยง</th><th>ออกเย็น</th>
-                      <th>รวมผิดปกติ</th><th>สถานะ</th>
-                    </tr>
-                  </thead>
-                  <tbody id="dashboardTodayBody">
-                    <tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div class="mt-10">
-                <div class="card-subtitle">สรุปตามจุดลงเวลา (วันนี้)</div>
-                <div id="dashboardLocationSummary" class="mt-8" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-              </div>
-            </div>
+      <div class="topbar">
+        <div class="left">
+          <div class="titleRow">
+            <h2 id="pageTitle">ภาพรวมระบบวันนี้</h2>
+            <span class="badge bInfo" id="liveBadge">Live</span>
           </div>
-        </section>
-
-        <!-- EMPLOYEES -->
-        <section class="section" id="section-employees">
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title"><span class="icon">👥</span>พนักงาน</div>
-                <div class="card-subtitle">✅ แสดงสถานะ “มีใบหน้า/ไม่มีใบหน้า”</div>
-              </div>
-
-              <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; min-width:260px; max-width:460px; width:100%;">
-                <input id="empSearch" class="input" placeholder="ค้นหาจากรหัส / ชื่อ" />
-                <button class="btn btn-primary" id="btnOpenAddEmp">➕ เพิ่มพนักงาน</button>
-              </div>
-            </div>
-
-            <div class="desktop-only">
-              <div class="scroll-x" style="max-height:520px; overflow:auto;">
-                <table class="table-wide">
-                  <thead>
-                    <tr>
-                      <th>รหัส</th>
-                      <th>ชื่อ</th>
-                      <th>แผนก</th>
-                      <th>ระดับ</th>
-                      <th>ใบหน้า</th>
-                      <th>จัดการ</th>
-                    </tr>
-                  </thead>
-                  <tbody id="empTableBody">
-                    <tr><td colspan="6" class="text-center">กำลังโหลด...</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div class="mobile-only">
-              <div id="empMobileList" class="list-mobile">
-                <div class="helper">กำลังโหลด...</div>
-              </div>
-            </div>
-
-            <div class="helper mt-10">
-              * หน้า Admin โฟกัส “ข้อมูล + ตรวจสอบ”
-            </div>
-          </div>
-        </section>
-
-        <!-- LOGS -->
-        <section class="section" id="section-logs">
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title"><span class="icon">⏱</span>ประวัติเวลา</div>
-                <div class="card-subtitle">เข้ามาแท็บนี้จะโหลด 1 ครั้ง • กดรีเฟรชได้ตลอด</div>
-              </div>
-            </div>
-
-            <div class="mt-8" style="display:flex; flex-wrap:wrap; gap:8px; align-items:end;">
-              <div style="flex:1; min-width:200px;">
-                <div class="helper">ค้นหาชื่อ / รหัส</div>
-                <input id="logSearch" class="input" placeholder="เช่น 1011, สมชาย" />
-              </div>
-              <div style="min-width:160px;">
-                <div class="helper">สาขา</div>
-                <select id="logBranchFilter" class="input"></select>
-              </div>
-              <div style="min-width:160px;">
-                <div class="helper">เดือน</div>
-                <select id="logMonthFilter" class="input"></select>
-              </div>
-              <div style="min-width:160px;">
-                <div class="helper">ปี (พ.ศ.)</div>
-                <select id="logYearFilter" class="input"></select>
-              </div>
-              <button class="btn btn-primary" id="btnReloadLogs">รีเฟรชแท็บนี้</button>
-            </div>
-
-            <div class="desktop-only mt-10">
-              <div class="scroll-x" style="max-height:520px; overflow:auto;">
-                <table class="table-wide">
-                  <thead>
-                    <tr>
-                      <th>วันที่</th><th>รหัส</th><th>ชื่อ</th>
-                      <th>เข้า</th><th>ออก</th><th>ชั่วโมงรวม</th>
-                      <th>รวมผิดปกติ</th><th>สถานะ</th>
-                      <th>สถานที่</th><th>หลักฐาน</th>
-                    </tr>
-                  </thead>
-                  <tbody id="logsTableBody">
-                    <tr><td colspan="10" class="text-center">ยังไม่มีข้อมูล</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div class="mobile-only mt-10">
-              <div id="logsMobileList" class="list-mobile">
-                <div class="helper">ยังไม่มีข้อมูล</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- SUMMARY -->
-        <section class="section" id="section-summary">
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title"><span class="icon">📈</span>สรุปเวลาทำงานรายบุคคล</div>
-                <div class="card-subtitle">สรุปทั้งเดือน (ปกติ/สาย/ขาด)</div>
-              </div>
-            </div>
-
-            <div class="mt-8" style="display:flex; flex-wrap:wrap; gap:8px; align-items:end;">
-              <div style="min-width:160px;">
-                <div class="helper">สาขา</div>
-                <select id="sumBranchFilter" class="input"></select>
-              </div>
-              <div style="min-width:160px;">
-                <div class="helper">เดือน</div>
-                <select id="sumMonthFilter" class="input"></select>
-              </div>
-              <div style="min-width:160px;">
-                <div class="helper">ปี (พ.ศ.)</div>
-                <select id="sumYearFilter" class="input"></select>
-              </div>
-              <button class="btn btn-primary" id="btnReloadSummary">รีเฟรชแท็บนี้</button>
-            </div>
-
-            <div class="desktop-only mt-10">
-              <div class="scroll-x" style="max-height:520px; overflow:auto;">
-                <table class="table-wide">
-                  <thead>
-                    <tr>
-                      <th>รหัส</th><th>ชื่อ</th><th>แผนก</th><th>ระดับ</th>
-                      <th>จำนวนวัน</th><th>ปกติ</th><th>สาย</th><th>ขาด</th>
-                    </tr>
-                  </thead>
-                  <tbody id="summaryTableBody">
-                    <tr><td colspan="8" class="text-center">ยังไม่มีข้อมูล</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div class="mobile-only mt-10">
-              <div id="summaryMobileList" class="list-mobile">
-                <div class="helper">ยังไม่มีข้อมูล</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- LEAVE TAB -->
-        <section class="section" id="section-leave">
-          <div class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title"><span class="icon">📝</span>ตรวจสอบการลา</div>
-                <div class="card-subtitle">✅ โหมด “เดา action อัตโนมัติ + จำ action ที่เคยใช้ได้” (เหมือน leave.html)</div>
-              </div>
-
-              <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                <button class="btn btn-secondary" id="btnOpenLeaveStandalone">เปิด leave.html</button>
-              </div>
-            </div>
-
-            <div class="chips mt-8">
-              <div class="chip active" data-leave-status="PENDING">รอดำเนินการ</div>
-              <div class="chip" data-leave-status="APPROVED">อนุมัติ</div>
-              <div class="chip" data-leave-status="REJECTED">ไม่อนุมัติ</div>
-              <div class="chip" data-leave-status="ALL">ทั้งหมด</div>
-            </div>
-
-            <div class="mt-10" style="display:flex; flex-wrap:wrap; gap:8px; align-items:end;">
-              <div style="flex:1; min-width:220px;">
-                <div class="helper">ค้นหา (รหัส/ชื่อ/เหตุผล)</div>
-                <input id="leaveSearch" class="input" placeholder="เช่น 1011, สมชาย, ลาป่วย" />
-              </div>
-              <div style="min-width:160px;">
-                <div class="helper">สาขา</div>
-                <select id="leaveBranchFilter" class="input"></select>
-              </div>
-              <div style="min-width:160px;">
-                <div class="helper">เดือน</div>
-                <select id="leaveMonthFilter" class="input"></select>
-              </div>
-              <div style="min-width:160px;">
-                <div class="helper">ปี (พ.ศ.)</div>
-                <select id="leaveYearFilter" class="input"></select>
-              </div>
-              <button class="btn btn-primary" id="btnReloadLeave">รีเฟรชแท็บนี้</button>
-            </div>
-
-            <div id="leaveHint" class="helper mt-10"></div>
-<div class="desktop-only mt-10">
-              <div class="scroll-x" style="max-height:520px; overflow:auto;">
-                <table class="table-wide">
-                  <thead>
-                    <tr>
-                      <th>วันที่ยื่น</th>
-                      <th>รหัส</th>
-                      <th>ชื่อ</th>
-                      <th>ประเภทลา</th>
-                      <th>ช่วงวันลา</th>
-                      <th>เหตุผล</th>
-                      <th>แนบไฟล์</th>
-                      <th>สถานะ</th>
-                      <th>จัดการ</th>
-                    </tr>
-                  </thead>
-                  <tbody id="leaveTableBody">
-                    <tr><td colspan="9" class="text-center">กำลังโหลด...</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div class="mobile-only mt-10">
-              <div id="leaveMobileList" class="list-mobile">
-                <div class="helper">กำลังโหลด...</div>
-              </div>
-            </div>
-
-            <div class="helper mt-10">
-              * ระบบจะ “จำ action ที่ใช้ได้” ไว้ในเครื่องนี้ให้เอง
-            </div>
-          </div>
-        </section>
-
-        <!-- SETTINGS -->
-        <section class="section" id="section-settings">
-          <div class="grid-2">
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <div class="card-title"><span class="icon">🏷️</span>ตั้งค่าแผนก</div>
-                  <div class="card-subtitle">ใช้ในฟอร์มพนักงาน และตัวกรองต่าง ๆ</div>
-                </div>
-              </div>
-
-              <div class="mt-8">
-                <div class="helper">ชื่อแผนกใหม่</div>
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                  <input id="branchName" class="input" placeholder="เช่น ฝ่ายขาย / ฝ่ายบุคคล" />
-                  <button class="btn btn-primary" id="btnAddBranch">เพิ่ม</button>
-                </div>
-              </div>
-
-              <div class="scroll-x mt-10" style="max-height:360px; overflow:auto;">
-                <table>
-                  <thead><tr><th>แผนก</th><th class="text-right">จัดการ</th></tr></thead>
-                  <tbody id="branchTableBody"><tr><td colspan="2" class="text-center">ยังไม่มีข้อมูล</td></tr></tbody>
-                </table>
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="card-header">
-                <div>
-                  <div class="card-title"><span class="icon">📌</span>ตั้งค่าระดับ / ตำแหน่ง</div>
-                  <div class="card-subtitle">เช่น หัวหน้างาน / พนักงาน / ผู้จัดการสาขา ฯลฯ</div>
-                </div>
-              </div>
-
-              <div class="mt-8">
-                <div class="helper">ชื่อตำแหน่งใหม่</div>
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                  <input id="levelName" class="input" placeholder="เช่น หัวหน้างาน" />
-                  <button class="btn btn-primary" id="btnAddLevel">เพิ่ม</button>
-                </div>
-              </div>
-
-              <div class="scroll-x mt-10" style="max-height:360px; overflow:auto;">
-                <table>
-                  <thead><tr><th>ระดับ</th><th class="text-right">จัดการ</th></tr></thead>
-                  <tbody id="levelTableBody"><tr><td colspan="2" class="text-center">ยังไม่มีข้อมูล</td></tr></tbody>
-                </table>
-              </div>
-
-              <div id="settingsError" class="error-text" style="display:none;"></div>
-              <div id="settingsSuccess" class="success-text" style="display:none;"></div>
-            </div>
-          </div>
-        </section>
-
-        <!-- URL CARD -->
-        <div class="card" id="urlCard">
-          <div class="card-header">
-            <div class="card-title"><span class="icon">🔗</span>ตั้งค่า URL API</div>
-          </div>
-          <div class="helper">URL จาก Apps Script Web App (ต้องลงท้ายด้วย <code>/exec</code>)</div>
-          <input id="inputApiUrl" class="input mt-8" placeholder="เช่น https://script.google.com/macros/s/XXXXX/exec" />
-          <div class="mt-10" style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="btn btn-primary" id="btnSaveUrl">บันทึก</button>
-            <button class="btn btn-secondary" id="btnCancelUrl">ยกเลิก</button>
-          </div>
-          <div id="urlError" class="error-text" style="display:none;"></div>
+          <div class="meta" id="metaLine">Admin Panel • API: <span id="apiText">-</span></div>
         </div>
+        <div class="actions">
+          <button class="btn" id="btnSetUrl">ตั้งค่า URL</button>
+          <button class="btn good" id="btnRefresh">รีเฟรช</button>
+          <a class="btn primary" id="btnOpenLeave" href="leave.html" target="_blank" rel="noopener">เปิด leave.html</a>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Dashboard -->
+        <section class="card" id="view-dash">
+          <div class="cardHeader">
+            <div>
+              <h3>สรุประบบ</h3>
+              <div class="sub">โหลดจาก API เพียงเท่าที่จำเป็น (ไม่วนยิงถี่)</div>
+            </div>
+            <div class="miniBtns">
+              <button class="btn" id="btnPing">ทดสอบการเชื่อมต่อ</button>
+            </div>
+          </div>
+          <div class="cardBody">
+            <div class="row" style="grid-template-columns: 1fr 1fr 1fr;">
+              <div class="card" style="box-shadow:none; background: rgba(2,6,23,.22); border-color: rgba(148,163,184,.12);">
+                <div class="cardBody">
+                  <div style="font-size:12px; color:var(--muted)">สถานะ API</div>
+                  <div style="font-size:20px; font-weight:900; margin-top:6px" id="dashApiStatus">-</div>
+                </div>
+              </div>
+              <div class="card" style="box-shadow:none; background: rgba(2,6,23,.22); border-color: rgba(148,163,184,.12);">
+                <div class="cardBody">
+                  <div style="font-size:12px; color:var(--muted)">คำขอลารออนุมัติ</div>
+                  <div style="font-size:20px; font-weight:900; margin-top:6px" id="dashPending">-</div>
+                </div>
+              </div>
+              <div class="card" style="box-shadow:none; background: rgba(2,6,23,.22); border-color: rgba(148,163,184,.12);">
+                <div class="cardBody">
+                  <div style="font-size:12px; color:var(--muted)">อัปเดตล่าสุด</div>
+                  <div style="font-size:20px; font-weight:900; margin-top:6px" id="dashUpdated">-</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hint" id="dashHint">
+              หน้านี้ “ไม่เดา action” — ใช้ action ที่ฝั่ง GS นิยามไว้แน่นอนเฉพาะกลุ่ม Leave:
+              <b>leave_getInitialData</b>, <b>leave_getAdminQueue</b>, <b>leave_approveRequest</b>, <b>leave_rejectRequest</b>, <b>leave_getHistoryRange</b>.
+              <br>ถ้า API URL ถูกต้อง แต่ยังโหลดไม่ขึ้น ให้ดู “รายละเอียดข้อผิดพลาด” ในแท็บ ตั้งค่า → สถานะระบบ
+            </div>
+          </div>
+        </section>
+
+        <!-- Leave -->
+        <section class="card" id="view-leave" style="display:none;">
+          <div class="cardHeader">
+            <div>
+              <h3>ตรวจสอบการลา</h3>
+              <div class="sub">รออนุมัติ / อนุมัติ / ไม่อนุมัติ / ทั้งหมด + ประวัติช่วงเวลา</div>
+            </div>
+            <div class="miniBtns">
+              <button class="btn good" id="btnLoadQueue">โหลดคิวรออนุมัติ</button>
+              <button class="btn" id="btnLoadHistory">โหลดประวัติ</button>
+            </div>
+          </div>
+
+          <div class="cardBody">
+            <div class="row" style="grid-template-columns: 2fr 1fr 1fr 1fr auto;">
+              <div class="field">
+                <label>ค้นหา (รหัส/ชื่อ/เหตุผล)</label>
+                <input id="qSearch" placeholder="เช่น 1011, สมชาย, ลาป่วย" />
+              </div>
+              <div class="field">
+                <label>สาขา</label>
+                <select id="qBranch">
+                  <option value="">ทุกสาขา</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>เดือน</label>
+                <select id="qMonth"></select>
+              </div>
+              <div class="field">
+                <label>ปี (พ.ศ.)</label>
+                <input id="qYear" inputmode="numeric" placeholder="2568" />
+              </div>
+              <div class="field" style="display:flex; gap:10px; justify-content:flex-end; align-items:end;">
+                <button class="btn primary" id="btnApplyFilter">กรอง/ค้นหา</button>
+              </div>
+            </div>
+
+            <div class="hint">
+              • คิวรออนุมัติ: เรียก <b>leave_getAdminQueue</b> (ไม่เดา action)<br>
+              • ประวัติ: เลือกช่วงวันที่แล้วกด “โหลดประวัติ” (ใช้ <b>leave_getHistoryRange</b>)
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin: 12px 0 10px;">
+              <button class="btn" data-status="pending" id="tabPending">รอดำเนินการ</button>
+              <button class="btn" data-status="approved" id="tabApproved">อนุมัติ</button>
+              <button class="btn" data-status="rejected" id="tabRejected">ไม่อนุมัติ</button>
+              <button class="btn" data-status="all" id="tabAll">ทั้งหมด</button>
+              <span class="badge bInfo" id="leaveCount">0 รายการ</span>
+            </div>
+
+            <div class="tableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>วันที่ยื่น</th>
+                    <th>รหัส</th>
+                    <th>ชื่อ</th>
+                    <th>ประเภท</th>
+                    <th>ช่วงเวลา</th>
+                    <th>เหตุผล</th>
+                    <th>ไฟล์</th>
+                    <th>สถานะ</th>
+                    <th>จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="leaveTbody">
+                  <tr><td colspan="9" style="color:var(--muted);">ยังไม่มีข้อมูล</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <details style="margin-top:12px;">
+              <summary style="cursor:pointer; color:var(--muted); font-weight:800">Advanced: ช่วงเวลาประวัติ (สำหรับผู้ดูแล)</summary>
+              <div style="margin-top:10px" class="row">
+                <div class="field">
+                  <label>ตั้งแต่ (YYYY-MM-DD)</label>
+                  <input id="hFrom" placeholder="2025-12-01" />
+                </div>
+                <div class="field">
+                  <label>ถึง (YYYY-MM-DD)</label>
+                  <input id="hTo" placeholder="2025-12-31" />
+                </div>
+                <div class="field" style="grid-column: 1 / -1;">
+                  <label>หมายเหตุผู้อนุมัติ (แนบไปกับ approve/reject)</label>
+                  <input id="adminNote" placeholder="เช่น อนุมัติตามสิทธิ / เอกสารไม่ครบ ฯลฯ" />
+                </div>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <!-- Settings -->
+        <section class="card" id="view-settings" style="display:none;">
+          <div class="cardHeader">
+            <div>
+              <h3>ตั้งค่า & สถานะระบบ</h3>
+              <div class="sub">ดูการเชื่อมต่อ / ดู error จริงจาก API</div>
+            </div>
+            <div class="miniBtns">
+              <button class="btn" id="btnClearCache">ล้างแคช</button>
+            </div>
+          </div>
+          <div class="cardBody">
+            <div class="row" style="grid-template-columns: 2fr 1fr;">
+              <div class="field">
+                <label>API URL (script.google.com/macros/.../exec)</label>
+                <input id="apiInput" placeholder="วาง URL ที่ deploy แล้ว" />
+              </div>
+              <div class="field" style="display:flex; gap:10px; align-items:end; justify-content:flex-end;">
+                <button class="btn primary" id="btnSaveUrl">บันทึก</button>
+              </div>
+            </div>
+
+            <div class="hint">
+              Key ที่ใช้เก็บในเครื่อง: <b>attendance_api_url_v2</b> (เหมือนหน้า index/leave)
+            </div>
+
+            <div class="card" style="margin-top:12px; box-shadow:none; background: rgba(2,6,23,.22); border-color: rgba(148,163,184,.12);">
+              <div class="cardBody">
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                  <span class="badge bInfo">Actions ที่หน้านี้เรียกเท่านั้น</span>
+                  <code style="color:#93c5fd; font-size:12px; white-space:nowrap; overflow:auto; max-width:100%">
+                    leave_getInitialData • leave_getAdminQueue • leave_approveRequest • leave_rejectRequest • leave_getHistoryRange
+                  </code>
+                </div>
+                <div style="margin-top:10px; font-size:12px; color:var(--muted); line-height:1.55" id="sysLog">
+                  ยังไม่มีการเชื่อมต่อ
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
       </div>
     </main>
   </div>
-</div>
 
-<!-- Bottom Nav (Mobile) -->
-<div class="bottom-nav">
-  <div class="bottom-nav-inner">
-    <button class="bottom-item active" data-section="dashboard"><div class="bicon">📊</div><div>ภาพรวม</div></button>
-    <button class="bottom-item" data-section="employees"><div class="bicon">👥</div><div>พนักงาน</div></button>
-    <button class="bottom-item" data-section="logs"><div class="bicon">⏱</div><div>ประวัติ</div></button>
-    <button class="bottom-item" data-section="summary"><div class="bicon">📈</div><div>สรุป</div></button>
-    <button class="bottom-item" data-section="leave"><div class="bicon">📝</div><div>ลา</div></button>
-    <button class="bottom-item" data-section="settings"><div class="bicon">⚙️</div><div>ตั้งค่า</div></button>
-  </div>
-</div>
-
-<!-- MODAL: EMPLOYEE FORM -->
-<div class="modal-backdrop" id="empModalBackdrop" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="empModalTitle">
-    <div class="modal-header">
-      <div style="min-width:0;">
-        <div class="modal-title" id="empModalTitle">👤 เพิ่มพนักงาน</div>
-        <div class="modal-sub" id="empModalSub">กรอกข้อมูลพื้นฐาน</div>
+  <!-- Modal: API URL -->
+  <div class="backdrop" id="modalUrl">
+    <div class="modal">
+      <div class="modalHeader">
+        <h4>ตั้งค่า API URL</h4>
+        <button class="btn" id="btnCloseUrl">ปิด</button>
       </div>
-      <button class="btn btn-secondary btn-small" id="btnCloseEmpModal" type="button">ปิด</button>
-    </div>
-    <div class="modal-body">
-      <div class="grid-2">
-        <div>
-          <div class="helper">รหัสพนักงาน</div>
-          <input id="empCode" class="input" placeholder="เช่น 1011" />
+      <div class="modalBody">
+        <p>วาง URL ของ Google Apps Script ที่ “Deploy > Web app” แล้ว</p>
+        <div class="field">
+          <label>API URL</label>
+          <input id="modalApiInput" placeholder="https://script.google.com/macros/s/XXXX/exec" />
         </div>
-        <div>
-          <div class="helper">อีเมล (ถ้ามี)</div>
-          <input id="empEmail" class="input" placeholder="optional" />
-        </div>
+        <div class="hint">บันทึกแล้ว หน้าจะโหลดข้อมูลให้ทันที</div>
       </div>
-
-      <div class="mt-10">
-        <div class="helper">ชื่อ–นามสกุล</div>
-        <input id="empFullName" class="input" placeholder="ชื่อ นามสกุล" />
+      <div class="modalFooter">
+        <button class="btn primary" id="btnModalSaveUrl">บันทึก</button>
       </div>
-
-      <div class="grid-2 mt-10">
-        <div>
-          <div class="helper">แผนก</div>
-          <select id="empBranch" class="input"></select>
-        </div>
-        <div>
-          <div class="helper">ระดับ / ตำแหน่ง</div>
-          <select id="empLevel" class="input"></select>
-        </div>
-      </div>
-
-      <div id="empFormError" class="error-text" style="display:none;"></div>
-      <div id="empFormSuccess" class="success-text" style="display:none;"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" id="btnResetEmpForm" type="button">ล้างฟอร์ม</button>
-      <button class="btn btn-primary" id="btnSaveEmployee" type="button">บันทึก</button>
     </div>
   </div>
-</div>
 
-<!-- MODAL: LOGIN (รองรับ loginAdmin ถ้า GS มี) -->
-<div class="modal-backdrop" id="loginModalBackdrop" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle" style="max-width:520px;">
-    <div class="modal-header">
-      <div style="min-width:0;">
-        <div class="modal-title" id="loginModalTitle">🔐 เข้าสู่ระบบแอดมิน</div>
-        <div class="modal-sub" id="loginModalSub">กรอกข้อมูลเพื่อใช้งาน Admin</div>
-      </div>
-      <button class="btn btn-secondary btn-small" id="btnCloseLogin" type="button">ปิด</button>
-    </div>
-    <div class="modal-body">
-      <div class="grid-2">
-        <div>
-          <div class="helper">ผู้ใช้ (ถ้า GS ใช้)</div>
-          <input id="loginUser" class="input" placeholder="เช่น admin" autocomplete="username" />
-        </div>
-        <div>
-          <div class="helper">รหัสผ่าน</div>
-          <input id="loginPass" class="input" placeholder="••••••••" type="password" autocomplete="current-password" />
-        </div>
-      </div>
-      <div class="helper mt-10">
-        * ถ้า GS ของคุณ “ไม่ต้องล็อกอิน” หน้านี้จะไม่เด้งเอง
-      </div>
-      <div id="loginError" class="error-text" style="display:none;"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" id="btnClearToken" type="button">ล้าง Token</button>
-      <button class="btn btn-primary" id="btnDoLogin" type="button">เข้าสู่ระบบ</button>
-    </div>
-  </div>
-</div>
+  <div class="toast" id="toast">-</div>
 
-<script>
-  const STORAGE_KEY = 'attendance_api_url_v2';
+  <script>
+    // =========================
+    // Storage & Utils
+    // =========================
+    const LS_API_KEY = "attendance_api_url_v2";
+    const LS_USER_KEY = "attendance_admin_user"; // optional
+    const cache = {
+      initial: null,
+      queueRaw: [],
+      filtered: [],
+      status: "pending",
+      lastUpdated: null,
+      branches: [],
+    };
 
-  // จำ action leave + custom (เหมือน leave.html)
-  const STORAGE_LEAVE_ACTIONS_KEY = 'attendance_leave_actions_v1';
-  const STORAGE_LEAVE_CUSTOM_KEY = 'attendance_leave_actions_custom_v1';
+    const el = (id) => document.getElementById(id);
+    const fmtTime = (d=new Date()) => d.toLocaleString("th-TH", { hour12:false });
+    const pad2 = (n) => String(n).padStart(2,"0");
 
-  // token admin (ถ้า GS มี loginAdmin)
-  const STORAGE_ADMIN_TOKEN_KEY = 'attendance_admin_token_v1';
-  const STORAGE_ADMIN_NAME_KEY  = 'attendance_admin_name_v1';
+    function toast(msg, type=""){
+      const t = el("toast");
+      t.textContent = msg;
+      t.className = "toast" + (type ? (" " + type) : "");
+      requestAnimationFrame(()=> t.classList.add("show"));
+      clearTimeout(toast._tm);
+      toast._tm = setTimeout(()=> t.classList.remove("show"), 2400);
+    }
 
-  function $(id){ return document.getElementById(id); }
+    function setSysLog(html){
+      el("sysLog").innerHTML = html;
+    }
 
-  function getApiUrl(){ return localStorage.getItem(STORAGE_KEY) || ''; }
-  function setApiUrl(url){
-    if(!url) localStorage.removeItem(STORAGE_KEY);
-    else localStorage.setItem(STORAGE_KEY, url);
-  }
+    function getApiUrl(){
+      return (localStorage.getItem(LS_API_KEY) || "").trim();
+    }
+    function setApiUrl(url){
+      localStorage.setItem(LS_API_KEY, (url||"").trim());
+      syncApiUI();
+    }
+    function syncApiUI(){
+      const api = getApiUrl();
+      el("apiText").textContent = api || "-";
+      el("apiMini").textContent = api ? (api.slice(0, 30) + (api.length>30 ? "…" : "")) : "-";
+      el("apiInput").value = api || "";
+      el("modalApiInput").value = api || "";
+    }
 
-  function getAdminToken(){ return localStorage.getItem(STORAGE_ADMIN_TOKEN_KEY) || ''; }
-  function setAdminToken(t){
-    if(!t) localStorage.removeItem(STORAGE_ADMIN_TOKEN_KEY);
-    else localStorage.setItem(STORAGE_ADMIN_TOKEN_KEY, t);
-  }
-  function getAdminName(){ return localStorage.getItem(STORAGE_ADMIN_NAME_KEY) || ''; }
-  function setAdminName(n){
-    if(!n) localStorage.removeItem(STORAGE_ADMIN_NAME_KEY);
-    else localStorage.setItem(STORAGE_ADMIN_NAME_KEY, n);
-  }
+    function toBEYear(thYear){
+      // รับ พ.ศ. -> ค.ศ.
+      const y = Number(thYear);
+      if(!Number.isFinite(y)) return null;
+      return (y > 2400) ? (y - 543) : y;
+    }
 
-  // ====== API wrapper (รองรับ Abort + callFirst) ======
-  const api = {
-    async call(action, params = {}, opts = {}){
-      const apiUrl = getApiUrl();
-      if(!apiUrl) throw new Error('ยังไม่ได้ตั้งค่า URL API');
+    function statusBadge(status){
+      const s = String(status||"").toLowerCase();
+      if(s.includes("อนุมัติ") || s==="approved") return `<span class="badge bOk">อนุมัติ</span>`;
+      if(s.includes("ไม่") || s==="rejected") return `<span class="badge bNo">ไม่อนุมัติ</span>`;
+      if(s.includes("รอ") || s==="pending") return `<span class="badge bWait">รอดำเนินการ</span>`;
+      return `<span class="badge bInfo">${escapeHtml(status||"-")}</span>`;
+    }
 
-      const token = getAdminToken();
-      const body = new URLSearchParams({
-        action,
-        ...params,
-        ...(token ? { token, adminToken: token, sessionToken: token } : {})
-      }).toString();
+    function escapeHtml(str){
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
 
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8' },
-        body,
-        signal: opts.signal
-      });
+    // =========================
+    // API Call (NO guessing)
+    // =========================
+    async function apiCall(action, payload={}){
+      const url = getApiUrl();
+      if(!url) throw new Error("ยังไม่ได้ตั้งค่า API URL");
+      const body = JSON.stringify({ action, ...payload });
+      const t0 = performance.now();
+      let res, json;
+
+      // Primary: JSON POST
+      try{
+        res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+          mode: "cors",
+          credentials: "omit",
+          redirect: "follow",
+        });
+      }catch(e){
+        // Fallback: form POST (บางโปรเจคใช้ doPost(e) parse parameter)
+        const form = new URLSearchParams();
+        form.set("action", action);
+        Object.entries(payload||{}).forEach(([k,v])=>{
+          if(v===undefined) return;
+          form.set(k, typeof v === "object" ? JSON.stringify(v) : String(v));
+        });
+        res = await fetch(url, { method:"POST", body: form, mode:"cors", credentials:"omit" });
+      }
 
       const text = await res.text();
-      let data;
-      try { data = JSON.parse(text); }
-      catch(e){
-        console.error('API response is not JSON:', text);
-        throw new Error('API ส่งผลลัพธ์ไม่ใช่ JSON (เช็คว่า URL ลงท้ายด้วย /exec แล้วหรือยัง)');
+      try{ json = JSON.parse(text); }catch(e){
+        throw new Error(`API ตอบกลับไม่ใช่ JSON (${res.status}) :: ${text.slice(0,200)}`);
       }
-      if(!data.ok){
-        const em = data.error || 'ไม่ทราบสาเหตุจากเซิร์ฟเวอร์';
-        const err = new Error(em);
-        err._server = data;
-        throw err;
-      }
-      return data.result;
-    },
 
-    async callFirst(actions, params = {}, opts = {}){
-      const errors = [];
-      for(const act of actions){
-        try{
-          const result = await this.call(act, params, opts);
-          if(opts.onSuccess) opts.onSuccess(act, result);
-          return { action: act, result };
-        }catch(err){
-          errors.push({ act, msg: err.message });
+      const ms = Math.round(performance.now()-t0);
+      cache.lastUpdated = new Date();
+      el("miniUpdated").textContent = fmtTime(cache.lastUpdated);
+      el("dashUpdated").textContent = fmtTime(cache.lastUpdated);
+
+      if(!res.ok){
+        throw new Error(json?.error || json?.message || `HTTP ${res.status}`);
+      }
+      if(json?.ok === false){
+        throw new Error(json?.error || json?.message || "ไม่สำเร็จ");
+      }
+
+      setSysLog(`✅ เรียก <b>${action}</b> สำเร็จ • ${ms}ms • ${fmtTime(cache.lastUpdated)}<br><span style="color:var(--muted)">Keys: ${Object.keys(json||{}).join(", ")}</span>`);
+      return json;
+    }
+
+    // =========================
+    // Views
+    // =========================
+    function setView(view){
+      ["dash","leave","settings"].forEach(v=>{
+        el("view-"+v).style.display = (v===view) ? "" : "none";
+      });
+      const titles = { dash:"ภาพรวมระบบวันนี้", leave:"ตรวจสอบการลา", settings:"ตั้งค่า" };
+      el("pageTitle").textContent = titles[view] || "Admin";
+      document.querySelectorAll("#nav button").forEach(b=>{
+        b.classList.toggle("active", b.dataset.view===view);
+      });
+    }
+
+    // =========================
+    // Leave rendering & filtering
+    // =========================
+    function normalizeReq(r){
+      // รองรับทั้งชื่อคอลัมน์แบบเก่า/ใหม่
+      const get = (...keys) => {
+        for(const k of keys){
+          if(r && (k in r) && r[k]!=="" && r[k]!==null && r[k]!==undefined) return r[k];
         }
-      }
-      const msg = errors.map(e => `- ${e.act}: ${e.msg}`).join('\n');
-      throw new Error((opts.failMessage || 'เรียก API ไม่สำเร็จ') + '\n' + msg);
-    }
-  };
-
-  // ===== Actions fallback (กัน “GS ชื่อไม่ตรง”) =====
-  const EMP_LIST_ACTIONS = ['getInitialData','getEmployees','listEmployees','employees_list','getEmployeeList'];
-  const BL_ACTIONS = ['getInitialData','getBranchesLevels','getBranchesAndLevels','getMeta','getMasterData'];
-
-  // ===== Data =====
-  let employees = [];
-  let branches = [];
-  let levels = [];
-  let editingEmpId = null;
-
-  // leave
-  let leaveStatus = 'PENDING';
-
-  // ===== Refresh guard =====
-  let refreshInFlight = false;
-  let refreshAbort = null;
-
-  function escHtml(s){
-    return String(s ?? '')
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;')
-      .replaceAll('"','&quot;')
-      .replaceAll("'","&#39;");
-  }
-
-  function setLastUpdated(){
-    const d = new Date();
-    const hh = String(d.getHours()).padStart(2,'0');
-    const mm = String(d.getMinutes()).padStart(2,'0');
-    const ss = String(d.getSeconds()).padStart(2,'0');
-    const el = $('lastUpdatedText');
-    if(el) el.textContent = `• อัปเดตล่าสุด: ${hh}:${mm}:${ss}`;
-  }
-
-  function setConnectionStatus(online, msg){
-    const bdg = $('connectionBadge');
-    const txt = $('connectionText');
-    if(!bdg || !txt) return;
-    if(online){
-      bdg.classList.remove('offline');
-      txt.textContent = msg || 'เชื่อมต่อสำเร็จ';
-    }else{
-      bdg.classList.add('offline');
-      txt.textContent = msg || 'ยังไม่ได้เชื่อมต่อ';
-    }
-  }
-
-  function ellipsizeUrl(url){
-    if(!url) return '';
-    if(url.length <= 52) return url;
-    return url.slice(0, 30) + '...' + url.slice(-12);
-  }
-  function setApiText(url){
-    const el = $('apiUrlDisplay');
-    if(!el) return;
-    el.textContent = url ? ('API: ' + ellipsizeUrl(url)) : 'ยังไม่ได้ตั้งค่า URL';
-    el.title = url ? ('แตะเพื่อคัดลอก: ' + url) : '';
-    el.dataset.full = url || '';
-  }
-
-  function setAdminText(){
-    const name = getAdminName();
-    const t1 = $('adminNameText');
-    const t2 = $('adminMiniText');
-    if(t1) t1.textContent = name ? `Admin: ${name}` : 'Admin Panel';
-    if(t2) t2.textContent = name ? `ผู้ใช้งาน: ${name}` : 'TIP: ตั้งค่า URL ที่หน้าแรก แล้วจึงเข้าหน้า Admin';
-  }
-
-  // ===== URL Card =====
-  function openUrlCard(){
-    $('inputApiUrl').value = getApiUrl();
-    $('urlCard').style.display = 'block';
-    $('urlError').style.display = 'none';
-  }
-  function closeUrlCard(){ $('urlCard').style.display = 'none'; }
-  function saveUrl(){
-    let url = ($('inputApiUrl').value || '').trim();
-    const errEl = $('urlError');
-    errEl.style.display = 'none';
-
-    if(!url){
-      errEl.textContent = 'กรุณากรอก URL';
-      errEl.style.display = 'block';
-      return;
-    }
-    // ใจดีนิด: ถ้าลืม /exec ให้เตือน แต่ไม่บังคับ
-    if(!/\/exec(\?|$)/.test(url)){
-      // ถ้าผู้ใช้ใส่ /dev ให้ผ่าน
-      if(!/\/dev(\?|$)/.test(url)){
-        // ไม่ throw เพื่อไม่ทำให้ใช้งานไม่ได้ แค่เตือน
-        console.warn('URL ไม่ลงท้าย /exec (ถ้าเรียกไม่ได้ให้แก้เป็น /exec)');
-      }
-    }
-
-    setApiUrl(url);
-    setApiText(url);
-    closeUrlCard();
-    initAdmin(true);
-  }
-
-  // ===== Modals =====
-  function openModal(id){
-    const el = $(id);
-    if(!el) return;
-    el.style.display = 'flex';
-    el.setAttribute('aria-hidden','false');
-  }
-  function closeModal(id){
-    const el = $(id);
-    if(!el) return;
-    el.style.display = 'none';
-    el.setAttribute('aria-hidden','true');
-  }
-
-  // ===== Login (ถ้า GS มี action loginAdmin) =====
-  async function tryLoginAdmin(username, password){
-    const res = await api.call('loginAdmin', {
-      username, user: username, admin: username,
-      password, pass: password, pin: password
-    });
-
-    const token = res?.token || res?.adminToken || res?.sessionToken || res?.accessToken || '';
-    const name = res?.name || res?.adminName || res?.fullName || username || 'Admin';
-
-    if(token){
-      setAdminToken(token);
-      setAdminName(name);
-      setAdminText();
-    }else{
-      setAdminName(name);
-      setAdminText();
-    }
-    return res;
-  }
-
-  function shouldAskLoginByMessage(msg){
-    const s = String(msg || '').toLowerCase();
-    return s.includes('unauthor') || s.includes('permission') || s.includes('login') || s.includes('token')
-      || s.includes('สิทธิ์') || s.includes('เข้าสู่ระบบ') || s.includes('ไม่มีสิทธิ') || s.includes('token');
-  }
-
-  async function ensureLoginIfNeeded(err){
-    if(err && shouldAskLoginByMessage(err.message)){
-      openModal('loginModalBackdrop');
-      const le = $('loginError');
-      if(le){
-        le.style.display = 'block';
-        le.textContent = 'ต้องเข้าสู่ระบบก่อนใช้งาน (หรือ token ไม่ถูกต้อง)';
-      }
-      return true;
-    }
-    return false;
-  }
-
-  // ===== Section nav =====
-  function switchSection(section){
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
-    document.querySelectorAll('.bottom-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
-    document.querySelectorAll('.section').forEach(el => el.classList.toggle('active', el.id === 'section-' + section));
-
-    refreshCurrentSection(section, true);
-  }
-
-  function getActiveSection(){
-    const active = document.querySelector('.nav-item.active');
-    return active ? active.dataset.section : 'dashboard';
-  }
-
-  async function refreshCurrentSection(section, silent=false){
-    if(refreshInFlight) return;
-    refreshInFlight = true;
-
-    if(refreshAbort) refreshAbort.abort();
-    refreshAbort = new AbortController();
-    const signal = refreshAbort.signal;
-
-    try{
-      if(section === 'dashboard'){
-        await loadDashboard({ signal });
-      }else if(section === 'employees'){
-        await loadEmployees({ signal });
-      }else if(section === 'logs'){
-        await reloadLogs({ signal });
-      }else if(section === 'summary'){
-        await reloadSummary({ signal });
-      }else if(section === 'settings'){
-        await loadBranchesLevels({ signal });
-      }else if(section === 'leave'){
-        await reloadLeave({ signal });
-      }
-      setLastUpdated();
-      setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
-    }catch(err){
-      if(err.name === 'AbortError') return;
-      console.error(err);
-      setConnectionStatus(false, 'เชื่อมต่อผิดพลาด');
-
-      const asked = await ensureLoginIfNeeded(err);
-      if(asked) return;
-
-      if(!silent) alert('รีเฟรชไม่สำเร็จ: ' + err.message);
-    }finally{
-      refreshInFlight = false;
-    }
-  }
-
-  // ===== Status helpers =====
-  function statusBadgeHtml(status){
-    const s = String(status || '').trim();
-    if(!s) return '<span class="badge-status badge-absent">ขาด</span>';
-    const up = s.toUpperCase();
-    if(up.includes('UNKNOWN') || up.includes('UNKNOW')) return '<span class="badge-status badge-unknown">UNKNOWN</span>';
-
-    let cls = 'badge-other';
-    if(s === 'ปกติ') cls = 'badge-normal';
-    else if(s.includes('สาย') || s.includes('ออกงานไว') || s.includes('ออกกินข้าวไว')) cls = 'badge-late';
-    else if(s === 'ขาด') cls = 'badge-absent';
-    return '<span class="badge-status '+cls+'">'+escHtml(s)+'</span>';
-  }
-
-  function timeToMinutes(t){
-    if(!t) return null;
-    const parts = String(t).split(':');
-    if(parts.length < 2) return null;
-    const h = Number(parts[0]), m = Number(parts[1]);
-    if(isNaN(h) || isNaN(m)) return null;
-    return h * 60 + m;
-  }
-  function minutesToThai(min){
-    if(min == null) return '-';
-    if(min <= 0) return '0 นาที';
-    const h = Math.floor(min / 60);
-    const m = min % 60;
-    if(h <= 0) return `${m} นาที`;
-    return `${h} ชม ${m.toString().padStart(2,'0')} นาที`;
-  }
-  function calcTotalHours(t1, t4){
-    const m1 = timeToMinutes(t1);
-    const m4 = timeToMinutes(t4);
-    if(m1 == null || m4 == null || m4 <= m1) return '-';
-    return minutesToThai(m4 - m1);
-  }
-
-  function parseDateAny(v){
-    if(!v) return null;
-    if(v instanceof Date) return v;
-    const s = String(v).trim();
-    if(!s) return null;
-
-    if(/^\d{4}-\d{2}-\d{2}/.test(s)){
-      const iso = s.replace(' ', 'T');
-      const d = new Date(iso);
-      if(!isNaN(d.getTime())) return d;
-    }
-    if(/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)){
-      const [dd,mm,yy] = s.split('/').map(x=>Number(x));
-      const y = (yy > 2400) ? (yy - 543) : yy;
-      const d = new Date(y, mm-1, dd);
-      if(!isNaN(d.getTime())) return d;
-    }
-    const d = new Date(s);
-    if(!isNaN(d.getTime())) return d;
-    return null;
-  }
-
-  function formatDateThai(dateStr){
-    const d = parseDateAny(dateStr);
-    if(!d) return String(dateStr || '');
-    const dd = d.getDate().toString().padStart(2,'0');
-    const mm = (d.getMonth()+1).toString().padStart(2,'0');
-    const yy = d.getFullYear() + 543;
-    return `${dd}/${mm}/${yy}`;
-  }
-
-  function isRealTime(v){
-    if(v == null) return false;
-    const s = String(v).trim();
-    if(!s) return false;
-    if(s === '-' || s === '–') return false;
-    return true;
-  }
-  function hasAnyLogRow(r){
-    return isRealTime(r.t1) || isRealTime(r.t2) || isRealTime(r.t3) || isRealTime(r.t4);
-  }
-
-  function calcPenaltyFromStatus(status){
-    const s = String(status || '').trim();
-    if(!s) return { kind:'none', minutes:0 };
-    const up = s.toUpperCase();
-    if(up.includes('UNKNOWN') || up.includes('UNKNOW')) return { kind:'unknown' };
-
-    let total = 0;
-    const re = /(\d+)\s*(?:ชม\.?|ชั่วโมง)\s*(\d+)\s*นาที|(\d+)\s*นาที/g;
-    let m;
-    while((m = re.exec(s)) !== null){
-      if(m[1] && m[2]) total += (Number(m[1]) * 60) + Number(m[2]);
-      else if(m[3]) total += Number(m[3]);
-    }
-    return { kind:'ok', minutes:total };
-  }
-  function penaltyHtmlFromRow(r){
-    const res = calcPenaltyFromStatus(r.status || '');
-    if(res.kind === 'unknown') return '<span class="badge-status badge-unknown">UNKNOWN</span>';
-    if(res.kind === 'none') return '-';
-    return `<span class="pill">${escHtml(minutesToThai(res.minutes))}</span>`;
-  }
-
-  // ===== Selects =====
-  function renderBranchLevelSelects(){
-    const branchSel = $('empBranch');
-    const levelSel  = $('empLevel');
-    if(!branchSel || !levelSel) return;
-
-    branchSel.innerHTML = branches.length
-      ? branches.map(b => `<option value="${escHtml(b.name)}">${escHtml(b.name)}</option>`).join('')
-      : '<option value="">- ยังไม่มีแผนก -</option>';
-
-    levelSel.innerHTML = levels.length
-      ? levels.map(l => `<option value="${escHtml(l.name)}">${escHtml(l.name)}</option>`).join('')
-      : '<option value="">- ยังไม่มีระดับ -</option>';
-
-    const opts = ['<option value="ALL">ทุกสาขา</option>'].concat(
-      branches.map(b => `<option value="${escHtml(b.name)}">${escHtml(b.name)}</option>`)
-    ).join('');
-
-    if($('logBranchFilter')) $('logBranchFilter').innerHTML = opts;
-    if($('sumBranchFilter')) $('sumBranchFilter').innerHTML = opts;
-    if($('leaveBranchFilter')) $('leaveBranchFilter').innerHTML = opts;
-  }
-
-  function fillYearMonthSelect(yearSel, monthSel){
-    const now = new Date();
-    const curYearAD = now.getFullYear();
-    const yearsAD = [curYearAD-1, curYearAD, curYearAD+1];
-
-    yearSel.innerHTML = yearsAD.map(y => {
-      const be = y + 543;
-      const sel = (y === curYearAD) ? 'selected' : '';
-      return `<option value="${be}" ${sel}>${be}</option>`;
-    }).join('');
-
-    const monthNames = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-    monthSel.innerHTML = monthNames.map((m,i) => {
-      const sel = (i === now.getMonth()) ? 'selected' : '';
-      return `<option value="${i+1}" ${sel}>${m}</option>`;
-    }).join('');
-  }
-
-  function beToAd(beYear){
-    const n = Number(beYear);
-    if(!n) return beYear;
-    return (n > 2400) ? (n - 543) : n;
-  }
-
-  // ===== Employees =====
-  function hasFace(e){
-    const fd = e && (e.faceData ?? e.face ?? e.faceEmbedding ?? '');
-    if(!fd) return false;
-    const s = String(fd).trim();
-    if(!s) return false;
-    if(s === '-' || s === '–') return false;
-    return true;
-  }
-
-  function normalizeArray(res){
-    if(Array.isArray(res)) return res;
-    if(res && Array.isArray(res.rows)) return res.rows;
-    if(res && Array.isArray(res.items)) return res.items;
-    if(res && Array.isArray(res.data)) return res.data;
-    if(res && Array.isArray(res.list)) return res.list;
-    return [];
-  }
-
-  function renderEmployeesTable(){
-    const tb = $('empTableBody');
-    const mobileList = $('empMobileList');
-    const q = ( ($('empSearch')?.value) || '' ).trim().toLowerCase();
-
-    let list = employees || [];
-    if(q){
-      list = list.filter(e => (String(e.code)+' '+String(e.fullName)).toLowerCase().includes(q));
-    }
-
-    if(!list.length){
-      if(tb) tb.innerHTML = '<tr><td colspan="6" class="text-center">ไม่พบข้อมูล</td></tr>';
-      if(mobileList) mobileList.innerHTML = '<div class="helper">ไม่พบข้อมูล</div>';
-      return;
-    }
-
-    if(tb){
-      tb.innerHTML = list.map(e => {
-        const faceOk = hasFace(e);
-        const faceBadge = faceOk
-          ? `<span class="emp-face-badge">มีใบหน้า</span>`
-          : `<span class="emp-face-badge off">ไม่มีใบหน้า</span>`;
-
-        const idJS = JSON.stringify(String(e.id || ''));
-
-        return `
-          <tr>
-            <td>${escHtml(e.code || '')}</td>
-            <td>${escHtml(e.fullName || '')}</td>
-            <td>${escHtml(e.branch || '')}</td>
-            <td>${escHtml(e.level || '')}</td>
-            <td>${faceBadge}</td>
-            <td>
-              <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                <button class="btn btn-secondary btn-small" onclick='editEmployee(${idJS})'>✏️ แก้ไข</button>
-                <button class="btn btn-danger btn-small" onclick='deleteEmployeeConfirm(${idJS})'>🗑️ ลบ</button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    if(mobileList){
-      mobileList.innerHTML = list.map(e => {
-        const faceOk = hasFace(e);
-        const faceBadge = faceOk
-          ? `<span class="emp-face-badge">มีใบหน้า</span>`
-          : `<span class="emp-face-badge off">ไม่มีใบหน้า</span>`;
-
-        const idJS = JSON.stringify(String(e.id || ''));
-
-        return `
-          <div class="item">
-            <div class="item-top">
-              <div style="min-width:0;">
-                <div class="item-title">${escHtml(e.fullName || '-')}</div>
-                <div class="item-meta">
-                  <span class="tag">แผนก: ${escHtml(e.branch || '-')}</span>
-                  <span class="tag">ระดับ: ${escHtml(e.level || '-')}</span>
-                  ${faceBadge}
-                </div>
-              </div>
-              <div class="code-badge">รหัส ${escHtml(e.code || '-')}</div>
-            </div>
-
-            <div class="item-actions">
-              <button class="btn btn-secondary" onclick='editEmployee(${idJS})'>✏️ แก้ไข</button>
-              <button class="btn btn-danger" onclick='deleteEmployeeConfirm(${idJS})'>🗑️ ลบ</button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-  }
-
-  // ========== โหลด initial data แบบ “ตรง GS” ==========
-  async function loadInitialData(opts={}){
-    const init = await api.call('getInitialData', {}, opts);
-    employees = normalizeArray(init.employees || init.employeeList || init.emp);
-    branches  = normalizeArray(init.branches  || init.branchList  || init.departments);
-    levels    = normalizeArray(init.levels    || init.levelList   || init.positions);
-
-    if(branches.length && typeof branches[0] === 'string') branches = branches.map(x => ({ name: x }));
-    if(levels.length && typeof levels[0] === 'string') levels = levels.map(x => ({ name: x }));
-
-    renderBranchLevelSelects();
-    renderBranchesLevelsTables();
-    renderEmployeesTable();
-
-    const st = $('statTotalEmployees');
-    if(st) st.textContent = String(employees.length);
-
-    return init;
-  }
-
-  async function loadEmployees(opts={}){
-    if($('empTableBody')) $('empTableBody').innerHTML = '<tr><td colspan="6" class="text-center">กำลังโหลด...</td></tr>';
-    if($('empMobileList')) $('empMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
-
-    try{
-      await loadInitialData(opts);
-      return;
-    }catch(e){
-      // fallback
-    }
-
-    const { result } = await api.callFirst(
-      ['getEmployees','listEmployees','getEmployeeList','employees_list'],
-      {},
-      { failMessage:'โหลดรายชื่อพนักงานไม่สำเร็จ', signal: opts.signal }
-    );
-
-    employees = normalizeArray(result);
-    renderEmployeesTable();
-    const st = $('statTotalEmployees');
-    if(st) st.textContent = String(employees.length);
-  }
-
-  // ===== Dashboard =====
-  async function loadDashboard(opts={}){
-    if($('dashboardTodayBody')) $('dashboardTodayBody').innerHTML = '<tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>';
-    if($('dashboardLocationSummary')) $('dashboardLocationSummary').innerHTML = '';
-
-    const now = new Date();
-    const yearBE = now.getFullYear() + 543;
-    const month = now.getMonth() + 1;
-    const yearAD = now.getFullYear();
-
-    try{
-      const init = await api.call('getInitialData', {}, opts);
-      const empRes = normalizeArray(init.employees || init.employeeList || init.emp);
-      if(empRes.length) employees = empRes;
-      const st = $('statTotalEmployees');
-      if(st) st.textContent = String(employees.length);
-
-      branches = normalizeArray(init.branches || init.branchList || init.departments);
-      levels = normalizeArray(init.levels || init.levelList || init.positions);
-      if(branches.length && typeof branches[0] === 'string') branches = branches.map(x => ({ name: x }));
-      if(levels.length && typeof levels[0] === 'string') levels = levels.map(x => ({ name: x }));
-      renderBranchLevelSelects();
-    }catch(e){
-      // ignore
-    }
-
-    const [todaySummary, monthSummary] = await Promise.all([
-      api.call('getTodaySummary', {}, opts),
-      api.call('getSummaryRange', { year: yearAD, month, branch:'ALL' }, opts),
-    ]);
-
-    const leaveCount = await safeGetLeaveCountForMonth({ yearBE, yearAD, month, signal: opts.signal });
-    renderDashboard(todaySummary || [], monthSummary || { rows:[] }, leaveCount);
-  }
-
-  async function safeGetLeaveCountForMonth({yearBE, yearAD, month, signal}){
-    try{
-      const params = {
-        year: yearBE, yearBE, yearAD,
-        month,
-        branch: 'ALL',
-        status: 'ALL',
-        statusEN: 'ALL',
-        statusTH: 'ทั้งหมด'
+        return "";
       };
-      const { result } = await callLeaveList(params, { signal, silent: true });
-      const rows = pickArr(result);
-      const uniq = new Set();
-      rows.forEach(r => {
-        const st = normalizeLeaveStatus(r.status || r.leaveStatus || r.state || r.approvalStatus || '');
-        if(st === 'REJECTED' || st === 'CANCELLED') return;
-        const code = r.code || r.empCode || r.employeeCode || '';
-        if(code) uniq.add(String(code));
-      });
-      return uniq.size;
-    }catch(e){
-      return null;
+      return {
+        requestId: get("requestId","id","reqId"),
+        submitAt: get("submitAt","submittedAt","createdAt","timestamp"),
+        code: get("code","empCode"),
+        fullName: get("fullName","empName","name"),
+        branch: get("branch"),
+        level: get("level"),
+        leaveType: get("leaveTypeId","leaveType","type"),
+        startDate: get("startDate","dateFrom"),
+        endDate: get("endDate","dateTo"),
+        startHalf: get("startHalf","halfFrom","startPart"),
+        endHalf: get("endHalf","halfTo","endPart"),
+        totalDays: get("totalDays","days","qty"),
+        reason: get("reason","note","remark"),
+        contact: get("contact"),
+        attachmentUrl: get("attachmentUrl","evidenceUrl","fileUrl"),
+        status: get("status"),
+        adminNote: get("adminNote"),
+      };
     }
-  }
 
-  function renderDashboard(todaySummary, monthSummary, leaveCount){
-    const todayRows = Array.isArray(todaySummary) ? todaySummary : normalizeArray(todaySummary);
-    const loggedRows = todayRows.filter(hasAnyLogRow);
-    if($('statTodayCount')) $('statTodayCount').textContent = String(loggedRows.length);
+    function statusToBucket(status){
+      const s = String(status||"").toLowerCase();
+      if(s.includes("approved") || s.includes("อนุมัติ") || s==="ok") return "approved";
+      if(s.includes("rejected") || s.includes("ไม่") || s.includes("deny")) return "rejected";
+      if(s.includes("pending") || s.includes("รอ") || s==="wait") return "pending";
+      return "pending";
+    }
 
-    let lateCount = 0;
-    loggedRows.forEach(r => {
-      const st = String(r.status || '');
-      if(st.includes('สาย') || st.includes('ออกงานไว') || st.includes('ออกกินข้าวไว')) lateCount++;
-    });
-    if($('statTodayLate')) $('statTodayLate').textContent = `สาย ${lateCount} คน`;
+    function applyFilter(){
+      const q = el("qSearch").value.trim().toLowerCase();
+      const b = el("qBranch").value;
+      const month = el("qMonth").value; // unused for local filter
+      const year = el("qYear").value.trim();
+      const st = cache.status;
 
-    const rows = normalizeArray(monthSummary?.rows || monthSummary);
-    let normal=0, late=0, absent=0;
-    rows.forEach(r => {
-      normal += Number(r.normalCount || 0);
-      late   += Number(r.lateCount || 0);
-      absent += Number(r.absentCount || 0);
-    });
+      let arr = cache.queueRaw.map(normalizeReq);
 
-    const leaveText = (leaveCount == null) ? '-' : String(leaveCount);
-    if($('statMonthOverview')) $('statMonthOverview').textContent = `${normal} ปกติ / ${late} สาย / ${absent} ขาด / ${leaveText} ลา`;
-
-    const tbody = $('dashboardTodayBody');
-    if(tbody){
-      if(!todayRows.length){
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center">ยังไม่มีข้อมูลวันนี้</td></tr>';
-      }else{
-        tbody.innerHTML = todayRows.map(r => `
-            <tr>
-              <td>${escHtml(r.code || '')}</td>
-              <td>${escHtml(r.fullName || '')}</td>
-              <td>${escHtml((isRealTime(r.t1) ? r.t1 : '-') || '-')}</td>
-              <td>${escHtml((isRealTime(r.t2) ? r.t2 : '-') || '-')}</td>
-              <td>${escHtml((isRealTime(r.t3) ? r.t3 : '-') || '-')}</td>
-              <td>${escHtml((isRealTime(r.t4) ? r.t4 : '-') || '-')}</td>
-              <td>${penaltyHtmlFromRow(r)}</td>
-              <td>${statusBadgeHtml(r.status || '')}</td>
-            </tr>
-        `).join('');
+      if(b){
+        arr = arr.filter(x => String(x.branch||"") === b);
       }
+      if(q){
+        arr = arr.filter(x =>
+          String(x.code||"").toLowerCase().includes(q) ||
+          String(x.fullName||"").toLowerCase().includes(q) ||
+          String(x.reason||"").toLowerCase().includes(q) ||
+          String(x.leaveType||"").toLowerCase().includes(q)
+        );
+      }
+      if(st !== "all"){
+        arr = arr.filter(x => statusToBucket(x.status) === st);
+      }
+
+      cache.filtered = arr;
+      renderLeaveTable();
     }
 
-    const locBox = $('dashboardLocationSummary');
-    if(locBox){
-      const locMap = {};
-      loggedRows.forEach(r => {
-        const loc = r.locationText || r.location || '';
-        if(!loc) return;
-        locMap[loc] = (locMap[loc] || 0) + 1;
-      });
-      const entries = Object.entries(locMap);
-      locBox.innerHTML = entries.length
-        ? entries.map(([name,count]) => `<span class="tag">${escHtml(name)} – ${escHtml(count)} คน</span>`).join(' ')
-        : '<span class="helper">วันนี้ยังไม่มีข้อมูลจุดลงเวลา</span>';
-    }
-  }
+    function renderLeaveTable(){
+      const tbody = el("leaveTbody");
+      const rows = cache.filtered;
 
-  // ===== Logs =====
-  function renderLogsTable(res){
-    const rows = normalizeArray(res?.rows || res);
-    const tb = $('logsTableBody');
-    const mobileList = $('logsMobileList');
+      el("leaveCount").textContent = `${rows.length} รายการ`;
+      el("dashPending").textContent = `${cache.queueRaw.filter(r=>statusToBucket(normalizeReq(r).status)==="pending").length}`;
 
-    if(!rows.length){
-      if(tb) tb.innerHTML = '<tr><td colspan="10" class="text-center">ยังไม่มีข้อมูล</td></tr>';
-      if(mobileList) mobileList.innerHTML = '<div class="helper">ยังไม่มีข้อมูล</div>';
-      return;
-    }
+      if(!rows.length){
+        tbody.innerHTML = `<tr><td colspan="9" style="color:var(--muted);">ไม่พบข้อมูล</td></tr>`;
+        return;
+      }
 
-    if(tb){
-      tb.innerHTML = rows.map((r) => {
-        const total = calcTotalHours(r.t1, r.t4);
-        const locText = r.locationText || r.location || '';
-        const locCell = locText ? `<span class="tag">${escHtml(locText)}</span>` : '-';
-        const evidence = r.evidenceUrl ? `<a href="${escHtml(r.evidenceUrl)}" target="_blank" rel="noopener">เปิดรูป</a>` : '-';
-
+      tbody.innerHTML = rows.map(r=>{
+        const period = [r.startDate, r.endDate].filter(Boolean).join(" → ");
+        const type = r.leaveType || "-";
+        const reason = escapeHtml(r.reason || "-");
+        const fileCell = r.attachmentUrl ? `<a class="link" href="${escapeHtml(r.attachmentUrl)}" target="_blank" rel="noopener">เปิดไฟล์</a>` : `<span style="color:var(--muted)">-</span>`;
+        const st = statusToBucket(r.status);
+        const canAct = (st==="pending");
+        const btns = canAct ? `
+          <div class="miniBtns">
+            <button class="btn good" data-act="approve" data-id="${escapeHtml(r.requestId)}">อนุมัติ</button>
+            <button class="btn bad" data-act="reject" data-id="${escapeHtml(r.requestId)}">ไม่อนุมัติ</button>
+          </div>` : `<span style="color:var(--muted)">-</span>`;
         return `
           <tr>
-            <td>${escHtml(formatDateThai(r.date))}</td>
-            <td>${escHtml(r.code || '')}</td>
-            <td>${escHtml(r.fullName || '')}</td>
-            <td>${escHtml(r.t1 || '-')}</td>
-            <td>${escHtml(r.t4 || '-')}</td>
-            <td>${escHtml(total)}</td>
-            <td>${penaltyHtmlFromRow(r)}</td>
-            <td>${statusBadgeHtml(r.status || '')}</td>
-            <td>${locCell}</td>
-            <td>${evidence}</td>
+            <td>${escapeHtml(r.submitAt || "-")}</td>
+            <td><b>${escapeHtml(r.code || "-")}</b></td>
+            <td>${escapeHtml(r.fullName || "-")}<div style="color:var(--muted); font-size:12px; margin-top:2px">${escapeHtml(r.branch||"")}${r.level?(" • "+escapeHtml(r.level)):""}</div></td>
+            <td>${escapeHtml(type)}</td>
+            <td>${escapeHtml(period)}${r.totalDays?(`<div style="color:var(--muted); font-size:12px; margin-top:2px">รวม ${escapeHtml(r.totalDays)} วัน</div>`):""}</td>
+            <td style="min-width:220px">${reason}</td>
+            <td>${fileCell}</td>
+            <td>${statusBadge(r.status)}</td>
+            <td>${btns}</td>
           </tr>
         `;
-      }).join('');
+      }).join("");
     }
 
-    if(mobileList){
-      mobileList.innerHTML = rows.map((r) => {
-        const d = formatDateThai(r.date);
-        const total = calcTotalHours(r.t1, r.t4);
-        const loc = r.locationText || r.location || '-';
-        const evidence = r.evidenceUrl ? `<a href="${escHtml(r.evidenceUrl)}" target="_blank" rel="noopener">เปิดหลักฐาน</a>` : '-';
-        const p = calcPenaltyFromStatus(r.status || '');
-        const pText = (p.kind === 'unknown') ? 'UNKNOWN' : minutesToThai(p.minutes || 0);
-
-        return `
-          <div class="item">
-            <div class="item-top">
-              <div style="min-width:0;">
-                <div class="item-title">${escHtml(r.fullName || '-')}</div>
-                <div class="item-meta">
-                  <span class="tag">วันที่ ${escHtml(d)}</span>
-                  <span class="tag">${escHtml(loc)}</span>
-                </div>
-              </div>
-              <div class="code-badge">รหัส ${escHtml(r.code || '-')}</div>
-            </div>
-
-            <div class="kv">
-              <div class="k">เข้า</div><div class="v">${escHtml(r.t1 || '-')}</div>
-              <div class="k">ออก</div><div class="v">${escHtml(r.t4 || '-')}</div>
-              <div class="k">ชั่วโมงรวม</div><div class="v">${escHtml(total)}</div>
-              <div class="k">รวมผิดปกติ</div><div class="v">${escHtml(pText)}</div>
-              <div class="k">สถานะ</div><div class="v">${escHtml(r.status || '-')}</div>
-              <div class="k">หลักฐาน</div><div class="v">${evidence}</div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-  }
-
-  async function reloadLogs(opts={}){
-    if($('logsTableBody')) $('logsTableBody').innerHTML = '<tr><td colspan="10" class="text-center">กำลังโหลด...</td></tr>';
-    if($('logsMobileList')) $('logsMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
-
-    const yearBE  = $('logYearFilter')?.value;
-    const yearAD = beToAd(yearBE);
-    const month = $('logMonthFilter')?.value;
-    const branch = $('logBranchFilter')?.value || 'ALL';
-    const search = ( ($('logSearch')?.value) || '' ).trim();
-
-    const res = await api.call('getLogsRange', { year: yearAD, month, branch, search }, opts);
-    renderLogsTable(res);
-  }
-
-  // ===== Summary =====
-  function renderSummaryTable(res){
-    const rows = normalizeArray(res?.rows || res);
-    const tb = $('summaryTableBody');
-    const mobileList = $('summaryMobileList');
-
-    if(!rows.length){
-      if(tb) tb.innerHTML = '<tr><td colspan="8" class="text-center">ยังไม่มีข้อมูล</td></tr>';
-      if(mobileList) mobileList.innerHTML = '<div class="helper">ยังไม่มีข้อมูล</div>';
-      return;
-    }
-
-    if(tb){
-      tb.innerHTML = rows.map(r => `
-        <tr>
-          <td>${escHtml(r.code || '')}</td>
-          <td>${escHtml(r.fullName || '')}</td>
-          <td>${escHtml(r.branch || '')}</td>
-          <td>${escHtml(r.level || '')}</td>
-          <td>${escHtml(r.days || 0)}</td>
-          <td>${escHtml(r.normalCount || 0)}</td>
-          <td>${escHtml(r.lateCount || 0)}</td>
-          <td>${escHtml(r.absentCount || 0)}</td>
-        </tr>
-      `).join('');
-    }
-
-    if(mobileList){
-      mobileList.innerHTML = rows.map(r => `
-        <div class="item">
-          <div class="item-top">
-            <div style="min-width:0;">
-              <div class="item-title">${escHtml(r.fullName || '-')}</div>
-              <div class="item-meta">
-                <span class="tag">แผนก: ${escHtml(r.branch || '-')}</span>
-                <span class="tag">ระดับ: ${escHtml(r.level || '-')}</span>
-              </div>
-            </div>
-            <div class="code-badge">รหัส ${escHtml(r.code || '-')}</div>
-          </div>
-
-          <div class="kv">
-            <div class="k">จำนวนวัน</div><div class="v">${escHtml(r.days || 0)}</div>
-            <div class="k">ปกติ</div><div class="v">${escHtml(r.normalCount || 0)}</div>
-            <div class="k">สาย</div><div class="v">${escHtml(r.lateCount || 0)}</div>
-            <div class="k">ขาด</div><div class="v">${escHtml(r.absentCount || 0)}</div>
-          </div>
-        </div>
-      `).join('');
-    }
-  }
-
-  async function reloadSummary(opts={}){
-    if($('summaryTableBody')) $('summaryTableBody').innerHTML = '<tr><td colspan="8" class="text-center">กำลังโหลด...</td></tr>';
-    if($('summaryMobileList')) $('summaryMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
-
-    const yearBE  = $('sumYearFilter')?.value;
-    const yearAD = beToAd(yearBE);
-    const month = $('sumMonthFilter')?.value;
-    const branch = $('sumBranchFilter')?.value || 'ALL';
-
-    const res = await api.call('getSummaryRange', { year: yearAD, month, branch }, opts);
-    renderSummaryTable(res);
-  }
-
-  // =========================================================
-  // ===================== LEAVE (ให้ 100% แบบ leave.html) ===
-  // =========================================================
-  function getLeaveActionsCache(){
-    try{ return JSON.parse(localStorage.getItem(STORAGE_LEAVE_ACTIONS_KEY) || '{}') || {}; }
-    catch(e){ return {}; }
-  }
-  function setLeaveActionsCache(obj){
-    localStorage.setItem(STORAGE_LEAVE_ACTIONS_KEY, JSON.stringify(obj || {}));
-  }
-
-  function normalizeLeaveStatus(s){
-    const raw = String(s || '').trim();
-    if(!raw) return 'PENDING';
-    const up = raw.toUpperCase();
-    if(up === 'PENDING' || raw.includes('รอดำเนิน')) return 'PENDING';
-    if(up === 'APPROVED' || raw === 'อนุมัติ') return 'APPROVED';
-    if(up === 'REJECTED' || raw.includes('ไม่อนุมัติ') || raw.includes('ปฏิเสธ')) return 'REJECTED';
-    if(raw.includes('ยกเลิก') || up === 'CANCELLED' || up === 'CANCELED') return 'CANCELLED';
-    if(up === 'ALL' || raw === 'ทั้งหมด') return 'ALL';
-    return up || raw;
-  }
-
-  function statusToThaiChip(st){
-    const n = normalizeLeaveStatus(st);
-    if(n === 'PENDING') return 'รอดำเนินการ';
-    if(n === 'APPROVED') return 'อนุมัติ';
-    if(n === 'REJECTED') return 'ไม่อนุมัติ';
-    if(n === 'CANCELLED') return 'ยกเลิก';
-    if(n === 'ALL') return 'ทั้งหมด';
-    return st || '-';
-  }
-
-  function leaveStatusBadge(status){
-    const n = normalizeLeaveStatus(status);
-    if(n === 'PENDING') return '<span class="badge-status badge-other">รอดำเนินการ</span>';
-    if(n === 'APPROVED') return '<span class="badge-status badge-normal">อนุมัติ</span>';
-    if(n === 'REJECTED') return '<span class="badge-status badge-absent">ไม่อนุมัติ</span>';
-    if(n === 'CANCELLED') return '<span class="badge-status badge-unknown">ยกเลิก</span>';
-    return '<span class="badge-status badge-unknown">'+escHtml(statusToThaiChip(status))+'</span>';
-  }
-
-  function pickArr(res){
-    return normalizeArray(res);
-  }
-
-  function getLeaveId(r){
-    return r.id || r.leaveId || r.requestId || r.uuid || r._id || r.key || '';
-  }
-  function getLeaveCreatedAt(r){
-    return r.createdAt || r.requestDate || r.submittedAt || r.timestamp || r.created || r.date || '';
-  }
-  function getLeaveType(r){
-    return r.leaveType || r.type || r.leave_name || r.leaveName || r.kind || '-';
-  }
-  function getLeaveReason(r){
-    return r.reason || r.detail || r.note || r.remark || '-';
-  }
-  function getLeaveRange(r){
-    const s = r.startDate || r.dateStart || r.fromDate || r.from || r.start || '';
-    const e = r.endDate || r.dateEnd || r.toDate || r.to || r.end || '';
-    if(s && e){
-      const ds = String(s).slice(0,10);
-      const de = String(e).slice(0,10);
-      if(ds === de) return ds;
-      return `${ds} → ${de}`;
-    }
-    return r.range || r.dateRange || r.period || r.dates || '-';
-  }
-  function getLeaveAttachUrl(r){
-    return r.attachUrl || r.attachmentUrl || r.fileUrl || r.evidenceUrl || r.photoUrl || r.file || r.attach || '';
-  }
-
-  const LEAVE_LIST_ACTIONS = ['adminListLeaveRequests'];
-
-  const LEAVE_UPDATE_ACTIONS = ['adminApproveLeave','adminRejectLeave','adminCancelLeave'];
-
-  function buildLeaveQueryParams(){
-    const yearBE  = $('leaveYearFilter')?.value;
-    const yearAD = beToAd(yearBE);
-    const month = $('leaveMonthFilter')?.value;
-    const branch = $('leaveBranchFilter')?.value || 'ALL';
-    const search = ( ($('leaveSearch')?.value) || '' ).trim();
-
-    const statusEN = leaveStatus;
-    const statusTH = statusToThaiChip(leaveStatus);
-
-    return {
-      year: yearBE, yearBE, yearAD,
-      month, branch, search,
-      status: statusEN,
-      statusEN,
-      statusTH,
-      filterStatus: statusEN,
-      filter_status: statusEN,
-    };
-  }
-
-  async function callLeaveList(params, opts = {}){
-    const cache = getLeaveActionsCache();
-    const custom = getLeaveCustom();
-
-    const prefer = [];
-    if(custom.listAction) prefer.push(custom.listAction);
-    else if(cache.listAction) prefer.push(cache.listAction);
-
-    const actions = prefer.concat(LEAVE_LIST_ACTIONS.filter(a => !prefer.includes(a)));
-
-    const { action, result } = await api.callFirst(actions, params, {
-      failMessage: 'โหลดรายการลาไม่สำเร็จ',
-      onSuccess: (act) => { cache.listAction = act; setLeaveActionsCache(cache); },
-      signal: opts.signal
-    });
-
-    return { action, result };
-  }
-
-  async function callLeaveUpdate(statusEN, requestId, remark){
-  // admin actions in GS are explicit (no guessing)
-  const actionMap = {
-    'APPROVED': 'adminApproveLeave',
-    'REJECTED': 'adminRejectLeave',
-    'CANCELED': 'adminCancelLeave',
-  };
-  const action = actionMap[String(statusEN||'').toUpperCase()];
-  if(!action) throw new Error('Unsupported leave status: '+statusEN);
-
-  const payload = { requestId: String(requestId||'').trim() };
-
-  // Match GS param names
-  if(action === 'adminApproveLeave') payload.note = String(remark||'').trim();
-  if(action === 'adminRejectLeave') payload.adminNote = String(remark||'').trim();
-  if(action === 'adminCancelLeave') payload.cancelReason = String(remark||'').trim();
-
-  return api.call(action, payload);
-}
-function renderLeave(res){
-    const rows = pickArr(res);
-    const tb = $('leaveTableBody');
-    const mobileList = $('leaveMobileList');
-
-    if(!rows.length){
-      if(tb) tb.innerHTML = '<tr><td colspan="9" class="text-center">ยังไม่มีรายการ</td></tr>';
-      if(mobileList) mobileList.innerHTML = '<div class="helper">ยังไม่มีรายการ</div>';
-      return;
-    }
-
-    if(tb){
-      tb.innerHTML = rows.map(r => {
-        const id = getLeaveId(r);
-        const idJS = JSON.stringify(String(id || ''));
-
-        const createdAt = getLeaveCreatedAt(r);
-        const code = r.code || r.empCode || r.employeeCode || '-';
-        const fullName = r.fullName || r.name || r.employeeName || '-';
-        const type = getLeaveType(r);
-        const range = getLeaveRange(r);
-        const reason = getLeaveReason(r);
-        const attach = getLeaveAttachUrl(r);
-        const statusRaw = r.status || r.leaveStatus || r.state || r.approvalStatus || '';
-        const status = leaveStatusBadge(statusRaw);
-
-        const nst = normalizeLeaveStatus(statusRaw);
-        const canAct = (nst === 'PENDING');
-
-        const attachCell = attach ? `<a href="${escHtml(attach)}" target="_blank" rel="noopener">เปิดไฟล์แนบ</a>` : '-';
-
-        return `
-          <tr>
-            <td>${escHtml(formatDateThai(createdAt || '-'))}</td>
-            <td>${escHtml(code)}</td>
-            <td>${escHtml(fullName)}</td>
-            <td style="max-width:220px; white-space:normal;">${escHtml(type)}</td>
-            <td>${escHtml(range)}</td>
-            <td style="max-width:340px; white-space:normal;">${escHtml(reason)}</td>
-            <td>${attachCell}</td>
-            <td>${status}</td>
-            <td>
-              <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                <button class="btn btn-primary btn-small" ${canAct?'':'disabled'} onclick='approveLeave(${idJS})'>อนุมัติ</button>
-                <button class="btn btn-danger btn-small" ${canAct?'':'disabled'} onclick='rejectLeave(${idJS})'>ไม่อนุมัติ</button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    if(mobileList){
-      mobileList.innerHTML = rows.map(r => {
-        const id = getLeaveId(r);
-        const idJS = JSON.stringify(String(id || ''));
-
-        const createdAt = getLeaveCreatedAt(r);
-        const code = r.code || r.empCode || r.employeeCode || '-';
-        const fullName = r.fullName || r.name || r.employeeName || '-';
-        const type = getLeaveType(r);
-        const range = getLeaveRange(r);
-        const reason = getLeaveReason(r);
-        const attach = getLeaveAttachUrl(r);
-        const statusRaw = r.status || r.leaveStatus || r.state || r.approvalStatus || '';
-        const status = leaveStatusBadge(statusRaw);
-
-        const nst = normalizeLeaveStatus(statusRaw);
-        const canAct = (nst === 'PENDING');
-        const attachText = attach ? `<a href="${escHtml(attach)}" target="_blank" rel="noopener">เปิดไฟล์แนบ</a>` : '-';
-
-        return `
-          <div class="item">
-            <div class="item-top">
-              <div style="min-width:0;">
-                <div class="item-title">${escHtml(fullName)}</div>
-                <div class="item-meta">
-                  <span class="tag">รหัส ${escHtml(code)}</span>
-                  <span class="tag">${escHtml(type)}</span>
-                  ${status}
-                </div>
-              </div>
-              <div class="code-badge">${escHtml(formatDateThai(createdAt || '-'))}</div>
-            </div>
-
-            <div class="kv">
-              <div class="k">ช่วงลา</div><div class="v">${escHtml(range)}</div>
-              <div class="k">เหตุผล</div><div class="v">${escHtml(reason)}</div>
-              <div class="k">แนบไฟล์</div><div class="v">${attachText}</div>
-            </div>
-
-            <div class="item-actions">
-              <button class="btn btn-primary" ${canAct?'':'disabled'} onclick='approveLeave(${idJS})'>อนุมัติ</button>
-              <button class="btn btn-danger" ${canAct?'':'disabled'} onclick='rejectLeave(${idJS})'>ไม่อนุมัติ</button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-  }
-
-  async function reloadLeave(opts={}){
-    if($('leaveTableBody')) $('leaveTableBody').innerHTML = '<tr><td colspan="9" class="text-center">กำลังโหลด...</td></tr>';
-    if($('leaveMobileList')) $('leaveMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
-    if($('leaveHint')) $('leaveHint').textContent = '';
-
-    const params = buildLeaveQueryParams();
-
-    try{
-      const { action, result } = await callLeaveList(params, opts);
-      const rows = pickArr(result);
-
-      if($('leaveHint')) $('leaveHint').textContent = `ดึงข้อมูลสำเร็จ (action: ${action}) • พบ ${rows.length} รายการ • สถานะ: ${statusToThaiChip(leaveStatus)}`;
-      renderLeave(result);
-    }catch(err){
-      console.error(err);
-
-      const asked = await ensureLoginIfNeeded(err);
-      if(asked) return;
-
-      if($('leaveHint')) $('leaveHint').textContent = 'โหลดรายการลาไม่สำเร็จ: ' + err.message + ' (แนะนำ: กดเปิด leave.html หรือใส่ Action ใน Advanced)';
-      if($('leaveTableBody')) $('leaveTableBody').innerHTML = '<tr><td colspan="9" class="text-center">โหลดไม่สำเร็จ</td></tr>';
-      if($('leaveMobileList')) $('leaveMobileList').innerHTML = '<div class="helper">โหลดไม่สำเร็จ</div>';
-    }
-  }
-
-  async function updateLeaveStatus(id, statusEN, opts={}){
-    if(!id) throw new Error('ไม่พบ id ใบลา');
-
-    const remark = prompt(
-      (statusEN === 'APPROVED' ? 'อนุมัติใบลา' : 'ไม่อนุมัติใบลา') + '\nใส่หมายเหตุ (ปล่อยว่างได้):',
-      ''
-    ) ?? '';
-
-    const statusTH = statusToThaiChip(statusEN);
-
-    const payload = {
-      id,
-      leaveId: id,
-      requestId: id,
-
-      status: statusEN,
-      statusEN,
-      statusTH,
-
-      newStatus: statusEN,
-      new_status: statusEN,
-      decision: statusEN,
-
-      approved: statusEN === 'APPROVED',
-      rejected: statusEN === 'REJECTED',
-
-      remark,
-      note: remark,
-      adminRemark: remark,
-      approvedRemark: remark,
-      rejectedRemark: remark,
-    };
-
-    const { action } = await callLeaveUpdate(payload, opts);
-    return action;
-  }
-
-  window.approveLeave = async function(id){
-    try{
-      if(!confirm('ยืนยัน “อนุมัติ” ใบลานี้?')) return;
-      const act = await updateLeaveStatus(id, 'APPROVED');
-      alert('อนุมัติสำเร็จ ✅ (action: ' + act + ')');
-      await reloadLeave();
-    }catch(err){
-      const asked = await ensureLoginIfNeeded(err);
-      if(asked) return;
-      alert('อนุมัติไม่สำเร็จ: ' + err.message);
-    }
-  };
-
-  window.rejectLeave = async function(id){
-    try{
-      if(!confirm('ยืนยัน “ไม่อนุมัติ” ใบลานี้?')) return;
-      const act = await updateLeaveStatus(id, 'REJECTED');
-      alert('ไม่อนุมัติสำเร็จ ✅ (action: ' + act + ')');
-      await reloadLeave();
-    }catch(err){
-      const asked = await ensureLoginIfNeeded(err);
-      if(asked) return;
-      alert('ไม่อนุมัติไม่สำเร็จ: ' + err.message);
-    }
-  };
-
-  // ===== Settings =====
-  function renderBranchesLevelsTables(){
-    const bt = $('branchTableBody');
-    const lt = $('levelTableBody');
-
-    if(bt){
-      bt.innerHTML = branches.length
-        ? branches.map(b => {
-            const nameJS = JSON.stringify(String(b.name));
-            return `
-              <tr>
-                <td>${escHtml(b.name)}</td>
-                <td class="text-right"><button class="btn btn-danger btn-small" onclick='deleteBranch(${nameJS})'>ลบ</button></td>
-              </tr>
-            `;
-          }).join('')
-        : '<tr><td colspan="2" class="text-center">ยังไม่มีแผนก</td></tr>';
-    }
-
-    if(lt){
-      lt.innerHTML = levels.length
-        ? levels.map(l => {
-            const nameJS = JSON.stringify(String(l.name));
-            return `
-              <tr>
-                <td>${escHtml(l.name)}</td>
-                <td class="text-right"><button class="btn btn-danger btn-small" onclick='deleteLevel(${nameJS})'>ลบ</button></td>
-              </tr>
-            `;
-          }).join('')
-        : '<tr><td colspan="2" class="text-center">ยังไม่มีระดับ</td></tr>';
-    }
-  }
-
-  async function loadBranchesLevels(opts={}){
-    try{
-      await loadInitialData(opts);
-      return;
-    }catch(e){
-      // fallback
-    }
-
-    const { result } = await api.callFirst(
-      ['getBranchesLevels','getBranchesAndLevels','getMeta','getMasterData'],
-      {},
-      { failMessage:'โหลดแผนก/ระดับไม่สำเร็จ', signal: opts.signal }
-    );
-
-    branches = normalizeArray(result?.branches || result?.departments || result?.branchList || result?.branch || []);
-    levels   = normalizeArray(result?.levels   || result?.positions   || result?.levelList  || result?.level  || []);
-    if(branches.length && typeof branches[0] === 'string') branches = branches.map(x => ({ name: x }));
-    if(levels.length && typeof levels[0] === 'string') levels = levels.map(x => ({ name: x }));
-
-    renderBranchLevelSelects();
-    renderBranchesLevelsTables();
-  }
-
-  window.deleteBranch = async function(name){
-    if(!confirm(`ต้องการลบแผนก "${name}" หรือไม่?`)) return;
-    try{
-      await api.call('deleteBranch', { name });
-      await loadBranchesLevels();
-      if($('settingsSuccess')){
-        $('settingsSuccess').textContent = 'ลบแผนกสำเร็จ';
-        $('settingsSuccess').style.display = 'block';
-      }
-      if($('settingsError')) $('settingsError').style.display = 'none';
-    }catch(err){
-      const asked = await ensureLoginIfNeeded(err);
-      if(asked) return;
-      if($('settingsError')){
-        $('settingsError').textContent = 'ลบแผนกไม่สำเร็จ: ' + err.message;
-        $('settingsError').style.display = 'block';
-      }
-      if($('settingsSuccess')) $('settingsSuccess').style.display = 'none';
-    }
-  };
-
-  window.deleteLevel = async function(name){
-    if(!confirm(`ต้องการลบระดับ "${name}" หรือไม่?`)) return;
-    try{
-      await api.call('deleteLevel', { name });
-      await loadBranchesLevels();
-      if($('settingsSuccess')){
-        $('settingsSuccess').textContent = 'ลบระดับสำเร็จ';
-        $('settingsSuccess').style.display = 'block';
-      }
-      if($('settingsError')) $('settingsError').style.display = 'none';
-    }catch(err){
-      const asked = await ensureLoginIfNeeded(err);
-      if(asked) return;
-      if($('settingsError')){
-        $('settingsError').textContent = 'ลบระดับไม่สำเร็จ: ' + err.message;
-        $('settingsError').style.display = 'block';
-      }
-      if($('settingsSuccess')) $('settingsSuccess').style.display = 'none';
-    }
-  };
-
-  async function addBranch(){
-    const name = ( $('branchName')?.value || '' ).trim();
-    const errEl = $('settingsError');
-    const sucEl = $('settingsSuccess');
-    if(errEl) errEl.style.display = 'none';
-    if(sucEl) sucEl.style.display = 'none';
-    if(!name){
-      if(errEl){
-        errEl.textContent = 'กรุณากรอกชื่อแผนก';
-        errEl.style.display = 'block';
-      }
-      return;
-    }
-    try{
-      await api.call('saveBranch', { name });
-      if($('branchName')) $('branchName').value = '';
-      await loadBranchesLevels();
-      if(sucEl){
-        sucEl.textContent = 'เพิ่มแผนกสำเร็จ';
-        sucEl.style.display = 'block';
-      }
-    }catch(err){
-      const asked = await ensureLoginIfNeeded(err);
-      if(asked) return;
-      if(errEl){
-        errEl.textContent = 'เพิ่มแผนกไม่สำเร็จ: ' + err.message;
-        errEl.style.display = 'block';
-      }
-    }
-  }
-
-  async function addLevel(){
-    const name = ( $('levelName')?.value || '' ).trim();
-    const errEl = $('settingsError');
-    const sucEl = $('settingsSuccess');
-    if(errEl) errEl.style.display = 'none';
-    if(sucEl) sucEl.style.display = 'none';
-    if(!name){
-      if(errEl){
-        errEl.textContent = 'กรุณากรอกชื่อระดับ';
-        errEl.style.display = 'block';
-      }
-      return;
-    }
-    try{
-      await api.call('saveLevel', { name });
-      if($('levelName')) $('levelName').value = '';
-      await loadBranchesLevels();
-      if(sucEl){
-        sucEl.textContent = 'เพิ่มระดับสำเร็จ';
-        sucEl.style.display = 'block';
-      }
-    }catch(err){
-      const asked = await ensureLoginIfNeeded(err);
-      if(asked) return;
-      if(errEl){
-        errEl.textContent = 'เพิ่มระดับไม่สำเร็จ: ' + err.message;
-        errEl.style.display = 'block';
-      }
-    }
-  }
-
-  // ===== Employee modal =====
-  function resetEmpForm(keepMsg){
-    editingEmpId = null;
-    if($('empModalTitle')) $('empModalTitle').textContent = '👤 เพิ่มพนักงาน';
-    if($('empModalSub')) $('empModalSub').textContent = 'กรอกข้อมูลพื้นฐาน';
-    if($('empCode')) $('empCode').value = '';
-    if($('empFullName')) $('empFullName').value = '';
-    if($('empEmail')) $('empEmail').value = '';
-    if($('empBranch')?.options?.length) $('empBranch').selectedIndex = 0;
-    if($('empLevel')?.options?.length) $('empLevel').selectedIndex = 0;
-
-    if($('empFormError')) $('empFormError').style.display = 'none';
-    if(!keepMsg && $('empFormSuccess')) $('empFormSuccess').style.display = 'none';
-  }
-
-  function openEmpAdd(){
-    resetEmpForm(false);
-    openModal('empModalBackdrop');
-  }
-
-  window.editEmployee = function(id){
-    const emp = (employees || []).find(e => String(e.id) === String(id));
-    if(!emp) return;
-
-    editingEmpId = emp.id;
-    if($('empModalTitle')) $('empModalTitle').textContent = '✏️ แก้ไขพนักงาน';
-    if($('empModalSub')) $('empModalSub').textContent = `รหัส ${emp.code || '-'} • ${emp.fullName || '-'}`;
-
-    if($('empCode')) $('empCode').value = emp.code || '';
-    if($('empFullName')) $('empFullName').value = emp.fullName || '';
-    if($('empEmail')) $('empEmail').value = emp.email || '';
-    if($('empBranch')) $('empBranch').value = emp.branch || '';
-    if($('empLevel')) $('empLevel').value = emp.level || '';
-
-    if($('empFormError')) $('empFormError').style.display = 'none';
-    if($('empFormSuccess')) $('empFormSuccess').style.display = 'none';
-    openModal('empModalBackdrop');
-  };
-
-  async function saveEmployee(){
-    const code = ( $('empCode')?.value || '' ).trim();
-    const fullName = ( $('empFullName')?.value || '' ).trim();
-    const branch = ( $('empBranch')?.value || '' ).trim();
-    const level  = ( $('empLevel')?.value || '' ).trim();
-    const email  = ( $('empEmail')?.value || '' ).trim();
-
-    const errEl = $('empFormError');
-    const sucEl = $('empFormSuccess');
-    if(errEl) errEl.style.display = 'none';
-    if(sucEl) sucEl.style.display = 'none';
-
-    if(!code || !fullName){
-      if(errEl){
-        errEl.textContent = 'กรุณากรอกรหัสพนักงานและชื่อ–นามสกุล';
-        errEl.style.display = 'block';
-      }
-      return;
-    }
-
-    try{
-      await api.call('saveEmployee', {
-        id: editingEmpId || '',
-        code, fullName, branch, level, email,
-        photoBase64: ''
-      });
-
-      await loadEmployees();
-
-      if(sucEl){
-        sucEl.textContent = 'บันทึกข้อมูลสำเร็จ';
-        sucEl.style.display = 'block';
-      }
-
-      setTimeout(() => {
-        closeModal('empModalBackdrop');
-        resetEmpForm(false);
-      }, 250);
-    }catch(err){
-      const asked = await ensureLoginIfNeeded(err);
-      if(asked) return;
-      if(errEl){
-        errEl.textContent = 'บันทึกไม่สำเร็จ: ' + err.message;
-        errEl.style.display = 'block';
-      }
-    }
-  }
-
-  window.deleteEmployeeConfirm = async function(id){
-    const emp = (employees || []).find(e => String(e.id) === String(id));
-    if(!emp) return;
-    if(!confirm(`ต้องการลบพนักงานรหัส ${emp.code || ''} (${emp.fullName || ''}) หรือไม่?`)) return;
-
-    try{
-      await api.call('deleteEmployee', { id });
-      await loadEmployees();
-      alert('ลบพนักงานสำเร็จ');
-    }catch(err){
-      const asked = await ensureLoginIfNeeded(err);
-      if(asked) return;
-      alert('ลบไม่สำเร็จ: ' + err.message);
-    }
-  };
-
-  // ===== init =====
-  async function initAdmin(force=false){
-    const apiUrl = getApiUrl();
-    setApiText(apiUrl);
-    setAdminText();
-
-    if(!apiUrl){
-      setConnectionStatus(false, 'ยังไม่ได้ตั้งค่า URL');
-      return;
-    }
-
-    try{
-      if($('logYearFilter') && $('logMonthFilter')) fillYearMonthSelect($('logYearFilter'), $('logMonthFilter'));
-      if($('sumYearFilter') && $('sumMonthFilter')) fillYearMonthSelect($('sumYearFilter'), $('sumMonthFilter'));
-      if($('leaveYearFilter') && $('leaveMonthFilter')) fillYearMonthSelect($('leaveYearFilter'), $('leaveMonthFilter'));
-
-      await loadBranchesLevels();
-      await refreshCurrentSection(getActiveSection(), true);
-
-      setLastUpdated();
-      setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
-    }catch(err){
-      console.error(err);
-      setConnectionStatus(false, err.message);
-
-      const asked = await ensureLoginIfNeeded(err);
-      if(asked) return;
-
-      alert('เชื่อมต่อ API ไม่สำเร็จ: ' + err.message);
-    }
-  }
-
-  // ===== Leave custom actions UI =====
-  function loadLeaveCustomToUI(){
-    const c = getLeaveCustom();
-  }
-
-  function saveLeaveCustomFromUI(){
-    setLeaveCustom({ listAction, updateAction });
-  }
-
-  function clearLeaveCustom(){
-    localStorage.removeItem(STORAGE_LEAVE_CUSTOM_KEY);
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => switchSection(el.dataset.section)));
-    document.querySelectorAll('.bottom-item').forEach(el => el.addEventListener('click', () => switchSection(el.dataset.section)));
-
-    $('btnBackToFront')?.addEventListener('click', () => window.location.href = 'index.html');
-    $('btnLogout')?.addEventListener('click', () => {
-      if(confirm('ต้องการออกจากระบบ (ลบ URL API + Token) หรือไม่?')){
-        setApiUrl('');
-        setAdminToken('');
-        setAdminName('');
-        window.location.href = 'index.html';
-      }
-    });
-
-    $('btnSetUrl')?.addEventListener('click', openUrlCard);
-    $('btnSaveUrl')?.addEventListener('click', saveUrl);
-    $('btnCancelUrl')?.addEventListener('click', closeUrlCard);
-
-    $('btnRefreshNow')?.addEventListener('click', async () => {
-      await refreshCurrentSection(getActiveSection(), false);
-    });
-
-    $('apiUrlDisplay')?.addEventListener('click', async () => {
-      const full = $('apiUrlDisplay').dataset.full || '';
-      if(!full) return;
-      try{
-        await navigator.clipboard.writeText(full);
-        alert('คัดลอก URL แล้ว');
-      }catch(e){
-        prompt('คัดลอก URL นี้:', full);
-      }
-    });
-
-    // employees
-    $('empSearch')?.addEventListener('input', renderEmployeesTable);
-    $('btnOpenAddEmp')?.addEventListener('click', openEmpAdd);
-
-    $('btnCloseEmpModal')?.addEventListener('click', () => closeModal('empModalBackdrop'));
-    $('empModalBackdrop')?.addEventListener('click', (e) => { if(e.target === $('empModalBackdrop')) closeModal('empModalBackdrop'); });
-    $('btnResetEmpForm')?.addEventListener('click', () => resetEmpForm(false));
-    $('btnSaveEmployee')?.addEventListener('click', saveEmployee);
-
-    // logs
-    $('btnReloadLogs')?.addEventListener('click', () => reloadLogs());
-    $('logSearch')?.addEventListener('keydown', e => { if(e.key === 'Enter') reloadLogs(); });
-    $('logBranchFilter')?.addEventListener('change', () => reloadLogs());
-    $('logMonthFilter')?.addEventListener('change', () => reloadLogs());
-    $('logYearFilter')?.addEventListener('change', () => reloadLogs());
-
-    // summary
-    $('btnReloadSummary')?.addEventListener('click', () => reloadSummary());
-    $('sumBranchFilter')?.addEventListener('change', () => reloadSummary());
-    $('sumMonthFilter')?.addEventListener('change', () => reloadSummary());
-    $('sumYearFilter')?.addEventListener('change', () => reloadSummary());
-
-    // leave
-    $('btnReloadLeave')?.addEventListener('click', () => reloadLeave());
-    $('leaveSearch')?.addEventListener('keydown', e => { if(e.key === 'Enter') reloadLeave(); });
-    $('leaveBranchFilter')?.addEventListener('change', () => reloadLeave());
-    $('leaveMonthFilter')?.addEventListener('change', () => reloadLeave());
-    $('leaveYearFilter')?.addEventListener('change', () => reloadLeave());
-
-    document.querySelectorAll('.chip').forEach(ch => {
-      ch.addEventListener('click', () => {
-        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-        ch.classList.add('active');
-        leaveStatus = ch.dataset.leaveStatus || 'PENDING';
-        reloadLeave();
-      });
-    });
-
-    // leave advanced actions
-    loadLeaveCustomToUI();
-    $('btnSaveLeaveActions')?.addEventListener('click', async () => {
-      saveLeaveCustomFromUI();
-      alert('บันทึก Action แล้ว ✅');
-      await reloadLeave();
-    });
-    $('btnClearLeaveActions')?.addEventListener('click', async () => {
-      clearLeaveCustom();
-      alert('ล้างค่าแล้ว ✅');
-      await reloadLeave();
-    });
-
-    $('btnOpenLeaveStandalone')?.addEventListener('click', () => {
-      window.location.href = 'leave.html';
-    });
-
-    // settings
-    $('btnAddBranch')?.addEventListener('click', addBranch);
-    $('btnAddLevel')?.addEventListener('click', addLevel);
-
-    // login modal events
-    $('btnCloseLogin')?.addEventListener('click', () => closeModal('loginModalBackdrop'));
-    $('loginModalBackdrop')?.addEventListener('click', (e) => { if(e.target === $('loginModalBackdrop')) closeModal('loginModalBackdrop'); });
-
-    $('btnClearToken')?.addEventListener('click', () => {
-      setAdminToken('');
-      setAdminName('');
-      setAdminText();
-      alert('ล้าง Token แล้ว ✅');
-    });
-
-    $('btnDoLogin')?.addEventListener('click', async () => {
-      const u = ( $('loginUser')?.value || '' ).trim();
-      const p = ( $('loginPass')?.value || '' ).trim();
-      if($('loginError')) $('loginError').style.display = 'none';
-
-      if(!p){
-        if($('loginError')){
-          $('loginError').style.display = 'block';
-          $('loginError').textContent = 'กรุณากรอกรหัสผ่าน';
-        }
+    // =========================
+    // Data loaders (NO guessing)
+    // =========================
+    async function loadInitial(){
+      syncApiUI();
+      const api = getApiUrl();
+      el("dashApiStatus").textContent = api ? "กำลังเชื่อมต่อ..." : "ยังไม่ได้ตั้งค่า";
+
+      if(!api){
+        showUrlModal(true);
         return;
       }
 
       try{
-        await tryLoginAdmin(u, p);
-        closeModal('loginModalBackdrop');
-        await initAdmin(true);
-        alert('เข้าสู่ระบบสำเร็จ ✅');
+        const json = await apiCall("leave_getInitialData", {});
+        cache.initial = json?.data || json;
+
+        // branch list (รองรับหลายรูปแบบ)
+        const branches = (cache.initial?.branches || cache.initial?.data?.branches || cache.initial?.Branchs || cache.initial?.branchList || []);
+        cache.branches = Array.isArray(branches) ? branches : [];
+        fillBranchOptions(cache.branches);
+
+        el("dashApiStatus").textContent = "เชื่อมต่อแล้ว";
+        el("miniStatus").textContent = "เชื่อมต่อแล้ว";
+        toast("เชื่อมต่อ API สำเร็จ", "good");
       }catch(err){
-        if($('loginError')){
-          $('loginError').style.display = 'block';
-          $('loginError').textContent = 'เข้าสู่ระบบไม่สำเร็จ: ' + err.message;
+        el("dashApiStatus").textContent = "เชื่อมต่อไม่สำเร็จ";
+        el("miniStatus").textContent = "เชื่อมต่อไม่สำเร็จ";
+        setSysLog(`❌ <b>leave_getInitialData</b> ไม่ผ่าน: ${escapeHtml(err.message)}<br><span style="color:var(--muted)">ตรวจสอบว่า URL เป็นตัว /exec ที่ deploy แล้ว และแชร์สิทธิ์ถูกต้อง</span>`);
+        toast(err.message, "bad");
+      }
+    }
+
+    function fillBranchOptions(branches){
+      const sel = el("qBranch");
+      const current = sel.value;
+      const opts = ['<option value="">ทุกสาขา</option>'].concat(
+        (branches||[]).map(b=>{
+          const name = (typeof b==="string") ? b : (b?.name || b?.branch || "");
+          return name ? `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>` : "";
+        }).filter(Boolean)
+      ).join("");
+      sel.innerHTML = opts;
+      if(current) sel.value = current;
+    }
+
+    async function loadAdminQueue(){
+      // ใช้ month/year เผื่อฝั่ง GS ใช้กรอง (ถ้าไม่ใช้ ก็ไม่เป็นไร)
+      const m = Number(el("qMonth").value);
+      const thYear = el("qYear").value.trim();
+      const yearBE = toBEYear(thYear);
+      const payload = {};
+      if(Number.isFinite(m)) payload.month = m;
+      if(Number.isFinite(yearBE)) payload.year = yearBE;
+
+      try{
+        const json = await apiCall("leave_getAdminQueue", payload);
+        const arr = json?.data?.requests || json?.requests || json?.data || [];
+        cache.queueRaw = Array.isArray(arr) ? arr : [];
+        cache.status = "pending";
+        setStatusTabs();
+        applyFilter();
+        toast("โหลดคิวลาเรียบร้อย", "good");
+      }catch(err){
+        setSysLog(`❌ <b>leave_getAdminQueue</b> ไม่ผ่าน: ${escapeHtml(err.message)}<br><span style="color:var(--muted)">ถ้า leave.html ใช้ได้ แต่หน้านี้ไม่ได้: ให้เทียบว่า URL เดียวกัน และ action ต้องเป็น leave_getAdminQueue เท่านั้น</span>`);
+        toast(err.message, "bad");
+      }
+    }
+
+    async function loadHistoryRange(){
+      const from = el("hFrom").value.trim();
+      const to = el("hTo").value.trim();
+      if(!from || !to){
+        toast("กรอกวันที่ from/to ก่อน", "bad");
+        return;
+      }
+      try{
+        const json = await apiCall("leave_getHistoryRange", { from, to });
+        const arr = json?.data?.requests || json?.requests || json?.data || [];
+        cache.queueRaw = Array.isArray(arr) ? arr : [];
+        cache.status = "all";
+        setStatusTabs();
+        applyFilter();
+        toast("โหลดประวัติเรียบร้อย", "good");
+      }catch(err){
+        setSysLog(`❌ <b>leave_getHistoryRange</b> ไม่ผ่าน: ${escapeHtml(err.message)}`);
+        toast(err.message, "bad");
+      }
+    }
+
+    async function approveOrReject(act, requestId){
+      const note = el("adminNote").value.trim();
+      const action = (act==="approve") ? "leave_approveRequest" : "leave_rejectRequest";
+      try{
+        await apiCall(action, { requestId, adminNote: note });
+        // update local
+        const idx = cache.queueRaw.findIndex(r => String(normalizeReq(r).requestId) === String(requestId));
+        if(idx>-1){
+          if(typeof cache.queueRaw[idx] === "object" && cache.queueRaw[idx]){
+            cache.queueRaw[idx].status = (act==="approve") ? "APPROVED" : "REJECTED";
+            cache.queueRaw[idx].adminNote = note;
+          }
         }
+        applyFilter();
+        toast(act==="approve" ? "อนุมัติแล้ว" : "ไม่อนุมัติแล้ว", "good");
+      }catch(err){
+        setSysLog(`❌ <b>${action}</b> ไม่ผ่าน: ${escapeHtml(err.message)}`);
+        toast(err.message, "bad");
       }
-    });
+    }
 
-    // เมื่อกลับมาแท็บ: รีเฟรช “ครั้งเดียว” (แทนการตั้ง interval)
-    document.addEventListener('visibilitychange', () => {
-      if(document.visibilityState === 'visible'){
-        refreshCurrentSection(getActiveSection(), true);
+    function setStatusTabs(){
+      const map = {
+        pending: el("tabPending"),
+        approved: el("tabApproved"),
+        rejected: el("tabRejected"),
+        all: el("tabAll")
+      };
+      Object.entries(map).forEach(([k,btn])=>{
+        btn.classList.toggle("primary", cache.status===k);
+      });
+    }
+
+    // =========================
+    // Events
+    // =========================
+    function showUrlModal(force=false){
+      syncApiUI();
+      el("modalUrl").classList.add("show");
+      if(force){
+        // prevent closing by clicking outside? (simple)
       }
-    });
-    window.addEventListener('focus', () => refreshCurrentSection(getActiveSection(), true));
+      setView("settings");
+    }
+    function hideUrlModal(){
+      el("modalUrl").classList.remove("show");
+    }
 
-    initAdmin();
-  });
-</script>
+    function initMonthYear(){
+      const mSel = el("qMonth");
+      const monthsTH = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+      mSel.innerHTML = monthsTH.map((name,i)=>`<option value="${i+1}">${name}</option>`).join("");
+      const now = new Date();
+      mSel.value = String(now.getMonth()+1);
+      el("qYear").value = String(now.getFullYear()+543);
+
+      // default history range: this month
+      const y = now.getFullYear();
+      const mm = pad2(now.getMonth()+1);
+      el("hFrom").value = `${y}-${mm}-01`;
+      el("hTo").value = `${y}-${mm}-${pad2(new Date(y, now.getMonth()+1, 0).getDate())}`;
+    }
+
+    function wireNav(){
+      el("nav").addEventListener("click", (e)=>{
+        const btn = e.target.closest("button[data-view]");
+        if(!btn) return;
+        setView(btn.dataset.view);
+      });
+    }
+
+    function wireButtons(){
+      el("btnSetUrl").addEventListener("click", ()=> showUrlModal(false));
+      el("btnCloseUrl").addEventListener("click", hideUrlModal);
+
+      el("btnSaveUrl").addEventListener("click", ()=>{
+        const v = el("apiInput").value.trim();
+        if(!v){ toast("กรอก API URL ก่อน", "bad"); return; }
+        setApiUrl(v);
+        hideUrlModal();
+        toast("บันทึกแล้ว", "good");
+        loadInitial().then(()=> loadAdminQueue());
+      });
+
+      el("btnModalSaveUrl").addEventListener("click", ()=>{
+        const v = el("modalApiInput").value.trim();
+        if(!v){ toast("กรอก API URL ก่อน", "bad"); return; }
+        setApiUrl(v);
+        hideUrlModal();
+        toast("บันทึกแล้ว", "good");
+        loadInitial().then(()=> loadAdminQueue());
+      });
+
+      el("btnRefresh").addEventListener("click", ()=>{
+        loadInitial().then(()=> loadAdminQueue());
+      });
+
+      el("btnPing").addEventListener("click", async ()=>{
+        try{
+          await apiCall("leave_getInitialData", {});
+          toast("API พร้อมใช้งาน", "good");
+        }catch(err){
+          toast(err.message, "bad");
+        }
+      });
+
+      el("btnLoadQueue").addEventListener("click", loadAdminQueue);
+      el("btnLoadHistory").addEventListener("click", loadHistoryRange);
+
+      el("btnApplyFilter").addEventListener("click", applyFilter);
+      el("qSearch").addEventListener("keydown", (e)=>{ if(e.key==="Enter") applyFilter(); });
+
+      // status tabs
+      ["tabPending","tabApproved","tabRejected","tabAll"].forEach(id=>{
+        el(id).addEventListener("click", ()=>{
+          cache.status = el(id).dataset.status;
+          setStatusTabs();
+          applyFilter();
+        });
+      });
+
+      // table actions
+      el("leaveTbody").addEventListener("click", (e)=>{
+        const b = e.target.closest("button[data-act]");
+        if(!b) return;
+        const act = b.dataset.act;
+        const id = b.dataset.id;
+        if(!id){ toast("ไม่พบ requestId", "bad"); return; }
+        approveOrReject(act, id);
+      });
+
+      el("btnClearCache").addEventListener("click", ()=>{
+        cache.initial = null;
+        cache.queueRaw = [];
+        cache.filtered = [];
+        toast("ล้างแคชแล้ว", "good");
+        setSysLog("ล้างแคชแล้ว — กดรีเฟรชเพื่อโหลดใหม่");
+      });
+
+      el("btnLogout").addEventListener("click", ()=>{
+        // ไม่รู้ว่าโปรเจคคุณ logout ทำยังไง — จึงทำแบบปลอดภัย: ล้าง user key (ไม่ล้าง API)
+        localStorage.removeItem(LS_USER_KEY);
+        toast("ออกจากระบบ (ล้างข้อมูลผู้ใช้ในเครื่อง)", "good");
+        // ถ้าอยากกลับหน้า index:
+        try{ window.location.href = "index.html"; }catch(_){}
+      });
+    }
+
+    // =========================
+    // Boot
+    // =========================
+    (function boot(){
+      syncApiUI();
+      initMonthYear();
+      wireNav();
+      wireButtons();
+      setView("dash");
+      setStatusTabs();
+
+      // Auto-load once (no interval)
+      loadInitial().then(()=> loadAdminQueue());
+
+      // small UI info
+      el("miniUpdated").textContent = "-";
+      el("dashUpdated").textContent = "-";
+    })();
+  </script>
 </body>
 </html>
