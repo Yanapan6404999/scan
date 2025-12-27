@@ -42,6 +42,7 @@
     a{ color:var(--primary); text-decoration:none; }
     a:hover{ text-decoration:underline; }
 
+    /* Buttons */
     .btn{
       border:none; cursor:pointer; border-radius:999px;
       padding:10px 14px; font-size:13px; font-weight:600;
@@ -57,6 +58,7 @@
     .btn-ghost{ background:transparent; border:1px solid rgba(148,163,184,.35); color:#cbd5e1; }
     .btn-small{ padding:7px 11px; font-size:12px; }
 
+    /* Layout */
     .page{ display:flex; min-height:100vh; width:100%; overflow-x:hidden; }
     .sidebar{
       width:250px; flex-shrink:0;
@@ -118,6 +120,7 @@
     main.main{ padding:18px 18px 22px; }
     .main-inner{ max-width:1280px; margin:0 auto; width:100%; }
 
+    /* Cards */
     .card{
       background:rgba(255,255,255,.92);
       border-radius:18px;
@@ -145,6 +148,7 @@
     }
     .card-subtitle{ font-size:12px; color:var(--muted); line-height:1.5; }
 
+    /* Inputs */
     .input{
       width:100%;
       border-radius:14px;
@@ -165,6 +169,7 @@
     .mt-10{ margin-top:10px; }
     .mt-12{ margin-top:12px; }
 
+    /* Status badges */
     .badge-status{ font-size:11px; padding:4px 10px; border-radius:999px; display:inline-block; font-weight:700; }
     .badge-normal{ background:#dcfce7; color:#166534; }
     .badge-late{ background:#fee2e2; color:#b91c1c; }
@@ -188,6 +193,7 @@
       color:#b91c1c;
     }
 
+    /* Tables */
     table{ width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
     thead{ background:#f3f4f6; }
     th,td{ padding:10px 10px; border-bottom:1px solid #e5e7eb; text-align:left; white-space:nowrap; vertical-align:top; }
@@ -198,6 +204,7 @@
     .text-center{ text-align:center; }
     .text-right{ text-align:right; }
 
+    /* Connection badge */
     .badge-connection{
       display:inline-flex; align-items:center; gap:8px;
       padding:6px 12px; border-radius:999px;
@@ -221,9 +228,11 @@
       box-shadow:0 0 10px rgba(248,113,113,.75);
     }
 
+    /* Sections */
     .section{ display:none; }
     .section.active{ display:block; }
 
+    /* Mobile cards */
     .list-mobile{
       display:flex; flex-direction:column; gap:10px;
       padding:6px 2px 2px;
@@ -272,6 +281,7 @@
     }
     .item-actions .btn{ width:100%; padding:10px 12px; }
 
+    /* Desktop vs Mobile toggles */
     .desktop-only{ display:block; }
     .mobile-only{ display:none; }
     @media (max-width:900px){
@@ -279,6 +289,7 @@
       .mobile-only{ display:block; }
     }
 
+    /* Bottom nav (mobile) */
     .bottom-nav{
       display:none;
       position:fixed;
@@ -333,6 +344,7 @@
       .topbar-right{ width:100%; display:flex; justify-content:space-between; }
     }
 
+    /* URL card (floating) */
     #urlCard{
       position:fixed;
       right:16px;
@@ -349,6 +361,7 @@
       #urlCard{ left:12px; right:12px; width:auto; }
     }
 
+    /* Modals */
     .modal-backdrop{
       position:fixed; inset:0;
       background:rgba(2,6,23,.55);
@@ -414,16 +427,56 @@
     .error-text{ font-size:12px; color:var(--danger); margin-top:8px; font-weight:700; }
     .success-text{ font-size:12px; color:var(--success); margin-top:8px; font-weight:700; }
 
+    /* Leave status chips */
+    .chips{ display:flex; gap:8px; flex-wrap:wrap; }
+    .chip{
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.35);
+      background:#fff;
+      color:#334155;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+      user-select:none;
+      transition:transform .08s ease, box-shadow .12s ease, background .12s ease;
+    }
+    .chip:active{ transform:translateY(1px); }
+    .chip.active{
+      background:rgba(37,99,235,.10);
+      border-color:rgba(37,99,235,.35);
+      color:#1d4ed8;
+      box-shadow:0 10px 18px rgba(37,99,235,.12);
+    }
+
+    /* Small text in topbar */
     .tiny{
       font-size:11px;
       color:#94a3b8;
       font-weight:800;
     }
+
+    details.adv{
+      border:1px dashed rgba(148,163,184,.55);
+      border-radius:16px;
+      padding:10px 12px;
+      background:rgba(248,250,252,.9);
+      margin-top:10px;
+    }
+    details.adv summary{
+      cursor:pointer;
+      font-weight:900;
+      color:#334155;
+      font-size:12px;
+      user-select:none;
+    }
   </style>
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
 
 <body>
 <div class="page">
+  <!-- SIDEBAR (Desktop) -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-title">ระบบจัดการเวลาทำงาน</div>
@@ -455,7 +508,7 @@
           <span> | </span>
           <span id="apiUrlDisplay" title="แตะเพื่อคัดลอก URL"></span>
           <span class="tiny" id="lastUpdatedText">• อัปเดตล่าสุด: -</span>
-          <span class="tiny">• Live: อัปเดตเมื่อสลับแท็บ/กดรีเฟรช (ไม่รีเฟรชทุก 60 วิ)</span>
+          <span class="tiny" id="autoModeText">• Live: อัปเดตเมื่อสลับแท็บ/กดรีเฟรช (ไม่รีเฟรชหน้า)</span>
         </div>
       </div>
       <div class="topbar-right">
@@ -477,7 +530,7 @@
             <div class="card-header">
               <div>
                 <div class="card-title"><span class="icon">📊</span>ภาพรวมระบบวันนี้</div>
-                <div class="card-subtitle">ล็อค action ตาม .gs • กันยิงซ้อนแล้ว • ไม่ใช้รีเฟรชทุก 60 วิ</div>
+                <div class="card-subtitle">อัปเดตแบบ “ตามจำเป็น” • กันยิงซ้อนแล้ว • ไม่ใช้รีเฟรชทุก 60 วิ</div>
               </div>
             </div>
 
@@ -485,7 +538,7 @@
               <div class="stat-card">
                 <div class="stat-label">จำนวนพนักงานทั้งหมด</div>
                 <div class="stat-value" id="statTotalEmployees"><div class="skeleton"></div></div>
-                <div class="stat-extra">Employees</div>
+                <div class="stat-extra">ข้อมูลจากชีต Employees</div>
               </div>
               <div class="stat-card">
                 <div class="stat-label">จำนวนคนที่มีบันทึกวันนี้</div>
@@ -493,9 +546,9 @@
                 <div class="stat-extra"><span class="stat-danger" id="statTodayLate">สาย 0 คน</span></div>
               </div>
               <div class="stat-card">
-                <div class="stat-label">สรุปเดือนนี้ (ปกติ / สาย / ขาด)</div>
+                <div class="stat-label">สรุปเดือนนี้ (ปกติ / สาย / ขาด / ลา)</div>
                 <div class="stat-value" id="statMonthOverview"><div class="skeleton"></div></div>
-                <div class="stat-extra">Summary Range</div>
+                <div class="stat-extra" id="statMonthOverviewExtra">จาก Summary Range + Leave</div>
               </div>
             </div>
 
@@ -564,6 +617,10 @@
                 <div class="helper">กำลังโหลด...</div>
               </div>
             </div>
+
+            <div class="helper mt-10">
+              * หน้า Admin โฟกัส “ข้อมูล + ตรวจสอบ”
+            </div>
           </div>
         </section>
 
@@ -573,7 +630,7 @@
             <div class="card-header">
               <div>
                 <div class="card-title"><span class="icon">⏱</span>ประวัติเวลา</div>
-                <div class="card-subtitle">โหลดเมื่อเข้าหน้า + กดรีเฟรชได้</div>
+                <div class="card-subtitle">เข้ามาแท็บนี้จะโหลด 1 ครั้ง • กดรีเฟรชได้ตลอด</div>
               </div>
             </div>
 
@@ -673,22 +730,101 @@
           </div>
         </section>
 
-        <!-- LEAVE TAB (Locked: do NOT call unknown leave actions) -->
+        <!-- LEAVE TAB -->
         <section class="section" id="section-leave">
           <div class="card">
             <div class="card-header">
               <div>
                 <div class="card-title"><span class="icon">📝</span>ตรวจสอบการลา</div>
-                <div class="card-subtitle">โหมดปลอดภัย: ไม่เดา action ใบลาในหน้านี้ (ล็อคตาม .gs ปัจจุบัน)</div>
+                <div class="card-subtitle">✅ โหมด “เดา action อัตโนมัติ + จำ action ที่เคยใช้ได้” (เหมือน leave.html)</div>
               </div>
+
               <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                <button class="btn btn-primary" id="btnOpenLeaveStandalone">เปิด leave.html</button>
+                <button class="btn btn-secondary" id="btnOpenLeaveStandalone">เปิด leave.html</button>
               </div>
             </div>
 
-            <div class="helper">
-              • ถ้าต้องการให้ “แท็บลาใน Admin” ทำงานเต็ม: ส่ง action ใบลาจาก .gs มาให้ผม แล้วผมจะล็อคให้ตรง (ไม่เดา) เหมือนกันครับ<br>
-              • ตอนนี้ให้ใช้งานผ่าน leave.html เพื่อความชัวร์ 100%
+            <div class="chips mt-8">
+              <div class="chip active" data-leave-status="PENDING">รอดำเนินการ</div>
+              <div class="chip" data-leave-status="APPROVED">อนุมัติ</div>
+              <div class="chip" data-leave-status="REJECTED">ไม่อนุมัติ</div>
+              <div class="chip" data-leave-status="ALL">ทั้งหมด</div>
+            </div>
+
+            <div class="mt-10" style="display:flex; flex-wrap:wrap; gap:8px; align-items:end;">
+              <div style="flex:1; min-width:220px;">
+                <div class="helper">ค้นหา (รหัส/ชื่อ/เหตุผล)</div>
+                <input id="leaveSearch" class="input" placeholder="เช่น 1011, สมชาย, ลาป่วย" />
+              </div>
+              <div style="min-width:160px;">
+                <div class="helper">สาขา</div>
+                <select id="leaveBranchFilter" class="input"></select>
+              </div>
+              <div style="min-width:160px;">
+                <div class="helper">เดือน</div>
+                <select id="leaveMonthFilter" class="input"></select>
+              </div>
+              <div style="min-width:160px;">
+                <div class="helper">ปี (พ.ศ.)</div>
+                <select id="leaveYearFilter" class="input"></select>
+              </div>
+              <button class="btn btn-primary" id="btnReloadLeave">รีเฟรชแท็บนี้</button>
+            </div>
+
+            <div id="leaveHint" class="helper mt-10"></div>
+
+            <details class="adv">
+              <summary>⚙️ Advanced: ตั้งชื่อ Action เอง (กรณี GS ใช้ชื่อเฉพาะ)</summary>
+              <div class="mt-10 grid-2">
+                <div>
+                  <div class="helper">Action “ดึงรายการลา”</div>
+                  <input id="leaveListActionCustom" class="input" placeholder="เช่น getLeaveHistoryAll / listLeaves" />
+                </div>
+                <div>
+                  <div class="helper">Action “อัปเดตสถานะลา”</div>
+                  <input id="leaveUpdateActionCustom" class="input" placeholder="เช่น updateLeaveStatus / approveLeave" />
+                </div>
+              </div>
+              <div class="mt-10" style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn btn-secondary" id="btnSaveLeaveActions">บันทึก Action</button>
+                <button class="btn btn-secondary" id="btnClearLeaveActions">ล้างค่า</button>
+              </div>
+              <div class="helper mt-8">
+                * ถ้าไม่รู้ชื่อ action: เปิดไฟล์ leave.html แล้วค้นคำว่า <b>action:</b> หรือ <b>URLSearchParams({ action</b>
+              </div>
+            </details>
+
+            <div class="desktop-only mt-10">
+              <div class="scroll-x" style="max-height:520px; overflow:auto;">
+                <table class="table-wide">
+                  <thead>
+                    <tr>
+                      <th>วันที่ยื่น</th>
+                      <th>รหัส</th>
+                      <th>ชื่อ</th>
+                      <th>ประเภทลา</th>
+                      <th>ช่วงวันลา</th>
+                      <th>เหตุผล</th>
+                      <th>แนบไฟล์</th>
+                      <th>สถานะ</th>
+                      <th>จัดการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leaveTableBody">
+                    <tr><td colspan="9" class="text-center">กำลังโหลด...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="mobile-only mt-10">
+              <div id="leaveMobileList" class="list-mobile">
+                <div class="helper">กำลังโหลด...</div>
+              </div>
+            </div>
+
+            <div class="helper mt-10">
+              * ระบบจะ “จำ action ที่ใช้ได้” ไว้ในเครื่องนี้ให้เอง
             </div>
           </div>
         </section>
@@ -700,7 +836,7 @@
               <div class="card-header">
                 <div>
                   <div class="card-title"><span class="icon">🏷️</span>ตั้งค่าแผนก</div>
-                  <div class="card-subtitle">บันทึกลงชีต Branches ผ่าน action: saveBranch/deleteBranch</div>
+                  <div class="card-subtitle">ใช้ในฟอร์มพนักงาน และตัวกรองต่าง ๆ</div>
                 </div>
               </div>
 
@@ -724,7 +860,7 @@
               <div class="card-header">
                 <div>
                   <div class="card-title"><span class="icon">📌</span>ตั้งค่าระดับ / ตำแหน่ง</div>
-                  <div class="card-subtitle">บันทึกลงชีต Levels ผ่าน action: saveLevel/deleteLevel</div>
+                  <div class="card-subtitle">เช่น หัวหน้างาน / พนักงาน / ผู้จัดการสาขา ฯลฯ</div>
                 </div>
               </div>
 
@@ -828,20 +964,20 @@
   </div>
 </div>
 
-<!-- MODAL: LOGIN -->
+<!-- MODAL: LOGIN (รองรับ loginAdmin ถ้า GS มี) -->
 <div class="modal-backdrop" id="loginModalBackdrop" aria-hidden="true">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle" style="max-width:520px;">
     <div class="modal-header">
       <div style="min-width:0;">
         <div class="modal-title" id="loginModalTitle">🔐 เข้าสู่ระบบแอดมิน</div>
-        <div class="modal-sub" id="loginModalSub">รองรับ action: loginAdmin</div>
+        <div class="modal-sub" id="loginModalSub">กรอกข้อมูลเพื่อใช้งาน Admin</div>
       </div>
       <button class="btn btn-secondary btn-small" id="btnCloseLogin" type="button">ปิด</button>
     </div>
     <div class="modal-body">
       <div class="grid-2">
         <div>
-          <div class="helper">ผู้ใช้ (ถ้า .gs ใช้)</div>
+          <div class="helper">ผู้ใช้ (ถ้า GS ใช้)</div>
           <input id="loginUser" class="input" placeholder="เช่น admin" autocomplete="username" />
         </div>
         <div>
@@ -850,7 +986,7 @@
         </div>
       </div>
       <div class="helper mt-10">
-        * ถ้า .gs ของคุณ “ไม่ต้องล็อกอิน” หน้านี้จะไม่เด้งเอง
+        * ถ้า GS ของคุณ “ไม่ต้องล็อกอิน” หน้านี้จะไม่เด้งเอง
       </div>
       <div id="loginError" class="error-text" style="display:none;"></div>
     </div>
@@ -863,6 +999,12 @@
 
 <script>
   const STORAGE_KEY = 'attendance_api_url_v2';
+
+  // จำ action leave + custom (เหมือน leave.html)
+  const STORAGE_LEAVE_ACTIONS_KEY = 'attendance_leave_actions_v1';
+  const STORAGE_LEAVE_CUSTOM_KEY = 'attendance_leave_actions_custom_v1';
+
+  // token admin (ถ้า GS มี loginAdmin)
   const STORAGE_ADMIN_TOKEN_KEY = 'attendance_admin_token_v1';
   const STORAGE_ADMIN_NAME_KEY  = 'attendance_admin_name_v1';
 
@@ -885,25 +1027,7 @@
     else localStorage.setItem(STORAGE_ADMIN_NAME_KEY, n);
   }
 
-  // ====== LOCKED ACTIONS (ตาม .gs) ======
-  const ACTIONS = {
-    LOGIN: 'loginAdmin',
-    INITIAL: 'getInitialData',
-    TODAY: 'getTodaySummary',
-    LOGS_RANGE: 'getLogsRange',
-    SUMMARY_RANGE: 'getSummaryRange',
-
-    SAVE_EMP: 'saveEmployee',
-    DEL_EMP: 'deleteEmployee',
-
-    SAVE_BRANCH: 'saveBranch',
-    DEL_BRANCH: 'deleteBranch',
-
-    SAVE_LEVEL: 'saveLevel',
-    DEL_LEVEL: 'deleteLevel',
-  };
-
-  // ====== API wrapper ======
+  // ====== API wrapper (รองรับ Abort + callFirst) ======
   const api = {
     async call(action, params = {}, opts = {}){
       const apiUrl = getApiUrl();
@@ -937,14 +1061,36 @@
         throw err;
       }
       return data.result;
+    },
+
+    async callFirst(actions, params = {}, opts = {}){
+      const errors = [];
+      for(const act of actions){
+        try{
+          const result = await this.call(act, params, opts);
+          if(opts.onSuccess) opts.onSuccess(act, result);
+          return { action: act, result };
+        }catch(err){
+          errors.push({ act, msg: err.message });
+        }
+      }
+      const msg = errors.map(e => `- ${e.act}: ${e.msg}`).join('\n');
+      throw new Error((opts.failMessage || 'เรียก API ไม่สำเร็จ') + '\n' + msg);
     }
   };
+
+  // ===== Actions fallback (กัน “GS ชื่อไม่ตรง”) =====
+  const EMP_LIST_ACTIONS = ['getInitialData','getEmployees','listEmployees','employees_list','getEmployeeList'];
+  const BL_ACTIONS = ['getInitialData','getBranchesLevels','getBranchesAndLevels','getMeta','getMasterData'];
 
   // ===== Data =====
   let employees = [];
   let branches = [];
   let levels = [];
   let editingEmpId = null;
+
+  // leave
+  let leaveStatus = 'PENDING';
 
   // ===== Refresh guard =====
   let refreshInFlight = false;
@@ -1019,8 +1165,13 @@
       errEl.style.display = 'block';
       return;
     }
-    if(!/\/exec(\?|$)/.test(url) && !/\/dev(\?|$)/.test(url)){
-      console.warn('URL ไม่ลงท้าย /exec (ถ้าเรียกไม่ได้ให้แก้เป็น /exec)');
+    // ใจดีนิด: ถ้าลืม /exec ให้เตือน แต่ไม่บังคับ
+    if(!/\/exec(\?|$)/.test(url)){
+      // ถ้าผู้ใช้ใส่ /dev ให้ผ่าน
+      if(!/\/dev(\?|$)/.test(url)){
+        // ไม่ throw เพื่อไม่ทำให้ใช้งานไม่ได้ แค่เตือน
+        console.warn('URL ไม่ลงท้าย /exec (ถ้าเรียกไม่ได้ให้แก้เป็น /exec)');
+      }
     }
 
     setApiUrl(url);
@@ -1043,9 +1194,9 @@
     el.setAttribute('aria-hidden','true');
   }
 
-  // ===== Login =====
+  // ===== Login (ถ้า GS มี action loginAdmin) =====
   async function tryLoginAdmin(username, password){
-    const res = await api.call(ACTIONS.LOGIN, {
+    const res = await api.call('loginAdmin', {
       username, user: username, admin: username,
       password, pass: password, pin: password
     });
@@ -1088,6 +1239,7 @@
     document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
     document.querySelectorAll('.bottom-item').forEach(el => el.classList.toggle('active', el.dataset.section === section));
     document.querySelectorAll('.section').forEach(el => el.classList.toggle('active', el.id === 'section-' + section));
+
     refreshCurrentSection(section, true);
   }
 
@@ -1114,10 +1266,9 @@
       }else if(section === 'summary'){
         await reloadSummary({ signal });
       }else if(section === 'settings'){
-        await loadInitialData({ signal });
-        renderBranchesLevelsTables();
+        await loadBranchesLevels({ signal });
       }else if(section === 'leave'){
-        // intentionally no API calls here
+        await reloadLeave({ signal });
       }
       setLastUpdated();
       setConnectionStatus(true, 'เชื่อมต่อสำเร็จ');
@@ -1237,15 +1388,6 @@
   }
 
   // ===== Selects =====
-  function normalizeArray(res){
-    if(Array.isArray(res)) return res;
-    if(res && Array.isArray(res.rows)) return res.rows;
-    if(res && Array.isArray(res.items)) return res.items;
-    if(res && Array.isArray(res.data)) return res.data;
-    if(res && Array.isArray(res.list)) return res.list;
-    return [];
-  }
-
   function renderBranchLevelSelects(){
     const branchSel = $('empBranch');
     const levelSel  = $('empLevel');
@@ -1265,6 +1407,7 @@
 
     if($('logBranchFilter')) $('logBranchFilter').innerHTML = opts;
     if($('sumBranchFilter')) $('sumBranchFilter').innerHTML = opts;
+    if($('leaveBranchFilter')) $('leaveBranchFilter').innerHTML = opts;
   }
 
   function fillYearMonthSelect(yearSel, monthSel){
@@ -1299,6 +1442,15 @@
     if(!s) return false;
     if(s === '-' || s === '–') return false;
     return true;
+  }
+
+  function normalizeArray(res){
+    if(Array.isArray(res)) return res;
+    if(res && Array.isArray(res.rows)) return res.rows;
+    if(res && Array.isArray(res.items)) return res.items;
+    if(res && Array.isArray(res.data)) return res.data;
+    if(res && Array.isArray(res.list)) return res.list;
+    return [];
   }
 
   function renderEmployeesTable(){
@@ -1377,15 +1529,15 @@
     }
   }
 
+  // ========== โหลด initial data แบบ “ตรง GS” ==========
   async function loadInitialData(opts={}){
-    const init = await api.call(ACTIONS.INITIAL, {}, opts);
+    const init = await api.call('getInitialData', {}, opts);
+    employees = normalizeArray(init.employees || init.employeeList || init.emp);
+    branches  = normalizeArray(init.branches  || init.branchList  || init.departments);
+    levels    = normalizeArray(init.levels    || init.levelList   || init.positions);
 
-    employees = normalizeArray(init.employees || init.employeeList || init.emp || []);
-    branches  = normalizeArray(init.branches  || init.branchList  || init.departments || []);
-    levels    = normalizeArray(init.levels    || init.levelList   || init.positions || []);
-
-    if(branches.length && typeof branches[0] === 'string') branches = branches.map(x => ({ name:x }));
-    if(levels.length && typeof levels[0] === 'string') levels = levels.map(x => ({ name:x }));
+    if(branches.length && typeof branches[0] === 'string') branches = branches.map(x => ({ name: x }));
+    if(levels.length && typeof levels[0] === 'string') levels = levels.map(x => ({ name: x }));
 
     renderBranchLevelSelects();
     renderBranchesLevelsTables();
@@ -1400,7 +1552,24 @@
   async function loadEmployees(opts={}){
     if($('empTableBody')) $('empTableBody').innerHTML = '<tr><td colspan="6" class="text-center">กำลังโหลด...</td></tr>';
     if($('empMobileList')) $('empMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
-    await loadInitialData(opts);
+
+    try{
+      await loadInitialData(opts);
+      return;
+    }catch(e){
+      // fallback
+    }
+
+    const { result } = await api.callFirst(
+      ['getEmployees','listEmployees','getEmployeeList','employees_list'],
+      {},
+      { failMessage:'โหลดรายชื่อพนักงานไม่สำเร็จ', signal: opts.signal }
+    );
+
+    employees = normalizeArray(result);
+    renderEmployeesTable();
+    const st = $('statTotalEmployees');
+    if(st) st.textContent = String(employees.length);
   }
 
   // ===== Dashboard =====
@@ -1409,21 +1578,61 @@
     if($('dashboardLocationSummary')) $('dashboardLocationSummary').innerHTML = '';
 
     const now = new Date();
-    const yearAD = now.getFullYear();
+    const yearBE = now.getFullYear() + 543;
     const month = now.getMonth() + 1;
+    const yearAD = now.getFullYear();
 
-    // preload master data (employees/branches/levels)
-    try{ await loadInitialData(opts); }catch(e){ /* ignore */ }
+    try{
+      const init = await api.call('getInitialData', {}, opts);
+      const empRes = normalizeArray(init.employees || init.employeeList || init.emp);
+      if(empRes.length) employees = empRes;
+      const st = $('statTotalEmployees');
+      if(st) st.textContent = String(employees.length);
+
+      branches = normalizeArray(init.branches || init.branchList || init.departments);
+      levels = normalizeArray(init.levels || init.levelList || init.positions);
+      if(branches.length && typeof branches[0] === 'string') branches = branches.map(x => ({ name: x }));
+      if(levels.length && typeof levels[0] === 'string') levels = levels.map(x => ({ name: x }));
+      renderBranchLevelSelects();
+    }catch(e){
+      // ignore
+    }
 
     const [todaySummary, monthSummary] = await Promise.all([
-      api.call(ACTIONS.TODAY, {}, opts),
-      api.call(ACTIONS.SUMMARY_RANGE, { year: yearAD, month, branch:'ALL' }, opts),
+      api.call('getTodaySummary', {}, opts),
+      api.call('getSummaryRange', { year: yearAD, month, branch:'ALL' }, opts),
     ]);
 
-    renderDashboard(todaySummary || [], monthSummary || { rows:[] });
+    const leaveCount = await safeGetLeaveCountForMonth({ yearBE, yearAD, month, signal: opts.signal });
+    renderDashboard(todaySummary || [], monthSummary || { rows:[] }, leaveCount);
   }
 
-  function renderDashboard(todaySummary, monthSummary){
+  async function safeGetLeaveCountForMonth({yearBE, yearAD, month, signal}){
+    try{
+      const params = {
+        year: yearBE, yearBE, yearAD,
+        month,
+        branch: 'ALL',
+        status: 'ALL',
+        statusEN: 'ALL',
+        statusTH: 'ทั้งหมด'
+      };
+      const { result } = await callLeaveList(params, { signal, silent: true });
+      const rows = pickArr(result);
+      const uniq = new Set();
+      rows.forEach(r => {
+        const st = normalizeLeaveStatus(r.status || r.leaveStatus || r.state || r.approvalStatus || '');
+        if(st === 'REJECTED' || st === 'CANCELLED') return;
+        const code = r.code || r.empCode || r.employeeCode || '';
+        if(code) uniq.add(String(code));
+      });
+      return uniq.size;
+    }catch(e){
+      return null;
+    }
+  }
+
+  function renderDashboard(todaySummary, monthSummary, leaveCount){
     const todayRows = Array.isArray(todaySummary) ? todaySummary : normalizeArray(todaySummary);
     const loggedRows = todayRows.filter(hasAnyLogRow);
     if($('statTodayCount')) $('statTodayCount').textContent = String(loggedRows.length);
@@ -1442,7 +1651,9 @@
       late   += Number(r.lateCount || 0);
       absent += Number(r.absentCount || 0);
     });
-    if($('statMonthOverview')) $('statMonthOverview').textContent = `${normal} ปกติ / ${late} สาย / ${absent} ขาด`;
+
+    const leaveText = (leaveCount == null) ? '-' : String(leaveCount);
+    if($('statMonthOverview')) $('statMonthOverview').textContent = `${normal} ปกติ / ${late} สาย / ${absent} ขาด / ${leaveText} ลา`;
 
     const tbody = $('dashboardTodayBody');
     if(tbody){
@@ -1561,7 +1772,7 @@
     const branch = $('logBranchFilter')?.value || 'ALL';
     const search = ( ($('logSearch')?.value) || '' ).trim();
 
-    const res = await api.call(ACTIONS.LOGS_RANGE, { year: yearAD, month, branch, search }, opts);
+    const res = await api.call('getLogsRange', { year: yearAD, month, branch, search }, opts);
     renderLogsTable(res);
   }
 
@@ -1626,9 +1837,351 @@
     const month = $('sumMonthFilter')?.value;
     const branch = $('sumBranchFilter')?.value || 'ALL';
 
-    const res = await api.call(ACTIONS.SUMMARY_RANGE, { year: yearAD, month, branch }, opts);
+    const res = await api.call('getSummaryRange', { year: yearAD, month, branch }, opts);
     renderSummaryTable(res);
   }
+
+  // =========================================================
+  // ===================== LEAVE (ให้ 100% แบบ leave.html) ===
+  // =========================================================
+  function getLeaveActionsCache(){
+    try{ return JSON.parse(localStorage.getItem(STORAGE_LEAVE_ACTIONS_KEY) || '{}') || {}; }
+    catch(e){ return {}; }
+  }
+  function setLeaveActionsCache(obj){
+    localStorage.setItem(STORAGE_LEAVE_ACTIONS_KEY, JSON.stringify(obj || {}));
+  }
+
+  function getLeaveCustom(){
+    try{ return JSON.parse(localStorage.getItem(STORAGE_LEAVE_CUSTOM_KEY) || '{}') || {}; }
+    catch(e){ return {}; }
+  }
+  function setLeaveCustom(obj){
+    localStorage.setItem(STORAGE_LEAVE_CUSTOM_KEY, JSON.stringify(obj || {}));
+  }
+
+  function normalizeLeaveStatus(s){
+    const raw = String(s || '').trim();
+    if(!raw) return 'PENDING';
+    const up = raw.toUpperCase();
+    if(up === 'PENDING' || raw.includes('รอดำเนิน')) return 'PENDING';
+    if(up === 'APPROVED' || raw === 'อนุมัติ') return 'APPROVED';
+    if(up === 'REJECTED' || raw.includes('ไม่อนุมัติ') || raw.includes('ปฏิเสธ')) return 'REJECTED';
+    if(raw.includes('ยกเลิก') || up === 'CANCELLED' || up === 'CANCELED') return 'CANCELLED';
+    if(up === 'ALL' || raw === 'ทั้งหมด') return 'ALL';
+    return up || raw;
+  }
+
+  function statusToThaiChip(st){
+    const n = normalizeLeaveStatus(st);
+    if(n === 'PENDING') return 'รอดำเนินการ';
+    if(n === 'APPROVED') return 'อนุมัติ';
+    if(n === 'REJECTED') return 'ไม่อนุมัติ';
+    if(n === 'CANCELLED') return 'ยกเลิก';
+    if(n === 'ALL') return 'ทั้งหมด';
+    return st || '-';
+  }
+
+  function leaveStatusBadge(status){
+    const n = normalizeLeaveStatus(status);
+    if(n === 'PENDING') return '<span class="badge-status badge-other">รอดำเนินการ</span>';
+    if(n === 'APPROVED') return '<span class="badge-status badge-normal">อนุมัติ</span>';
+    if(n === 'REJECTED') return '<span class="badge-status badge-absent">ไม่อนุมัติ</span>';
+    if(n === 'CANCELLED') return '<span class="badge-status badge-unknown">ยกเลิก</span>';
+    return '<span class="badge-status badge-unknown">'+escHtml(statusToThaiChip(status))+'</span>';
+  }
+
+  function pickArr(res){
+    return normalizeArray(res);
+  }
+
+  function getLeaveId(r){
+    return r.id || r.leaveId || r.requestId || r.uuid || r._id || r.key || '';
+  }
+  function getLeaveCreatedAt(r){
+    return r.createdAt || r.requestDate || r.submittedAt || r.timestamp || r.created || r.date || '';
+  }
+  function getLeaveType(r){
+    return r.leaveType || r.type || r.leave_name || r.leaveName || r.kind || '-';
+  }
+  function getLeaveReason(r){
+    return r.reason || r.detail || r.note || r.remark || '-';
+  }
+  function getLeaveRange(r){
+    const s = r.startDate || r.dateStart || r.fromDate || r.from || r.start || '';
+    const e = r.endDate || r.dateEnd || r.toDate || r.to || r.end || '';
+    if(s && e){
+      const ds = String(s).slice(0,10);
+      const de = String(e).slice(0,10);
+      if(ds === de) return ds;
+      return `${ds} → ${de}`;
+    }
+    return r.range || r.dateRange || r.period || r.dates || '-';
+  }
+  function getLeaveAttachUrl(r){
+    return r.attachUrl || r.attachmentUrl || r.fileUrl || r.evidenceUrl || r.photoUrl || r.file || r.attach || '';
+  }
+
+  const LEAVE_LIST_ACTIONS = [
+    'getLeaveRequests','getLeaveHistory','getLeaveHistoryAll','listLeaveRequests','listLeaves',
+    'getLeaves','getLeaveList','getLeaveAdmin','getLeaveAdminList','getLeaveRequestsAll',
+    'leave_list','leave_getHistory','leave_getHistoryAll','leave_getRequests','leave_getAll',
+    'getLeavesRange','getLeaveRange','leave_getRange'
+  ];
+
+  const LEAVE_UPDATE_ACTIONS = [
+    'updateLeaveStatus','setLeaveStatus','updateLeaveRequest','setLeaveRequestStatus',
+    'approveLeave','rejectLeave','approveLeaveRequest','rejectLeaveRequest',
+    'leave_updateStatus','leave_setStatus','leave_approve','leave_reject'
+  ];
+
+  function buildLeaveQueryParams(){
+    const yearBE  = $('leaveYearFilter')?.value;
+    const yearAD = beToAd(yearBE);
+    const month = $('leaveMonthFilter')?.value;
+    const branch = $('leaveBranchFilter')?.value || 'ALL';
+    const search = ( ($('leaveSearch')?.value) || '' ).trim();
+
+    const statusEN = leaveStatus;
+    const statusTH = statusToThaiChip(leaveStatus);
+
+    return {
+      year: yearBE, yearBE, yearAD,
+      month, branch, search,
+      status: statusEN,
+      statusEN,
+      statusTH,
+      filterStatus: statusEN,
+      filter_status: statusEN,
+    };
+  }
+
+  async function callLeaveList(params, opts = {}){
+    const cache = getLeaveActionsCache();
+    const custom = getLeaveCustom();
+
+    const prefer = [];
+    if(custom.listAction) prefer.push(custom.listAction);
+    else if(cache.listAction) prefer.push(cache.listAction);
+
+    const actions = prefer.concat(LEAVE_LIST_ACTIONS.filter(a => !prefer.includes(a)));
+
+    const { action, result } = await api.callFirst(actions, params, {
+      failMessage: 'โหลดรายการลาไม่สำเร็จ',
+      onSuccess: (act) => { cache.listAction = act; setLeaveActionsCache(cache); },
+      signal: opts.signal
+    });
+
+    return { action, result };
+  }
+
+  async function callLeaveUpdate(params, opts = {}){
+    const cache = getLeaveActionsCache();
+    const custom = getLeaveCustom();
+
+    const prefer = [];
+    if(custom.updateAction) prefer.push(custom.updateAction);
+    else if(cache.updateAction) prefer.push(cache.updateAction);
+
+    const actions = prefer.concat(LEAVE_UPDATE_ACTIONS.filter(a => !prefer.includes(a)));
+
+    const { action, result } = await api.callFirst(actions, params, {
+      failMessage: 'อัปเดตสถานะใบลาไม่สำเร็จ',
+      onSuccess: (act) => { cache.updateAction = act; setLeaveActionsCache(cache); },
+      signal: opts.signal
+    });
+
+    return { action, result };
+  }
+
+  function renderLeave(res){
+    const rows = pickArr(res);
+    const tb = $('leaveTableBody');
+    const mobileList = $('leaveMobileList');
+
+    if(!rows.length){
+      if(tb) tb.innerHTML = '<tr><td colspan="9" class="text-center">ยังไม่มีรายการ</td></tr>';
+      if(mobileList) mobileList.innerHTML = '<div class="helper">ยังไม่มีรายการ</div>';
+      return;
+    }
+
+    if(tb){
+      tb.innerHTML = rows.map(r => {
+        const id = getLeaveId(r);
+        const idJS = JSON.stringify(String(id || ''));
+
+        const createdAt = getLeaveCreatedAt(r);
+        const code = r.code || r.empCode || r.employeeCode || '-';
+        const fullName = r.fullName || r.name || r.employeeName || '-';
+        const type = getLeaveType(r);
+        const range = getLeaveRange(r);
+        const reason = getLeaveReason(r);
+        const attach = getLeaveAttachUrl(r);
+        const statusRaw = r.status || r.leaveStatus || r.state || r.approvalStatus || '';
+        const status = leaveStatusBadge(statusRaw);
+
+        const nst = normalizeLeaveStatus(statusRaw);
+        const canAct = (nst === 'PENDING');
+
+        const attachCell = attach ? `<a href="${escHtml(attach)}" target="_blank" rel="noopener">เปิดไฟล์แนบ</a>` : '-';
+
+        return `
+          <tr>
+            <td>${escHtml(formatDateThai(createdAt || '-'))}</td>
+            <td>${escHtml(code)}</td>
+            <td>${escHtml(fullName)}</td>
+            <td style="max-width:220px; white-space:normal;">${escHtml(type)}</td>
+            <td>${escHtml(range)}</td>
+            <td style="max-width:340px; white-space:normal;">${escHtml(reason)}</td>
+            <td>${attachCell}</td>
+            <td>${status}</td>
+            <td>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="btn btn-primary btn-small" ${canAct?'':'disabled'} onclick='approveLeave(${idJS})'>อนุมัติ</button>
+                <button class="btn btn-danger btn-small" ${canAct?'':'disabled'} onclick='rejectLeave(${idJS})'>ไม่อนุมัติ</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    if(mobileList){
+      mobileList.innerHTML = rows.map(r => {
+        const id = getLeaveId(r);
+        const idJS = JSON.stringify(String(id || ''));
+
+        const createdAt = getLeaveCreatedAt(r);
+        const code = r.code || r.empCode || r.employeeCode || '-';
+        const fullName = r.fullName || r.name || r.employeeName || '-';
+        const type = getLeaveType(r);
+        const range = getLeaveRange(r);
+        const reason = getLeaveReason(r);
+        const attach = getLeaveAttachUrl(r);
+        const statusRaw = r.status || r.leaveStatus || r.state || r.approvalStatus || '';
+        const status = leaveStatusBadge(statusRaw);
+
+        const nst = normalizeLeaveStatus(statusRaw);
+        const canAct = (nst === 'PENDING');
+        const attachText = attach ? `<a href="${escHtml(attach)}" target="_blank" rel="noopener">เปิดไฟล์แนบ</a>` : '-';
+
+        return `
+          <div class="item">
+            <div class="item-top">
+              <div style="min-width:0;">
+                <div class="item-title">${escHtml(fullName)}</div>
+                <div class="item-meta">
+                  <span class="tag">รหัส ${escHtml(code)}</span>
+                  <span class="tag">${escHtml(type)}</span>
+                  ${status}
+                </div>
+              </div>
+              <div class="code-badge">${escHtml(formatDateThai(createdAt || '-'))}</div>
+            </div>
+
+            <div class="kv">
+              <div class="k">ช่วงลา</div><div class="v">${escHtml(range)}</div>
+              <div class="k">เหตุผล</div><div class="v">${escHtml(reason)}</div>
+              <div class="k">แนบไฟล์</div><div class="v">${attachText}</div>
+            </div>
+
+            <div class="item-actions">
+              <button class="btn btn-primary" ${canAct?'':'disabled'} onclick='approveLeave(${idJS})'>อนุมัติ</button>
+              <button class="btn btn-danger" ${canAct?'':'disabled'} onclick='rejectLeave(${idJS})'>ไม่อนุมัติ</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  async function reloadLeave(opts={}){
+    if($('leaveTableBody')) $('leaveTableBody').innerHTML = '<tr><td colspan="9" class="text-center">กำลังโหลด...</td></tr>';
+    if($('leaveMobileList')) $('leaveMobileList').innerHTML = '<div class="helper">กำลังโหลด...</div>';
+    if($('leaveHint')) $('leaveHint').textContent = '';
+
+    const params = buildLeaveQueryParams();
+
+    try{
+      const { action, result } = await callLeaveList(params, opts);
+      const rows = pickArr(result);
+
+      if($('leaveHint')) $('leaveHint').textContent = `ดึงข้อมูลสำเร็จ (action: ${action}) • พบ ${rows.length} รายการ • สถานะ: ${statusToThaiChip(leaveStatus)}`;
+      renderLeave(result);
+    }catch(err){
+      console.error(err);
+
+      const asked = await ensureLoginIfNeeded(err);
+      if(asked) return;
+
+      if($('leaveHint')) $('leaveHint').textContent = 'โหลดรายการลาไม่สำเร็จ: ' + err.message + ' (แนะนำ: กดเปิด leave.html หรือใส่ Action ใน Advanced)';
+      if($('leaveTableBody')) $('leaveTableBody').innerHTML = '<tr><td colspan="9" class="text-center">โหลดไม่สำเร็จ</td></tr>';
+      if($('leaveMobileList')) $('leaveMobileList').innerHTML = '<div class="helper">โหลดไม่สำเร็จ</div>';
+    }
+  }
+
+  async function updateLeaveStatus(id, statusEN, opts={}){
+    if(!id) throw new Error('ไม่พบ id ใบลา');
+
+    const remark = prompt(
+      (statusEN === 'APPROVED' ? 'อนุมัติใบลา' : 'ไม่อนุมัติใบลา') + '\nใส่หมายเหตุ (ปล่อยว่างได้):',
+      ''
+    ) ?? '';
+
+    const statusTH = statusToThaiChip(statusEN);
+
+    const payload = {
+      id,
+      leaveId: id,
+      requestId: id,
+
+      status: statusEN,
+      statusEN,
+      statusTH,
+
+      newStatus: statusEN,
+      new_status: statusEN,
+      decision: statusEN,
+
+      approved: statusEN === 'APPROVED',
+      rejected: statusEN === 'REJECTED',
+
+      remark,
+      note: remark,
+      adminRemark: remark,
+      approvedRemark: remark,
+      rejectedRemark: remark,
+    };
+
+    const { action } = await callLeaveUpdate(payload, opts);
+    return action;
+  }
+
+  window.approveLeave = async function(id){
+    try{
+      if(!confirm('ยืนยัน “อนุมัติ” ใบลานี้?')) return;
+      const act = await updateLeaveStatus(id, 'APPROVED');
+      alert('อนุมัติสำเร็จ ✅ (action: ' + act + ')');
+      await reloadLeave();
+    }catch(err){
+      const asked = await ensureLoginIfNeeded(err);
+      if(asked) return;
+      alert('อนุมัติไม่สำเร็จ: ' + err.message);
+    }
+  };
+
+  window.rejectLeave = async function(id){
+    try{
+      if(!confirm('ยืนยัน “ไม่อนุมัติ” ใบลานี้?')) return;
+      const act = await updateLeaveStatus(id, 'REJECTED');
+      alert('ไม่อนุมัติสำเร็จ ✅ (action: ' + act + ')');
+      await reloadLeave();
+    }catch(err){
+      const asked = await ensureLoginIfNeeded(err);
+      if(asked) return;
+      alert('ไม่อนุมัติไม่สำเร็จ: ' + err.message);
+    }
+  };
 
   // ===== Settings =====
   function renderBranchesLevelsTables(){
@@ -1664,11 +2217,34 @@
     }
   }
 
+  async function loadBranchesLevels(opts={}){
+    try{
+      await loadInitialData(opts);
+      return;
+    }catch(e){
+      // fallback
+    }
+
+    const { result } = await api.callFirst(
+      ['getBranchesLevels','getBranchesAndLevels','getMeta','getMasterData'],
+      {},
+      { failMessage:'โหลดแผนก/ระดับไม่สำเร็จ', signal: opts.signal }
+    );
+
+    branches = normalizeArray(result?.branches || result?.departments || result?.branchList || result?.branch || []);
+    levels   = normalizeArray(result?.levels   || result?.positions   || result?.levelList  || result?.level  || []);
+    if(branches.length && typeof branches[0] === 'string') branches = branches.map(x => ({ name: x }));
+    if(levels.length && typeof levels[0] === 'string') levels = levels.map(x => ({ name: x }));
+
+    renderBranchLevelSelects();
+    renderBranchesLevelsTables();
+  }
+
   window.deleteBranch = async function(name){
     if(!confirm(`ต้องการลบแผนก "${name}" หรือไม่?`)) return;
     try{
-      await api.call(ACTIONS.DEL_BRANCH, { name });
-      await loadInitialData();
+      await api.call('deleteBranch', { name });
+      await loadBranchesLevels();
       if($('settingsSuccess')){
         $('settingsSuccess').textContent = 'ลบแผนกสำเร็จ';
         $('settingsSuccess').style.display = 'block';
@@ -1688,8 +2264,8 @@
   window.deleteLevel = async function(name){
     if(!confirm(`ต้องการลบระดับ "${name}" หรือไม่?`)) return;
     try{
-      await api.call(ACTIONS.DEL_LEVEL, { name });
-      await loadInitialData();
+      await api.call('deleteLevel', { name });
+      await loadBranchesLevels();
       if($('settingsSuccess')){
         $('settingsSuccess').textContent = 'ลบระดับสำเร็จ';
         $('settingsSuccess').style.display = 'block';
@@ -1720,9 +2296,9 @@
       return;
     }
     try{
-      await api.call(ACTIONS.SAVE_BRANCH, { name });
+      await api.call('saveBranch', { name });
       if($('branchName')) $('branchName').value = '';
-      await loadInitialData();
+      await loadBranchesLevels();
       if(sucEl){
         sucEl.textContent = 'เพิ่มแผนกสำเร็จ';
         sucEl.style.display = 'block';
@@ -1751,9 +2327,9 @@
       return;
     }
     try{
-      await api.call(ACTIONS.SAVE_LEVEL, { name });
+      await api.call('saveLevel', { name });
       if($('levelName')) $('levelName').value = '';
-      await loadInitialData();
+      await loadBranchesLevels();
       if(sucEl){
         sucEl.textContent = 'เพิ่มระดับสำเร็จ';
         sucEl.style.display = 'block';
@@ -1779,9 +2355,126 @@
     if($('empBranch')?.options?.length) $('empBranch').selectedIndex = 0;
     if($('empLevel')?.options?.length) $('empLevel').selectedIndex = 0;
 
+    setEmpFaceUI(null);
+
     if($('empFormError')) $('empFormError').style.display = 'none';
     if(!keepMsg && $('empFormSuccess')) $('empFormSuccess').style.display = 'none';
   }
+
+
+  // ===== Face enrollment (Employees.faceData / photoUrl) =====
+  const FACE_MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+  let faceModelsReady = false;
+
+  async function ensureFaceModels(){
+    if(faceModelsReady) return;
+    if(!window.faceapi) throw new Error('โหลด face-api.js ไม่สำเร็จ');
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL),
+      faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODEL_URL),
+      faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODEL_URL),
+    ]);
+    faceModelsReady = true;
+  }
+
+  function setEmpFaceUI(emp){
+    const photoStatus = $('empFacePhotoStatus');
+    const dataStatus  = $('empFaceDataStatus');
+    const preview     = $('empFacePreview');
+    const fileInput   = $('empFaceFile');
+
+    if(fileInput) fileInput.value = '';
+
+    const hasPhoto = !!(emp && emp.photoUrl);
+    const hasData  = !!(emp && emp.faceData && String(emp.faceData).trim().length > 10);
+
+    if(photoStatus) photoStatus.textContent = hasPhoto ? 'มีรูปแล้ว ✅' : 'ยังไม่มีรูป';
+    if(dataStatus)  dataStatus.textContent  = hasData  ? 'มี FaceData แล้ว ✅' : 'ยังไม่มี FaceData';
+
+    if(preview){
+      if(hasPhoto){
+        preview.src = emp.photoUrl;
+        preview.style.display = 'block';
+      }else{
+        preview.removeAttribute('src');
+        preview.style.display = 'none';
+      }
+    }
+  }
+
+  function readFileAsDataURL(file){
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(String(fr.result || ''));
+      fr.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
+      fr.readAsDataURL(file);
+    });
+  }
+
+  async function uploadEmpFacePhoto(){
+    const code = ( $('empCode')?.value || '' ).trim();
+    const file = $('empFaceFile')?.files?.[0];
+    if(!code) return alert('กรุณากรอกรหัสพนักงานก่อน');
+    if(!file) return alert('กรุณาเลือกรูปก่อน');
+
+    const dataUrl = await readFileAsDataURL(file);
+    const base64 = dataUrl.split(',')[1] || '';
+
+    if(!base64) throw new Error('แปลงรูปเป็น base64 ไม่สำเร็จ');
+
+    const resp = await api.call('uploadEmployeeFace', {
+      code,
+      photoBase64: base64,
+      photoName: file.name || `face_${code}.jpg`,
+      mimeType: file.type || 'image/jpeg'
+    });
+
+    // update local cache if any
+    const emp = (employees || []).find(e => String(e.code) === String(code));
+    if(emp && resp && resp.photoUrl) emp.photoUrl = resp.photoUrl;
+
+    setEmpFaceUI(emp || { photoUrl: resp.photoUrl, faceData: emp?.faceData || '' });
+    alert('อัปโหลดรูปสำเร็จ ✅');
+  }
+
+  async function extractAndSaveEmpFaceData(){
+    const code = ( $('empCode')?.value || '' ).trim();
+    const file = $('empFaceFile')?.files?.[0];
+    if(!code) return alert('กรุณากรอกรหัสพนักงานก่อน');
+    if(!file) return alert('กรุณาเลือกรูปก่อน');
+
+    await ensureFaceModels();
+
+    const dataUrl = await readFileAsDataURL(file);
+
+    const img = new Image();
+    img.src = dataUrl;
+    await new Promise((res, rej) => {
+      img.onload = () => res();
+      img.onerror = () => rej(new Error('โหลดรูปไม่สำเร็จ'));
+    });
+
+    const det = await faceapi
+      .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 }))
+      .withFaceLandmarks()
+      .withFaceDescriptor();
+
+    if(!det || !det.descriptor) throw new Error('ไม่พบใบหน้าในรูป (ลองเปลี่ยนรูปให้หน้าชัดขึ้น)');
+
+    const arr = Array.from(det.descriptor);
+    const faceData = JSON.stringify(arr);
+
+    const resp = await api.call('saveEmployeeFaceDescriptor', { code, faceData });
+
+    // update local cache
+    const emp = (employees || []).find(e => String(e.code) === String(code));
+    if(emp) emp.faceData = faceData;
+
+    setEmpFaceUI(emp || { photoUrl: emp?.photoUrl || '', faceData });
+    alert('บันทึก FaceData สำเร็จ ✅');
+  }
+
+
 
   function openEmpAdd(){
     resetEmpForm(false);
@@ -1804,6 +2497,7 @@
 
     if($('empFormError')) $('empFormError').style.display = 'none';
     if($('empFormSuccess')) $('empFormSuccess').style.display = 'none';
+    setEmpFaceUI(emp);
     openModal('empModalBackdrop');
   };
 
@@ -1828,7 +2522,7 @@
     }
 
     try{
-      await api.call(ACTIONS.SAVE_EMP, {
+      await api.call('saveEmployee', {
         id: editingEmpId || '',
         code, fullName, branch, level, email,
         photoBase64: ''
@@ -1861,7 +2555,7 @@
     if(!confirm(`ต้องการลบพนักงานรหัส ${emp.code || ''} (${emp.fullName || ''}) หรือไม่?`)) return;
 
     try{
-      await api.call(ACTIONS.DEL_EMP, { id });
+      await api.call('deleteEmployee', { id });
       await loadEmployees();
       alert('ลบพนักงานสำเร็จ');
     }catch(err){
@@ -1885,8 +2579,9 @@
     try{
       if($('logYearFilter') && $('logMonthFilter')) fillYearMonthSelect($('logYearFilter'), $('logMonthFilter'));
       if($('sumYearFilter') && $('sumMonthFilter')) fillYearMonthSelect($('sumYearFilter'), $('sumMonthFilter'));
+      if($('leaveYearFilter') && $('leaveMonthFilter')) fillYearMonthSelect($('leaveYearFilter'), $('leaveMonthFilter'));
 
-      await loadInitialData();
+      await loadBranchesLevels();
       await refreshCurrentSection(getActiveSection(), true);
 
       setLastUpdated();
@@ -1900,6 +2595,25 @@
 
       alert('เชื่อมต่อ API ไม่สำเร็จ: ' + err.message);
     }
+  }
+
+  // ===== Leave custom actions UI =====
+  function loadLeaveCustomToUI(){
+    const c = getLeaveCustom();
+    if($('leaveListActionCustom')) $('leaveListActionCustom').value = c.listAction || '';
+    if($('leaveUpdateActionCustom')) $('leaveUpdateActionCustom').value = c.updateAction || '';
+  }
+
+  function saveLeaveCustomFromUI(){
+    const listAction = ( $('leaveListActionCustom')?.value || '' ).trim();
+    const updateAction = ( $('leaveUpdateActionCustom')?.value || '' ).trim();
+    setLeaveCustom({ listAction, updateAction });
+  }
+
+  function clearLeaveCustom(){
+    localStorage.removeItem(STORAGE_LEAVE_CUSTOM_KEY);
+    if($('leaveListActionCustom')) $('leaveListActionCustom').value = '';
+    if($('leaveUpdateActionCustom')) $('leaveUpdateActionCustom').value = '';
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -1938,10 +2652,43 @@
     // employees
     $('empSearch')?.addEventListener('input', renderEmployeesTable);
     $('btnOpenAddEmp')?.addEventListener('click', openEmpAdd);
+
     $('btnCloseEmpModal')?.addEventListener('click', () => closeModal('empModalBackdrop'));
     $('empModalBackdrop')?.addEventListener('click', (e) => { if(e.target === $('empModalBackdrop')) closeModal('empModalBackdrop'); });
     $('btnResetEmpForm')?.addEventListener('click', () => resetEmpForm(false));
     $('btnSaveEmployee')?.addEventListener('click', saveEmployee);
+
+    // face enrollment
+    $('btnUploadEmpFace')?.addEventListener('click', async () => {
+      try{ await uploadEmpFacePhoto(); }catch(err){
+        const asked = await ensureLoginIfNeeded(err);
+        if(asked) return;
+        alert('อัปโหลดรูปไม่สำเร็จ: ' + err.message);
+      }
+    });
+
+    $('btnExtractEmpFace')?.addEventListener('click', async () => {
+      try{ await extractAndSaveEmpFaceData(); }catch(err){
+        const asked = await ensureLoginIfNeeded(err);
+        if(asked) return;
+        alert('บันทึก FaceData ไม่สำเร็จ: ' + err.message);
+      }
+    });
+
+    $('empFaceFile')?.addEventListener('change', async () => {
+      const file = $('empFaceFile')?.files?.[0];
+      const preview = $('empFacePreview');
+      if(!preview) return;
+      if(!file){ preview.style.display='none'; preview.removeAttribute('src'); return; }
+      try{
+        const dataUrl = await readFileAsDataURL(file);
+        preview.src = dataUrl;
+        preview.style.display='block';
+      }catch(e){
+        preview.style.display='none';
+        preview.removeAttribute('src');
+      }
+    });
 
     // logs
     $('btnReloadLogs')?.addEventListener('click', () => reloadLogs());
@@ -1957,7 +2704,37 @@
     $('sumYearFilter')?.addEventListener('change', () => reloadSummary());
 
     // leave
-    $('btnOpenLeaveStandalone')?.addEventListener('click', () => { window.location.href = 'leave.html'; });
+    $('btnReloadLeave')?.addEventListener('click', () => reloadLeave());
+    $('leaveSearch')?.addEventListener('keydown', e => { if(e.key === 'Enter') reloadLeave(); });
+    $('leaveBranchFilter')?.addEventListener('change', () => reloadLeave());
+    $('leaveMonthFilter')?.addEventListener('change', () => reloadLeave());
+    $('leaveYearFilter')?.addEventListener('change', () => reloadLeave());
+
+    document.querySelectorAll('.chip').forEach(ch => {
+      ch.addEventListener('click', () => {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        ch.classList.add('active');
+        leaveStatus = ch.dataset.leaveStatus || 'PENDING';
+        reloadLeave();
+      });
+    });
+
+    // leave advanced actions
+    loadLeaveCustomToUI();
+    $('btnSaveLeaveActions')?.addEventListener('click', async () => {
+      saveLeaveCustomFromUI();
+      alert('บันทึก Action แล้ว ✅');
+      await reloadLeave();
+    });
+    $('btnClearLeaveActions')?.addEventListener('click', async () => {
+      clearLeaveCustom();
+      alert('ล้างค่าแล้ว ✅');
+      await reloadLeave();
+    });
+
+    $('btnOpenLeaveStandalone')?.addEventListener('click', () => {
+      window.location.href = 'leave.html';
+    });
 
     // settings
     $('btnAddBranch')?.addEventListener('click', addBranch);
@@ -2000,7 +2777,7 @@
       }
     });
 
-    // refresh “ตามจำเป็น”
+    // เมื่อกลับมาแท็บ: รีเฟรช “ครั้งเดียว” (แทนการตั้ง interval)
     document.addEventListener('visibilitychange', () => {
       if(document.visibilityState === 'visible'){
         refreshCurrentSection(getActiveSection(), true);
