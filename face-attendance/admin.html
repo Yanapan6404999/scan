@@ -155,6 +155,7 @@
     .btn.primary{ background: linear-gradient(135deg,var(--blue),var(--blue2)); color:#fff; border-color: transparent; }
     .btn.primary:hover{ filter: brightness(1.03); }
     .btn.danger{ background: rgba(239,68,68,.08); color:#b91c1c; border-color: rgba(239,68,68,.25); }
+    .btn.warn{ background: rgba(245,158,11,.10); color:#92400e; border-color: rgba(245,158,11,.35); }
     .btn.ghost{ background: transparent; }
     .btn:disabled{ opacity:.55; cursor:not-allowed; }
 
@@ -464,6 +465,7 @@
       <button class="navbtn" data-section="employees" title="พนักงาน">
         <span class="ico">👥</span> Employees <small>CRUD</small>
       </button>
+        <button class="navbtn" data-section="resigned">พนักงานลาออก <small>Resigned</small></button>
       
       <button class="navbtn" data-section="off" title="วันหยุด/ตารางเวร">
         <span class="ico">🗓️</span> Off & Holidays
@@ -655,41 +657,49 @@
 
 
     <!-- OFF & HOLIDAYS -->
-    <section class="section" id="section-off">
+    <section class="section" id="section-resigned">
+  <div class="section-head">
+    <div>
+      <h2>พนักงานลาออก</h2>
+      <p class="muted">รายชื่อพนักงานที่ถูกย้ายออกจาก Employees (Active)</p>
+    </div>
+    <div class="actions">
+      <button class="btn sm" id="btnReloadResigned">โหลด</button>
+              <button class="btn sm ghost" id="btnEmpFullDetail">Employees Full Detail</button>
+</div>
+  </div>
+
+  <div class="card">
+    <div class="controls">
+      <div class="field">
+        <label>ค้นหา (รหัส/ชื่อ)</label>
+        <input id="resSearch" placeholder="เช่น 1011 / สมชาย" />
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>รหัส</th>
+            <th>ชื่อ</th>
+            <th>สาขา</th>
+            <th>แผนก</th>
+            <th>ระดับ</th>
+            <th>ลาออกเมื่อ</th>
+            <th>หมายเหตุ</th>
+          </tr>
+        </thead>
+        <tbody id="resTbody"></tbody>
+      </table>
+    </div>
+
+    <div class="footnote muted" id="resMeta">—</div>
+  </div>
+</section>
+
+<section class="section" id="section-off">
       <div class="grid two">
-        <!-- Departments -->
-        <div class="panel">
-          <div class="panel-head">
-            <h3>แผนก (Departments)</h3>
-            <div class="right">
-              <button class="btn sm" id="btnAddDept">เพิ่มแผนก</button>
-              <button class="btn sm" id="btnReloadDept">รีเฟรช</button>
-            </div>
-          </div>
-          <div class="panel-body">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th style="min-width:130px">deptId</th>
-                    <th style="min-width:220px">ชื่อแผนก</th>
-                    <th style="min-width:90px">sort</th>
-                    <th style="min-width:220px">note</th>
-                    <th style="min-width:190px">การทำงาน</th>
-                  </tr>
-                </thead>
-                <tbody id="deptTbody">
-                  <tr><td colspan="5" class="muted">กด “รีเฟรช” เพื่อดึงข้อมูล</td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="muted" style="margin-top:10px;font-size:12px">
-              *เรียก action <span class="mono">getDepartments</span> / <span class="mono">saveDepartment</span> / <span class="mono">deleteDepartment</span> (ต้องมี token)
-            </div>
-          </div>
-        </div>
-
         <!-- WeeklyOff -->
         <div class="panel">
           <div class="panel-head">
@@ -842,6 +852,11 @@
               <label>เดือน</label>
               <select id="logsMonth"></select>
             </div>
+<div class="field">
+  <label>วันที่ (ดูรายวัน)</label>
+  <input type="date" id="logsDate" />
+  <small class="muted">ถ้าเลือกวันที่ ระบบจะดึงเฉพาะวันนั้น (ไม่สนเดือน/ปี)</small>
+</div>
             <div class="field" style="min-width:200px">
               <label>สาขา</label>
               <select id="logsBranch"></select>
@@ -985,7 +1000,42 @@
           </div>
         </div>
       </div>
-    </section>
+    
+      <div class="grid one" style="margin-top:16px">
+<!-- Departments -->
+        <div class="panel">
+          <div class="panel-head">
+            <h3>แผนก (Departments)</h3>
+            <div class="right">
+              <button class="btn sm" id="btnAddDept">เพิ่มแผนก</button>
+              <button class="btn sm" id="btnReloadDept">รีเฟรช</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="min-width:130px">deptId</th>
+                    <th style="min-width:220px">ชื่อแผนก</th>
+                    <th style="min-width:90px">sort</th>
+                    <th style="min-width:220px">note</th>
+                    <th style="min-width:190px">การทำงาน</th>
+                  </tr>
+                </thead>
+                <tbody id="deptTbody">
+                  <tr><td colspan="5" class="muted">กด “รีเฟรช” เพื่อดึงข้อมูล</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="muted" style="margin-top:10px;font-size:12px">
+              *เรียก action <span class="mono">getDepartments</span> / <span class="mono">saveDepartment</span> / <span class="mono">deleteDepartment</span> (ต้องมี token)
+            </div>
+          </div>
+        </div>
+      </div>
+</section>
 
   </main>
 </div>
@@ -1336,6 +1386,7 @@ function setSection(section){
     summary: ["Summary", "สรุปภาพรวมรายเดือน (ต่อคน)"],
     off: ["Off & Holidays", "จัดตารางหยุดรายสัปดาห์ + วันหยุดพิเศษรายบุคคล"],
     settings: ["Settings", "จัดการข้อมูลสาขาและระดับ"],
+    resigned: ["Resigned", "พนักงานลาออก"],
   };
   $("pageTitle").textContent = titleMap[section][0];
   $("pageHint").textContent = titleMap[section][1];
@@ -1355,6 +1406,7 @@ async function refreshCurrentSection(silent=false){
     if(ACTIVE === "logs") await loadLogs(signal);
     if(ACTIVE === "summary") await loadSummary(signal);
     if(ACTIVE === "settings") await loadSettings(signal);
+    if(ACTIVE === "resigned") await loadResigned();
 
     setConn("ok", "เชื่อมต่อสำเร็จ");
     setLastUpdated();
@@ -1667,9 +1719,36 @@ function openEmpModal(emp){
 
   $("empBranch").value = emp?.branch || "";
   $("empLevel").value = emp?.level || "";
-  $("empDepartment").value = emp?.department || "";
+$("empDepartment").value = emp?.department || "";
 
-  openModal("empModal");
+const resignBtn = $("btnEmpResign");
+if(resignBtn){
+  if(emp && emp.code){
+    resignBtn.style.display = "";
+    resignBtn.onclick = async ()=>{
+      const note = prompt('กรอกหมายเหตุลาออก (ถ้ามี):', '');
+      if(note === null) return;
+      try{
+        setBusy_(true);
+        await api_('adminResignEmployee', { code: emp.code, note });
+        toast_('ย้ายพนักงานไป "พนักงานลาออก" แล้ว');
+        closeModal("empModal");
+        await loadEmployees();
+        await loadResigned();
+      }catch(err){
+        alert(err.message || err);
+      }finally{
+        setBusy_(false);
+      }
+    };
+  }else{
+    resignBtn.style.display = "none";
+    resignBtn.onclick = null;
+  }
+}
+
+openModal("empModal");
+
 }
 
 async function loadEmployees(signal){
@@ -2277,6 +2356,9 @@ async function loadSettings(signal){
 
   // render lists
   renderBranchLevel(bl.branches || [], bl.levels || []);
+
+  // Departments moved here (from Off & Holidays)
+  await loadDepartmentsTable(signal);
 }
 
 function renderBranchLevel(branches, levels){
@@ -2594,6 +2676,60 @@ function wireEvents(){
     setConn("bad","เชื่อมต่อผิดพลาด");
   });
 })();
+
+// =====================
+// Resigned tab
+// =====================
+async function loadResigned(){
+  const q = ($('resSearch')?.value || '').trim().toLowerCase();
+  const res = await api_('adminGetResignedEmployees', {});
+  const rows = (res.rows || []).filter(r=>{
+    if(!q) return true;
+    const code = String(r.code||'').toLowerCase();
+    const name = String(r.fullName||'').toLowerCase();
+    return code.includes(q) || name.includes(q);
+  });
+
+  const tb = $('resTbody');
+  if(tb){
+    tb.innerHTML = rows.map(r=>`
+      <tr>
+        <td>${escapeHtml_(r.code||'')}</td>
+        <td>${escapeHtml_(r.fullName||'')}</td>
+        <td>${escapeHtml_(r.branch||'')}</td>
+        <td>${escapeHtml_(r.department||'')}</td>
+        <td>${escapeHtml_(r.level||'')}</td>
+        <td>${escapeHtml_(formatIso_(r.resignedAt))}</td>
+        <td>${escapeHtml_(r.resignedNote||'')}</td>
+      </tr>
+    `).join('') || `<tr><td colspan="7" class="muted">— ไม่มีข้อมูล —</td></tr>`;
+  }
+  const meta = $('resMeta');
+  if(meta) meta.textContent = `ทั้งหมด ${rows.length} รายการ`;
+}
+
+// =====================
+// Employees Full Detail Page
+// =====================
+(function(){
+  const btn = document.getElementById('btnEmpFullDetail');
+  if(btn){
+    btn.addEventListener('click', ()=>{
+      // เปิดหน้าใหม่ (ต้องวางไฟล์ employees_full_detail.html ในโฟลเดอร์เดียวกัน)
+      const base = location.href.split('/').slice(0,-1).join('/');
+      window.open(base + '/employees_full_detail.html', '_blank');
+    });
+  }
+})();
+
+// bind resigned controls
+(function(){
+  const btn = document.getElementById('btnReloadResigned');
+  if(btn) btn.addEventListener('click', ()=>loadResigned());
+  const inp = document.getElementById('resSearch');
+  if(inp) inp.addEventListener('input', debounce_(()=>loadResigned(), 250));
+})();
+
 </script>
 
 </body>
