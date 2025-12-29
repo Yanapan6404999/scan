@@ -1,1 +1,293 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Employees Full Detail</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f6f8fb; --card:#fff; --text:#0f172a; --muted:#64748b;
+      --border:#e5e7eb; --shadow: 0 10px 25px rgba(2,6,23,.06);
+      --blue:#2563eb; --blue2:#1d4ed8; --red:#ef4444; --warn:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Prompt,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
+    .wrap{max-width:1400px;margin:18px auto;padding:0 16px}
+    .topbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .title h1{margin:0;font-size:22px}
+    .title p{margin:2px 0 0;color:var(--muted);font-size:13px}
+    .btn{border:1px solid var(--border);background:#fff;color:var(--text);padding:9px 12px;border-radius:12px;cursor:pointer;font-weight:600}
+    .btn.primary{background:var(--blue);border-color:transparent;color:#fff}
+    .btn.danger{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.30);color:#b91c1c}
+    .btn.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.30);color:#92400e}
+    .btn:disabled{opacity:.55;cursor:not-allowed}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+    .field{display:flex;flex-direction:column;gap:6px}
+    label{font-size:12px;color:var(--muted)}
+    input{border:1px solid var(--border);border-radius:12px;padding:10px 12px;min-width:220px}
+    .status{font-size:13px;color:var(--muted)}
+    .table-wrap{margin-top:12px;border:1px solid var(--border);border-radius:16px;overflow:auto}
+    table{border-collapse:separate;border-spacing:0;width:max(100%,900px)}
+    thead th{position:sticky;top:0;background:#fafafa;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);text-align:left;padding:10px}
+    tbody td{border-bottom:1px solid var(--border);padding:8px 10px;vertical-align:top}
+    tbody tr:hover td{background:#fcfcff}
+    .cell{width:100%;min-width:120px;border:1px solid transparent;border-radius:10px;padding:8px}
+    .cell:focus{outline:none;border-color:rgba(37,99,235,.45);box-shadow:0 0 0 4px rgba(37,99,235,.12);background:#fff}
+    .code{min-width:90px}
+    .actions{white-space:nowrap;display:flex;gap:8px}
+    .small{font-size:12px;color:var(--muted);margin-top:10px}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:#fff;font-size:12px;color:var(--muted)}
+    .dot{width:8px;height:8px;border-radius:999px;background:#94a3b8}
+    .dot.ok{background:#22c55e}
+    .dot.bad{background:#ef4444}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">
+        <h1>Employees Full Detail</h1>
+        <p>หน้าแบบ Excel เพื่อเพิ่ม/แก้ไข/ลบ และ Export เป็น Excel ได้</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span class="pill"><span class="dot" id="dot"></span><span id="connText">ยังไม่เชื่อมต่อ</span></span>
+        <button class="btn" id="btnReload">โหลด</button>
+        <button class="btn warn" id="btnAdd">เพิ่มแถว</button>
+        <button class="btn primary" id="btnSaveAll">บันทึกทั้งหมด</button>
+        <button class="btn" id="btnExport">Export Excel</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="field">
+          <label>API URL (Apps Script)</label>
+          <input id="apiUrl" placeholder="วาง URL ที่ลงท้าย /exec" />
+        </div>
+        <div class="field">
+          <label>HR Token</label>
+          <input id="token" placeholder="วาง Token" />
+        </div>
+        <div class="field">
+          <label>ค้นหา (รหัส/ชื่อ)</label>
+          <input id="q" placeholder="เช่น 1011 / สมชาย" />
+        </div>
+        <button class="btn" id="btnSaveConn">บันทึกการเชื่อมต่อ</button>
+        <div class="status" id="meta">—</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr id="thead"></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="small">
+        * ใช้คอลัมน์ <b>code</b> เป็นคีย์หลัก (ห้ามซ้ำ) • ถ้าลบแล้วกู้คืนไม่ได้ (แต่ดูได้จากประวัติในชีต/Drive)
+      </div>
+    </div>
+  </div>
+
+<script>
+  const LS_API = "attendance_api_url_v2";
+  const LS_TOKEN = "attendance_hr_token";
+
+  const $ = (id)=>document.getElementById(id);
+
+  function setConnDot(ok){
+    const dot = $("dot");
+    const txt = $("connText");
+    dot.className = "dot" + (ok ? " ok" : " bad");
+    txt.textContent = ok ? "เชื่อมต่อแล้ว" : "ยังไม่เชื่อมต่อ";
+  }
+
+  function toast(msg){
+    alert(msg);
+  }
+
+  function getConn(){
+    return {
+      apiUrl: $("apiUrl").value.trim(),
+      token: $("token").value.trim(),
+    };
+  }
+
+  async function api(action, params){
+    const {apiUrl, token} = getConn();
+    if(!apiUrl) throw new Error("กรุณาตั้งค่า API URL");
+    if(!token) throw new Error("กรุณาใส่ Token");
+    const body = JSON.stringify({ action, token, ...params });
+    const res = await fetch(apiUrl, { method:"POST", headers:{ "Content-Type":"application/json" }, body });
+    const js = await res.json();
+    if(!js.ok) throw new Error(js.error || "API error");
+    return js;
+  }
+
+  let HEADER = [];
+  let ROWS = []; // array of objects
+
+  function render(){
+    const q = $("q").value.trim().toLowerCase();
+    const rows = ROWS.filter(r=>{
+      if(!q) return true;
+      return String(r.code||"").toLowerCase().includes(q) || String(r.fullName||"").toLowerCase().includes(q);
+    });
+
+    const thead = $("thead");
+    const tbody = $("tbody");
+    thead.innerHTML = "";
+    tbody.innerHTML = "";
+
+    // header
+    const ths = [...HEADER, "__actions__"].map(h=>{
+      const th = document.createElement("th");
+      th.textContent = (h==="__actions__") ? "การทำงาน" : h;
+      thead.appendChild(th);
+      return th;
+    });
+
+    // rows
+    rows.forEach((row, idx)=>{
+      const tr = document.createElement("tr");
+      HEADER.forEach((h)=>{
+        const td = document.createElement("td");
+        const div = document.createElement("div");
+        div.className = "cell" + (h==="code" ? " code" : "");
+        div.contentEditable = (h!=="updatedAt"); // updatedAt ให้ระบบเติม
+        div.textContent = row[h] ?? "";
+        div.dataset.code = row.code || "";
+        div.dataset.col = h;
+        div.addEventListener("input", ()=>{
+          row[h] = div.textContent.trim();
+        });
+        td.appendChild(div);
+        tr.appendChild(td);
+      });
+
+      const act = document.createElement("td");
+      act.innerHTML = \`
+        <div class="actions">
+          <button class="btn" data-act="save" data-code="\${escapeHtml(row.code||"")}">บันทึก</button>
+          <button class="btn danger" data-act="del" data-code="\${escapeHtml(row.code||"")}">ลบ</button>
+        </div>\`;
+      tr.appendChild(act);
+
+      tbody.appendChild(tr);
+    });
+
+    $("meta").textContent = \`ทั้งหมด \${rows.length} แถว • คอลัมน์ \${HEADER.length}\`;
+  }
+
+  function escapeHtml(s){
+    return String(s||"").replace(/[&<>"']/g, (m)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+  }
+
+  async function load(){
+    $("meta").textContent = "กำลังโหลด...";
+    const res = await api("adminGetEmployeesFullDetail", {});
+    HEADER = res.header || [];
+    ROWS = res.rows || [];
+    render();
+  }
+
+  async function saveRow(code){
+    const row = ROWS.find(r=>String(r.code||"").trim()===String(code||"").trim());
+    if(!row) throw new Error("ไม่พบแถว: "+code);
+    if(!row.code) throw new Error("code ห้ามว่าง");
+    await api("adminSaveEmployeesFullDetail", { row });
+  }
+
+  async function deleteRow(code){
+    if(!confirm("ลบพนักงาน "+code+" ?")) return;
+    await api("adminDeleteEmployeesFullDetail", { code });
+    ROWS = ROWS.filter(r=>String(r.code||"").trim()!==String(code||"").trim());
+    render();
+  }
+
+  async function saveAll(){
+    // บันทึกทีละแถวเพื่อให้ไม่หนัก API
+    const list = ROWS.filter(r=>String(r.code||"").trim());
+    for(let i=0;i<list.length;i++){
+      $("meta").textContent = \`กำลังบันทึก... (\${i+1}/\${list.length})\`;
+      await api("adminSaveEmployeesFullDetail", { row: list[i] });
+    }
+    $("meta").textContent = "บันทึกเสร็จ";
+    toast("บันทึกทั้งหมดเสร็จ");
+    await load();
+  }
+
+  async function exportExcel(){
+    $("meta").textContent = "กำลังสร้างไฟล์...";
+    const res = await api("adminExportEmployeesFullDetail", {});
+    const b64 = res.base64;
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+    const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = res.filename || "EmployeesFullDetail.xlsx";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    $("meta").textContent = "Export เสร็จ";
+  }
+
+  function initConn(){
+    $("apiUrl").value = localStorage.getItem(LS_API) || "";
+    $("token").value = localStorage.getItem(LS_TOKEN) || "";
+    setConnDot(!!$("apiUrl").value && !!$("token").value);
+  }
+
+  // events
+  $("btnSaveConn").addEventListener("click", ()=>{
+    localStorage.setItem(LS_API, $("apiUrl").value.trim());
+    localStorage.setItem(LS_TOKEN, $("token").value.trim());
+    setConnDot(!!$("apiUrl").value.trim() && !!$("token").value.trim());
+    toast("บันทึกการเชื่อมต่อแล้ว");
+  });
+
+  $("btnReload").addEventListener("click", ()=>load().catch(e=>alert(e.message||e)));
+  $("btnAdd").addEventListener("click", ()=>{
+    const code = prompt("ใส่รหัสพนักงาน (code):", "");
+    if(!code) return;
+    if(ROWS.some(r=>String(r.code||"").trim()===String(code).trim())){
+      alert("code ซ้ำ");
+      return;
+    }
+    const obj = {};
+    HEADER.forEach(h=>obj[h]="");
+    obj.code = String(code).trim();
+    ROWS.unshift(obj);
+    render();
+  });
+
+  $("btnSaveAll").addEventListener("click", ()=>saveAll().catch(e=>alert(e.message||e)));
+  $("btnExport").addEventListener("click", ()=>exportExcel().catch(e=>alert(e.message||e)));
+  $("q").addEventListener("input", ()=>render());
+
+  $("tbody").addEventListener("click", (ev)=>{
+    const btn = ev.target.closest("button[data-act]");
+    if(!btn) return;
+    const act = btn.dataset.act;
+    const code = btn.dataset.code;
+    if(act==="save"){
+      saveRow(code).then(()=>toast("บันทึกแล้ว: "+code)).catch(e=>alert(e.message||e));
+    }else if(act==="del"){
+      deleteRow(code).catch(e=>alert(e.message||e));
+    }
+  });
+
+  initConn();
+  if($("apiUrl").value && $("token").value){
+    load().catch(()=>{ /* ignore */ });
+  }
+</script>
+</body>
+</html>
 
