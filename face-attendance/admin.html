@@ -306,12 +306,6 @@
     .chip.red{ color: #b91c1c; border-color: rgba(239,68,68,.25); background: rgba(239,68,68,.07); }
     .chip.amber{ color: #b45309; border-color: rgba(245,158,11,.25); background: rgba(245,158,11,.07); }
 
-    .chip-row{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-    tr.loc-in{ background: rgba(22,163,74,.035); }
-    tr.loc-out{ background: rgba(239,68,68,.045); }
-    .panel.full{ grid-column: 1 / -1; }
-
-
     .row-actions{
       display:flex; gap:8px; flex-wrap:wrap;
     }
@@ -530,7 +524,7 @@
                     <th style="min-width:150px">สาขา</th>
                     <th style="min-width:160px">แผนก</th>
                     <th style="min-width:140px">ระดับ</th>
-                    <th style="min-width:140px">โลเคชั่น</th>
+                    <th style="min-width:150px">โลเคชั่น</th>
                     <th style="min-width:170px">สถานะ</th>
                     <th style="min-width:220px">หมายเหตุ/ลา</th>
                   </tr>
@@ -662,7 +656,40 @@
 
     <!-- OFF & HOLIDAYS -->
     <section class="section" id="section-off">
-      <div class="grid">
+      <div class="grid two">
+        <!-- Departments -->
+        <div class="panel">
+          <div class="panel-head">
+            <h3>แผนก (Departments)</h3>
+            <div class="right">
+              <button class="btn sm" id="btnAddDept">เพิ่มแผนก</button>
+              <button class="btn sm" id="btnReloadDept">รีเฟรช</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="min-width:130px">deptId</th>
+                    <th style="min-width:220px">ชื่อแผนก</th>
+                    <th style="min-width:90px">sort</th>
+                    <th style="min-width:220px">note</th>
+                    <th style="min-width:190px">การทำงาน</th>
+                  </tr>
+                </thead>
+                <tbody id="deptTbody">
+                  <tr><td colspan="5" class="muted">กด “รีเฟรช” เพื่อดึงข้อมูล</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="muted" style="margin-top:10px;font-size:12px">
+              *เรียก action <span class="mono">getDepartments</span> / <span class="mono">saveDepartment</span> / <span class="mono">deleteDepartment</span> (ต้องมี token)
+            </div>
+          </div>
+        </div>
+
         <!-- WeeklyOff -->
         <div class="panel">
           <div class="panel-head">
@@ -957,41 +984,6 @@
             </div>
           </div>
         </div>
-
-<!-- Departments -->
-        <div class="panel full">
-          <div class="panel-head">
-            <h3>แผนก (Departments)</h3>
-            <div class="right">
-              <button class="btn sm" id="btnAddDept">เพิ่มแผนก</button>
-              <button class="btn sm" id="btnReloadDept">รีเฟรช</button>
-            </div>
-          </div>
-          <div class="panel-body">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th style="min-width:130px">deptId</th>
-                    <th style="min-width:220px">ชื่อแผนก</th>
-                    <th style="min-width:90px">sort</th>
-                    <th style="min-width:220px">note</th>
-                    <th style="min-width:190px">การทำงาน</th>
-                  </tr>
-                </thead>
-                <tbody id="deptTbody">
-                  <tr><td colspan="5" class="muted">กด “รีเฟรช” เพื่อดึงข้อมูล</td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="muted" style="margin-top:10px;font-size:12px">
-              *เรียก action <span class="mono">getDepartments</span> / <span class="mono">saveDepartment</span> / <span class="mono">deleteDepartment</span> (ต้องมี token)
-            </div>
-          </div>
-        </div>
-
-        
       </div>
     </section>
 
@@ -1401,6 +1393,15 @@ function statusChip(status){
   return `<span class="chip blue">${escapeHtml(s)}</span>`;
 }
 
+function locationChip(zone){
+  const z = String(zone || "").trim().toUpperCase();
+  if(!z || z === "UNKNOWN") return `<span class="chip">ไม่ระบุ</span>`;
+  if(z === "IN" || z === "ในบริษัท") return `<span class="chip green">ในบริษัท</span>`;
+  if(z === "OUT" || z === "นอกบริษัท") return `<span class="chip red">นอกบริษัท</span>`;
+  // เผื่อระบบส่งค่าอื่นมา
+  return `<span class="chip blue">${escapeHtml(String(zone))}</span>`;
+}
+
 function escapeHtml(s){
   return String(s ?? "")
     .replaceAll("&","&amp;")
@@ -1410,12 +1411,9 @@ function escapeHtml(s){
     .replaceAll("'","&#39;");
 }
 
-function buildKpi(rows, empMap={}, deptNameMap={}){
+function buildKpi(rows){
   const total = rows.length;
   let normal=0, late=0, absent=0, leave=0, other=0;
-  let inOffice=0, outOffice=0;
-
-  const deptCount = {};
   rows.forEach(r=>{
     const st = String(r.status||"").trim();
     if(st === "ปกติ") normal++;
@@ -1423,61 +1421,30 @@ function buildKpi(rows, empMap={}, deptNameMap={}){
     else if(st === "ขาด") absent++;
     else if(st.toUpperCase().includes("LEAVE") || st.includes("ลา")) leave++;
     else other++;
-
-    const z = String(r.locationZone||"").trim().toUpperCase();
-    if(z === "IN" || z === "ในบริษัท") inOffice++;
-    else if(z === "OUT" || z === "นอกบริษัท") outOffice++;
-
-    const code = String(r.code||r.empCode||"").trim();
-    const emp = empMap[code] || {};
-    const deptId = String(emp.department || emp.deptId || emp.dept || "").trim();
-    const deptName = deptNameMap[deptId] || deptId || "ไม่ระบุ";
-    deptCount[deptName] = (deptCount[deptName] || 0) + 1;
   });
-
-  const deptChips = Object.entries(deptCount)
-    .sort((a,b)=> b[1]-a[1])
-    .map(([name, cnt])=> `<span class="chip blue">${escapeHtml(name)} <span class="mono">(${cnt})</span></span>`)
-    .join(" ");
-
   $("kpiWrap").innerHTML = [
     `<div class="card"><b>${total}</b><span>ทั้งหมด</span></div>`,
-    `<div class="card"><b>${inOffice}</b><span>ในบริษัท</span></div>`,
-    `<div class="card"><b>${outOffice}</b><span>นอกบริษัท</span></div>`,
     `<div class="card"><b>${normal}</b><span>ปกติ</span></div>`,
     `<div class="card"><b>${late}</b><span>สาย/ผิดเงื่อนไข</span></div>`,
-    `<div class="card"><b>${leave}</b><span>ลา</span></div>`,
     `<div class="card"><b>${absent}</b><span>ขาด</span></div>`,
-    `<div class="card" style="flex:1 1 100%">
-        <div class="muted" style="font-size:12px;margin-bottom:6px">แผนกวันนี้</div>
-        <div class="chip-row">${deptChips || '<span class="muted">—</span>'}</div>
-     </div>`
+    `<div class="card"><b>${leave}</b><span>ลา/อนุมัติ</span></div>`
   ].join("");
 }
 
 async function loadToday(signal){
+  // Dashboard วันนี้ (public)
   const rows = await apiCall("getTodaySummary", {}, { signal });
   const tbody = $("todayTbody");
   const list = Array.isArray(rows) ? rows : (rows?.rows || []);
+  buildKpi(list);
 
-  // join department info from Employees + Departments sheets
-  const emps = await ensureEmployees(signal);
-  const deptRows = await ensureDepartments(signal);
-
+  // map employees for "แผนก" (ถ้าระบบโหลดรายชื่อพนักงานมาแล้ว)
+  const empRows = (cache?.employees?.rows && Array.isArray(cache.employees.rows)) ? cache.employees.rows : [];
   const empMap = {};
-  (emps || []).forEach(e=>{
-    const c = String(e.code||"").trim();
+  empRows.forEach(e => {
+    const c = String(e.code || "").trim();
     if(c) empMap[c] = e;
   });
-
-  const deptNameMap = {};
-  (deptRows || []).forEach(d=>{
-    const id = String(d.deptId || d.id || "").trim();
-    if(!id) return;
-    deptNameMap[id] = String(d.deptName || d.name || id);
-  });
-
-  buildKpi(list, empMap, deptNameMap);
 
   if(!list.length){
     tbody.innerHTML = `<tr><td colspan="8" class="muted">ยังไม่มีข้อมูลของวันนี้</td></tr>`;
@@ -1485,33 +1452,32 @@ async function loadToday(signal){
   }
 
   tbody.innerHTML = list.map(r=>{
-    const codeRaw = String(r.code || r.empCode || "").trim();
-    const code = escapeHtml(codeRaw);
+    const code = String(r.code || r.empCode || "").trim();
+    const emp = empMap[code];
+
+    const codeHtml = escapeHtml(code);
     const name = escapeHtml(r.fullName || r.empName || "");
     const br = escapeHtml(r.branch || "");
+    const dept = escapeHtml(r.department || r.deptName || r.dept || emp?.department || "");
     const lv = escapeHtml(r.level || "");
-    const st = String(r.status || "").trim();
-    const note = escapeHtml(r.note || "");
-    const emp = empMap[codeRaw] || {};
-    const deptId = String(emp.department || emp.deptId || emp.dept || "").trim();
-    const deptName = escapeHtml(deptNameMap[deptId] || deptId || "-");
+    const zone = String(r.locationZone || r.zone || r.locZone || "").trim();
 
-    const z = String(r.locationZone || "").trim();
-    const zChip = locationChip(z);
-    const rowCls = zoneRowClass(z);
+    const st = r.status || "";
+    const note = escapeHtml(r.note || r.leaveText || r.leaveReason || r.rawType || "");
 
-    return `<tr class="${rowCls}">
-      <td class="mono">${code}</td>
+    return `<tr>
+      <td class="mono">${codeHtml}</td>
       <td>${name}</td>
       <td>${br}</td>
-      <td>${deptName}</td>
+      <td>${dept || '<span class="muted">—</span>'}</td>
       <td>${lv}</td>
-      <td>${zChip}</td>
+      <td>${locationChip(zone)}</td>
       <td>${statusChip(st)}</td>
       <td class="muted">${note || "-"}</td>
     </tr>`;
   }).join("");
 }
+
 
 /** =========================================
  *  Leave approvals
@@ -1900,11 +1866,15 @@ async function loadOff(signal){
   if($("empOffDeptFilter").value !== savedDept) $("empOffDeptFilter").value = savedDept;
 
   fillEmpSelect($("empOffEmpSel"), $("empOffDeptFilter").value);
+
+  // render dept table immediately (from cache) then refresh
+  renderDeptTable(cache.departments.rows || []);
   renderWeeklyOffPlaceholder();
   renderEmpOffPlaceholder();
 
   // load data
   await Promise.all([
+    loadDepartmentsTable(signal),
     loadWeeklyOff(signal),
     loadEmployeeOffDates(signal),
   ]);
@@ -2299,10 +2269,6 @@ async function loadSummary(signal){
  *  ========================================= */
 async function loadSettings(signal){
   const bl = await ensureBranchesLevels(signal);
-  // departments
-  await ensureDepartments(signal);
-  renderDeptTable(cache.departments.rows || []);
-  await loadDepartmentsTable(signal);
 
   // fill branch select for logs
   const branchSelect = $("logsBranch");
@@ -2632,17 +2598,3 @@ function wireEvents(){
 
 </body>
 </html>
-function locationChip(zone){
-  const z = String(zone||"").trim().toUpperCase();
-  if(z === "IN" || z === "ในบริษัท") return `<span class="chip green">ในบริษัท</span>`;
-  if(z === "OUT" || z === "นอกบริษัท") return `<span class="chip red">นอกบริษัท</span>`;
-  return `<span class="chip">ไม่ระบุ</span>`;
-}
-function zoneRowClass(zone){
-  const z = String(zone||"").trim().toUpperCase();
-  if(z === "IN" || z === "ในบริษัท") return "loc-in";
-  if(z === "OUT" || z === "นอกบริษัท") return "loc-out";
-  return "";
-}
-
-
