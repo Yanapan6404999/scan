@@ -456,30 +456,29 @@
     </div>
 
     <nav class="nav">
-      <button class="navbtn active" data-section="dashboard" title="ภาพรวม">
-        <span class="ico">📊</span> Dashboard <small>วันนี้</small>
+      <button class="navbtn active" data-section="dashboard" title="Today dashboard">
+        <span class="ico">📊</span> Dashboard <small>Today</small>
       </button>
-      <button class="navbtn" data-section="leave" title="อนุมัติการลา">
+      <button class="navbtn" data-section="leave" title="Leave approvals">
         <span class="ico">🧾</span> Leave Approvals <small>Approve</small>
       </button>
-      <button class="navbtn" data-section="employees" title="พนักงาน">
+      <button class="navbtn" data-section="employees" title="Employees">
         <span class="ico">👥</span> Employees <small>CRUD</small>
       </button>
-        <button class="navbtn" data-section="resigned">พนักงานลาออก <small>Resigned</small></button>
-      
-      <button class="navbtn" data-section="off" title="วันหยุด/ตารางเวร">
-        <span class="ico">🗓️</span> Off & Holidays
-        <small>จัดตารางหยุด</small>
+      <button class="navbtn" data-section="resigned" title="Resigned employees">
+        <span class="ico">🚪</span> Resigned <small>Employees</small>
       </button>
-
-<button class="navbtn" data-section="logs" title="รายงานรายวัน">
-        <span class="ico">🗓️</span> Logs <small>ตามเดือน</small>
+      <button class="navbtn" data-section="off" title="Off & holidays">
+        <span class="ico">🗓️</span> Off & Holidays <small>Off plan</small>
       </button>
-      <button class="navbtn" data-section="summary" title="สรุป">
-        <span class="ico">📈</span> Summary <small>ตามเดือน</small>
+      <button class="navbtn" data-section="logs" title="Logs report">
+        <span class="ico">📅</span> Logs <small>Daily/Monthly</small>
       </button>
-      <button class="navbtn" data-section="settings" title="ตั้งค่า">
-        <span class="ico">⚙️</span> Settings <small>สาขา/ระดับ</small>
+      <button class="navbtn" data-section="summary" title="Monthly summary">
+        <span class="ico">📈</span> Summary <small>Monthly</small>
+      </button>
+      <button class="navbtn" data-section="settings" title="Settings">
+        <span class="ico">⚙️</span> Settings <small>Branch/Level</small>
       </button>
     </nav>
 
@@ -521,18 +520,23 @@
               <table>
                 <thead>
                   <tr>
+                    <th style="min-width:120px">วันที่</th>
                     <th style="min-width:110px">รหัส</th>
                     <th style="min-width:220px">ชื่อ-สกุล</th>
-                    <th style="min-width:150px">สาขา</th>
-                    <th style="min-width:160px">แผนก</th>
+                    <th style="min-width:160px">สาขา</th>
+                    <th style="min-width:170px">แผนก</th>
                     <th style="min-width:140px">ระดับ</th>
-                    <th style="min-width:150px">โลเคชั่น</th>
-                    <th style="min-width:170px">สถานะ</th>
+                    <th style="min-width:90px">t1</th>
+                    <th style="min-width:90px">t2</th>
+                    <th style="min-width:90px">t3</th>
+                    <th style="min-width:90px">t4</th>
+                    <th style="min-width:180px">สถานะ</th>
                     <th style="min-width:220px">หมายเหตุ/ลา</th>
+                    <th style="min-width:170px">โลเคชั่น</th>
                   </tr>
                 </thead>
                 <tbody id="todayTbody">
-                  <tr><td colspan="8" class="muted">กด “โหลด/รีเฟรช” เพื่อดึงข้อมูล</td></tr>
+                  <tr><td colspan="13" class="muted">กด “โหลด/รีเฟรช” เพื่อดึงข้อมูล</td></tr>
                 </tbody>
               </table>
             </div>
@@ -661,8 +665,8 @@
     <section class="section" id="section-resigned">
   <div class="section-head">
     <div>
-      <h2>พนักงานลาออก</h2>
-      <p class="muted">รายชื่อพนักงานที่ถูกย้ายออกจาก Employees (Active)</p>
+      <h2>Resigned Employees</h2>
+      <p class="muted">Employees moved out from Active list</p>
     </div>
     <div class="actions">
       <button class="btn sm" id="btnReloadResigned">โหลด</button>
@@ -845,27 +849,44 @@
         </div>
         <div class="panel-body">
           <div class="controls" style="margin-bottom:10px">
-<div class="field">
-  <label>วันที่ (ดูรายวัน)</label>
-  <input type="date" id="logsDate" />
-  <small class="muted">ถ้าเลือกวันที่ ระบบจะดึงเฉพาะวันนั้น (ไม่สนเดือน/ปี)</small>
-</div>
+            <div class="field" style="min-width:260px">
+              <label>เดือน/ปี (ดูทั้งเดือน)</label>
+              <div style="display:flex; gap:8px; align-items:center">
+                <select id="logsYear"></select>
+                <select id="logsMonth"></select>
+              </div>
+              <small class="muted">ถ้าไม่เลือก “วันที่” ระบบจะดึงทั้งเดือนตามเดือน/ปีนี้</small>
+            </div>
+
+            <div class="field" style="min-width:260px">
+              <label>วันที่ (ดูรายวัน)</label>
+              <div style="display:flex; gap:8px; align-items:center">
+                <input type="date" id="logsDate" />
+                <button class="btn sm" id="btnClearLogsDate" type="button">ล้างวันที่</button>
+              </div>
+              <small class="muted">ถ้าเลือกวันที่ ระบบจะดึงเฉพาะวันนั้น (override เดือน/ปี)</small>
+            </div>
+
             <div class="field" style="min-width:200px">
               <label>สาขา</label>
               <select id="logsBranch"></select>
             </div>
+
             <div class="field" style="min-width:220px">
               <label>แผนก</label>
               <select id="logsDepartment"></select>
             </div>
+
             <div class="field" style="min-width:200px">
               <label>ระดับ</label>
               <select id="logsLevel"></select>
             </div>
+
             <div class="field" style="min-width:260px">
               <label>ค้นหา (รหัส/ชื่อ)</label>
               <input id="logsSearch" placeholder="เช่น 001 / สมชาย" />
             </div>
+
             <div class="field" style="min-width:180px">
               <label>รวมคนขาด</label>
               <select id="logsIncludeAbsents">
@@ -873,26 +894,30 @@
                 <option value="0">ไม่รวม (เฉพาะมีข้อมูล)</option>
               </select>
             </div>
-          </div>
+          </div></div>
 
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th style="min-width:110px">วันที่</th>
+                  <th style="min-width:120px">วันที่</th>
                   <th style="min-width:110px">รหัส</th>
                   <th style="min-width:220px">ชื่อ</th>
                   <th style="min-width:160px">สาขา</th>
+                  <th style="min-width:170px">แผนก</th>
                   <th style="min-width:140px">ระดับ</th>
                   <th style="min-width:90px">t1</th>
                   <th style="min-width:90px">t2</th>
                   <th style="min-width:90px">t3</th>
                   <th style="min-width:90px">t4</th>
                   <th style="min-width:180px">สถานะ</th>
+                  <th style="min-width:220px">หมายเหตุ/ลา</th>
+                  <th style="min-width:170px">โลเคชั่น</th>
                 </tr>
               </thead>
               <tbody id="logsTbody">
-                <tr><td colspan="10" class="muted">กด “โหลด Logs” เพื่อดึงข้อมูล</td></tr>
+                <tr><td colspan="13" class="muted">กด “โหลด Logs” เพื่อดึงข้อมูล</td></tr>
+              </tbody> class="muted">กด “โหลด Logs” เพื่อดึงข้อมูล</td></tr>
               </tbody>
             </table>
           </div>
@@ -1322,9 +1347,23 @@ function updateMetaUI(){
  *  - มี Abort + timeout
  *  ========================================= */
 function shouldAskLoginByMessage(msg){
-  const s = String(msg||"").toLowerCase();
-  return s.includes("unauthor") || s.includes("permission") || s.includes("login") || s.includes("token") ||
-         s.includes("สิทธิ") || s.includes("เข้าสู่ระบบ") || s.includes("ไม่มีสิทธิ");
+  const s = String(msg || "").toLowerCase();
+  return (
+    s.includes("unauthorized") ||
+    s.includes("forbidden") ||
+    s.includes("no token") ||
+    s.includes("missing token") ||
+    s.includes("token required") ||
+    s.includes("expired") ||
+    s.includes("หมดอายุ") ||
+    s.includes("ต้อง login") ||
+    s.includes("ต้องล็อกอิน") ||
+    s.includes("ต้องลงชื่อ") ||
+    s.includes("ต้องมี token") ||
+    s.includes("โปรด login") ||
+    s.includes("เข้าสู่ระบบ") ||
+    s.includes("ไม่มีสิทธิ")
+  );
 }
 
 async function apiCall(action, params={}, opts={}){
@@ -1462,7 +1501,7 @@ async function refreshCurrentSection(silent=false){
     if(ACTIVE === "logs") await loadLogs(signal);
     if(ACTIVE === "summary") await loadSummary(signal);
     if(ACTIVE === "settings") await loadSettings(signal);
-    if(ACTIVE === "resigned") await loadResigned();
+    if(ACTIVE === "resigned") await loadResigned(signal);
 
     setConn("ok", "เชื่อมต่อสำเร็จ");
     setLastUpdated();
@@ -1510,6 +1549,26 @@ function locationChip(zone){
   return `<span class="chip blue">${escapeHtml(String(zone))}</span>`;
 }
 
+function locationChipTitle(zone, title){
+  const z = String(zone || "").trim().toUpperCase();
+  const t = String(title || "").trim();
+  const attr = t ? ` title="${escapeAttr(t)}"` : "";
+  if(!z || z === "UNKNOWN") return `<span class="chip"${attr}>ไม่ระบุ</span>`;
+  if(z === "IN" || z === "ในบริษัท") return `<span class="chip green"${attr}>ในบริษัท</span>`;
+  if(z === "OUT" || z === "นอกบริษัท") return `<span class="chip red"${attr}>นอกบริษัท</span>`;
+  return `<span class="chip blue"${attr}>${escapeHtml(String(zone))}</span>`;
+}
+
+function noteLeaveText(row){
+  const st = String(row?.status || "").trim();
+  const note = String(row?.note || row?.leaveText || row?.leaveReason || row?.resignedNote || "").trim();
+  if(st.includes("ลา") || st.toUpperCase().includes("LEAVE")){
+    return note ? `ลา: ${note}` : "ลา";
+  }
+  return note;
+}
+
+
 function escapeHtml(s){
   return String(s ?? "")
     .replaceAll("&","&amp;")
@@ -1548,6 +1607,7 @@ function buildKpi(rows){
   ].join("");
 }
 
+
 async function loadToday(signal){
   // Dashboard วันนี้ (public)
   const rows = await apiCall("getTodaySummary", {}, { signal });
@@ -1555,42 +1615,72 @@ async function loadToday(signal){
   const list = Array.isArray(rows) ? rows : (rows?.rows || []);
   buildKpi(list);
 
-  // map employees for "แผนก" (ถ้าระบบโหลดรายชื่อพนักงานมาแล้ว)
-  const empRows = (cache?.employees?.rows && Array.isArray(cache.employees.rows)) ? cache.employees.rows : [];
-  const empMap = {};
-  empRows.forEach(e => {
-    const c = String(e.code || "").trim();
-    if(c) empMap[c] = e;
-  });
+  // map employees for "แผนก" (ถ้า logged แล้วค่อยดึงรายชื่อพนักงาน)
+  let empMap = {};
+  if(isLogged()){
+    try{
+      const empRes = await ensureEmployees(signal);
+      const empRows = (empRes && empRes.rows) ? empRes.rows : [];
+      empRows.forEach(e=>{
+        const c = String(e.code || "").trim();
+        if(c) empMap[c] = e;
+      });
+    }catch(e){ /* ignore */ }
+  }
 
   if(!list.length){
-    tbody.innerHTML = `<tr><td colspan="8" class="muted">ยังไม่มีข้อมูลของวันนี้</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="13" class="muted">ยังไม่มีข้อมูลของวันนี้</td></tr>`;
     return;
   }
+
+  const todayStr = (()=> {
+    try{
+      const d = new Date();
+      const pad = n => String(n).padStart(2,"0");
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    }catch(e){ return ""; }
+  })();
 
   tbody.innerHTML = list.map(r=>{
     const code = String(r.code || r.empCode || "").trim();
     const emp = empMap[code];
 
+    const date = escapeHtml(r.date || todayStr);
     const codeHtml = escapeHtml(code);
     const name = escapeHtml(r.fullName || r.empName || "");
     const br = escapeHtml(r.branch || "");
     const dept = escapeHtml(r.department || r.deptName || r.dept || emp?.department || "");
     const lv = escapeHtml(r.level || "");
-    const zone = String(r.locationZone || r.zone || r.locZone || "").trim();
+
+    const t1 = escapeHtml(r.t1 || "");
+    const t2 = escapeHtml(r.t2 || "");
+    const t3 = escapeHtml(r.t3 || "");
+    const t4 = escapeHtml(r.t4 || "");
 
     const st = r.status || "";
-    const note = escapeHtml(r.note || r.leaveText || r.leaveReason || r.rawType || "");
+    const noteTxt = noteLeaveText(r);
+    const note = escapeHtml(noteTxt || "");
+
+    const zone = String(r.locationZone || r.zone || r.locZone || "").trim();
+    const locParts = [];
+    if(r.locationText) locParts.push(String(r.locationText));
+    if(r.lat && r.lng) locParts.push(`${r.lat},${r.lng}`);
+    const locTitle = locParts.join(" | ");
 
     return `<tr>
+      <td class="mono">${date}</td>
       <td class="mono">${codeHtml}</td>
       <td>${name}</td>
       <td>${br}</td>
       <td>${dept || '<span class="muted">—</span>'}</td>
       <td>${lv}</td>
-      <td>${locationChip(zone)}</td>
+      <td class="mono">${t1}</td>
+      <td class="mono">${t2}</td>
+      <td class="mono">${t3}</td>
+      <td class="mono">${t4}</td>
       <td>${statusChip(st)}</td>
       <td class="muted">${note || "-"}</td>
+      <td>${locationChipTitle(zone, locTitle)}</td>
     </tr>`;
   }).join("");
 }
@@ -1799,7 +1889,7 @@ function openEmpModal(emp){
           toast("ย้ายไปพนักงานลาออกแล้ว ✅");
           closeModal("empModal");
           await loadEmployees(abortRefresh());
-          await loadResigned();
+          await loadResigned(abortRefresh());
         }catch(err){
           alert("ย้ายไม่สำเร็จ: " + (err?.message || err));
         }
@@ -2341,14 +2431,16 @@ function wireOffEvents(){
 /** =========================================
  *  Logs
  *  ========================================= */
+
 async function loadLogs(signal){
   // Ensure branch/level/dept options are ready
   try{
     const bl = await ensureBranchesLevels(signal);
+
     const branchSel = $("logsBranch");
     if(branchSel && branchSel.options.length <= 1){
       branchSel.innerHTML = `<option value="ALL">ALL</option>` + (bl.branches||[]).map(b=>{
-        const v = String(b.branch||"");
+        const v = String(b.branch||b.name||"");
         return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
       }).join("");
       branchSel.value = "ALL";
@@ -2357,7 +2449,7 @@ async function loadLogs(signal){
     const levelSel = $("logsLevel");
     if(levelSel && levelSel.options.length <= 1){
       levelSel.innerHTML = `<option value="ALL">ALL</option>` + (bl.levels||[]).map(l=>{
-        const v = String(l.level||"");
+        const v = String(l.level||l.name||"");
         return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
       }).join("");
       levelSel.value = "ALL";
@@ -2366,7 +2458,8 @@ async function loadLogs(signal){
     const deptSel = $("logsDepartment");
     if(deptSel && deptSel.options.length <= 1){
       const depts = await ensureDepartments(signal);
-      deptSel.innerHTML = `<option value="ALL">ALL</option>` + (depts.rows||depts||[]).map(d=>{
+      const arr = (depts?.rows || depts || []);
+      deptSel.innerHTML = `<option value="ALL">ALL</option>` + arr.map(d=>{
         const v = String(d.department||d.deptName||d.name||d.dept||"").trim();
         if(!v) return "";
         return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
@@ -2377,32 +2470,43 @@ async function loadLogs(signal){
     // ignore option load errors; still allow fetch
   }
 
-  // Default date = latest date in Logs
-  let date = String($("logsDate").value||"").trim();
-  if(!date){
-    try{
-      const r = await apiCall("adminGetLatestLogDate", {}, { signal });
-      date = String(r.latestDate || "");
-      if(date) $("logsDate").value = date;
-    }catch(e){}
+  // Prepare employee map for department join
+  let empMap = {};
+  try{
+    const empRes = await ensureEmployees(signal);
+    const empRows = (empRes && empRes.rows) ? empRes.rows : [];
+    empRows.forEach(e=>{
+      const c = String(e.code || "").trim();
+      if(c) empMap[c] = e;
+    });
+  }catch(e){
+    // if not logged / token issue, apiCall will be handled by caller
   }
-  if(!date){
-    const now = new Date();
-    const pad = (n)=> String(n).padStart(2,"0");
-    date = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
-    $("logsDate").value = date;
-  }
+
+  const date = String($("logsDate")?.value || "").trim();
+  const year = Number($("logsYear")?.value || new Date().getFullYear());
+  const month = Number($("logsMonth")?.value || (new Date().getMonth()+1));
 
   const branch = ($("logsBranch")?.value || "ALL");
   const deptFilter = ($("logsDepartment")?.value || "ALL");
   const levelFilter = ($("logsLevel")?.value || "ALL");
   const search = ($("logsSearch")?.value || "").trim();
-  const includeAbsents = ($("logsIncludeAbsents")?.value || "รวม");
+  const includeAbsents = ($("logsIncludeAbsents")?.value || "1");
 
-  const res = await apiCall("getLogsRange", { date, branch, search, includeAbsents }, { signal });
+  const payload = date ? { date, branch, search, includeAbsents } : { year, month, branch, search, includeAbsents };
+  const res = await apiCall("getLogsRange", payload, { signal });
+
   let rows = (res && res.rows) ? res.rows : [];
 
-  // Client-side filter (GS ไม่กรองให้)
+  // Join department from Employees (Logs ไม่มีแผนก)
+  rows = rows.map(r=>{
+    const code = String(r.code || "").trim();
+    const emp = empMap[code];
+    const dept = String(r.department || r.deptName || r.dept || emp?.department || "").trim();
+    return { ...r, department: dept };
+  });
+
+  // Client-side filter
   if(deptFilter && deptFilter !== "ALL"){
     rows = rows.filter(r => String(r.department||"") === deptFilter);
   }
@@ -2417,25 +2521,38 @@ async function loadLogs(signal){
 
   const tbody = $("logsTbody");
   if(!rows.length){
-    tbody.innerHTML = `<tr><td colspan="10" class="muted">ไม่พบข้อมูล</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="13" class="muted">ไม่พบข้อมูล</td></tr>`;
     return;
   }
 
   tbody.innerHTML = rows.map(r=>{
+    const zone = String(r.locationZone || r.zone || "").trim();
+    const locParts = [];
+    if(r.locationText) locParts.push(String(r.locationText));
+    if(r.lat && r.lng) locParts.push(`${r.lat},${r.lng}`);
+    const locTitle = locParts.join(" | ");
+
+    const noteTxt = noteLeaveText(r);
+    const note = escapeHtml(noteTxt || "");
+
     return `<tr>
       <td class="mono">${escapeHtml(r.date||"")}</td>
       <td class="mono">${escapeHtml(r.code||"")}</td>
       <td>${escapeHtml(r.fullName||"")}</td>
       <td>${escapeHtml(r.branch||"")}</td>
+      <td>${escapeHtml(r.department||"") || '<span class="muted">—</span>'}</td>
       <td>${escapeHtml(r.level||"")}</td>
       <td class="mono">${escapeHtml(r.t1||"")}</td>
       <td class="mono">${escapeHtml(r.t2||"")}</td>
       <td class="mono">${escapeHtml(r.t3||"")}</td>
       <td class="mono">${escapeHtml(r.t4||"")}</td>
       <td>${statusChip(r.status||"")}</td>
+      <td class="muted">${note || "-"}</td>
+      <td>${locationChipTitle(zone, locTitle)}</td>
     </tr>`;
   }).join("");
 }
+
 
 /** =========================================
  *  Summary
@@ -2743,7 +2860,8 @@ function wireEvents(){
 
   // Logs
   $("btnReloadLogs").addEventListener("click", ()=> loadLogs(abortRefresh()).then(()=>{ setConn("ok","เชื่อมต่อสำเร็จ"); setLastUpdated(); }).catch(()=>{}));
-  ["logsDate","logsBranch","logsDepartment","logsLevel","logsIncludeAbsents"].forEach(id=>{
+  $("btnClearLogsDate")?.addEventListener("click", ()=>{ $("logsDate").value=""; $("btnReloadLogs").click(); });
+  ["logsYear","logsMonth","logsDate","logsBranch","logsDepartment","logsLevel","logsIncludeAbsents"].forEach(id=>{
     $(id).addEventListener("change", ()=> $("btnReloadLogs").click());
   });
   $("logsSearch").addEventListener("keydown", (e)=>{ if(e.key==="Enter") $("btnReloadLogs").click(); });
@@ -2782,7 +2900,8 @@ function wireEvents(){
 
   // init year/month selects
   fillYearMonth($("leaveYear"), $("leaveMonth"));
-fillYearMonth($("sumYear"), $("sumMonth"));
+  fillYearMonth($("sumYear"), $("sumMonth"));
+  fillYearMonth($("logsYear"), $("logsMonth"));
 
   // defaults
   updateMetaUI();
@@ -2827,8 +2946,8 @@ function showResErr(msg){
   }
 }
 
-async function loadResigned(){
-  const res = await apiCall("adminGetResignedEmployees", {}, {});
+async function loadResigned(signal){
+  const res = await apiCall("adminGetResignedEmployees", {}, { signal });
   const all = (res && res.rows) ? res.rows : [];
   const q = (document.getElementById("resSearch")?.value || "").trim().toLowerCase();
 
@@ -2928,7 +3047,7 @@ async function openResModalByCode(code){
       await apiCall("adminSaveResignedEmployee", { row: payload }, {});
       toast("บันทึกสำเร็จ ✅");
       closeModal("resModal");
-      await loadResigned();
+      await loadResigned(abortRefresh());
     }catch(err){
       showResErr(err?.message || String(err));
     }
@@ -2942,7 +3061,7 @@ async function openResModalByCode(code){
       await apiCall("adminDeleteResignedEmployee", { code: c }, {});
       toast("ลบสำเร็จ ✅");
       closeModal("resModal");
-      await loadResigned();
+      await loadResigned(abortRefresh());
     }catch(err){
       showResErr(err?.message || String(err));
     }
@@ -2954,13 +3073,13 @@ async function openResModalByCode(code){
 // bind resigned controls
 (function(){
   const btn = document.getElementById('btnReloadResigned');
-  if(btn) btn.addEventListener('click', ()=>loadResigned());
+  if(btn) btn.addEventListener('click', ()=>loadResigned(abortRefresh()));
 
   const inp = document.getElementById('resSearch');
   if(inp){
     inp.addEventListener('input', ()=>{
       clearTimeout(_resDebT);
-      _resDebT = setTimeout(()=>loadResigned(), 250);
+      _resDebT = setTimeout(()=>loadResigned(abortRefresh()), 250);
     });
   }
 
@@ -2980,7 +3099,7 @@ async function openResModalByCode(code){
       try{
         await apiCall("adminDeleteResignedEmployee", { code: delCode }, {});
         toast("ลบสำเร็จ ✅");
-        await loadResigned();
+        await loadResigned(abortRefresh());
       }catch(err){
         alert(err?.message || err);
       }
