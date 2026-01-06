@@ -1813,9 +1813,6 @@ function openEmpModal(emp){
   openModal("empModal");
 }
 
-openModal("empModal");
-
-}
 
 async function loadEmployees(signal){
   const res = await apiCall("getEmployees", {}, { signal });
@@ -2991,7 +2988,6 @@ async function openResModalByCode(code){
     }
   });
 })();
-
 
 </script>
 
