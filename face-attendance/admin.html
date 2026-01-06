@@ -421,7 +421,39 @@
     }
     .kpi .card b{ font-size:18px; }
     .kpi .card span{ display:block; color:var(--muted); font-size:12px; margin-top:4px; }
-  </style>
+  
+    /* Busy overlay */
+    #busyOverlay{
+      position:fixed; inset:0;
+      background:rgba(15,23,42,.35);
+      display:none; align-items:center; justify-content:center;
+      z-index:9999;
+      padding:16px;
+    }
+    #busyOverlay.show{ display:flex; }
+    .busyCard{
+      background:#fff;
+      border:1px solid #e5e7eb;
+      border-radius:16px;
+      box-shadow:0 16px 40px rgba(15,23,42,.2);
+      padding:18px 16px;
+      min-width:260px;
+      max-width:360px;
+      text-align:center;
+    }
+    .spinner{
+      width:42px; height:42px;
+      border:4px solid #e5e7eb;
+      border-top-color:#2563eb;
+      border-radius:999px;
+      margin:0 auto 10px;
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin{ to{ transform:rotate(360deg); } }
+    .busyTitle{ font-weight:700; margin:2px 0 4px; }
+    .busySub{ color:#64748b; font-size:13px; line-height:1.35; }
+
+</style>
 </head>
 <body>
 
@@ -495,7 +527,7 @@
   <main class="main">
     <div class="topbar">
       <div class="title">
-        <h2 id="pageTitle">Dashboard</h2>
+        <h2 id="pageTitle">Dashboard (แดชบอร์ด)</h2>
         <p id="pageHint">ดูภาพรวมและสถานะวันนี้ • โหลดไว ไม่สุ่มเรียก action</p>
       </div>
       <div class="top-actions">
@@ -1054,7 +1086,7 @@
 <div class="mobilebar" id="mobilebar">
   <div class="mini">
     <button class="btn sm" id="btnMobileMenu">เมนู</button>
-    <div class="pill" id="mobileSection">Dashboard</div>
+    <div class="pill" id="mobileSection">Dashboard (แดชบอร์ด)</div>
   </div>
   <button class="btn sm primary" id="btnMobileRefresh">รีเฟรช</button>
 </div>
@@ -1283,6 +1315,37 @@ function toast(msg){
   window.__toastTimer = setTimeout(() => (el.style.display = "none"), 2600);
 }
 
+
+  // Busy overlay (shows only when requests take noticeable time)
+  let __busyCount = 0;
+  let __busyTimer = null;
+  function setBusy(on, title, sub){
+    const ov = document.getElementById('busyOverlay');
+    const t  = document.getElementById('busyTitle');
+    const s  = document.getElementById('busySub');
+    if(!ov || !t || !s) return;
+
+    if(on){
+      __busyCount++;
+      const _title = title || 'กำลังโหลด…';
+      const _sub   = sub || 'กรุณารอสักครู่';
+      t.textContent = _title;
+      s.textContent = _sub;
+
+      if(__busyTimer) clearTimeout(__busyTimer);
+      // delay a bit so fast calls won't flash
+      __busyTimer = setTimeout(()=>{ if(__busyCount>0) ov.classList.add('show'); }, 250);
+    }else{
+      __busyCount = Math.max(0, __busyCount-1);
+      if(__busyCount===0){
+        if(__busyTimer) clearTimeout(__busyTimer);
+        __busyTimer = null;
+        ov.classList.remove('show');
+      }
+    }
+  }
+
+
 function setConn(kind, msg){
   const badge = $("connBadge");
   const text = $("connText");
@@ -1343,6 +1406,9 @@ async function apiCall(action, params={}, opts={}){
   const payload = { action, ...params };
   if(token) payload.token = token;
 
+  // show global loading overlay
+  setBusy(true, 'กำลังโหลด…', action);
+
   const controller = opts.signal ? null : new AbortController();
   const signal = opts.signal || controller.signal;
 
@@ -1370,6 +1436,7 @@ async function apiCall(action, params={}, opts={}){
     if(!data.ok) throw new Error(data.error || "เกิดข้อผิดพลาดจากเซิร์ฟเวอร์");
     return data.result;
   }finally{
+    setBusy(false);
     if(timer) clearTimeout(timer);
   }
 }
@@ -3128,6 +3195,16 @@ async function openResModalByCode(code){
 })();
 
 </script>
+
+
+  <!-- Busy Overlay -->
+  <div id="busyOverlay" aria-live="polite" aria-busy="true">
+    <div class="busyCard" role="status">
+      <div class="spinner"></div>
+      <div class="busyTitle" id="busyTitle">กำลังโหลด…</div>
+      <div class="busySub" id="busySub">กรุณารอสักครู่</div>
+    </div>
+  </div>
 
 </body>
 </html>
