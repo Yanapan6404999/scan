@@ -1,485 +1,291 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-  <title>Employee Full Detail</title>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Employees Full Detail</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --primary:#2563eb;
-      --bg:#f6f8fb;
-      --card:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --border:#e5e7eb;
-      --success:#16a34a;
-      --danger:#ef4444;
-      --warning:#f59e0b;
+      --bg:#f6f8fb; --card:#fff; --text:#0f172a; --muted:#64748b;
+      --border:#e5e7eb; --shadow: 0 10px 25px rgba(2,6,23,.06);
+      --blue:#2563eb; --blue2:#1d4ed8; --red:#ef4444; --warn:#f59e0b;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:"Prompt",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-      background:var(--bg);
-      color:var(--text);
-    }
-    .topbar{
-      position:sticky; top:0;
-      background:rgba(246,248,251,.9);
-      backdrop-filter: blur(8px);
-      border-bottom:1px solid var(--border);
-      z-index:10;
-    }
-    .topbar-inner{
-      max-width:1100px;
-      margin:0 auto;
-      padding:14px 16px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .btn{
-      border:1px solid var(--border);
-      background:#fff;
-      color:var(--text);
-      padding:10px 12px;
-      border-radius:12px;
-      cursor:pointer;
-      font-weight:600;
-      font-size:14px;
-    }
-    .btn.primary{ background:var(--primary); border-color:var(--primary); color:#fff;}
-    .btn.danger{ background:#fee2e2; border-color:#fecaca; color:#991b1b;}
-    .btn.ghost{ background:transparent;}
-    .pill{
-      margin-left:auto;
-      display:flex; gap:8px; align-items:center;
-      font-size:13px;
-      color:var(--muted);
-    }
-    .badge{
-      padding:6px 10px;
-      border-radius:999px;
-      font-weight:700;
-      font-size:12px;
-      border:1px solid var(--border);
-      background:#fff;
-      color:var(--muted);
-    }
-    .badge.ok{ color:#14532d; background:#dcfce7; border-color:#bbf7d0;}
-    .badge.bad{ color:#7f1d1d; background:#fee2e2; border-color:#fecaca;}
-    .badge.warn{ color:#7c2d12; background:#ffedd5; border-color:#fed7aa;}
-    .wrap{ max-width:1100px; margin:18px auto; padding:0 16px 32px;}
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:18px;
-      padding:16px;
-      box-shadow:0 6px 18px rgba(15,23,42,.06);
-    }
-    .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;}
-    .field{ min-width:200px; flex:1; }
-    .field label{ display:block; font-size:12px; color:var(--muted); margin:0 0 6px 2px;}
-    input, select, textarea{
-      width:100%;
-      padding:10px 12px;
-      border:1px solid var(--border);
-      border-radius:12px;
-      font-family:inherit;
-      font-size:14px;
-      outline:none;
-      background:#fff;
-    }
-    textarea{ min-height:90px; resize:vertical; }
-    .muted{ color:var(--muted); font-size:13px; }
-    .h1{ font-size:18px; font-weight:800; margin:0 0 10px;}
-    .hr{ height:1px; background:var(--border); margin:14px 0;}
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap:12px;
-    }
-    .col-3{ grid-column: span 3; }
-    .col-4{ grid-column: span 4; }
-    .col-6{ grid-column: span 6; }
-    .col-12{ grid-column: span 12; }
-    @media (max-width:900px){
-      .col-3,.col-4,.col-6{ grid-column: span 12; }
-      .pill{ margin-left:0; width:100%; justify-content:flex-start; flex-wrap:wrap;}
-    }
-    .toast{
-      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
-      background:#0b1220; color:#fff;
-      padding:10px 14px; border-radius:999px;
-      font-size:13px; opacity:0; pointer-events:none;
-      transition:opacity .15s ease;
-    }
-    .toast.show{ opacity:1; }
-    .modal-backdrop{
-      position:fixed; inset:0; background:rgba(15,23,42,.5);
-      display:none; align-items:center; justify-content:center;
-      padding:16px; z-index:50;
-    }
-    .modal{
-      width:min(720px, 100%);
-      background:#fff;
-      border-radius:18px;
-      border:1px solid var(--border);
-      box-shadow:0 10px 30px rgba(15,23,42,.25);
-      overflow:hidden;
-    }
-    .modal .head{ padding:14px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;}
-    .modal .body{ padding:14px 16px;}
-    .modal .foot{ padding:14px 16px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end;}
+    body{margin:0;font-family:Prompt,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
+    .wrap{max-width:1400px;margin:18px auto;padding:0 16px}
+    .topbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .title h1{margin:0;font-size:22px}
+    .title p{margin:2px 0 0;color:var(--muted);font-size:13px}
+    .btn{border:1px solid var(--border);background:#fff;color:var(--text);padding:9px 12px;border-radius:12px;cursor:pointer;font-weight:600}
+    .btn.primary{background:var(--blue);border-color:transparent;color:#fff}
+    .btn.danger{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.30);color:#b91c1c}
+    .btn.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.30);color:#92400e}
+    .btn:disabled{opacity:.55;cursor:not-allowed}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+    .field{display:flex;flex-direction:column;gap:6px}
+    label{font-size:12px;color:var(--muted)}
+    input{border:1px solid var(--border);border-radius:12px;padding:10px 12px;min-width:220px}
+    .status{font-size:13px;color:var(--muted)}
+    .table-wrap{margin-top:12px;border:1px solid var(--border);border-radius:16px;overflow:auto}
+    table{border-collapse:separate;border-spacing:0;width:max(100%,900px)}
+    thead th{position:sticky;top:0;background:#fafafa;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);text-align:left;padding:10px}
+    tbody td{border-bottom:1px solid var(--border);padding:8px 10px;vertical-align:top}
+    tbody tr:hover td{background:#fcfcff}
+    .cell{width:100%;min-width:120px;border:1px solid transparent;border-radius:10px;padding:8px}
+    .cell:focus{outline:none;border-color:rgba(37,99,235,.45);box-shadow:0 0 0 4px rgba(37,99,235,.12);background:#fff}
+    .code{min-width:90px}
+    .actions{white-space:nowrap;display:flex;gap:8px}
+    .small{font-size:12px;color:var(--muted);margin-top:10px}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:#fff;font-size:12px;color:var(--muted)}
+    .dot{width:8px;height:8px;border-radius:999px;background:#94a3b8}
+    .dot.ok{background:#22c55e}
+    .dot.bad{background:#ef4444}
   </style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="topbar-inner">
-      <button class="btn" id="btnBack">← กลับ Admin</button>
-      <button class="btn ghost" id="btnSettings">ตั้งค่า API/Token</button>
-      <div class="pill">
-        <span class="badge" id="connBadge">รอเชื่อมต่อ</span>
-        <span class="badge warn" id="empStatusBadge" style="display:none">—</span>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">
+        <h1>Employees Full Detail</h1>
+        <p>หน้าแบบ Excel เพื่อเพิ่ม/แก้ไข/ลบ และ Export เป็น Excel ได้</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span class="pill"><span class="dot" id="dot"></span><span id="connText">ยังไม่เชื่อมต่อ</span></span>
+        <button class="btn" id="btnReload">โหลด</button>
+        <button class="btn warn" id="btnAdd">เพิ่มแถว</button>
+        <button class="btn primary" id="btnSaveAll">บันทึกทั้งหมด</button>
+        <button class="btn" id="btnExport">Export Excel</button>
       </div>
     </div>
-  </div>
 
-  <div class="wrap">
     <div class="card">
       <div class="row">
-        <div class="field" style="min-width:260px; flex:2;">
-          <label>ค้นหาพนักงาน (รหัส)</label>
-          <input id="qCode" placeholder="เช่น 1011" />
+        <div class="field">
+          <label>API URL (Apps Script)</label>
+          <input id="apiUrl" placeholder="วาง URL ที่ลงท้าย /exec" />
         </div>
-        <div class="field" style="min-width:180px; flex:0;">
-          <button class="btn primary" id="btnLoad">โหลดข้อมูล</button>
+        <div class="field">
+          <label>HR Token</label>
+          <input id="token" placeholder="วาง Token" />
         </div>
-        <div class="field" style="min-width:180px; flex:0;">
-          <button class="btn" id="btnClear">ล้างฟอร์ม</button>
+        <div class="field">
+          <label>ค้นหา (รหัส/ชื่อ)</label>
+          <input id="q" placeholder="เช่น 1011 / สมชาย" />
         </div>
-      </div>
-      <div class="muted" style="margin-top:8px">* หน้านี้ดึงข้อมูลพื้นฐานจาก Employees และบันทึกข้อมูลละเอียดลงชีต EmployeesFullDetail</div>
-
-      <div class="hr"></div>
-
-      <div class="h1" id="empNameTitle">—</div>
-
-      <div class="grid">
-        <div class="col-3 field">
-          <label>รหัส (code)</label>
-          <input id="f_code" disabled />
-        </div>
-        <div class="col-6 field">
-          <label>ชื่อ-สกุล (fullName)</label>
-          <input id="f_fullName" />
-        </div>
-        <div class="col-3 field">
-          <label>ชื่อเล่น (nickName)</label>
-          <input id="f_nickName" />
-        </div>
-
-        <div class="col-3 field">
-          <label>เพศ (gender)</label>
-          <select id="f_gender">
-            <option value="">—</option>
-            <option value="ชาย">ชาย</option>
-            <option value="หญิง">หญิง</option>
-            <option value="อื่นๆ">อื่นๆ</option>
-          </select>
-        </div>
-        <div class="col-3 field">
-          <label>สัญชาติ (nationality)</label>
-          <input id="f_nationality" />
-        </div>
-        <div class="col-3 field">
-          <label>วันเกิด (birthDate)</label>
-          <input type="date" id="f_birthDate" />
-        </div>
-        <div class="col-3 field">
-          <label>เลขบัตร (idCard)</label>
-          <input id="f_idCard" />
-        </div>
-
-        <div class="col-4 field">
-          <label>โทรศัพท์ (phone)</label>
-          <input id="f_phone" />
-        </div>
-        <div class="col-8 field">
-          <label>ที่อยู่ (address)</label>
-          <input id="f_address" />
-        </div>
-
-        <div class="col-3 field">
-          <label>วันเริ่มงาน (startWorkDate)</label>
-          <input type="date" id="f_startWorkDate" />
-        </div>
-        <div class="col-3 field">
-          <label>สาขา (branch)</label>
-          <input id="f_branch" />
-        </div>
-        <div class="col-3 field">
-          <label>แผนก (department)</label>
-          <input id="f_department" />
-        </div>
-        <div class="col-3 field">
-          <label>ระดับ (level)</label>
-          <input id="f_level" />
-        </div>
-
-        <div class="col-6 field">
-          <label>ตำแหน่ง (positionTitle)</label>
-          <input id="f_positionTitle" />
-        </div>
-        <div class="col-6 field">
-          <label>อีเมล (email)</label>
-          <input id="f_email" />
-        </div>
-
-        <div class="col-12 field">
-          <label>หมายเหตุ (note)</label>
-          <textarea id="f_note" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
-        </div>
+        <button class="btn" id="btnSaveConn">บันทึกการเชื่อมต่อ</button>
+        <div class="status" id="meta">—</div>
       </div>
 
-      <div class="row" style="justify-content:flex-end; margin-top:14px">
-        <button class="btn" id="btnReload">โหลดใหม่</button>
-        <button class="btn primary" id="btnSave">บันทึก</button>
+      <div class="table-wrap">
+        <table>
+          <thead><tr id="thead"></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="small">
+        * ใช้คอลัมน์ <b>code</b> เป็นคีย์หลัก (ห้ามซ้ำ) • ถ้าลบแล้วกู้คืนไม่ได้ (แต่ดูได้จากประวัติในชีต/Drive)
       </div>
     </div>
   </div>
-
-  <!-- SETTINGS MODAL -->
-  <div class="modal-backdrop" id="settingsModal">
-    <div class="modal">
-      <div class="head">
-        <div style="font-weight:800">ตั้งค่า API / Token</div>
-        <div style="margin-left:auto"></div>
-        <button class="btn" id="btnCloseSettings">ปิด</button>
-      </div>
-      <div class="body">
-        <div class="grid">
-          <div class="col-12 field">
-            <label>API URL (Apps Script Web App URL)</label>
-            <input id="apiUrlInput" placeholder="https://script.google.com/macros/s/....../exec" />
-          </div>
-          <div class="col-12 field">
-            <label>HR Token</label>
-            <input id="tokenInput" placeholder="วาง token ที่ได้จาก admin login" />
-          </div>
-        </div>
-        <div class="muted" style="margin-top:8px">* ใช้ key เดียวกับหน้า admin: attendance_api_url_v2 และ hr_token</div>
-      </div>
-      <div class="foot">
-        <button class="btn danger" id="btnClearToken">ล้าง Token</button>
-        <button class="btn primary" id="btnSaveSettings">บันทึก</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast" id="toast">Saved</div>
 
 <script>
-  const KEY_API = "attendance_api_url_v2";
-  const KEY_TOKEN = "hr_token";
+  const LS_API = "attendance_api_url_v2";
+  const LS_TOKEN = "attendance_hr_token";
+
   const $ = (id)=>document.getElementById(id);
 
+  function setConnDot(ok){
+    const dot = $("dot");
+    const txt = $("connText");
+    dot.className = "dot" + (ok ? " ok" : " bad");
+    txt.textContent = ok ? "เชื่อมต่อแล้ว" : "ยังไม่เชื่อมต่อ";
+  }
+
   function toast(msg){
-    const t = $("toast"); t.textContent = msg;
-    t.classList.add("show");
-    clearTimeout(toast._t);
-    toast._t = setTimeout(()=>t.classList.remove("show"), 1300);
-  }
-  function setConn(type, text){
-    const b = $("connBadge");
-    b.textContent = text;
-    b.classList.remove("ok","bad","warn");
-    if(type==="ok") b.classList.add("ok");
-    else if(type==="bad") b.classList.add("bad");
-    else b.classList.add("warn");
-  }
-  function getApi(){ return (localStorage.getItem(KEY_API)||"").trim(); }
-  function getToken(){ return (localStorage.getItem(KEY_TOKEN)||"").trim(); }
-
-  async function apiCall(action, params={}){
-    const url = getApi();
-    if(!url) throw new Error("ยังไม่ตั้งค่า API URL");
-    const body = { action, ...params };
-    const headers = { "Content-Type":"application/json" };
-    const token = getToken();
-    if(token) headers["X-HR-TOKEN"] = token;
-
-    const res = await fetch(url, { method:"POST", headers, body: JSON.stringify(body) });
-    const txt = await res.text();
-    let data;
-    try{ data = JSON.parse(txt); }catch(e){ throw new Error("API ตอบกลับไม่ใช่ JSON"); }
-    if(!res.ok) throw new Error(data?.error || ("HTTP " + res.status));
-    if(data && data.ok === false) throw new Error(data?.error || "API error");
-    return data;
+    alert(msg);
   }
 
-  function clearForm(){
-    ["f_code","f_fullName","f_nickName","f_gender","f_nationality","f_birthDate","f_idCard",
-     "f_phone","f_address","f_startWorkDate","f_branch","f_department","f_level","f_positionTitle","f_email","f_note"]
-    .forEach(id=>{
-      const el=$(id);
-      if(!el) return;
-      el.value="";
-    });
-    $("empNameTitle").textContent="—";
-    $("empStatusBadge").style.display="none";
-  }
-
-  function setStatusBadge(status){
-    const b = $("empStatusBadge");
-    b.style.display="inline-block";
-    b.classList.remove("ok","bad","warn");
-    if(status==="ลาออกแล้ว"){ b.classList.add("bad"); b.textContent="ลาออกแล้ว"; }
-    else { b.classList.add("ok"); b.textContent="ยังทำงานอยู่"; }
-  }
-
-  function fillFromRow(row){
-    $("f_code").value = row.code || "";
-    $("f_fullName").value = row.fullName || "";
-    $("f_nickName").value = row.nickName || "";
-    $("f_gender").value = row.gender || "";
-    $("f_nationality").value = row.nationality || "";
-    $("f_birthDate").value = (row.birthDate||"").slice(0,10);
-    $("f_idCard").value = row.idCard || "";
-    $("f_phone").value = row.phone || "";
-    $("f_address").value = row.address || "";
-    $("f_startWorkDate").value = (row.startWorkDate||"").slice(0,10);
-    $("f_branch").value = row.branch || "";
-    $("f_department").value = row.department || "";
-    $("f_level").value = row.level || "";
-    $("f_positionTitle").value = row.positionTitle || "";
-    $("f_email").value = row.email || "";
-    $("f_note").value = row.note || "";
-    $("empNameTitle").textContent = `${row.code||""} • ${row.fullName||""}`.trim() || "—";
-  }
-
-  function collectRow(){
+  function getConn(){
     return {
-      code: $("f_code").value.trim(),
-      fullName: $("f_fullName").value.trim(),
-      nickName: $("f_nickName").value.trim(),
-      gender: $("f_gender").value || "",
-      nationality: $("f_nationality").value.trim(),
-      birthDate: $("f_birthDate").value || "",
-      idCard: $("f_idCard").value.trim(),
-      phone: $("f_phone").value.trim(),
-      address: $("f_address").value.trim(),
-      startWorkDate: $("f_startWorkDate").value || "",
-      branch: $("f_branch").value.trim(),
-      department: $("f_department").value.trim(),
-      level: $("f_level").value.trim(),
-      positionTitle: $("f_positionTitle").value.trim(),
-      email: $("f_email").value.trim(),
-      note: $("f_note").value.trim(),
-      updatedAt: new Date().toISOString()
+      apiUrl: $("apiUrl").value.trim(),
+      token: $("token").value.trim(),
     };
   }
 
-  async function loadEmployee(code){
-    code = String(code||"").trim();
-    if(!code) throw new Error("กรอกรหัสพนักงานก่อน");
-    setConn("warn","กำลังโหลด...");
-
-    const empRes = await apiCall("getEmployees", {});
-    const emps = empRes?.rows || empRes?.employees || empRes || [];
-    const active = (emps||[]).find(e=>String(e.code||"")===code);
-
-    let resigned = null;
-    try{
-      const r = await apiCall("adminGetResignedEmployees", {});
-      const rows = r?.rows || [];
-      resigned = rows.find(x=>String(x.code||"")===code) || null;
-    }catch(e){}
-
-    if(!active && !resigned) throw new Error("ไม่พบรหัสนี้ใน Employees/Resigned");
-
-    setStatusBadge(resigned ? "ลาออกแล้ว" : "ยังทำงานอยู่");
-
-    const fd = await apiCall("adminGetEmployeesFullDetail", {});
-    const fdRows = fd?.rows || [];
-    const detailRow = fdRows.find(x=>String(x.code||"")===code);
-
-    const base = resigned || active || {};
-    const merged = Object.assign(
-      {
-        code,
-        fullName: base.fullName || "",
-        email: base.email || "",
-        branch: base.branch || "",
-        department: base.department || "",
-        level: base.level || "",
-        startWorkDate: base.startWorkDate || ""
-      },
-      detailRow || {}
-    );
-
-    fillFromRow(merged);
-    setConn("ok","เชื่อมต่อสำเร็จ");
-    return merged;
+  async function api(action, params){
+    const {apiUrl, token} = getConn();
+    if(!apiUrl) throw new Error("กรุณาตั้งค่า API URL");
+    if(!token) throw new Error("กรุณาใส่ Token");
+    const body = JSON.stringify({ action, token, ...params });
+    const res = await fetch(apiUrl, { method:"POST", headers:{ "Content-Type":"application/json" }, body });
+    const js = await res.json();
+    if(!js.ok) throw new Error(js.error || "API error");
+    return js;
   }
 
-  async function saveEmployeeFullDetail(){
-    const row = collectRow();
-    if(!row.code) return alert("ไม่มีรหัสพนักงาน");
-    setConn("warn","กำลังบันทึก...");
-    await apiCall("adminSaveEmployeesFullDetail", { row });
-    setConn("ok","บันทึกแล้ว");
-    toast("บันทึกแล้ว");
-  }
+  let HEADER = [];
+  let ROWS = []; // array of objects
 
-  function openSettings(){
-    $("apiUrlInput").value = getApi();
-    $("tokenInput").value = getToken();
-    $("settingsModal").style.display = "flex";
-  }
-  function closeSettings(){
-    $("settingsModal").style.display = "none";
-  }
-
-  (function boot(){
-    $("btnBack").addEventListener("click", ()=>{
-      const base = location.href.split("/").slice(0,-1).join("/");
-      location.href = base + "/admin.html";
-    });
-    $("btnSettings").addEventListener("click", openSettings);
-    $("btnCloseSettings").addEventListener("click", closeSettings);
-    $("settingsModal").addEventListener("click", (e)=>{ if(e.target.id==="settingsModal") closeSettings(); });
-
-    $("btnSaveSettings").addEventListener("click", ()=>{
-      localStorage.setItem(KEY_API, $("apiUrlInput").value.trim());
-      localStorage.setItem(KEY_TOKEN, $("tokenInput").value.trim());
-      toast("บันทึกการตั้งค่าแล้ว");
-      closeSettings();
-    });
-    $("btnClearToken").addEventListener("click", ()=>{
-      localStorage.removeItem(KEY_TOKEN);
-      $("tokenInput").value="";
-      toast("ล้าง Token แล้ว");
+  function render(){
+    const q = $("q").value.trim().toLowerCase();
+    const rows = ROWS.filter(r=>{
+      if(!q) return true;
+      return String(r.code||"").toLowerCase().includes(q) || String(r.fullName||"").toLowerCase().includes(q);
     });
 
-    $("btnClear").addEventListener("click", clearForm);
-    $("btnLoad").addEventListener("click", ()=> loadEmployee($("qCode").value).catch(e=>alert(e.message||e)));
-    $("btnReload").addEventListener("click", ()=> loadEmployee($("f_code").value || $("qCode").value).catch(e=>alert(e.message||e)));
-    $("btnSave").addEventListener("click", ()=> saveEmployeeFullDetail().catch(e=>alert(e.message||e)));
+    const thead = $("thead");
+    const tbody = $("tbody");
+    thead.innerHTML = "";
+    tbody.innerHTML = "";
 
-    $("qCode").addEventListener("keydown", (e)=>{ if(e.key==="Enter") $("btnLoad").click(); });
+    // header
+    const ths = [...HEADER, "__actions__"].map(h=>{
+      const th = document.createElement("th");
+      th.textContent = (h==="__actions__") ? "การทำงาน" : h;
+      thead.appendChild(th);
+      return th;
+    });
 
-    const params = new URLSearchParams(location.search);
-    const code = params.get("code");
-    if(code){
-      $("qCode").value = code;
-      loadEmployee(code).catch(()=>{});
-    }else{
-      if(!getApi()) openSettings();
-      else setConn("warn","พร้อมใช้งาน");
+    // rows
+    rows.forEach((row, idx)=>{
+      const tr = document.createElement("tr");
+      HEADER.forEach((h)=>{
+        const td = document.createElement("td");
+        const div = document.createElement("div");
+        div.className = "cell" + (h==="code" ? " code" : "");
+        div.contentEditable = (h!=="updatedAt"); // updatedAt ให้ระบบเติม
+        div.textContent = row[h] ?? "";
+        div.dataset.code = row.code || "";
+        div.dataset.col = h;
+        div.addEventListener("input", ()=>{
+          row[h] = div.textContent.trim();
+        });
+        td.appendChild(div);
+        tr.appendChild(td);
+      });
+
+      const act = document.createElement("td");
+      act.innerHTML = `
+        <div class="actions">
+          <button class="btn" data-act="save" data-code="${escapeHtml(row.code||"")}">บันทึก</button>
+          <button class="btn danger" data-act="del" data-code="${escapeHtml(row.code||"")}">ลบ</button>
+        </div>`;
+      tr.appendChild(act);
+
+      tbody.appendChild(tr);
+    });
+
+    $("meta").textContent = `ทั้งหมด ${rows.length} แถว • คอลัมน์ ${HEADER.length}`;
+  }
+
+  function escapeHtml(s){
+    return String(s||"").replace(/[&<>"']/g, (m)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+  }
+
+  async function load(){
+    $("meta").textContent = "กำลังโหลด...";
+    const res = await api("adminGetEmployeesFullDetail", {});
+    HEADER = res.header || [];
+    ROWS = res.rows || [];
+    render();
+  }
+
+  async function saveRow(code){
+    const row = ROWS.find(r=>String(r.code||"").trim()===String(code||"").trim());
+    if(!row) throw new Error("ไม่พบแถว: "+code);
+    if(!row.code) throw new Error("code ห้ามว่าง");
+    await api("adminSaveEmployeesFullDetail", { row });
+  }
+
+  async function deleteRow(code){
+    if(!confirm("ลบพนักงาน "+code+" ?")) return;
+    await api("adminDeleteEmployeesFullDetail", { code });
+    ROWS = ROWS.filter(r=>String(r.code||"").trim()!==String(code||"").trim());
+    render();
+  }
+
+  async function saveAll(){
+    // บันทึกทีละแถวเพื่อให้ไม่หนัก API
+    const list = ROWS.filter(r=>String(r.code||"").trim());
+    for(let i=0;i<list.length;i++){
+      $("meta").textContent = `กำลังบันทึก... (${i+1}/${list.length})`;
+      await api("adminSaveEmployeesFullDetail", { row: list[i] });
     }
-  })();
-</script>
+    $("meta").textContent = "บันทึกเสร็จ";
+    toast("บันทึกทั้งหมดเสร็จ");
+    await load();
+  }
+
+  async function exportExcel(){
+    $("meta").textContent = "กำลังสร้างไฟล์...";
+    const res = await api("adminExportEmployeesFullDetail", {});
+    const b64 = res.base64;
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+    const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = res.filename || "EmployeesFullDetail.xlsx";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    $("meta").textContent = "Export เสร็จ";
+  }
+
+  function initConn(){
+    $("apiUrl").value = localStorage.getItem(LS_API) || "";
+    $("token").value = localStorage.getItem(LS_TOKEN) || "";
+    setConnDot(!!$("apiUrl").value && !!$("token").value);
+  }
+
+  // events
+  $("btnSaveConn").addEventListener("click", ()=>{
+    localStorage.setItem(LS_API, $("apiUrl").value.trim());
+    localStorage.setItem(LS_TOKEN, $("token").value.trim());
+    setConnDot(!!$("apiUrl").value.trim() && !!$("token").value.trim());
+    toast("บันทึกการเชื่อมต่อแล้ว");
+  });
+
+  $("btnReload").addEventListener("click", ()=>load().catch(e=>alert(e.message||e)));
+  $("btnAdd").addEventListener("click", ()=>{
+    const code = prompt("ใส่รหัสพนักงาน (code):", "");
+    if(!code) return;
+    if(ROWS.some(r=>String(r.code||"").trim()===String(code).trim())){
+      alert("code ซ้ำ");
+      return;
+    }
+    const obj = {};
+    HEADER.forEach(h=>obj[h]="");
+    obj.code = String(code).trim();
+    ROWS.unshift(obj);
+    render();
+  });
+
+  $("btnSaveAll").addEventListener("click", ()=>saveAll().catch(e=>alert(e.message||e)));
+  $("btnExport").addEventListener("click", ()=>exportExcel().catch(e=>alert(e.message||e)));
+  $("q").addEventListener("input", ()=>render());
+
+  $("tbody").addEventListener("click", (ev)=>{
+    const btn = ev.target.closest("button[data-act]");
+    if(!btn) return;
+    const act = btn.dataset.act;
+    const code = btn.dataset.code;
+    if(act==="save"){
+      saveRow(code).then(()=>toast("บันทึกแล้ว: "+code)).catch(e=>alert(e.message||e));
+    }else if(act==="del"){
+      deleteRow(code).catch(e=>alert(e.message||e));
+    }
+  });
+
+  initConn();
+  if($("apiUrl").value && $("token").value){
+    load().catch(()=>{ /* ignore */ });
+  }</script>
 </body>
 </html>
