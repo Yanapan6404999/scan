@@ -1277,6 +1277,12 @@
 </div>
 
 <script>
+
+// ---- SessionStorage helpers (compat) ----
+function getSS(key, fallback=""){ try { const v = sessionStorage.getItem(key); return (v===null||v===undefined||v==="") ? fallback : v; } catch(e){ return fallback; } }
+function setSS(key, val){ try { sessionStorage.setItem(key, String(val??"")); } catch(e){} }
+function delSS(key){ try { sessionStorage.removeItem(key); } catch(e){} }
+
 /** =========================================
  *  Storage keys (ให้ตรงกับ index.html)
  *  ========================================= */
@@ -2944,7 +2950,7 @@ function wireEvents(){
   $("empSearch").addEventListener("input", renderEmpTable);
 
   // Logs
-  $("btnReloadLogs").addEventListener("click", ()=> loadLogs(abortRefresh()).then(()=>{ setConn("ok","เชื่อมต่อสำเร็จ"); setLastUpdated(); }).catch(()=>{}));
+  $("btnReloadLogs").addEventListener("click", () => { __logsEverLoaded = true; return loadLogs(abortRefresh()).then(()=>{ setConn("ok","เชื่อมต่อสำเร็จ"); setLastUpdated(); }).catch(()=>{}); });
   $("btnExportLogs").addEventListener("click", exportLogsCsvClient);
   ["logsDate","logsBranch","logsDepartment","logsLevel","logsIncludeAbsents"].forEach(id=>{
     $(id).addEventListener("change", ()=> $("btnReloadLogs").click());
