@@ -1918,7 +1918,8 @@ function openEmpModal(emp){
           toast("ย้ายไปพนักงานลาออกแล้ว ✅");
           closeModal("empModal");
           await loadEmployees(abortRefresh());
-          await loadResigned();
+          // พาไปดูข้อมูลที่ย้ายไปแล้วในแท็บพนักงานลาออก
+          setSection("resigned");
         }catch(err){
           alert("ย้ายไม่สำเร็จ: " + (err?.message || err));
         }
@@ -2467,7 +2468,8 @@ async function loadLogs(signal){
     const branchSel = $("logsBranch");
     if(branchSel && branchSel.options.length <= 1){
       branchSel.innerHTML = `<option value="ALL">ALL</option>` + (bl.branches||[]).map(b=>{
-        const v = String(b.branch||"");
+        // Sheet Branches typically uses column "name" (not "branch")
+        const v = String(b.branch || b.name || b.branchName || b.title || b.code || "");
         return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
       }).join("");
       branchSel.value = "ALL";
@@ -2476,7 +2478,8 @@ async function loadLogs(signal){
     const levelSel = $("logsLevel");
     if(levelSel && levelSel.options.length <= 1){
       levelSel.innerHTML = `<option value="ALL">ALL</option>` + (bl.levels||[]).map(l=>{
-        const v = String(l.level||"");
+        // Sheet Levels typically uses column "name" (not "level")
+        const v = String(l.level || l.name || l.levelName || l.title || l.code || "");
         return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
       }).join("");
       levelSel.value = "ALL";
@@ -3054,7 +3057,7 @@ async function loadResigned(){
   if(!tb) return;
 
   if(!rows.length){
-    tb.innerHTML = `<tr><td colspan="8" class="muted">— ไม่มีข้อมูล —</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="8" class="muted" style="text-align:center; padding:16px;">ไม่พบข้อมูลพนักงานลาออก (กดปุ่ม “พนักงานลาออก” ที่แท็บ Employees เพื่อย้ายมาที่นี่)</td></tr>`;
   }else{
     tb.innerHTML = rows.map(r=>{
       const code = escapeAttr(r.code||"");
