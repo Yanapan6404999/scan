@@ -497,7 +497,9 @@
       <button class="navbtn" data-section="employees" title="พนักงาน">
         <span class="ico">👥</span> Employees <small>CRUD</small>
       </button>
-        <button class="navbtn" data-section="resigned" title="Resigned / พนักงานลาออก"><span class="ico">📤</span> Resigned <small>พนักงานลาออก</small></button>
+        <button class="navbtn" data-section="resigned" title="Resigned / พนักงานลาออก">
+            <span class="ico">📤</span> Resigned <small>พนักงานลาออก</small>
+          </button>
       
       <button class="navbtn" data-section="off" title="วันหยุด/ตารางเวร">
         <span class="ico">🗓️</span> Off & Holidays
@@ -695,47 +697,106 @@
 
 
     <!-- OFF & HOLIDAYS -->
-    <section class="section" id="section-resigned">
-  <div class="section-head">
-    <div>
-      <h2>Resigned / พนักงานลาออก</h2>
-      <p class="muted">รายชื่อพนักงานที่ถูกย้ายออกจาก Employees (Active)</p>
-    </div>
-    <div class="actions">
-      <button class="btn sm" id="btnReloadResigned">โหลด</button>
-</div>
-  </div>
+    <section id="section-resigned" class="section">
+        <div class="pagehead">
+          <div>
+            <h2>Resigned / พนักงานลาออก</h2>
+            <div class="sub muted">รายการพนักงานที่ถูกย้ายออกจาก Employees (Active)</div>
+          </div>
+          <div class="row gap8">
+            <button class="btn" id="resBtnReload">โหลด</button>
+          </div>
+        </div>
 
-  <div class="card">
-    <div class="controls">
-      <div class="field">
-        <label>ค้นหา (รหัส/ชื่อ)</label>
-        <input id="resSearch" placeholder="เช่น 1011 / สมชาย" />
-      </div>
-    </div>
+        <div class="card">
+          <div class="row gap10 wrap">
+            <div class="field" style="min-width:260px;flex:1">
+              <label>ค้นหา (รหัส/ชื่อ)</label>
+              <input id="resSearch" class="input" placeholder="เช่น 1011 / สมชาย" />
+            </div>
+            <div class="field" style="min-width:180px">
+              <label>สถานะ</label>
+              <select id="resStatus" class="input">
+                <option value="ALL">ทั้งหมด</option>
+              </select>
+            </div>
+          </div>
 
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>รหัส</th>
-            <th>ชื่อ</th>
-            <th>สาขา</th>
-            <th>แผนก</th>
-            <th>ระดับ</th>
-            <th>ลาออกเมื่อ</th>
-            <th>หมายเหตุ</th>
-            <th style="min-width:140px">จัดการ</th>
-          </tr>
-        </thead>
-        <tbody id="resTbody"></tbody>
-      </table>
-    </div>
+          <div class="tablewrap">
+            <table class="table" id="resTable">
+              <thead>
+                <tr>
+                  <th style="width:120px">รหัส</th>
+                  <th>ชื่อ</th>
+                  <th style="width:160px">สาขา</th>
+                  <th style="width:160px">แผนก</th>
+                  <th style="width:140px">ระดับ</th>
+                  <th style="width:140px">ลาออกเมื่อ</th>
+                  <th>หมายเหตุ</th>
+                  <th style="width:160px">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="resTbody"></tbody>
+            </table>
 
-    <div class="footnote muted" id="resMeta">—</div>
-  </div>
-</section>
+            <div id="resEmpty" class="muted" style="padding:14px;display:none">ไม่พบข้อมูล</div>
+          </div>
+        </div>
 
+        <!-- Resigned Edit Modal -->
+        <div class="modal" id="resModal">
+          <div class="modal-card" style="max-width:720px">
+            <div class="modal-head">
+              <div class="title">แก้ไขพนักงานลาออก</div>
+              <button class="chip" onclick="closeResModal()">ปิด</button>
+            </div>
+
+            <div class="modal-body">
+              <div class="row gap10 wrap">
+                <div class="field" style="min-width:160px">
+                  <label>รหัส</label>
+                  <input id="resCode" class="input" disabled />
+                </div>
+                <div class="field" style="min-width:260px;flex:1">
+                  <label>ชื่อ</label>
+                  <input id="resName" class="input" disabled />
+                </div>
+              </div>
+
+              <div class="row gap10 wrap">
+                <div class="field" style="min-width:220px">
+                  <label>ลาออกเมื่อ</label>
+                  <input id="resAt" class="input" placeholder="YYYY-MM-DD" />
+                </div>
+                <div class="field" style="min-width:260px;flex:1">
+                  <label>หมายเหตุ</label>
+                  <input id="resNote" class="input" placeholder="ระบุได้ตามต้องการ (ไม่บังคับ)" />
+                </div>
+              </div>
+
+              <div class="row gap10 wrap">
+                <div class="field" style="min-width:160px">
+                  <label>สาขา</label>
+                  <input id="resBranch" class="input" disabled />
+                </div>
+                <div class="field" style="min-width:160px">
+                  <label>แผนก</label>
+                  <input id="resDept" class="input" disabled />
+                </div>
+                <div class="field" style="min-width:140px">
+                  <label>ระดับ</label>
+                  <input id="resLevel" class="input" disabled />
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-foot">
+              <button class="btn" onclick="closeResModal()">ยกเลิก</button>
+              <button class="btn primary" id="resSaveBtn">บันทึก</button>
+            </div>
+          </div>
+        </div>
+      </section>
 <section class="section" id="section-off">
       <div class="grid two">
         <!-- WeeklyOff -->
@@ -1918,8 +1979,7 @@ function openEmpModal(emp){
           toast("ย้ายไปพนักงานลาออกแล้ว ✅");
           closeModal("empModal");
           await loadEmployees(abortRefresh());
-          // พาไปดูข้อมูลที่ย้ายไปแล้วในแท็บพนักงานลาออก
-          setSection("resigned");
+          await loadResigned();
         }catch(err){
           alert("ย้ายไม่สำเร็จ: " + (err?.message || err));
         }
@@ -2468,7 +2528,6 @@ async function loadLogs(signal){
     const branchSel = $("logsBranch");
     if(branchSel && branchSel.options.length <= 1){
       branchSel.innerHTML = `<option value="ALL">ALL</option>` + (bl.branches||[]).map(b=>{
-        // Sheet Branches typically uses column "name" (not "branch")
         const v = String(b.branch || b.name || b.branchName || b.title || b.code || "");
         return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
       }).join("");
@@ -2478,8 +2537,7 @@ async function loadLogs(signal){
     const levelSel = $("logsLevel");
     if(levelSel && levelSel.options.length <= 1){
       levelSel.innerHTML = `<option value="ALL">ALL</option>` + (bl.levels||[]).map(l=>{
-        // Sheet Levels typically uses column "name" (not "level")
-        const v = String(l.level || l.name || l.levelName || l.title || l.code || "");
+        const v = String(l.level||"");
         return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
       }).join("");
       levelSel.value = "ALL";
@@ -3057,7 +3115,7 @@ async function loadResigned(){
   if(!tb) return;
 
   if(!rows.length){
-    tb.innerHTML = `<tr><td colspan="8" class="muted" style="text-align:center; padding:16px;">ไม่พบข้อมูลพนักงานลาออก (กดปุ่ม “พนักงานลาออก” ที่แท็บ Employees เพื่อย้ายมาที่นี่)</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="8" class="muted">— ไม่มีข้อมูล —</td></tr>`;
   }else{
     tb.innerHTML = rows.map(r=>{
       const code = escapeAttr(r.code||"");
@@ -3095,7 +3153,7 @@ async function openResModalByCode(code){
   const branchSel = $("resBranch");
   if(branchSel){
     branchSel.innerHTML = `<option value="">—</option>` + (bl.branches||[]).map(b=>{
-      const v = String(b.branch||"");
+      const v = String(b.branch || b.name || b.branchName || b.title || b.code || "");
       return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
     }).join("");
   }
@@ -3203,6 +3261,178 @@ async function openResModalByCode(code){
   });
 })();
 
+
+
+/* ===== Resigned (PATCH) ===== */
+(function(){
+  // safety alias (some older builds referenced *_ helpers)
+  try{
+    if(typeof window.getSS_ === "undefined" && typeof window.getSS === "function") window.getSS_ = window.getSS;
+    if(typeof window.setSS_ === "undefined" && typeof window.setSS === "function") window.setSS_ = window.setSS;
+    if(typeof window.delSS_ === "undefined" && typeof window.delSS === "function") window.delSS_ = window.delSS;
+  }catch(e){}
+
+  // local state
+  if(typeof window.resignedState !== "object" || window.resignedState === null){
+    window.resignedState = { rows: [], loadedAt: 0 };
+  }else{
+    window.resignedState.rows = window.resignedState.rows || [];
+  }
+
+  const $id = (id)=>document.getElementById(id);
+  const esc = (s)=>String(s??"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+  const toDateStr = (v)=>{
+    if(!v) return "";
+    const s = String(v);
+    // accept ISO or yyyy-mm-dd
+    const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+    return m ? m[1] : s;
+  };
+
+  function showResModal(on){
+    const el = $id("resModal");
+    if(!el) return;
+    el.style.display = on ? "flex" : "none";
+    el.classList.toggle("show", !!on);
+  }
+
+  window.closeResModal = function(){
+    showResModal(false);
+  };
+
+  window.openResModalByCode = function(code){
+    const row = (window.resignedState.rows || []).find(r => String(r.code||"") === String(code||""));
+    if(!row){ alert("ไม่พบข้อมูลพนักงานลาออก"); return; }
+
+    $id("resCode").value   = row.code || "";
+    $id("resName").value   = row.fullName || row.name || "";
+    $id("resAt").value     = toDateStr(row.resignedAt);
+    $id("resNote").value   = row.resignedNote || row.note || "";
+    $id("resBranch").value = row.branch || "";
+    $id("resDept").value   = row.department || row.dept || "";
+    $id("resLevel").value  = row.level || "";
+
+    const saveBtn = $id("resSaveBtn");
+    if(saveBtn){
+      saveBtn.onclick = async ()=>{
+        const payload = {
+          code: String(row.code||"").trim(),
+          resignedAt: ($id("resAt").value||"").trim(),
+          resignedNote: ($id("resNote").value||"").trim()
+        };
+        try{
+          showLoader("กำลังบันทึก...", "saveResigned");
+          await apiCall("adminSaveResignedEmployee", payload, { signal: abortRefresh() });
+          showLoader("", "");
+          showResModal(false);
+          await loadResigned(abortRefresh());
+        }catch(err){
+          showLoader("", "");
+          alert(err?.message || String(err));
+        }
+      };
+    }
+
+    showResModal(true);
+  };
+
+  window.deleteResignedByCode = async function(code){
+    if(!confirm("ลบพนักงานลาออกคนนี้?")) return;
+    try{
+      showLoader("กำลังลบ...", "deleteResigned");
+      await apiCall("adminDeleteResignedEmployee", { code: String(code||"").trim() }, { signal: abortRefresh() });
+      showLoader("", "");
+      await loadResigned(abortRefresh());
+    }catch(err){
+      showLoader("", "");
+      alert(err?.message || String(err));
+    }
+  };
+
+  window.renderResigned = function(){
+    const rows = window.resignedState.rows || [];
+    const q = ($id("resSearch")?.value || "").trim().toLowerCase();
+
+    const filtered = !q ? rows : rows.filter(r=>{
+      const code = String(r.code||"").toLowerCase();
+      const name = String(r.fullName||r.name||"").toLowerCase();
+      return code.includes(q) || name.includes(q);
+    });
+
+    const tbody = $id("resTbody");
+    const empty = $id("resEmpty");
+    if(!tbody) return;
+
+    if(filtered.length === 0){
+      tbody.innerHTML = "";
+      if(empty) empty.style.display = "block";
+      return;
+    }
+    if(empty) empty.style.display = "none";
+
+    tbody.innerHTML = filtered.map(r=>{
+      const code = esc(r.code||"");
+      const name = esc(r.fullName||r.name||"");
+      const branch = esc(r.branch||"");
+      const dept = esc(r.department||r.dept||"");
+      const level = esc(r.level||"");
+      const resignedAt = esc(toDateStr(r.resignedAt));
+      const note = esc(r.resignedNote||r.note||"");
+
+      return `<tr>
+        <td>${code}</td>
+        <td>${name}</td>
+        <td>${branch}</td>
+        <td>${dept}</td>
+        <td>${level}</td>
+        <td>${resignedAt}</td>
+        <td>${note}</td>
+        <td>
+          <button class="btn xs" onclick="openResModalByCode('${code}')">แก้ไข</button>
+          <button class="btn xs danger" onclick="deleteResignedByCode('${code}')">ลบ</button>
+        </td>
+      </tr>`;
+    }).join("");
+  };
+
+  // override loadResigned called by refreshCurrentSection()
+  window.loadResigned = async function(signal){
+    try{
+      showResErr("");
+      const res = await apiCall("adminGetResignedEmployees", {}, { signal });
+      window.resignedState.rows = (res && res.rows) ? res.rows : [];
+      window.resignedState.loadedAt = Date.now();
+      window.renderResigned();
+    }catch(err){
+      showResErr(err?.message || String(err));
+      // also render empty state
+      window.resignedState.rows = [];
+      window.renderResigned();
+    }
+  };
+
+  // minimal error area helper
+  window.showResErr = function(msg){
+    const badge = document.querySelector('[data-res-err]');
+    if(!badge) return;
+    badge.textContent = msg || "";
+    badge.style.display = msg ? "inline-flex" : "none";
+  };
+
+  // wire UI events (safe)
+  document.addEventListener("click", (e)=>{
+    const t = e.target;
+    if(!t) return;
+    if(t.id === "resBtnReload"){
+      loadResigned(abortRefresh());
+    }
+  });
+  document.addEventListener("input", (e)=>{
+    if(e?.target?.id === "resSearch"){
+      renderResigned();
+    }
+  });
+})();
 </script>
 
 
