@@ -1541,7 +1541,7 @@ async function refreshCurrentSection(silent=false){
     if(ACTIVE === "leave") await loadLeave(signal);
     if(ACTIVE === "employees") await loadEmployees(signal);
     if(ACTIVE === "off") await loadOff(signal);
-    if(ACTIVE === "logs") await loadLogs(signal);
+    if(ACTIVE === "logs") { /* manual load only */ }
     if(ACTIVE === "summary") await loadSummary(signal);
     if(ACTIVE === "settings") await loadSettings(signal);
     if(ACTIVE === "resigned") await loadResigned();
@@ -1919,6 +1919,8 @@ function openEmpModal(emp){
           closeModal("empModal");
           await loadEmployees(abortRefresh());
           await loadResigned();
+          closeModal("empModal");
+          setSection("resigned");
         }catch(err){
           alert("ย้ายไม่สำเร็จ: " + (err?.message || err));
         }
@@ -2467,7 +2469,7 @@ async function loadLogs(signal){
     const branchSel = $("logsBranch");
     if(branchSel && branchSel.options.length <= 1){
       branchSel.innerHTML = `<option value="ALL">ALL</option>` + (bl.branches||[]).map(b=>{
-        const v = String(b.branch||"");
+        const v = String(b.name||b.branch||"");
         return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
       }).join("");
       branchSel.value = "ALL";
@@ -2476,7 +2478,7 @@ async function loadLogs(signal){
     const levelSel = $("logsLevel");
     if(levelSel && levelSel.options.length <= 1){
       levelSel.innerHTML = `<option value="ALL">ALL</option>` + (bl.levels||[]).map(l=>{
-        const v = String(l.level||"");
+        const v = String(l.name||l.level||"");
         return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
       }).join("");
       levelSel.value = "ALL";
@@ -3042,7 +3044,7 @@ async function loadResigned(){
   const q = (document.getElementById("resSearch")?.value || "").trim().toLowerCase();
 
   const rows = !q ? all : all.filter(r=>{
-    const s = `${r.code||""} ${r.fullName||""} ${r.branch||""} ${r.department||""} ${r.level||""} ${r.email||""} ${r.resignedNote||""}`.toLowerCase();
+    const s = `${r.code||""} ${r.fullName||""} ${r.branch||""} ${r.department||""} ${r.level||""} ${r.resignedAt||""} ${r.resignedNote||""}`.toLowerCase();
     return s.includes(q);
   });
 
@@ -3092,14 +3094,14 @@ async function openResModalByCode(code){
   const branchSel = $("resBranch");
   if(branchSel){
     branchSel.innerHTML = `<option value="">—</option>` + (bl.branches||[]).map(b=>{
-      const v = String(b.branch||"");
+      const v = String(b.name||b.branch||"");
       return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
     }).join("");
   }
   const levelSel = $("resLevel");
   if(levelSel){
     levelSel.innerHTML = `<option value="">—</option>` + (bl.levels||[]).map(l=>{
-      const v = String(l.level||"");
+      const v = String(l.name||l.level||"");
       return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
     }).join("");
   }
