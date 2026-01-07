@@ -725,7 +725,7 @@
             <th>ระดับ</th>
             <th>ลาออกเมื่อ</th>
             <th>หมายเหตุ</th>
-            
+            <th style="min-width:140px">จัดการ</th>
           </tr>
         </thead>
         <tbody id="resTbody"></tbody>
@@ -2467,20 +2467,18 @@ async function loadLogs(signal){
     const branchSel = $("logsBranch");
     if(branchSel && branchSel.options.length <= 1){
       branchSel.innerHTML = `<option value="ALL">ALL</option>` + (bl.branches||[]).map(b=>{
-        const v = String((b && (b.branch || b.name || b.branchName || b.title || b.code)) || (typeof b==="string" ? b : "") || "").trim();
-        if(!v) return "";
+        const v = String(b.branch||"");
         return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
-      }).filter(Boolean).join("");
+      }).join("");
       branchSel.value = "ALL";
     }
 
     const levelSel = $("logsLevel");
     if(levelSel && levelSel.options.length <= 1){
       levelSel.innerHTML = `<option value="ALL">ALL</option>` + (bl.levels||[]).map(l=>{
-        const v = String((l && (l.level || l.name || l.levelName || l.title || l.code)) || (typeof l==="string" ? l : "") || "").trim();
-        if(!v) return "";
+        const v = String(l.level||"");
         return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
-      }).filter(Boolean).join("");
+      }).join("");
       levelSel.value = "ALL";
     }
 
@@ -3039,64 +3037,48 @@ function showResErr(msg){
 }
 
 async function loadResigned(){
-  const tb = $("resTbody");
-  const meta = $("resMeta");
-  const errEl = $("resErr");
+  const res = await apiCall("adminGetResignedEmployees", {}, {});
+  const all = (res && res.rows) ? res.rows : [];
+  const q = (document.getElementById("resSearch")?.value || "").trim().toLowerCase();
 
-  const setErr = (msg)=>{
-    if(!errEl) return;
-    errEl.textContent = msg || "";
-    errEl.style.display = msg ? "block" : "none";
-  };
-
-  try{
-    setErr("");
-    if(tb) tb.innerHTML = `<tr><td colspan="7" class="muted">กำลังโหลด...</td></tr>`;
-    const r = await apiCall("adminGetResignedEmployees", {}, {timeoutMs: 25000});
-    const rows = (r && r.data) ? r.data : (Array.isArray(r) ? r : []);
-    cache.resigned = Array.isArray(rows) ? rows : [];
-    renderResignedFromCache();
-  }catch(e){
-    console.error(e);
-    cache.resigned = [];
-    if(tb) tb.innerHTML = `<tr><td colspan="7" class="muted">ไม่พบข้อมูล</td></tr>`;
-    setErr("โหลดข้อมูลพนักงานลาออกไม่สำเร็จ: " + ((e && e.message) ? e.message : String(e)));
-    if(meta) meta.textContent = "";
-  }
-}
-
-function renderResignedFromCache(){
-  const tb = $("resTbody");
-  const meta = $("resMeta");
-  const q = (($("resQ")?.value) || "").trim().toLowerCase();
-  const rows = (cache.resigned || []).filter(r=>{
-    if(!q) return true;
-    const hay = `${r.code||""} ${r.fullName||""} ${r.branch||""} ${r.department||""} ${r.level||""} ${r.resignedNote||""}`.toLowerCase();
-    return hay.includes(q);
+  const rows = !q ? all : all.filter(r=>{
+    const s = `${r.code||""} ${r.fullName||""} ${r.branch||""} ${r.department||""} ${r.level||""} ${r.email||""} ${r.resignedNote||""}`.toLowerCase();
+    return s.includes(q);
   });
 
+  resignedState.rows = rows;
+  // keep in cache for mapping department in Logs
+  cache.resigned = { t: Date.now(), rows: rows };
+
+  const tb = $("resTbody");
   if(!tb) return;
 
-  if(rows.length === 0){
-    tb.innerHTML = `<tr><td colspan="7" class="muted">ไม่พบข้อมูล</td></tr>`;
-    if(meta) meta.textContent = "";
-    return;
+  if(!rows.length){
+    tb.innerHTML = `<tr><td colspan="8" class="muted">— ไม่มีข้อมูล —</td></tr>`;
+  }else{
+    tb.innerHTML = rows.map(r=>{
+      const code = escapeAttr(r.code||"");
+      return `<tr>
+        <td class="mono">${escapeHtml(r.code||"")}</td>
+        <td>${escapeHtml(r.fullName||"")}</td>
+        <td>${escapeHtml(r.branch||"")}</td>
+        <td>${escapeHtml(r.department||"")}</td>
+        <td>${escapeHtml(r.level||"")}</td>
+        <td>${escapeHtml(r.resignedAt||"")}</td>
+        <td>${escapeHtml(r.resignedNote||"")}</td>
+        <td>
+          <button class="btn sm" data-res-edit="${code}">แก้ไข</button>
+          <button class="btn sm danger" data-res-del="${code}">ลบ</button>
+        </td>
+      </tr>`;
+    }).join("");
   }
 
-  tb.innerHTML = rows.map(r=>`<tr>
-    <td>${escapeHtml(r.code||"")}</td>
-    <td>${escapeHtml(r.fullName||"")}</td>
-    <td>${escapeHtml(r.branch||"")}</td>
-    <td>${escapeHtml(r.department||"")}</td>
-    <td>${escapeHtml(r.level||"")}</td>
-    <td>${escapeHtml(r.resignedAt||"")}</td>
-    <td>${escapeHtml(r.resignedNote||"")}</td>
-  </tr>`).join("");
-
-  if(meta) meta.textContent = `รวม ${rows.length} คน`;
+  const meta = $("resMeta");
+  if(meta) meta.textContent = `ทั้งหมด ${rows.length} รายการ`;
 }
 
-function openResModalByCode(code){
+async function openResModalByCode(code){
   const row = (resignedState.rows || []).find(r => String(r.code||"") === String(code||""));
   if(!row){ alert("ไม่พบข้อมูลพนักงานลาออก"); return; }
 
@@ -3110,16 +3092,14 @@ function openResModalByCode(code){
   const branchSel = $("resBranch");
   if(branchSel){
     branchSel.innerHTML = `<option value="">—</option>` + (bl.branches||[]).map(b=>{
-      const v = String((b && (b.branch || b.name || b.branchName || b.title || b.code)) || (typeof b==="string" ? b : "") || "").trim();
-        if(!v) return "";
+      const v = String(b.branch||"");
       return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
     }).join("");
   }
   const levelSel = $("resLevel");
   if(levelSel){
     levelSel.innerHTML = `<option value="">—</option>` + (bl.levels||[]).map(l=>{
-      const v = String((l && (l.level || l.name || l.levelName || l.title || l.code)) || (typeof l==="string" ? l : "") || "").trim();
-        if(!v) return "";
+      const v = String(l.level||"");
       return `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
     }).join("");
   }
@@ -3184,16 +3164,41 @@ function openResModalByCode(code){
 
 // bind resigned controls
 (function(){
-  const btn = $("btnReloadResigned");
-  if(btn) btn.onclick = () => loadResigned();
+  const btn = document.getElementById('btnReloadResigned');
+  if(btn) btn.addEventListener('click', ()=>loadResigned());
 
-  const q = $("resQ");
-  if(q) q.oninput = () => renderResignedFromCache();
+  const inp = document.getElementById('resSearch');
+  if(inp){
+    inp.addEventListener('input', ()=>{
+      clearTimeout(_resDebT);
+      _resDebT = setTimeout(()=>loadResigned(), 250);
+    });
+  }
 
-  // หมายเหตุ: ปุ่มแก้ไข/ลบในแท็บพนักงานลาออก "ปิดไว้ก่อน"
+  // delegated click for edit/delete
+  document.addEventListener('click', async (e)=>{
+    const t = e.target;
+    if(!(t instanceof HTMLElement)) return;
+
+    const editCode = t.getAttribute('data-res-edit');
+    if(editCode){
+      await openResModalByCode(editCode);
+      return;
+    }
+    const delCode = t.getAttribute('data-res-del');
+    if(delCode){
+      if(!confirm(`ยืนยันลบพนักงานลาออก code ${delCode}?`)) return;
+      try{
+        await apiCall("adminDeleteResignedEmployee", { code: delCode }, {});
+        toast("ลบสำเร็จ ✅");
+        await loadResigned();
+      }catch(err){
+        alert(err?.message || err);
+      }
+      return;
+    }
+  });
 })();
-
-;
 
 </script>
 
