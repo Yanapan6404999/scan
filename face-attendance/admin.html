@@ -1453,6 +1453,28 @@ function updateMetaUI(){
   const tk = getToken();
   $("tokenText").textContent = tk ? ("มี Token ✓ (" + ellipsize(tk, 30) + ")") : "ยังไม่ล็อกอิน";
   $("tokenText").dataset.full = tk || "";
+  syncMiniBadge(api, tk);
+}
+
+function syncMiniBadge(api, tk){
+  const badge = $("miniBadge");
+  const text = $("miniText");
+  if(!badge || !text) return;
+
+  badge.classList.remove("ok","bad","warn");
+
+  if(!api){
+    badge.classList.add("warn");
+    text.textContent = "ต้องตั้งค่า API";
+    return;
+  }
+  if(!tk){
+    badge.classList.add("warn");
+    text.textContent = "ต้อง Login";
+    return;
+  }
+  badge.classList.add("ok");
+  text.textContent = "พร้อม";
 }
 
 /** =========================================
@@ -3146,6 +3168,7 @@ function wireEvents(){
   // copy api / token
   $("apiText").addEventListener("click", ()=>{
     openModal("apiModal");
+    const apiBd = $("apiModal"); if(apiBd){ apiBd.classList.add("show"); }
     $("apiInput").value = getApiUrl();
   });
   $("tokenText").addEventListener("click", ()=>{
@@ -3184,6 +3207,7 @@ function wireEvents(){
   // api modal
   $("btnSetApi").addEventListener("click", ()=>{
     openModal("apiModal");
+    const apiBd = $("apiModal"); if(apiBd){ apiBd.classList.add("show"); }
     $("apiInput").value = getApiUrl();
   });
   $("btnSaveApi").addEventListener("click", ()=>{
@@ -3299,9 +3323,16 @@ fillYearMonth($("sumYear"), $("sumMonth"));
   // If no API URL -> open modal now
   if(!getApiUrl()){
     openModal("apiModal");
+    const apiBd = $("apiModal"); if(apiBd){ apiBd.classList.add("show"); }
     $("apiInput").value = "";
     toast("ตั้งค่า API URL ก่อน");
     return;
+  }
+
+  // If not logged -> still allow dashboard
+  if(!getToken()){
+    toast("ยังไม่ล็อกอิน: เปิดหน้า index.html เพื่อ Login แล้วกลับมาหน้านี้", 5000);
+    // still load public dashboard
   }
 
   // If not logged -> still allow dashboard (public), but other sections require token
