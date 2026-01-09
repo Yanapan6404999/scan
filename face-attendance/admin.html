@@ -1189,21 +1189,7 @@
       <button class="btn sm" data-close="loginModal">ปิด</button>
     </div>
     <div class="modal-body">
-      <p style="margin:0 0 10px">
-        หน้านี้จะ “ดึง API URL และ Token อัตโนมัติ” จาก <span class="mono">localStorage</span> เดียวกับหน้า <span class="mono">index.html</span><br/>
-        (<span class="mono">attendance_api_url_v2</span> และ <span class="mono">attendance_hr_token_v1</span>)
-      </p>
-      <div class="muted" style="font-size:12px">
-        ถ้าเปิด <b>คนละโดเมน/คนละโฟลเดอร์</b> (เช่น เปิด index จากไฟล์ในเครื่อง แต่ admin จาก GitHub Pages) จะไม่เห็นค่าเดียวกัน
-      </div>
-
-      <div id="loginInfo" class="muted" style="margin-top:10px;font-size:12px"></div>
-
-      <hr style="border:none;border-top:1px solid rgba(148,163,184,.25);margin:12px 0"/>
-
-      <p class="muted" style="margin:0 0 8px;font-size:12px">
-        ถ้า Token หมดอายุ ให้ล็อกอินใหม่ (ระบบจะบันทึก Token ไว้และใช้ร่วมกับทุกหน้า)
-      </p>
+      <p>หน้านี้ต้องใช้ token เพื่อเรียก action ฝั่ง Admin (เช่น approve/reject ใบลา)</p>
       <div class="controls">
         <div class="field" style="min-width:220px">
           <label>Username</label>
@@ -1216,8 +1202,7 @@
       </div>
       <div id="loginErr" class="muted" style="margin-top:10px;color:#b91c1c;display:none"></div>
     </div>
-    <div class="modal-foot" style="gap:8px;flex-wrap:wrap">
-      <button class="btn" id="btnOpenIndexLogin">เปิดหน้า index.html</button>
+    <div class="modal-foot">
       <button class="btn" id="btnClearToken2">ล้าง Token</button>
       <button class="btn primary" id="btnDoLogin">ล็อกอิน</button>
     </div>
@@ -1451,31 +1436,6 @@ function getApiUrl(){ return (localStorage.getItem(LS_API) || "").trim(); }
 function setApiUrl(url){ localStorage.setItem(LS_API, (url||"").trim()); }
 
 function getToken(){ return (localStorage.getItem(LS_HR) || "").trim(); }
-
-function parseTokenInfo(token){
-  // token is base64 websafe JSON: {u,t}
-  try{
-    if(!token) return null;
-    let s = String(token);
-    s = s.replace(/-/g,'+').replace(/_/g,'/');
-    while(s.length % 4) s += '=';
-    const json = atob(s);
-    const obj = JSON.parse(json);
-    if(!obj || !obj.t) return null;
-    const issuedAt = new Date(Number(obj.t));
-    const ageMs = Date.now() - Number(obj.t);
-    return { username: obj.u || "", issuedAt, ageMs };
-  }catch(e){
-    return null;
-  }
-}
-function formatAge(ms){
-  const m = Math.max(0, Math.floor(ms/60000));
-  const h = Math.floor(m/60);
-  const mm = m%60;
-  if(h<=0) return `${mm} นาที`;
-  return `${h} ชม. ${mm} นาที`;
-}
 function setToken(t){ localStorage.setItem(LS_HR, (t||"").trim()); }
 function isLogged(){ return localStorage.getItem(LS_HR_OK) === "1" && !!getToken(); }
 function setLogged(ok){ localStorage.setItem(LS_HR_OK, ok ? "1" : "0"); }
@@ -1490,17 +1450,8 @@ function updateMetaUI(){
   const api = getApiUrl();
   $("apiText").textContent = api ? ellipsize(api, 46) : "ยังไม่ได้ตั้งค่า";
   $("apiText").dataset.full = api || "";
-
   const tk = getToken();
-  const info = parseTokenInfo(tk);
-  if(tk){
-    const age = info ? (" • อายุ " + formatAge(info.ageMs)) : "";
-    $("tokenText").textContent = "มี Token ✓ (" + ellipsize(tk, 26) + ")" + age;
-    $("tokenText").title = info ? ("Token ของ: " + (info.username||"") + "\nออกเมื่อ: " + info.issuedAt.toLocaleString()) : "คลิกเพื่อคัดลอก Token";
-  }else{
-    $("tokenText").textContent = "ยังไม่ล็อกอิน";
-    $("tokenText").title = "ยังไม่มี Token";
-  }
+  $("tokenText").textContent = tk ? ("มี Token ✓ (" + ellipsize(tk, 30) + ")") : "ยังไม่ล็อกอิน";
   $("tokenText").dataset.full = tk || "";
 }
 
@@ -2992,23 +2943,6 @@ function openModal(id){
   const el = $(id);
   el.style.display = "flex";
   el.setAttribute("aria-hidden","false");
-
-  // extra context in login modal (helps debug)
-  if(id === "loginModal"){
-    const api = getApiUrl();
-    const tk = getToken();
-    const info = parseTokenInfo(tk);
-    const lines = [];
-    lines.push("API: " + (api ? ellipsize(api, 80) : "ยังไม่ได้ตั้งค่า"));
-    if(tk){
-      lines.push("Token: มี ✓" + (info ? (" • อายุ " + formatAge(info.ageMs)) : ""));
-      if(info?.username) lines.push("ผู้ใช้: " + info.username);
-    }else{
-      lines.push("Token: ยังไม่มี (กรุณา login)");
-    }
-    const box = $("loginInfo");
-    if(box) box.textContent = lines.join(" | ");
-  }
 }
 function closeModal(id){
   const el = $(id);
