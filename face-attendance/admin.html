@@ -743,8 +743,59 @@
           </div>
         </div>
 
-        
+        <!-- Resigned Edit Modal -->
+        <div class="modal" id="resModal">
+          <div class="modal-card" style="max-width:720px">
+            <div class="modal-head">
+              <div class="title">แก้ไขพนักงานลาออก</div>
+              <button class="chip" onclick="closeResModal()">ปิด</button>
+            </div>
 
+            <div class="modal-body">
+              <div class="row gap10 wrap">
+                <div class="field" style="min-width:160px">
+                  <label>รหัส</label>
+                  <input id="resCode" class="input" disabled />
+                </div>
+                <div class="field" style="min-width:260px;flex:1">
+                  <label>ชื่อ</label>
+                  <input id="resName" class="input" disabled />
+                </div>
+              </div>
+
+              <div class="row gap10 wrap">
+                <div class="field" style="min-width:220px">
+                  <label>ลาออกเมื่อ</label>
+                  <input id="resAt" class="input" placeholder="YYYY-MM-DD" />
+                </div>
+                <div class="field" style="min-width:260px;flex:1">
+                  <label>หมายเหตุ</label>
+                  <input id="resNote" class="input" placeholder="ระบุได้ตามต้องการ (ไม่บังคับ)" />
+                </div>
+              </div>
+
+              <div class="row gap10 wrap">
+                <div class="field" style="min-width:160px">
+                  <label>สาขา</label>
+                  <input id="resBranch" class="input" disabled />
+                </div>
+                <div class="field" style="min-width:160px">
+                  <label>แผนก</label>
+                  <input id="resDept" class="input" disabled />
+                </div>
+                <div class="field" style="min-width:140px">
+                  <label>ระดับ</label>
+                  <input id="resLevel" class="input" disabled />
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-foot">
+              <button class="btn" onclick="closeResModal()">ยกเลิก</button>
+              <button class="btn primary" id="resSaveBtn">บันทึก</button>
+            </div>
+          </div>
+        </div>
       </section>
 <section class="section" id="section-off">
       <div class="grid two">
@@ -2799,118 +2850,106 @@ function exportLogsCsvClient(){
  *  Summary
  *  ========================================= */
 async function loadSummary(signal){
-  const year = parseInt(($("sumYear")?.value || new Date().getFullYear()), 10);
-  const month = parseInt(($("sumMonth")?.value || (new Date().getMonth()+1)), 10); // 1-12
-  const q = ($("sumSearch")?.value || "").trim();
+  const year = parseInt($('#sumYear').value, 10);
+  const month = String($('#sumMonth').value || '').padStart(2,'0');
+  const q = String($('#sumSearch').value || '').trim();
 
-  const pad2 = (n)=> String(n).padStart(2,"0");
-  const last = new Date(year, month, 0).getDate(); // JS month is 1-12 here because we used month directly
-  const dateFrom = `${year}-${pad2(month)}-01`;
-  const dateTo   = `${year}-${pad2(month)}-${pad2(last)}`;
+  // Loading row (8 columns)
+  sumTbody.innerHTML = `<tr><td colspan="8" class="muted">กำลังคำนวณสรุปทั้งเดือน…</td></tr>`;
+  sumHint.textContent = `คำนวณจาก action getLogsRange (includeAbsents=1)`;
 
-  const tbody = $("sumTableBody");
-  if(tbody){
-    tbody.innerHTML = `<tr><td colspan="8" class="muted">กำลังโหลด...</td></tr>`;
-  }
+  try{
+    // We compute Summary on client-side to avoid getSummaryRange mismatch/bugs.
+    // This is lightweight: for 150 employees x ~31 days ≈ 4,650 rows.
+    const res = await apiCall('getLogsRange', {
+      year,
+      month,
+      includeAbsents: '1'
+    }, { signal, timeoutMs: 60000 });
 
-  // IMPORTANT: ไม่เรียก getSummaryRange แล้ว เพราะบางทีติด CORS/สิทธิ์
-  // ใช้ getLogsRange แล้วสรุปผลที่ฝั่งหน้าเว็บแทน (เริ่มนับวันที่ 1 ของเดือนเสมอ)
-  const res = await apiCall("getLogsRange", { dateFrom, dateTo, includeAbsents: 1 }, { signal });
-  const rows = res?.rows || [];
+    const rows = (res && res.rows) ? res.rows : [];
+    const map = new Map();
 
-  // aggregate
-  const byCode = new Map();
-  const addNote = (obj, t)=>{
-    const s = String(t||"").trim();
-    if(!s || s==="-" ) return;
-    obj.notes.add(s);
-  };
+    const matchQ = (row) => {
+      if(!q) return true;
+      const hay = [
+        row.code, row.fullName, row.name,
+        row.branch, row.level, row.department
+      ].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(q.toLowerCase());
+    };
 
-  for(const r of rows){
-    const code = String(r.code || "").trim();
-    if(!code) continue;
+    for(const row of rows){
+      if(!matchQ(row)) continue;
 
-    let obj = byCode.get(code);
-    if(!obj){
-      obj = {
-        code,
-        fullName: r.fullName || "",
-        branch: r.branch || "",
-        level: r.level || "",
-        normal: 0,
-        late: 0,
-        absent: 0,
-        notes: new Set(),
-        leave: 0
-      };
-      byCode.set(code, obj);
+      const code = String(row.code || '').trim();
+      if(!code) continue;
+
+      if(!map.has(code)){
+        map.set(code, {
+          code,
+          fullName: String(row.fullName || row.name || ''),
+          branch: String(row.branch || ''),
+          level: String(row.level || ''),
+          normalCount: 0,
+          lateCount: 0,
+          absentCount: 0,
+          issuePoints: 0
+        });
+      }
+
+      const cur = map.get(code);
+      // keep latest non-empty info
+      if(row.fullName && !cur.fullName) cur.fullName = String(row.fullName);
+      if(row.branch && !cur.branch) cur.branch = String(row.branch);
+      if(row.level && !cur.level) cur.level = String(row.level);
+
+      const status = String(row.status || '').trim();
+      if(!status) continue;
+
+      // Exclude leave / holidays from "normal/late/absent" counting
+      if(status.includes('ลา')) continue;
+      if(status.includes('หยุด') || status.toLowerCase().includes('holiday')) continue;
+
+      if(status === 'ปกติ'){
+        cur.normalCount += 1;
+      }else if(status.startsWith('ขาด')){
+        cur.absentCount += 1;
+      }else{
+        cur.lateCount += 1;
+        cur.issuePoints += 1;
+      }
     }
 
-    // keep latest non-empty meta
-    if(!obj.fullName && r.fullName) obj.fullName = r.fullName;
-    if(!obj.branch && r.branch) obj.branch = r.branch;
-    if(!obj.level && r.level) obj.level = r.level;
+    const arr = Array.from(map.values()).sort((a,b)=>{
+      const na = parseInt(a.code,10), nb = parseInt(b.code,10);
+      if(!isNaN(na) && !isNaN(nb)) return na-nb;
+      return String(a.code).localeCompare(String(b.code));
+    });
 
-    const status = String(r.status || "").trim();
-    const note   = String(r.note || "").trim();
-
-    if(/ลา/.test(status)){ obj.leave++; addNote(obj, status); }
-    else if(/ขาด/.test(status)) obj.absent++;
-    else if(/สาย/.test(status)) obj.late++;
-    else if(/ปกติ|ตรงเวลา/.test(status)) obj.normal++;
-    else { addNote(obj, status); }
-
-    // note เพิ่มเติม
-    if(note){
-      if(/ลา/.test(note)) obj.leave++;
-      addNote(obj, note);
+    if(arr.length === 0){
+      sumTbody.innerHTML = `<tr><td colspan="8" class="muted">ไม่พบข้อมูล</td></tr>`;
+      return;
     }
+
+    sumTbody.innerHTML = arr.map(r=>`
+      <tr>
+        <td>${escapeHtml(r.code)}</td>
+        <td>${escapeHtml(r.fullName || '-')}</td>
+        <td>${escapeHtml(r.branch || '-')}</td>
+        <td>${escapeHtml(r.level || '-')}</td>
+        <td style="text-align:right">${r.normalCount}</td>
+        <td style="text-align:right">${r.lateCount}</td>
+        <td style="text-align:right">${r.absentCount}</td>
+        <td class="muted">${r.issuePoints ? ('ผิดปกติ ' + r.issuePoints + ' วัน') : '-'}</td>
+      </tr>
+    `).join('');
+  }catch(err){
+    if(err && err.name === 'AbortError') return;
+    sumTbody.innerHTML = `<tr><td colspan="8" class="muted">เกิดข้อผิดพลาด: ${escapeHtml(err.message || String(err))}</td></tr>`;
   }
-
-  let out = Array.from(byCode.values()).map(o=>({
-    code: o.code,
-    fullName: o.fullName,
-    branch: o.branch,
-    level: o.level,
-    normal: o.normal,
-    late: o.late,
-    absent: o.absent,
-    note: (o.leave>0 ? `ลา ${o.leave}` : "-") + (o.notes.size ? (o.leave>0 ? " | " : "") + Array.from(o.notes).join(", ") : "")
-  }));
-
-  // filter
-  if(q){
-    const qq = q.toLowerCase();
-    out = out.filter(x => String(x.code).toLowerCase().includes(qq) || String(x.fullName).toLowerCase().includes(qq));
-  }
-
-  // sort (numeric if possible)
-  out.sort((a,b)=>{
-    const an = parseInt(a.code,10), bn = parseInt(b.code,10);
-    if(!isNaN(an) && !isNaN(bn)) return an-bn;
-    return String(a.code).localeCompare(String(b.code));
-  });
-
-  // render
-  if(!tbody) return;
-  if(!out.length){
-    tbody.innerHTML = `<tr><td colspan="8" class="muted">ไม่พบข้อมูล</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = out.map(r=>`
-    <tr>
-      <td>${escapeHtml(r.code)}</td>
-      <td>${escapeHtml(r.fullName||"-")}</td>
-      <td>${escapeHtml(r.branch||"-")}</td>
-      <td>${escapeHtml(r.level||"-")}</td>
-      <td style="text-align:right">${r.normal||0}</td>
-      <td style="text-align:right">${r.late||0}</td>
-      <td style="text-align:right">${r.absent||0}</td>
-      <td>${escapeHtml(r.note||"-")}</td>
-    </tr>
-  `).join("");
 }
+
 
 /** =========================================
  *  Settings (branches/levels)
@@ -3454,8 +3493,176 @@ async function openResModalByCode(code){
 
 
 
+/* ===== Resigned (PATCH) ===== */
+(function(){
+  // safety alias (some older builds referenced *_ helpers)
+  try{
+    if(typeof window.getSS_ === "undefined" && typeof window.getSS === "function") window.getSS_ = window.getSS;
+    if(typeof window.setSS_ === "undefined" && typeof window.setSS === "function") window.setSS_ = window.setSS;
+    if(typeof window.delSS_ === "undefined" && typeof window.delSS === "function") window.delSS_ = window.delSS;
+  }catch(e){}
 
-;
+  // local state
+  if(typeof window.resignedState !== "object" || window.resignedState === null){
+    window.resignedState = { rows: [], loadedAt: 0 };
+  }else{
+    window.resignedState.rows = window.resignedState.rows || [];
+  }
+
+  const $id = (id)=>document.getElementById(id);
+  const esc = (s)=>String(s??"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+  const toDateStr = (v)=>{
+    if(!v) return "";
+    const s = String(v);
+    // accept ISO or yyyy-mm-dd
+    const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+    return m ? m[1] : s;
+  };
+
+  function showResModal(on){
+    const el = $id("resModal");
+    if(!el) return;
+    el.style.display = on ? "flex" : "none";
+    el.classList.toggle("show", !!on);
+  }
+
+  window.closeResModal = function(){
+    showResModal(false);
+  };
+
+  window.openResModalByCode = function(code){
+    const row = (window.resignedState.rows || []).find(r => String(r.code||"") === String(code||""));
+    if(!row){ alert("ไม่พบข้อมูลพนักงานลาออก"); return; }
+
+    $id("resCode").value   = row.code || "";
+    $id("resName").value   = row.fullName || row.name || "";
+    $id("resAt").value     = toDateStr(row.resignedAt);
+    $id("resNote").value   = row.resignedNote || row.note || "";
+    $id("resBranch").value = row.branch || "";
+    $id("resDept").value   = row.department || row.dept || "";
+    $id("resLevel").value  = row.level || "";
+
+    const saveBtn = $id("resSaveBtn");
+    if(saveBtn){
+      saveBtn.onclick = async ()=>{
+        const payload = {
+          code: String(row.code||"").trim(),
+          resignedAt: ($id("resAt").value||"").trim(),
+          resignedNote: ($id("resNote").value||"").trim()
+        };
+        try{
+          showLoader("กำลังบันทึก...", "saveResigned");
+          await apiCall("adminSaveResignedEmployee", payload, { signal: abortRefresh() });
+          showLoader("", "");
+          showResModal(false);
+          await loadResigned(abortRefresh());
+        }catch(err){
+          showLoader("", "");
+          alert(err?.message || String(err));
+        }
+      };
+    }
+
+    showResModal(true);
+  };
+
+  window.deleteResignedByCode = async function(code){
+    if(!confirm("ลบพนักงานลาออกคนนี้?")) return;
+    try{
+      showLoader("กำลังลบ...", "deleteResigned");
+      await apiCall("adminDeleteResignedEmployee", { code: String(code||"").trim() }, { signal: abortRefresh() });
+      showLoader("", "");
+      await loadResigned(abortRefresh());
+    }catch(err){
+      showLoader("", "");
+      alert(err?.message || String(err));
+    }
+  };
+
+  window.renderResigned = function(){
+    const rows = window.resignedState.rows || [];
+    const q = ($id("resSearch")?.value || "").trim().toLowerCase();
+
+    const filtered = !q ? rows : rows.filter(r=>{
+      const code = String(r.code||"").toLowerCase();
+      const name = String(r.fullName||r.name||"").toLowerCase();
+      return code.includes(q) || name.includes(q);
+    });
+
+    const tbody = $id("resTbody");
+    const empty = $id("resEmpty");
+    if(!tbody) return;
+
+    if(filtered.length === 0){
+      tbody.innerHTML = "";
+      if(empty) empty.style.display = "block";
+      return;
+    }
+    if(empty) empty.style.display = "none";
+
+    tbody.innerHTML = filtered.map(r=>{
+      const code = esc(r.code||"");
+      const name = esc(r.fullName||r.name||"");
+      const branch = esc(r.branch||"");
+      const dept = esc(r.department||r.dept||"");
+      const level = esc(r.level||"");
+      const resignedAt = esc(toDateStr(r.resignedAt));
+      const note = esc(r.resignedNote||r.note||"");
+
+      return `<tr>
+        <td>${code}</td>
+        <td>${name}</td>
+        <td>${branch}</td>
+        <td>${dept}</td>
+        <td>${level}</td>
+        <td>${resignedAt}</td>
+        <td>${note}</td>
+        <td>
+          <button class="btn xs" onclick="openResModalByCode('${code}')">แก้ไข</button>
+          <button class="btn xs danger" onclick="deleteResignedByCode('${code}')">ลบ</button>
+        </td>
+      </tr>`;
+    }).join("");
+  };
+
+  // override loadResigned called by refreshCurrentSection()
+  window.loadResigned = async function(signal){
+    try{
+      showResErr("");
+      const res = await apiCall("adminGetResignedEmployees", {}, { signal });
+      window.resignedState.rows = (res && res.rows) ? res.rows : [];
+      window.resignedState.loadedAt = Date.now();
+      window.renderResigned();
+    }catch(err){
+      showResErr(err?.message || String(err));
+      // also render empty state
+      window.resignedState.rows = [];
+      window.renderResigned();
+    }
+  };
+
+  // minimal error area helper
+  window.showResErr = function(msg){
+    const badge = document.querySelector('[data-res-err]');
+    if(!badge) return;
+    badge.textContent = msg || "";
+    badge.style.display = msg ? "inline-flex" : "none";
+  };
+
+  // wire UI events (safe)
+  document.addEventListener("click", (e)=>{
+    const t = e.target;
+    if(!t) return;
+    if(t.id === "resBtnReload"){
+      loadResigned(abortRefresh());
+    }
+  });
+  document.addEventListener("input", (e)=>{
+    if(e?.target?.id === "resSearch"){
+      renderResigned();
+    }
+  });
+})();
 </script>
 
 
