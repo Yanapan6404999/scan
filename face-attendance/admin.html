@@ -1453,28 +1453,6 @@ function updateMetaUI(){
   const tk = getToken();
   $("tokenText").textContent = tk ? ("มี Token ✓ (" + ellipsize(tk, 30) + ")") : "ยังไม่ล็อกอิน";
   $("tokenText").dataset.full = tk || "";
-  syncMiniBadge(api, tk);
-}
-
-function syncMiniBadge(api, tk){
-  const badge = $("miniBadge");
-  const text = $("miniText");
-  if(!badge || !text) return;
-
-  badge.classList.remove("ok","bad","warn");
-
-  if(!api){
-    badge.classList.add("warn");
-    text.textContent = "ต้องตั้งค่า API";
-    return;
-  }
-  if(!tk){
-    badge.classList.add("warn");
-    text.textContent = "ต้อง Login";
-    return;
-  }
-  badge.classList.add("ok");
-  text.textContent = "พร้อม";
 }
 
 /** =========================================
@@ -1495,165 +1473,75 @@ async function apiCall(action, params={}, opts={}){
   const payload = { action, ...params };
   if(token) payload.token = token;
 
-  // Global loading overlay (disable via opts.silent=true)
-  if(!opts.silent) setBusy(true, "กำลังโหลด…", action);
+  // show global loading overlay
+  setBusy(true, 'กำลังโหลด…', action);
 
-  const timeoutMs = Number(opts.timeoutMs || 20000);
+  const controller = opts.signal ? null : new AbortController();
+  const signal = opts.signal || controller.signal;
 
-  // Always create our own controller so we can enforce timeout AND obey external abort.
-  const controller = new AbortController();
-  const signal = controller.signal;
-
-  if(opts.signal){
-    if(opts.signal.aborted){
-      controller.abort();
-    }else{
-      opts.signal.addEventListener("abort", ()=>controller.abort(), { once:true });
-    }
-  }
-
+  const timeoutMs = opts.timeoutMs || 20000;
   let timer = null;
-  let timedOut = false;
-  if(timeoutMs > 0){
-    timer = setTimeout(()=>{
-      timedOut = true;
-      controller.abort();
-    }, timeoutMs);
+  if(!opts.signal){
+    timer = setTimeout(() => controller.abort(new DOMException("Timeout","AbortError")), timeoutMs);
   }
 
   try{
-    const resp = await fetch(apiUrl, {
-      method: "POST",
-      mode: "cors",
-      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-      body: new URLSearchParams(payload).toString(),
+    const body = new URLSearchParams(payload).toString();
+    const res = await fetch(apiUrl, {
+      method:"POST",
+      headers:{ "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
+      body,
       signal
     });
-
-    const text = await resp.text();
+    const text = await res.text();
     let data;
-    try{
-      data = JSON.parse(text);
-    }catch(_){
-      throw new Error("API ตอบกลับไม่ใช่ JSON: " + (text || "").slice(0, 200));
+    try{ data = JSON.parse(text); }
+    catch(e){
+      console.error("NON-JSON:", text);
+      throw new Error("API ส่งผลลัพธ์ไม่ใช่ JSON (เช็ค URL /exec หรือการ Deploy)");
     }
-
-    if(data && data.ok === false){
-      throw new Error(data.message || "เกิดข้อผิดพลาดจากระบบ");
-    }
-    return data;
-  }catch(err){
-    if(err && err.name === "AbortError"){
-      // distinguish timeout vs user/tab abort
-      if(timedOut){
-        throw new Error("เชื่อมต่อช้าเกินไป (timeout) - ลองใหม่อีกครั้ง");
-      }
-      throw err; // caller may ignore
-    }
-    throw err;
+    if(!data.ok) throw new Error(data.error || "เกิดข้อผิดพลาดจากเซิร์ฟเวอร์");
+    return data.result;
   }finally{
+    setBusy(false);
     if(timer) clearTimeout(timer);
-    if(!opts.silent) setBusy(false);
   }
 }
 
+function abortRefresh(){
+  if(refreshAbort) refreshAbort.abort();
+  refreshAbort = new AbortController();
+  return refreshAbort.signal;
+}
+
+/** =========================================
+ *  Init selects (ปี/เดือน)
+ *  ========================================= */
+function fillYearMonth(yearSel, monthSel){
+  const now = new Date();
+  const yNow = now.getFullYear();
+  const mNow = now.getMonth() + 1;
+
+  const years = [];
+  for(let y = yNow - 2; y <= yNow + 1; y++) years.push(y);
+
+  yearSel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
+  monthSel.innerHTML = Array.from({length:12}, (_,i)=>i+1).map(m => `<option value="${m}">${String(m).padStart(2,'0')}</option>`).join("");
+
+  yearSel.value = String(yNow);
+  monthSel.value = String(mNow);
+}
+
+/** =========================================
+ *  Load meta (branches/levels, leaveTypes) with cache
+ *  ========================================= */
 async function ensureBranchesLevels(signal){
   const age = Date.now() - cache.branchesLevels.t;
-  // 2 min cache (ถ้ามีข้อมูลแล้ว)
-  if(age < 120000 && (cache.branchesLevels.branches?.length || cache.branchesLevels.levels?.length)) return cache.branchesLevels;
-
-  let r = null;
-  try{
-    r = await apiCall("getBranchesLevels", {}, { signal });
-  }catch(err){
-    // ถ้า API เรียกไม่ได้ ให้ fallback จากข้อมูลที่มีอยู่ในหน้าแทน
-    console.warn("getBranchesLevels failed, fallback to cached/derived:", err);
-    r = { branches: [], levels: [] };
-  }
-
-  // helper: ดึงชื่อที่ควรใช้จาก object
-  const pick = (obj, keys)=>{
-    if(!obj) return "";
-    if(typeof obj === "string") return obj.trim();
-    for(const k of keys){
-      const v = obj[k];
-      if(v !== undefined && v !== null && String(v).trim() !== "") return String(v).trim();
-    }
-    return "";
-  };
-
-  // normalize unique list of non-empty strings
-  const uniq = (arr)=>{
-    const out = [];
-    const seen = new Set();
-    (arr||[]).forEach(v=>{
-      const s = String(v||"").trim();
-      if(!s) return;
-      const key = s.toLowerCase();
-      if(seen.has(key)) return;
-      seen.add(key);
-      out.push(s);
-    });
-    return out;
-  };
-
-  let branchesRaw = Array.isArray(r?.branches) ? r.branches : [];
-  let levelsRaw   = Array.isArray(r?.levels)   ? r.levels   : [];
-
-  // ใช้ชื่อสำหรับ dropdown
-  const branchNames = uniq(branchesRaw.map(b=>pick(b, ["branch","branchName","name","title","code","id"])));
-  const levelNames  = uniq(levelsRaw.map(l=>pick(l, ["level","levelName","name","title","code","id"])));
-
-  // ===== FALLBACK (แก้บัค dropdown สาขา/ระดับไม่ขึ้น) =====
-  // ถ้า Branches/Levels ชีตยังว่าง หรือ API คืนมาเป็น [] ให้ derive จาก Employees/Resigned/Logs ที่มีอยู่
-  const deriveFromRows = (rows, key)=>{
-    return uniq((rows||[]).map(r=>pick(r, [key, key+"Name", "name", "title"])));
-  };
-
-  let derivedBranches = [];
-  let derivedLevels = [];
-
-  // 1) จาก cache employees / resigned (โหลดไวสุด)
-  if(cache.employees?.rows?.length){
-    derivedBranches = derivedBranches.concat(deriveFromRows(cache.employees.rows, "branch"));
-    derivedLevels   = derivedLevels.concat(deriveFromRows(cache.employees.rows, "level"));
-  }
-  if(cache.resigned?.rows?.length){
-    derivedBranches = derivedBranches.concat(deriveFromRows(cache.resigned.rows, "branch"));
-    derivedLevels   = derivedLevels.concat(deriveFromRows(cache.resigned.rows, "level"));
-  }
-  // 2) จาก logs ที่เพิ่งโหลด (ถ้ามี)
-  if(cache.logs?.rows?.length){
-    derivedBranches = derivedBranches.concat(deriveFromRows(cache.logs.rows, "branch"));
-    derivedLevels   = derivedLevels.concat(deriveFromRows(cache.logs.rows, "level"));
-  }
-
-  // 3) ถ้ายังไม่มีอะไรเลย ลองดึง Employees (ไม่หนักมาก) เพื่อ derive
-  if(!derivedBranches.length || !derivedLevels.length){
-    try{
-      const empRes = await apiCall("getEmployees", {}, { signal, timeoutMs: 20000 });
-      const rows = Array.isArray(empRes) ? empRes : (empRes?.rows || []);
-      if(rows?.length){
-        cache.employees = { t: Date.now(), rows };
-        if(!derivedBranches.length) derivedBranches = derivedBranches.concat(deriveFromRows(rows, "branch"));
-        if(!derivedLevels.length)   derivedLevels   = derivedLevels.concat(deriveFromRows(rows, "level"));
-      }
-    }catch(e2){
-      console.warn("fallback getEmployees failed:", e2);
-    }
-  }
-
-  const finalBranchNames = branchNames.length ? branchNames : uniq(derivedBranches);
-  const finalLevelNames  = levelNames.length  ? levelNames  : uniq(derivedLevels);
-
-  // แปลงกลับเป็น object เพื่อให้โค้ดส่วนอื่นใช้งานเหมือนเดิม
-  const branches = finalBranchNames.map(n=>({ branchName:n, name:n, branch:n }));
-  const levels   = finalLevelNames.map(n=>({ levelName:n, name:n, level:n }));
-
-  cache.branchesLevels = { t: Date.now(), branches, levels };
+  if(age < 120000 && cache.branchesLevels.branches.length) return cache.branchesLevels; // 2 min
+  const r = await apiCall("getBranchesLevels", {}, { signal });
+  cache.branchesLevels = { t: Date.now(), branches: r.branches || [], levels: r.levels || [] };
   return cache.branchesLevels;
 }
-
 
 async function ensureDepartments(signal){
   const age = Date.now() - (cache.departments?.t || 0);
@@ -1717,7 +1605,7 @@ async function refreshCurrentSection(silent=false){
     if(ACTIVE === "logs") await loadLogs(signal);
     if(ACTIVE === "summary") await loadSummary(signal);
     if(ACTIVE === "settings") await loadSettings(signal);
-    if(ACTIVE === "resigned") await (window.loadResigned ? window.loadResigned(signal) : loadResigned(signal));
+    if(ACTIVE === "resigned") await loadResigned();
 
     setConn("ok", "เชื่อมต่อสำเร็จ");
     setLastUpdated();
@@ -2727,7 +2615,6 @@ async function loadLogs(signal){
   rows.sort((a,b)=> String(b.date||"").localeCompare(String(a.date||"")) || String(a.code||"").localeCompare(String(b.code||"")));
 
   logsState.rows = rows;
-  cache.logs = { t: Date.now(), rows };
 
   const tbody = $("logsTbody");
   if(!rows.length){
@@ -2822,177 +2709,33 @@ function exportLogsCsvClient(){
 /** =========================================
  *  Summary
  *  ========================================= */
-async function computeSummaryHard(year, month, search, signal){
-  // Hard-mode summary: loop every day of the month and aggregate from getLogsRange (includeAbsents=1).
-  // This works even if there are no logs yet (it will still generate "ขาด" rows).
-  const pad2 = (n)=>String(n).padStart(2,"0");
-  const daysInMonth = new Date(Number(year), Number(month), 0).getDate();
-
-  const agg = new Map(); // code -> {code, fullName, branch, level, normal, late, absent, days, issuePoints}
-  const seen = new Set(); // `${date}|${code}` to prevent duplicates
-
-  // Helper to init
-  const ensure = (r)=>{
-    const code = String(r.code||"").trim();
-    if(!code) return null;
-    if(!agg.has(code)){
-      agg.set(code, {
-        code,
-        fullName: r.fullName || r.name || "",
-        branch: r.branch || "",
-        level: r.level || "",
-        normal: 0,
-        late: 0,
-        absent: 0,
-        days: 0,
-        issuePoints: 0
-      });
-    }
-    const it = agg.get(code);
-    // keep best-known labels
-    if(!it.fullName && (r.fullName||r.name)) it.fullName = (r.fullName||r.name);
-    if(!it.branch && r.branch) it.branch = r.branch;
-    if(!it.level && r.level) it.level = r.level;
-    return it;
-  };
-
-  // loop days
-  for(let d=1; d<=daysInMonth; d++){
-    if(signal && signal.aborted) throw new DOMException("aborted", "AbortError");
-    const dateStr = `${year}-${pad2(month)}-${pad2(d)}`;
-
-    // Keep the busy overlay but update message
-    setBusy(true, `คำนวณ Summary… (${d}/${daysInMonth})`, "clientSummary");
-
-    let res;
-    try{
-      res = await apiCall("getLogsRange", { date: dateStr, includeAbsents: "1", search: search || "" }, { signal, silent: true, timeoutMs: 30000 });
-    }catch(err){
-      // If the user navigated away, just stop.
-      if(err && err.name === "AbortError") throw err;
-      // Non-fatal: skip this day
-      console.warn("summary hard day failed", dateStr, err);
-      continue;
-    }
-
-    const rows = (res && res.rows) ? res.rows : [];
-    for(const r of rows){
-      const code = String(r.code||"").trim();
-      if(!code) continue;
-      const key = `${dateStr}|${code}`;
-      if(seen.has(key)) continue;
-      seen.add(key);
-
-      const it = ensure(r);
-      if(!it) continue;
-
-      const st = String(r.status||"").trim();
-
-      // skip leaves / off / holiday
-      const stUpper = st.toUpperCase();
-      if(st.includes("ลา") || st.includes("หยุด") || stUpper.includes("HOLIDAY")) continue;
-
-      if(st === "ขาด"){
-        it.absent += 1;
-        it.issuePoints += 2;
-        it.days += 1;
-      }else if(st === "ปกติ"){
-        it.normal += 1;
-        it.days += 1;
-      }else{
-        // treat everything else as "สาย/มีปัญหา"
-        it.late += 1;
-        it.issuePoints += 1;
-        it.days += 1;
-      }
-    }
-  }
-
-  setBusy(false);
-
-  // sort by code numeric if possible
-  const list = Array.from(agg.values());
-  list.sort((a,b)=>{
-    const an = Number(a.code), bn = Number(b.code);
-    if(Number.isFinite(an) && Number.isFinite(bn)) return an-bn;
-    return String(a.code).localeCompare(String(b.code));
-  });
-
-  // optional filter again (if search empty, already)
-  if(search){
-    const q = String(search).trim().toLowerCase();
-    return list.filter(r=>(String(r.code).toLowerCase().includes(q) || String(r.fullName).toLowerCase().includes(q)));
-  }
-  return list;
-}
-
 async function loadSummary(signal){
-  const year = document.getElementById("sumYear").value;
-  const month = document.getElementById("sumMonth").value;
-  const search = (document.getElementById("sumSearch").value || "").trim();
+  const y = Number($("sumYear").value);
+  const m = Number($("sumMonth").value);
+  const search = ($("sumSearch").value || "").trim();
 
-  const tbody = document.getElementById("sumTbody");
-  const meta = document.getElementById("sumMeta");
-  if(!tbody) return;
+  const res = await apiCall("getSummaryRange", { year:y, month:m, search }, { signal });
+  const rows = (res && res.rows) ? res.rows : [];
+  sumState.rows = rows;
 
-  tbody.innerHTML = `<tr><td colspan="8" class="muted">กำลังโหลด…</td></tr>`;
-  if(meta) meta.textContent = "";
-
-  let rows = [];
-  let mode = "gs";
-  try{
-    const res = await apiCall("getSummaryRange", { year, month, search }, { signal, timeoutMs: 30000 });
-    rows = (res && res.rows) ? res.rows : [];
-  }catch(err){
-    // If aborted because user switched tab, just stop.
-    if(err && err.name === "AbortError") return;
-    mode = "hard";
-    console.warn("getSummaryRange failed, fallback to hard", err);
-  }
-
-  // If GS returns empty, we fallback to hard-mode summary (user requested)
-  if(!rows || rows.length === 0){
-    mode = "hard";
-    try{
-      rows = await computeSummaryHard(year, month, search, signal);
-    }catch(err){
-      if(err && err.name === "AbortError") return;
-      throw err;
-    }
-  }
-
-  if(!rows || rows.length === 0){
-    tbody.innerHTML = `<tr><td colspan="8" class="muted">ไม่พบข้อมูล</td></tr>`;
-    if(meta) meta.textContent = `*สรุป: ไม่พบข้อมูล (${mode})`;
+  const tbody = $("sumTbody");
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="13" class="muted">ไม่พบข้อมูล</td></tr>`;
     return;
   }
 
   tbody.innerHTML = rows.map(r=>{
-    const code = esc(r.code||"");
-    const name = esc(r.fullName||r.name||"");
-    const branch = esc(r.branch||"");
-    const level = esc(r.level||"");
-    const normal = Number(r.normalCount ?? r.normal ?? 0);
-    const late = Number(r.lateCount ?? r.late ?? 0);
-    const absent = Number(r.absentCount ?? r.absent ?? 0);
-    const note = r.days ? `รวม ${r.days} วัน` : (r.issuePoints ? `คะแนน ${r.issuePoints}` : "-");
     return `<tr>
-      <td>${code}</td>
-      <td>${name}</td>
-      <td>${branch}</td>
-      <td>${level}</td>
-      <td>${normal}</td>
-      <td>${late}</td>
-      <td>${absent}</td>
-      <td>${esc(note)}</td>
+      <td class="mono">${escapeHtml(r.code||"")}</td>
+      <td>${escapeHtml(r.fullName||"")}</td>
+      <td>${escapeHtml(r.branch||"")}</td>
+      <td>${escapeHtml(r.level||"")}</td>
+      <td class="mono">${escapeHtml(r.normalCount ?? r.normal ?? r.ok ?? r.present ?? 0)}</td>
+      <td class="mono">${escapeHtml(r.lateCount ?? r.late ?? 0)}</td>
+      <td class="mono">${escapeHtml(r.absentCount ?? r.absent ?? 0)}</td>
+      <td class="muted">${escapeHtml(r.issuePoints ?? r.note ?? "")}</td>
     </tr>`;
   }).join("");
-
-  if(meta){
-    meta.textContent = mode === "hard"
-      ? "*Summary: คำนวณจาก Log รายวัน (Hard-mode)"
-      : "*Summary: ได้จากระบบ (GS)";
-  }
 }
 
 /** =========================================
@@ -3168,7 +2911,6 @@ function wireEvents(){
   // copy api / token
   $("apiText").addEventListener("click", ()=>{
     openModal("apiModal");
-    const apiBd = $("apiModal"); if(apiBd){ apiBd.classList.add("show"); }
     $("apiInput").value = getApiUrl();
   });
   $("tokenText").addEventListener("click", ()=>{
@@ -3207,7 +2949,6 @@ function wireEvents(){
   // api modal
   $("btnSetApi").addEventListener("click", ()=>{
     openModal("apiModal");
-    const apiBd = $("apiModal"); if(apiBd){ apiBd.classList.add("show"); }
     $("apiInput").value = getApiUrl();
   });
   $("btnSaveApi").addEventListener("click", ()=>{
@@ -3323,16 +3064,9 @@ fillYearMonth($("sumYear"), $("sumMonth"));
   // If no API URL -> open modal now
   if(!getApiUrl()){
     openModal("apiModal");
-    const apiBd = $("apiModal"); if(apiBd){ apiBd.classList.add("show"); }
     $("apiInput").value = "";
     toast("ตั้งค่า API URL ก่อน");
     return;
-  }
-
-  // If not logged -> still allow dashboard
-  if(!getToken()){
-    toast("ยังไม่ล็อกอิน: เปิดหน้า index.html เพื่อ Login แล้วกลับมาหน้านี้", 5000);
-    // still load public dashboard
   }
 
   // If not logged -> still allow dashboard (public), but other sections require token
@@ -3409,7 +3143,7 @@ async function openResModalByCode(code){
   const row = (resignedState.rows || []).find(r => String(r.code||"") === String(code||""));
   if(!row){ alert("ไม่พบข้อมูลพนักงานลาออก"); return; }
 
-  window.showResErr("");
+  showResErr("");
 
   // fill selects
   const bl = await ensureBranchesLevels(abortRefresh());
@@ -3451,7 +3185,7 @@ async function openResModalByCode(code){
   // handlers
   $("btnSaveResigned").onclick = async ()=>{
     try{
-      window.showResErr("");
+      showResErr("");
       const payload = {
         code: String($("resCode").value||"").trim(),
         fullName: String($("resFullName").value||"").trim(),
@@ -3468,7 +3202,7 @@ async function openResModalByCode(code){
       closeModal("resModal");
       await loadResigned();
     }catch(err){
-      window.showResErr(err?.message || String(err));
+      showResErr(err?.message || String(err));
     }
   };
 
@@ -3482,7 +3216,7 @@ async function openResModalByCode(code){
       closeModal("resModal");
       await loadResigned();
     }catch(err){
-      window.showResErr(err?.message || String(err));
+      showResErr(err?.message || String(err));
     }
   };
 
@@ -3664,13 +3398,13 @@ async function openResModalByCode(code){
   // override loadResigned called by refreshCurrentSection()
   window.loadResigned = async function(signal){
     try{
-      window.showResErr("");
+      showResErr("");
       const res = await apiCall("adminGetResignedEmployees", {}, { signal });
       window.resignedState.rows = (res && res.rows) ? res.rows : [];
       window.resignedState.loadedAt = Date.now();
       window.renderResigned();
     }catch(err){
-      window.showResErr(err?.message || String(err));
+      showResErr(err?.message || String(err));
       // also render empty state
       window.resignedState.rows = [];
       window.renderResigned();
@@ -3684,15 +3418,6 @@ async function openResModalByCode(code){
     badge.textContent = msg || "";
     badge.style.display = msg ? "inline-flex" : "none";
   };
-
-  // Rebind local function names so the app always uses the patched Resigned implementation
-  try{
-    loadResigned = window.loadResigned;
-    renderResigned = window.renderResigned;
-    openResModalByCode = window.openResModalByCode;
-    deleteResignedByCode = window.deleteResignedByCode;
-    showResErr = window.showResErr;
-  }catch(_){}
 
   // wire UI events (safe)
   document.addEventListener("click", (e)=>{
