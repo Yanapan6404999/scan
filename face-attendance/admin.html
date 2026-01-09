@@ -1049,6 +1049,7 @@
               <tbody id="sumTbody">
                 <tr><td colspan="9" class="muted">กด “โหลด Summary” เพื่อดึงข้อมูล</td></tr>
               </tbody>
+<div id="sumPagination" class="seg" style="margin-top:10px;flex-wrap:wrap"></div>
             </table>
           </div>
 
@@ -2879,7 +2880,6 @@ async function loadSummary(signal){
       search: sumSearch
     }, { signal });
 
-    // res can be: {rows:[...]} or {result:{rows:[...]}} or [...]
     let rows = [];
     if(Array.isArray(res)) rows = res;
     else if(res && Array.isArray(res.rows)) rows = res.rows;
@@ -2894,36 +2894,21 @@ async function loadSummary(signal){
     }
 
     sumState.rows = rows;
+    currentPage = 1;
 
     if(!rows || rows.length === 0){
       sumTbody.innerHTML = `<tr><td colspan="9" class="muted">ไม่พบข้อมูล</td></tr>`;
+      $("sumPagination").innerHTML = "";
       return;
     }
 
-    sumTbody.innerHTML = rows.map(r=>{
-      const normal = (r.normalCount ?? r.normal ?? 0);
-      const late   = (r.lateCount   ?? r.late   ?? 0);
-      const absent = (r.absentCount ?? r.absent ?? 0);
-      const leave  = (r.leaveCount  ?? r.leave  ?? 0);
-      const note   = (r.issuePoints ?? r.note ?? '');
-      return `
-        <tr>
-          <td class="mono">${escapeHtml(r.code||'')}</td>
-          <td>${escapeHtml(r.fullName||'')}</td>
-          <td>${escapeHtml(r.branch||'')}</td>
-          <td>${escapeHtml(r.level||'')}</td>
-          <td class="num">${Number(normal||0)}</td>
-          <td class="num">${Number(late||0)}</td>
-          <td class="num">${Number(absent||0)}</td>
-          <td class="num">${Number(leave||0)}</td>
-          <td>${escapeHtml(String(note||''))}</td>
-        </tr>
-      `;
-    }).join('');
+    renderSummaryTable();
+    renderSummaryPagination(rows.length, currentPage);
 
   }catch(err){
     console.error('loadSummary error:', err);
     sumTbody.innerHTML = `<tr><td colspan="9" class="muted">โหลดไม่สำเร็จ: ${escapeHtml(err.message||String(err))}</td></tr>`;
+    $("sumPagination").innerHTML = "";
   }
 }
 
