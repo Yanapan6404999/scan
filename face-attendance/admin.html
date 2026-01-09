@@ -1042,12 +1042,22 @@
                   <th style="min-width:110px">ปกติ</th>
                   <th style="min-width:110px">สาย</th>
                   <th style="min-width:110px">ขาด</th>
-                  <th style="min-width:150px">หมายเหตุ</th>
+                  <th style="min-width:110px">ลา</th>
+                  <th style="min-width:150px">หมายเหตุ/แต้มปัญหา</th>
                 </tr>
               </thead>
               <tbody id="sumTbody">
-                <tr><td colspan="8" class="muted">กด “โหลด Summary” เพื่อดึงข้อมูล</td></tr>
+                <tr><td colspan="9" class="muted">กด “โหลด Summary” เพื่อดึงข้อมูล</td></tr>
               </tbody>
+            </table>
+          </div>
+
+          <div class="muted" style="margin-top:10px;font-size:12px">
+            *เรียก action <span class="mono">getSummaryRange</span> (ต้องมี token) 
+          </div>
+        </div>
+      </div>
+    </section>
             </table>
           </div>
 
@@ -1447,40 +1457,10 @@ function setLastUpdated(){
   $("lastUpdated").textContent = `${hh}:${mm}:${ss}`;
 }
 
-function normalizeApiUrl(url){
-  url = String(url||'').trim();
-  if(!url) return '';
-  try{
-    const u = new URL(url);
-    // Avoid CORS-blocked redirect: script.google.com -> script.googleusercontent.com
-    if(u.hostname === 'script.google.com' && u.pathname.startsWith('/macros/s/')){
-      u.hostname = 'script.googleusercontent.com';
-    }
-    return u.toString();
-  }catch(e){
-    return url;
-  }
-}
+function getApiUrl(){ return (localStorage.getItem(LS_API) || "").trim(); }
+function setApiUrl(url){ localStorage.setItem(LS_API, (url||"").trim()); }
 
-function getApiUrl(){
-  const raw = localStorage.getItem(LS_API) || '';
-  return normalizeApiUrl(raw);
-}
-
-function setApiUrl(v){
-  const norm = normalizeApiUrl(v);
-  localStorage.setItem(LS_API, norm);
-  const el = document.getElementById('apiUrlView');
-  if(el) el.textContent = norm ? norm : 'ยังไม่ตั้งค่า';
-  const inp = document.getElementById('apiUrlInput');
-  if(inp) inp.value = norm;
-}
-
-
-function getToken(){
-  return (localStorage.getItem(LS_HR) || '').trim();
-}
-
+function getToken(){ return (localStorage.getItem(LS_HR) || "").trim(); }
 
 function parseTokenInfo(token){
   // token is base64 websafe JSON: {u,t}
@@ -1506,14 +1486,7 @@ function formatAge(ms){
   if(h<=0) return `${mm} นาที`;
   return `${h} ชม. ${mm} นาที`;
 }
-function setToken(v){
-  localStorage.setItem(LS_HR, String(v||'').trim());
-  const el = document.getElementById('tokenView');
-  if(el) el.textContent = getToken() ? 'มี Token ✓' : 'ยังไม่มี';
-  const inp = document.getElementById('tokenInput');
-  if(inp) inp.value = getToken();
-}
-
+function setToken(t){ localStorage.setItem(LS_HR, (t||"").trim()); }
 function isLogged(){ return localStorage.getItem(LS_HR_OK) === "1" && !!getToken(); }
 function setLogged(ok){ localStorage.setItem(LS_HR_OK, ok ? "1" : "0"); }
 
@@ -2886,96 +2859,73 @@ function exportLogsCsvClient(){
 /** =========================================
  *  Summary
  *  ========================================= */
-function statusToType_(row){
-  const t = String(row.statusType||'').toLowerCase();
-  if(t==='normal' || t==='late' || t==='absent' || t==='leave') return t;
-  const s = String(row.status||'').toLowerCase();
-  if(!s) return 'normal';
-  if(s.includes('ลา') || s.includes('leave')) return 'leave';
-  if(s.includes('ขาด') || s.includes('absent') || s.includes('ไม่ลงเวลา') || s.includes('missing')) return 'absent';
-  if(s.includes('สาย') || s.includes('late')) return 'late';
-  return 'normal';
-}
-function computeSummaryFromLogs_(logRows){
-  const map = new Map();
-  for(const r of (logRows||[])){
-    const code = String(r.code||'').trim();
-    if(!code) continue;
-    const cur = map.get(code) || { code, fullName: r.fullName||'', branch:r.branch||'', level:r.level||'', normal:0, late:0, absent:0, leave:0 };
-    const typ = statusToType_(r);
-    if(typ==='late') cur.late++;
-    else if(typ==='absent') cur.absent++;
-    else if(typ==='leave') cur.leave++;
-    else cur.normal++;
-    if(!cur.fullName && r.fullName) cur.fullName = r.fullName;
-    if(!cur.branch && r.branch) cur.branch = r.branch;
-    if(!cur.level && r.level) cur.level = r.level;
-    map.set(code, cur);
-  }
-  const rows = Array.from(map.values()).sort((a,b)=> String(a.code).localeCompare(String(b.code)));
-  for(const r of rows){
-    r.note = r.leave ? `ลา ${r.leave} วัน` : '';
-  }
-  return rows;
-}
-
 async function loadSummary(signal){
-  const sumYear = Number(document.getElementById('sumYear').value) || new Date().getFullYear();
-  const sumMonth = Number(document.getElementById('sumMonth').value) || (new Date().getMonth()+1);
-  const sumSearch = String(document.getElementById('sumSearch').value || '').trim();
-  const sumTbody = document.getElementById('sumTbody');
-  sumTbody.innerHTML = `<tr><td colspan="8">กำลังโหลด...</td></tr>`;
+  const sumYear = Number($('sumYear').value) || new Date().getFullYear();
+  const sumMonth = Number($('sumMonth').value) || (new Date().getMonth()+1);
+  const sumSearch = String($('sumSearch').value || '').trim();
+  const sumTbody = $('sumTbody');
+
+  if(!sumTbody){
+    console.error("sumTbody not found");
+    return;
+  }
+
+  sumTbody.innerHTML = `<tr><td colspan="9" class="muted">กำลังโหลด...</td></tr>`;
 
   try{
+    const res = await apiCall('getSummaryRange', {
+      year: sumYear,
+      month: sumMonth,
+      search: sumSearch
+    }, { signal });
+
+    // res can be: {rows:[...]} or {result:{rows:[...]}} or [...]
     let rows = [];
-    let res = null;
-
-    // Prefer server-side summary (fast)
-    try{
-      res = await apiCall('getSummaryRange', { year: sumYear, month: sumMonth, search: sumSearch }, { signal });
-    }catch(e){
-      res = null;
-    }
-
-    if(res && res.rows){
-      rows = res.rows || [];
-    }else{
-      // Fallback: compute from logs for month
-      const logsRes = await apiCall('getLogsRange', { year: sumYear, month: sumMonth, branch:'ALL', search: sumSearch }, { signal });
-      rows = computeSummaryFromLogs_((logsRes && logsRes.rows) ? logsRes.rows : []);
-    }
+    if(Array.isArray(res)) rows = res;
+    else if(res && Array.isArray(res.rows)) rows = res.rows;
+    else if(res && res.result && Array.isArray(res.result.rows)) rows = res.result.rows;
 
     if(sumSearch){
       const q = sumSearch.toLowerCase();
-      rows = (rows||[]).filter(r =>
+      rows = rows.filter(r =>
         String(r.code||'').toLowerCase().includes(q) ||
         String(r.fullName||'').toLowerCase().includes(q)
       );
     }
 
-    if(!rows || rows.length===0){
-      sumTbody.innerHTML = `<tr><td colspan="8" class="muted">ไม่พบข้อมูล</td></tr>`;
+    sumState.rows = rows;
+
+    if(!rows || rows.length === 0){
+      sumTbody.innerHTML = `<tr><td colspan="9" class="muted">ไม่พบข้อมูล</td></tr>`;
       return;
     }
 
-    sumTbody.innerHTML = rows.map(r=>`
-      <tr>
-        <td>${escapeHtml(r.code||'')}</td>
-        <td>${escapeHtml(r.fullName||'')}</td>
-        <td>${escapeHtml(r.branch||'')}</td>
-        <td>${escapeHtml(r.level||'')}</td>
-        <td class="num">${Number(r.normal||0)}</td>
-        <td class="num">${Number(r.late||0)}</td>
-        <td class="num">${Number(r.absent||0)}</td>
-        <td>${escapeHtml(r.note||'')}</td>
-      </tr>
-    `).join('');
+    sumTbody.innerHTML = rows.map(r=>{
+      const normal = (r.normalCount ?? r.normal ?? 0);
+      const late   = (r.lateCount   ?? r.late   ?? 0);
+      const absent = (r.absentCount ?? r.absent ?? 0);
+      const leave  = (r.leaveCount  ?? r.leave  ?? 0);
+      const note   = (r.issuePoints ?? r.note ?? '');
+      return `
+        <tr>
+          <td class="mono">${escapeHtml(r.code||'')}</td>
+          <td>${escapeHtml(r.fullName||'')}</td>
+          <td>${escapeHtml(r.branch||'')}</td>
+          <td>${escapeHtml(r.level||'')}</td>
+          <td class="num">${Number(normal||0)}</td>
+          <td class="num">${Number(late||0)}</td>
+          <td class="num">${Number(absent||0)}</td>
+          <td class="num">${Number(leave||0)}</td>
+          <td>${escapeHtml(String(note||''))}</td>
+        </tr>
+      `;
+    }).join('');
+
   }catch(err){
-    console.error('loadSummary error', err);
-    sumTbody.innerHTML = `<tr><td colspan="8" class="muted">โหลดไม่สำเร็จ: ${escapeHtml(err.message||String(err))}</td></tr>`;
+    console.error('loadSummary error:', err);
+    sumTbody.innerHTML = `<tr><td colspan="9" class="muted">โหลดไม่สำเร็จ: ${escapeHtml(err.message||String(err))}</td></tr>`;
   }
 }
-
 
 /** =========================================
  *  Settings (branches/levels)
