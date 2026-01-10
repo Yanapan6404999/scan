@@ -2905,7 +2905,8 @@ async function loadSummary(signal){
     renderSummaryTable();
     renderSummaryPagination(rows.length, currentPage);
 
-  }catch(err){
+   }catch(err){
+    if(err && err.name === 'AbortError') return;
     console.error('loadSummary error:', err);
     sumTbody.innerHTML = `<tr><td colspan="9" class="muted">โหลดไม่สำเร็จ: ${escapeHtml(err.message||String(err))}</td></tr>`;
     $("sumPagination").innerHTML = "";
