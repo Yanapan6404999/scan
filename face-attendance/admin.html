@@ -448,7 +448,8 @@
 /** ---------- Storage Keys (keep compatible with your system) ---------- */
 const STORAGE = {
   apiUrl: 'attendance_api_url_v2',
-  token:  'hr_token_admin_v2'
+  token:  'attendance_hr_token_v1',
+  tokenLegacy: 'hr_token_admin_v2'
 };
 
 const PAGES = [
@@ -558,8 +559,21 @@ const Store = (()=>{
   function getApiUrl(){ return localStorage.getItem(STORAGE.apiUrl) || ''; }
   function setApiUrl(v){ localStorage.setItem(STORAGE.apiUrl, String(v||'').trim()); renderConn(); }
 
-  function getToken(){ return localStorage.getItem(STORAGE.token) || ''; }
-  function setToken(v){ v ? localStorage.setItem(STORAGE.token, v) : localStorage.removeItem(STORAGE.token); renderConn(); }
+  function getToken(){
+    return localStorage.getItem(STORAGE.token)
+      || (STORAGE.tokenLegacy ? localStorage.getItem(STORAGE.tokenLegacy) : '')
+      || '';
+  }
+  function setToken(v){
+    if(v){
+      localStorage.setItem(STORAGE.token, v);
+      if(STORAGE.tokenLegacy) localStorage.setItem(STORAGE.tokenLegacy, v);
+    }else{
+      localStorage.removeItem(STORAGE.token);
+      if(STORAGE.tokenLegacy) localStorage.removeItem(STORAGE.tokenLegacy);
+    }
+    renderConn();
+  }
 
   function maskToken(t){
     if(!t) return '-';
@@ -645,7 +659,6 @@ const Api = (()=>{
       }
       const res = await fetch(apiUrl, {
         method:'POST',
-        headers:{ 'Content-Type':'application/x-www-form-urlencoded;charset=utf-8' },
         body,
         signal
       });
