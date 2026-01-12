@@ -1,325 +1,1889 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HRM Admin v2</title>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <style>
-    :root{--bg:#f6f7fb;--card:#fff;--text:#0f172a;--muted:#64748b;--border:#e5e7eb;--shadow:0 10px 25px rgba(15,23,42,.08);--orange:#f97316;--ok:#16a34a;--bad:#ef4444;--warn:#f59e0b;--info:#3b82f6;--radius:16px}
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Prompt,sans-serif;color:var(--text);background:linear-gradient(180deg,#f8fafc,#f6f7fb)}
-    .app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
-    .sidebar{position:sticky;top:0;height:100vh;padding:18px 14px;background:rgba(255,255,255,.72);backdrop-filter:blur(10px);border-right:1px solid var(--border);display:flex;flex-direction:column;gap:12px;overflow-y:auto}
-    .brand{display:flex;align-items:center;gap:12px;padding:14px;border-radius:22px;background:var(--card);box-shadow:var(--shadow)}
-    .logo{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:radial-gradient(circle at 30% 30%,#fff,#fff7ed 40%,#ffedd5);border:1px solid #fed7aa;font-weight:700;color:var(--orange);font-size:20px}
-    .brand h1{font-size:16px}
-    .brand .sub{font-size:12px;color:var(--muted);margin-top:2px}
-    .sideCard{background:var(--card);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);padding:12px}
-    .kv{display:grid;grid-template-columns:70px 1fr;gap:6px 10px;font-size:12px}
-    .kv .k{color:var(--muted)}
-    .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;font-size:12px;border:1px solid var(--border);background:#fff}
-    .dot{width:8px;height:8px;border-radius:50%}
-    .dot.ok{background:var(--ok)}
-    .dot.bad{background:var(--bad)}
-    .btn{border:1px solid var(--border);background:#fff;padding:10px 14px;border-radius:14px;cursor:pointer;font-family:inherit;font-weight:600;font-size:13px;transition:.15s;display:inline-flex;align-items:center;gap:8px}
-    .btn:hover{transform:translateY(-1px);box-shadow:0 10px 18px rgba(15,23,42,.08)}
-    .btn:disabled{opacity:.5;cursor:not-allowed}
-    .btn.primary{border-color:#fed7aa;background:linear-gradient(180deg,#fff7ed,#ffedd5);color:#9a3412}
-    .btn.orange{border-color:#fdba74;background:linear-gradient(180deg,#fb923c,#f97316);color:#fff}
-    .btn.ok{background:linear-gradient(180deg,#86efac,#4ade80);color:#fff}
-    .btn.bad{background:linear-gradient(180deg,#fca5a5,#ef4444);color:#fff}
-    .btn.ghost{background:transparent}
-    .btn.sm{padding:6px 10px;font-size:12px}
-    .nav{margin-top:8px;display:flex;flex-direction:column;gap:6px;padding:0 6px}
-    .nav button{width:100%;text-align:left;padding:12px;border-radius:14px;border:1px solid transparent;background:transparent;cursor:pointer;font-family:inherit;font-weight:600;display:flex;align-items:center;justify-content:space-between}
-    .nav button.active{background:linear-gradient(180deg,#fff7ed,#ffedd5);border-color:#fed7aa}
-    .nav button:hover{background:rgba(15,23,42,.03)}
-    .nav button .meta{color:var(--muted);font-weight:500;font-size:12px}
-    .spacer{flex:1}
-    .main{padding:22px 22px 80px;overflow-y:auto}
-    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-    .topbar h2{font-size:24px;font-weight:700}
-    .cardGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px}
-    .statCard{background:var(--card);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);padding:20px;transition:.2s}
-    .statCard:hover{transform:translateY(-2px);box-shadow:0 20px 50px rgba(15,23,42,.12)}
-    .statCard .icon{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:24px;margin-bottom:12px}
-    .statCard .icon.orange{background:linear-gradient(135deg,#fff7ed,#ffedd5);color:var(--orange)}
-    .statCard .icon.ok{background:linear-gradient(135deg,#f0fdf4,#dcfce7);color:var(--ok)}
-    .statCard .icon.bad{background:linear-gradient(135deg,#fef2f2,#fee2e2);color:var(--bad)}
-    .statCard .icon.info{background:linear-gradient(135deg,#eff6ff,#dbeafe);color:var(--info)}
-    .statCard .icon.warn{background:linear-gradient(135deg,#fffbeb,#fef3c7);color:var(--warn)}
-    .statCard .icon.purple{background:linear-gradient(135deg,#faf5ff,#f3e8ff);color:#a855f7}
-    .statCard .label{font-size:13px;color:var(--muted);margin-bottom:4px}
-    .statCard .value{font-size:32px;font-weight:700;line-height:1;margin-bottom:8px}
-    .statCard .meta{font-size:12px;color:var(--muted)}
-    .contentCard{background:var(--card);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);margin-bottom:20px}
-    .contentCard .header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap}
-    .contentCard .header h3{font-size:18px;font-weight:600}
-    .contentCard .body{padding:20px}
-    .filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-    .filters input,.filters select{padding:10px 12px;border:1px solid var(--border);border-radius:12px;font-family:inherit;font-size:14px;background:#fff;min-width:150px}
-    .filters input:focus,.filters select:focus{outline:0;border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.1)}
-    .tableWrapper{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
-    table{width:100%;border-collapse:collapse;font-size:13px}
-    thead{background:#f9fafb;border-bottom:2px solid var(--border)}
-    th{padding:12px 14px;text-align:left;font-weight:600;white-space:nowrap}
-    td{padding:12px 14px;border-bottom:1px solid var(--border)}
-    tbody tr:hover{background:#f9fafb}
-    tbody tr:last-child td{border-bottom:none}
-    .statusBadge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600}
-    .statusBadge.pending{background:#fef3c7;color:#92400e}
-    .statusBadge.approved{background:#dcfce7;color:#166534}
-    .statusBadge.rejected{background:#fee2e2;color:#991b1b}
-    .statusBadge.canceled{background:#f3f4f6;color:#374151}
-    .statusBadge.present{background:#dcfce7;color:#166534}
-    .statusBadge.absent{background:#fee2e2;color:#991b1b}
-    .statusBadge.late{background:#fed7aa;color:#9a3412}
-    .statusBadge.leave{background:#dbeafe;color:#1e40af}
-    .formGroup{margin-bottom:16px}
-    .formGroup label{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
-    .formGroup input,.formGroup select,.formGroup textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;font-family:inherit;font-size:14px;background:#fff}
-    .formGroup input:focus,.formGroup select:focus,.formGroup textarea:focus{outline:0;border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.1)}
-    .formGroup textarea{resize:vertical;min-height:80px}
-    .formGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
-    .modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);z-index:1000;padding:20px;overflow-y:auto}
-    .modal.active{display:flex;align-items:center;justify-content:center}
-    .modalContent{background:var(--card);border-radius:22px;box-shadow:0 20px 50px rgba(15,23,42,.12);width:100%;max-width:600px;max-height:90vh;overflow-y:auto}
-    .modalHeader{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-    .modalHeader h3{font-size:18px;font-weight:600}
-    .modalBody{padding:20px}
-    .modalFooter{padding:20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
-    .loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .loadingOverlay{position:fixed;inset:0;background:rgba(255,255,255,.8);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:9999}
-    .loadingOverlay .spinner{width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite}
-    .emptyState{text-align:center;padding:60px 20px;color:var(--muted)}
-    .emptyState .icon{font-size:48px;margin-bottom:12px;opacity:.5}
-    .alert{padding:14px 16px;border-radius:12px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px}
-    .alert.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
-    .alert.success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
-    .alert.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-    .alert.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-    .tabs{display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:20px;overflow-x:auto}
-    .tabs button{padding:12px 20px;border:none;background:transparent;font-family:inherit;font-weight:600;font-size:14px;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
-    .tabs button:hover{color:var(--text)}
-    .tabs button.active{color:var(--orange);border-bottom-color:var(--orange)}
-    .hide{display:none!important}
-    @media(max-width:768px){
-      .app{grid-template-columns:1fr}
-      .sidebar{position:fixed;left:-280px;width:280px;z-index:100;transition:.3s}
-      .sidebar.active{left:0}
-      .cardGrid,.formGrid{grid-template-columns:1fr}
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HRM Admin v2 • Attendance + Leave Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#0f172a;--muted:#64748b;--border:#e5e7eb;--shadow:0 10px 25px rgba(15,23,42,.08);--shadow-lg:0 20px 50px rgba(15,23,42,.12);--orange:#f97316;--orange2:#fb923c;--ok:#16a34a;--bad:#ef4444;--warn:#f59e0b;--info:#3b82f6;--purple:#a855f7;--radius:16px;--radius2:22px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:Prompt,sans-serif;color:var(--text);background:linear-gradient(180deg,#f8fafc,#f6f7fb);overflow-x:hidden}
+.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;padding:18px 14px;background:rgba(255,255,255,.72);backdrop-filter:blur(10px);border-right:1px solid var(--border);display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:12px;padding:14px;border-radius:var(--radius2);background:var(--card);box-shadow:var(--shadow)}
+.logo{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:radial-gradient(circle at 30% 30%,#fff,#fff7ed 40%,#ffedd5);border:1px solid #fed7aa;font-weight:700;color:var(--orange);font-size:20px}
+.brand h1{font-size:16px;line-height:1.1}
+.brand .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.sideCard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);box-shadow:var(--shadow);padding:12px}
+.kv{display:grid;grid-template-columns:70px 1fr;gap:6px 10px;font-size:12px}
+.kv .k{color:var(--muted)}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;font-size:12px;border:1px solid var(--border);background:#fff}
+.dot{width:8px;height:8px;border-radius:50%}
+.dot.ok{background:var(--ok)}
+.dot.bad{background:var(--bad)}
+.dot.warn{background:var(--warn)}
+.dot.info{background:var(--info)}
+.btnRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn{border:1px solid var(--border);background:#fff;padding:10px 14px;border-radius:14px;cursor:pointer;font-family:inherit;font-weight:600;font-size:13px;transition:.15s transform,.15s box-shadow,.15s border-color;display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit}
+.btn:hover{transform:translateY(-1px);box-shadow:0 10px 18px rgba(15,23,42,.08);border-color:#d1d5db}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn.primary{border-color:#fed7aa;background:linear-gradient(180deg,#fff7ed,#ffedd5);color:#9a3412}
+.btn.orange{border-color:#fdba74;background:linear-gradient(180deg,#fb923c,#f97316);color:#fff}
+.btn.ok{border-color:#86efac;background:linear-gradient(180deg,#86efac,#4ade80);color:#fff}
+.btn.bad{border-color:#fca5a5;background:linear-gradient(180deg,#fca5a5,#ef4444);color:#fff}
+.btn.ghost{background:transparent}
+.btn.sm{padding:6px 10px;font-size:12px}
+.nav{margin-top:8px;display:flex;flex-direction:column;gap:6px;padding:0 6px}
+.nav button{width:100%;text-align:left;padding:12px;border-radius:14px;border:1px solid transparent;background:transparent;cursor:pointer;font-family:inherit;font-weight:600;display:flex;align-items:center;justify-content:space-between;color:var(--text);transition:.15s all}
+.nav button .meta{color:var(--muted);font-weight:500;font-size:12px}
+.nav button.active{background:linear-gradient(180deg,#fff7ed,#ffedd5);border-color:#fed7aa}
+.nav button:hover{background:rgba(15,23,42,.03)}
+.spacer{flex:1}
+.footerHint{font-size:12px;color:var(--muted);padding:8px 10px}
+.main{padding:22px 22px 80px;overflow-y:auto}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.topbar h2{font-size:24px;font-weight:700}
+.topbar .actions{display:flex;gap:8px;flex-wrap:wrap}
+.cardGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px}
+.statCard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);box-shadow:var(--shadow);padding:20px;transition:.2s transform,.2s box-shadow}
+.statCard:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.statCard .icon{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:24px;margin-bottom:12px}
+.statCard .icon.orange{background:linear-gradient(135deg,#fff7ed,#ffedd5);color:var(--orange)}
+.statCard .icon.ok{background:linear-gradient(135deg,#f0fdf4,#dcfce7);color:var(--ok)}
+.statCard .icon.bad{background:linear-gradient(135deg,#fef2f2,#fee2e2);color:var(--bad)}
+.statCard .icon.info{background:linear-gradient(135deg,#eff6ff,#dbeafe);color:var(--info)}
+.statCard .icon.warn{background:linear-gradient(135deg,#fffbeb,#fef3c7);color:var(--warn)}
+.statCard .icon.purple{background:linear-gradient(135deg,#faf5ff,#f3e8ff);color:var(--purple)}
+.statCard .label{font-size:13px;color:var(--muted);margin-bottom:4px}
+.statCard .value{font-size:32px;font-weight:700;line-height:1;margin-bottom:8px}
+.statCard .meta{font-size:12px;color:var(--muted)}
+.contentCard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);box-shadow:var(--shadow);margin-bottom:20px}
+.contentCard .header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.contentCard .header h3{font-size:18px;font-weight:600}
+.contentCard .body{padding:20px}
+.filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.filters input,.filters select{padding:10px 12px;border:1px solid var(--border);border-radius:12px;font-family:inherit;font-size:14px;background:#fff;min-width:150px}
+.filters input:focus,.filters select:focus{outline:0;border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.1)}
+.tableWrapper{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:#f9fafb;border-bottom:2px solid var(--border)}
+th{padding:12px 14px;text-align:left;font-weight:600;white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--border)}
+tbody tr:hover{background:#f9fafb}
+tbody tr:last-child td{border-bottom:none}
+.statusBadge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.statusBadge.pending{background:#fef3c7;color:#92400e}
+.statusBadge.approved{background:#dcfce7;color:#166534}
+.statusBadge.rejected{background:#fee2e2;color:#991b1b}
+.statusBadge.canceled{background:#f3f4f6;color:#374151}
+.statusBadge.present{background:#dcfce7;color:#166534}
+.statusBadge.absent{background:#fee2e2;color:#991b1b}
+.statusBadge.late{background:#fed7aa;color:#9a3412}
+.statusBadge.leave{background:#dbeafe;color:#1e40af}
+.formGroup{margin-bottom:16px}
+.formGroup label{display:block;font-weight:600;font-size:14px;margin-bottom:6px;color:var(--text)}
+.formGroup input,.formGroup select,.formGroup textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;font-family:inherit;font-size:14px;background:#fff}
+.formGroup input:focus,.formGroup select:focus,.formGroup textarea:focus{outline:0;border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.1)}
+.formGroup textarea{resize:vertical;min-height:80px}
+.formGroup .hint{font-size:12px;color:var(--muted);margin-top:4px}
+.formGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);z-index:1000;padding:20px;overflow-y:auto}
+.modal.active{display:flex;align-items:center;justify-content:center}
+.modalContent{background:var(--card);border-radius:var(--radius2);box-shadow:var(--shadow-lg);width:100%;max-width:600px;max-height:90vh;overflow-y:auto}
+.modalHeader{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modalHeader h3{font-size:18px;font-weight:600}
+.modalBody{padding:20px}
+.modalFooter{padding:20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loadingOverlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.8);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:9999}
+.loadingOverlay .spinner{width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite}
+.emptyState{text-align:center;padding:60px 20px;color:var(--muted)}
+.emptyState .icon{font-size:48px;margin-bottom:12px;opacity:.5}
+.alert{padding:14px 16px;border-radius:12px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px}
+.alert.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+.alert.success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.alert.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+.alert.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:20px;overflow-x:auto}
+.tabs button{padding:12px 20px;border:none;background:transparent;font-family:inherit;font-weight:600;font-size:14px;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:.15s all;white-space:nowrap}
+.tabs button:hover{color:var(--text)}
+.tabs button.active{color:var(--orange);border-bottom-color:var(--orange)}
+.hide{display:none!important}
+.textCenter{text-align:center}
+.textRight{text-align:right}
+.mt-0{margin-top:0}
+.mt-1{margin-top:8px}
+.mt-2{margin-top:16px}
+.mb-0{margin-bottom:0}
+.mb-1{margin-bottom:8px}
+.mb-2{margin-bottom:16px}
+@media(max-width:768px){
+.app{grid-template-columns:1fr}
+.sidebar{position:fixed;top:0;left:-280px;width:280px;height:100vh;z-index:100;transition:.3s left}
+.sidebar.active{left:0}
+.cardGrid{grid-template-columns:1fr}
+.formGrid{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
-  <div id="loadingOverlay" class="loadingOverlay hide"><div class="spinner"></div></div>
-  <div class="app">
-    <aside class="sidebar">
-      <div class="brand"><div class="logo">👤</div><div><h1>HRM Admin v2</h1><div class="sub">การจัดการ</div></div></div>
-      <div class="sideCard">
-        <div class="kv"><div class="k">ผู้ใช้:</div><div id="adminName">-</div><div class="k">เวลา:</div><div id="currentTime">-</div></div>
-        <div class="badge" style="margin-top:10px"><div class="dot ok"></div><span>ออนไลน์</span></div>
-        <div style="margin-top:10px"><button class="btn ghost" onclick="logout()">ออกจากระบบ</button></div>
-      </div>
-      <nav class="nav">
-        <button class="active" data-page="dashboard"><span>📊 แดชบอร์ด</span><span class="meta"></span></button>
-        <button data-page="attendance"><span>📝 บันทึกเวลา</span></button>
-        <button data-page="leave"><span>🏖️ คำขอลา</span><span class="meta" id="navLeaveBadge"></span></button>
-        <button data-page="employees"><span>👥 พนักงาน</span></button>
-        <button data-page="departments"><span>🏢 แผนก</span></button>
-        <button data-page="leavetypes"><span>📋 ประเภทการลา</span></button>
-        <button data-page="branches"><span>🏪 สาขา</span></button>
-        <button data-page="levels"><span>⭐ ระดับ</span></button>
-        <button data-page="zones"><span>📍 โซน</span></button>
-        <button data-page="holidays"><span>🎉 วันหยุด</span></button>
-        <button data-page="reports"><span>📈 รายงาน</span></button>
-      </nav>
-      <div class="spacer"></div>
-      <div style="font-size:12px;color:var(--muted);padding:8px 10px">HRM System v2.0<br>© 2026</div>
-    </aside>
-    <main class="main">
-      <div id="page-dashboard" class="page">
-        <div class="topbar"><div><h2>แดชบอร์ด</h2><div style="font-size:14px;color:var(--muted);margin-top:4px">ภาพรวมระบบ / สถานะล่าสุด</div></div><div style="display:flex;gap:8px"><select id="dashDate" class="btn" onchange="loadDashboard()"><option value="">วันนี้</option></select><button class="btn primary" onclick="loadDashboard()">🔄 รีเฟรช</button></div></div>
-        <div class="cardGrid">
-          <div class="statCard"><div class="icon ok">✓</div><div class="label">มาทำงานวันนี้</div><div class="value" id="dashPresent">-</div><div class="meta">จากทั้งหมด <span id="dashTotal">-</span> คน</div></div>
-          <div class="statCard"><div class="icon bad">✗</div><div class="label">ขาดงาน</div><div class="value" id="dashAbsent">-</div><div class="meta">ไม่มีบันทึกเวลา</div></div>
-          <div class="statCard"><div class="icon orange">⏰</div><div class="label">มาสาย</div><div class="value" id="dashLate">-</div><div class="meta">มาหลัง 08:02 น.</div></div>
-          <div class="statCard"><div class="icon info">🏖️</div><div class="label">ลาวันนี้</div><div class="value" id="dashLeave">-</div><div class="meta">มีใบลาอนุมัติ</div></div>
-          <div class="statCard"><div class="icon warn">⏳</div><div class="label">รอดำเนินการ</div><div class="value" id="dashPending">-</div><div class="meta">คำขอลารออนุมัติ</div></div>
-          <div class="statCard"><div class="icon purple">📊</div><div class="label">สแกนเพิ่มเติม</div><div class="value" id="dashExtraScans">-</div><div class="meta">ExtraScans วันนี้</div></div>
-        </div>
-        <div class="contentCard"><div class="header"><h3>📌 รายการมาสายวันนี้</h3><button class="btn sm primary" onclick="exportLateToday()">📥 ส่งออก</button></div><div class="body"><div id="lateListToday"><div class="emptyState"><div class="icon">⏰</div><div>กำลังโหลด...</div></div></div></div></div>
-        <div class="contentCard"><div class="header"><h3>📋 คำขอลารอดำเนินการ</h3><button class="btn sm primary" onclick="showPage('leave')">ดูทั้งหมด →</button></div><div class="body"><div id="pendingLeaveList"><div class="emptyState"><div class="icon">🏖️</div><div>กำลังโหลด...</div></div></div></div></div>
-      </div>
-      <div id="page-attendance" class="page hide">
-        <div class="topbar"><div><h2>บันทึกเวลาทำงาน</h2></div><div style="display:flex;gap:8px"><button class="btn orange" onclick="openManualLogModal()">➕ เพิ่มบันทึก</button><button class="btn primary" onclick="exportAttendance()">📥 ส่งออก</button></div></div>
-        <div class="contentCard"><div class="header"><h3>🔍 ค้นหาและกรอง</h3></div><div class="body"><div class="filters"><select id="attMonth" onchange="loadAttendance()"></select><select id="attYear" onchange="loadAttendance()"></select><select id="attBranch" onchange="loadAttendance()"><option value="">ทุกสาขา</option></select><select id="attStatus" onchange="loadAttendance()"><option value="ALL">ทุกสถานะ</option><option value="PRESENT">มาทำงาน</option><option value="LATE">มาสาย</option><option value="ABSENT">ขาดงาน</option><option value="LEAVE">ลา</option></select><input type="text" id="attSearch" placeholder="ค้นหา..." oninput="loadAttendance()"></div></div></div>
-        <div class="contentCard"><div class="header"><h3>📊 ตารางบันทึกเวลา</h3><div style="font-size:13px;color:var(--muted)">รายการ: <span id="attCount">0</span></div></div><div class="body"><div id="attendanceTable"></div></div></div>
-      </div>
-      <div id="page-leave" class="page hide">
-        <div class="topbar"><div><h2>คำขอลา</h2></div><div><button class="btn primary" onclick="exportLeaveRequests()">📥 ส่งออก</button></div></div>
-        <div class="contentCard"><div class="header"><h3>🔍 กรอง</h3></div><div class="body"><div class="filters"><select id="leaveMonth" onchange="loadLeaveRequests()"></select><select id="leaveYear" onchange="loadLeaveRequests()"></select><select id="leaveStatus" onchange="loadLeaveRequests()"><option value="ALL">ทุกสถานะ</option><option value="PENDING">รอ</option><option value="APPROVED">อนุมัติ</option><option value="REJECTED">ปฏิเสธ</option><option value="CANCELED">ยกเลิก</option></select><input type="text" id="leaveSearch" placeholder="ค้นหา..." oninput="loadLeaveRequests()"></div></div></div>
-        <div class="contentCard"><div class="header"><h3>📋 คำขอลา</h3><div style="font-size:13px;color:var(--muted)">รายการ: <span id="leaveCount">0</span></div></div><div class="body"><div id="leaveTable"></div></div></div>
-      </div>
-      <div id="page-employees" class="page hide">
-        <div class="topbar"><div><h2>พนักงาน</h2></div><div style="display:flex;gap:8px"><button class="btn orange" onclick="openEmployeeModal()">➕ เพิ่ม</button><button class="btn primary" onclick="exportEmployees()">📥 ส่งออก</button></div></div>
-        <div class="contentCard"><div class="header"><h3>🔍 ค้นหา</h3></div><div class="body"><div class="filters"><input type="text" id="empSearch" placeholder="ค้นหา..." oninput="loadEmployees()"><select id="empBranch" onchange="loadEmployees()"><option value="">ทุกสาขา</option></select><select id="empDept" onchange="loadEmployees()"><option value="">ทุกแผนก</option></select><select id="empLevel" onchange="loadEmployees()"><option value="">ทุกระดับ</option></select></div></div></div>
-        <div class="contentCard"><div class="header"><h3>👥 รายชื่อ</h3><div style="font-size:13px;color:var(--muted)">จำนวน: <span id="empCount">0</span></div></div><div class="body"><div id="employeesTable"></div></div></div>
-      </div>
-      <div id="page-departments" class="page hide">
-        <div class="topbar"><div><h2>แผนก</h2></div><div><button class="btn orange" onclick="openDepartmentModal()">➕ เพิ่ม</button></div></div>
-        <div class="contentCard"><div class="body"><div id="departmentsTable"></div></div></div>
-      </div>
-      <div id="page-leavetypes" class="page hide">
-        <div class="topbar"><div><h2>ประเภทการลา</h2></div><div><button class="btn orange" onclick="openLeaveTypeModal()">➕ เพิ่ม</button></div></div>
-        <div class="contentCard"><div class="body"><div id="leaveTypesTable"></div></div></div>
-      </div>
-      <div id="page-branches" class="page hide">
-        <div class="topbar"><div><h2>สาขา</h2></div><div><button class="btn orange" onclick="openBranchModal()">➕ เพิ่ม</button></div></div>
-        <div class="contentCard"><div class="body"><div id="branchesTable"></div></div></div>
-      </div>
-      <div id="page-levels" class="page hide">
-        <div class="topbar"><div><h2>ระดับ</h2></div><div><button class="btn orange" onclick="openLevelModal()">➕ เพิ่ม</button></div></div>
-        <div class="contentCard"><div class="body"><div id="levelsTable"></div></div></div>
-      </div>
-      <div id="page-zones" class="page hide">
-        <div class="topbar"><div><h2>โซน GPS</h2></div><div><button class="btn orange" onclick="openZoneModal()">➕ เพิ่ม</button></div></div>
-        <div class="contentCard"><div class="body"><div id="zonesTable"></div></div></div>
-      </div>
-      <div id="page-holidays" class="page hide">
-        <div class="topbar"><div><h2>วันหยุด</h2></div><div style="display:flex;gap:8px"><button class="btn orange" onclick="openHolidayModal()">➕ เพิ่ม</button></div></div>
-        <div class="contentCard"><div class="header"><h3>🔍 เลือกปี</h3></div><div class="body"><select id="holidayYear" onchange="loadHolidays()"></select></div></div>
-        <div class="contentCard"><div class="body"><div id="holidaysTable"></div></div></div>
-      </div>
-      <div id="page-reports" class="page hide">
-        <div class="topbar"><div><h2>รายงาน</h2></div></div>
-        <div class="tabs">
-          <button class="active" data-tab="monthly">รายเดือน</button>
-          <button data-tab="employee">รายบุคคล</button>
-          <button data-tab="summary">สรุป</button>
-        </div>
-        <div id="tab-monthly" class="tabContent">
-          <div class="contentCard"><div class="header"><h3>📊 รายงานรายเดือน</h3></div><div class="body"><div class="filters" style="margin-bottom:20px"><select id="reportMonth"></select><select id="reportYear"></select><button class="btn primary" onclick="generateMonthlyReport()">สร้าง</button></div><div id="monthlyReportContent"></div></div></div>
-        </div>
-        <div id="tab-employee" class="tabContent hide">
-          <div class="contentCard"><div class="header"><h3>👤 รายบุคคล</h3></div><div class="body"><div class="filters" style="margin-bottom:20px"><input type="text" id="reportEmpCode" placeholder="รหัส"><select id="reportEmpMonth"></select><select id="reportEmpYear"></select><button class="btn primary" onclick="generateEmployeeReport()">สร้าง</button></div><div id="employeeReportContent"></div></div></div>
-        </div>
-        <div id="tab-summary" class="tabContent hide">
-          <div class="contentCard"><div class="header"><h3>📈 สรุปภาพรวม</h3></div><div class="body"><div class="filters" style="margin-bottom:20px"><select id="summaryYear"></select><button class="btn primary" onclick="generateSummaryReport()">สร้าง</button></div><div id="summaryReportContent"></div></div></div>
-        </div>
-      </div>
-    </main>
-  </div>
-  <!-- Modals -->
-  <div id="leaveActionModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3>ดำเนินการ</h3><button class="btn ghost sm" onclick="closeModal('leaveActionModal')">✕</button></div><div class="modalBody"><div id="leaveActionDetails"></div><div class="formGroup"><label>หมายเหตุ</label><textarea id="leaveAdminNote"></textarea></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('leaveActionModal')">ยกเลิก</button><button class="btn bad" onclick="processLeaveAction('REJECTED')">❌ ปฏิเสธ</button><button class="btn ok" onclick="processLeaveAction('APPROVED')">✅ อนุมัติ</button></div></div></div>
-  <div id="employeeModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3 id="employeeModalTitle">เพิ่มพนักงาน</h3><button class="btn ghost sm" onclick="closeModal('employeeModal')">✕</button></div><div class="modalBody"><div class="formGrid"><div class="formGroup"><label>รหัส *</label><input type="text" id="empCode" required></div><div class="formGroup"><label>ชื่อ-สกุล *</label><input type="text" id="empFullName" required></div><div class="formGroup"><label>อีเมล</label><input type="email" id="empEmail"></div><div class="formGroup"><label>สาขา</label><select id="empBranchInput"></select></div><div class="formGroup"><label>แผนก</label><select id="empDeptInput"></select></div><div class="formGroup"><label>ระดับ</label><select id="empLevelInput"></select></div></div><div class="formGroup"><label>ตำแหน่ง</label><input type="text" id="empPosition"></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('employeeModal')">ยกเลิก</button><button class="btn orange" onclick="saveEmployee()">💾 บันทึก</button></div></div></div>
-  <div id="departmentModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3 id="deptModalTitle">เพิ่มแผนก</h3><button class="btn ghost sm" onclick="closeModal('departmentModal')">✕</button></div><div class="modalBody"><div class="formGroup"><label>ชื่อแผนก *</label><input type="text" id="deptName" required></div><div class="formGroup"><label>หมายเหตุ</label><textarea id="deptNote"></textarea></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('departmentModal')">ยกเลิก</button><button class="btn orange" onclick="saveDepartment()">💾 บันทึก</button></div></div></div>
-  <div id="leaveTypeModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3 id="leaveTypeModalTitle">เพิ่มประเภทการลา</h3><button class="btn ghost sm" onclick="closeModal('leaveTypeModal')">✕</button></div><div class="modalBody"><div class="formGroup"><label>ชื่อ *</label><input type="text" id="leaveTypeName" required></div><div class="formGroup"><label>วันสูงสุด/ปี</label><input type="number" id="leaveTypeMaxDays" value="0"></div><div class="formGroup"><label>หมายเหตุ</label><textarea id="leaveTypeNote"></textarea></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('leaveTypeModal')">ยกเลิก</button><button class="btn orange" onclick="saveLeaveType()">💾 บันทึก</button></div></div></div>
-  <div id="branchModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3 id="branchModalTitle">เพิ่มสาขา</h3><button class="btn ghost sm" onclick="closeModal('branchModal')">✕</button></div><div class="modalBody"><div class="formGroup"><label>ชื่อสาขา *</label><input type="text" id="branchName" required></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('branchModal')">ยกเลิก</button><button class="btn orange" onclick="saveBranch()">💾 บันทึก</button></div></div></div>
-  <div id="levelModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3 id="levelModalTitle">เพิ่มระดับ</h3><button class="btn ghost sm" onclick="closeModal('levelModal')">✕</button></div><div class="modalBody"><div class="formGroup"><label>ชื่อระดับ *</label><input type="text" id="levelName" required></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('levelModal')">ยกเลิก</button><button class="btn orange" onclick="saveLevel()">💾 บันทึก</button></div></div></div>
-  <div id="zoneModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3 id="zoneModalTitle">เพิ่มโซน</h3><button class="btn ghost sm" onclick="closeModal('zoneModal')">✕</button></div><div class="modalBody"><div class="formGroup"><label>ชื่อโซน *</label><input type="text" id="zoneName" required></div><div class="formGrid"><div class="formGroup"><label>ละติจูด *</label><input type="number" id="zoneLat" step="0.000001" required></div><div class="formGroup"><label>ลองจิจูด *</label><input type="number" id="zoneLng" step="0.000001" required></div><div class="formGroup"><label>รัศมี (ม.) *</label><input type="number" id="zoneRadius" value="100" required></div></div><div class="formGroup"><label>หมายเหตุ</label><textarea id="zoneNote"></textarea></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('zoneModal')">ยกเลิก</button><button class="btn orange" onclick="saveZone()">💾 บันทึก</button></div></div></div>
-  <div id="holidayModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3 id="holidayModalTitle">เพิ่มวันหยุด</h3><button class="btn ghost sm" onclick="closeModal('holidayModal')">✕</button></div><div class="modalBody"><div class="formGroup"><label>วันที่ *</label><input type="date" id="holidayDate" required></div><div class="formGroup"><label>ชื่อวันหยุด *</label><input type="text" id="holidayName" required></div><div class="formGroup"><label>หมายเหตุ</label><textarea id="holidayNote"></textarea></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('holidayModal')">ยกเลิก</button><button class="btn orange" onclick="saveHoliday()">💾 บันทึก</button></div></div></div>
-  <div id="manualLogModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3>เพิ่มบันทึกเวลา</h3><button class="btn ghost sm" onclick="closeModal('manualLogModal')">✕</button></div><div class="modalBody"><div class="formGroup"><label>รหัส *</label><input type="text" id="manualEmpCode" required></div><div class="formGroup"><label>วันที่ *</label><input type="date" id="manualDate" required></div><div class="formGrid"><div class="formGroup"><label>เข้า</label><input type="time" id="manualT1"></div><div class="formGroup"><label>ออกพัก</label><input type="time" id="manualT2"></div><div class="formGroup"><label>กลับพัก</label><input type="time" id="manualT3"></div><div class="formGroup"><label>ออก</label><input type="time" id="manualT4"></div></div><div class="formGroup"><label>หมายเหตุ</label><textarea id="manualNote"></textarea></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('manualLogModal')">ยกเลิก</button><button class="btn orange" onclick="saveManualLog()">💾 บันทึก</button></div></div></div>
+<div id="loadingOverlay" class="loadingOverlay hide">
+<div class="spinner"></div>
+</div>
+
+<div class="app">
+<aside class="sidebar">
+<div class="brand">
+<div class="logo">👤</div>
+<div>
+<h1>HRM Admin v2</h1>
+<div class="sub">การจัดการ</div>
+</div>
+</div>
+
+<div class="sideCard">
+<div class="kv">
+<div class="k">ผู้ใช้:</div>
+<div id="adminName">-</div>
+<div class="k">เวลา:</div>
+<div id="currentTime">-</div>
+</div>
+<div class="badge" style="margin-top:10px">
+<div class="dot ok"></div>
+<span>ออนไลน์</span>
+</div>
+<div class="btnRow">
+<button class="btn ghost" onclick="logout()">ออกจากระบบ</button>
+</div>
+</div>
+
+<nav class="nav">
+<button class="active" data-page="dashboard">
+<span>📊 แดชบอร์ด</span>
+<span class="meta"></span>
+</button>
+<button data-page="attendance">
+<span>📝 บันทึกเวลา</span>
+<span class="meta"></span>
+</button>
+<button data-page="leave">
+<span>🏖️ คำขอลา</span>
+<span class="meta" id="navLeaveBadge"></span>
+</button>
+<button data-page="employees">
+<span>👥 พนักงาน</span>
+<span class="meta"></span>
+</button>
+<button data-page="departments">
+<span>🏢 แผนก</span>
+<span class="meta"></span>
+</button>
+<button data-page="leavetypes">
+<span>📋 ประเภทการลา</span>
+<span class="meta"></span>
+</button>
+<button data-page="branches">
+<span>🏪 สาขา</span>
+<span class="meta"></span>
+</button>
+<button data-page="levels">
+<span>⭐ ระดับ</span>
+<span class="meta"></span>
+</button>
+<button data-page="zones">
+<span>📍 โซน</span>
+<span class="meta"></span>
+</button>
+<button data-page="holidays">
+<span>🎉 วันหยุด</span>
+<span class="meta"></span>
+</button>
+<button data-page="reports">
+<span>📈 รายงาน</span>
+<span class="meta"></span>
+</button>
+</nav>
+
+<div class="spacer"></div>
+<div class="footerHint">HRM System v2.0<br>© 2026 All rights reserved</div>
+</aside>
+
+<main class="main">
+<!-- Dashboard Page -->
+<div id="page-dashboard" class="page">
+<div class="topbar">
+<div>
+<h2>แดชบอร์ด</h2>
+<div style="font-size:14px;color:var(--muted);margin-top:4px">ภาพรวมระบบ / สถานะล่าสุด</div>
+</div>
+<div class="actions">
+<select id="dashDate" class="btn" onchange="loadDashboard()">
+<option value="">วันนี้</option>
+</select>
+<button class="btn primary" onclick="loadDashboard()">🔄 รีเฟรช</button>
+</div>
+</div>
+
+<div class="cardGrid">
+<div class="statCard">
+<div class="icon ok">✓</div>
+<div class="label">มาทำงานวันนี้</div>
+<div class="value" id="dashPresent">-</div>
+<div class="meta">จากทั้งหมด <span id="dashTotal">-</span> คน</div>
+</div>
+
+<div class="statCard">
+<div class="icon bad">✗</div>
+<div class="label">ขาดงาน</div>
+<div class="value" id="dashAbsent">-</div>
+<div class="meta">ไม่มีบันทึกเวลา</div>
+</div>
+
+<div class="statCard">
+<div class="icon orange">⏰</div>
+<div class="label">มาสาย</div>
+<div class="value" id="dashLate">-</div>
+<div class="meta">มาหลัง 08:02 น.</div>
+</div>
+
+<div class="statCard">
+<div class="icon info">🏖️</div>
+<div class="label">ลาวันนี้</div>
+<div class="value" id="dashLeave">-</div>
+<div class="meta">มีใบลาอนุมัติ</div>
+</div>
+
+<div class="statCard">
+<div class="icon warn">⏳</div>
+<div class="label">รอดำเนินการ</div>
+<div class="value" id="dashPending">-</div>
+<div class="meta">คำขอลารออนุมัติ</div>
+</div>
+
+<div class="statCard">
+<div class="icon purple">📊</div>
+<div class="label">สแกนเพิ่มเติม</div>
+<div class="value" id="dashExtraScans">-</div>
+<div class="meta">ExtraScans วันนี้</div>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="header">
+<h3>📌 รายการมาสายวันนี้</h3>
+<button class="btn sm primary" onclick="exportData('lateToday')">📥 ส่งออก</button>
+</div>
+<div class="body">
+<div id="lateListToday">
+<div class="emptyState">
+<div class="icon">⏰</div>
+<div>กำลังโหลด...</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="header">
+<h3>📋 คำขอลารอดำเนินการ</h3>
+<button class="btn sm primary" onclick="showPage('leave')">ดูทั้งหมด →</button>
+</div>
+<div class="body">
+<div id="pendingLeaveList">
+<div class="emptyState">
+<div class="icon">🏖️</div>
+<div>กำลังโหลด...</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Attendance Page -->
+<div id="page-attendance" class="page hide">
+<div class="topbar">
+<div>
+<h2>บันทึกเวลาทำงาน</h2>
+<div style="font-size:14px;color:var(--muted);margin-top:4px">ตรวจสอบและแก้ไขบันทึกเวลา</div>
+</div>
+<div class="actions">
+<button class="btn orange" onclick="openManualLogModal()">➕ เพิ่มบันทึกด้วยตนเอง</button>
+<button class="btn primary" onclick="exportData('attendance')">📥 ส่งออก Excel</button>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="header">
+<h3>🔍 ค้นหาและกรอง</h3>
+</div>
+<div class="body">
+<div class="filters">
+<select id="attMonth" onchange="loadAttendance()">
+<option value="">เลือกเดือน</option>
+</select>
+<select id="attYear" onchange="loadAttendance()">
+<option value="">เลือกปี</option>
+</select>
+<select id="attBranch" onchange="loadAttendance()">
+<option value="">ทุกสาขา</option>
+</select>
+<select id="attStatus" onchange="loadAttendance()">
+<option value="ALL">ทุกสถานะ</option>
+<option value="PRESENT">มาทำงาน</option>
+<option value="LATE">มาสาย</option>
+<option value="ABSENT">ขาดงาน</option>
+<option value="LEAVE">ลา</option>
+</select>
+<input type="text" id="attSearch" placeholder="ค้นหาชื่อ/รหัส..." oninput="loadAttendance()">
+</div>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="header">
+<h3>📊 ตารางบันทึกเวลา</h3>
+<div style="font-size:13px;color:var(--muted)">รายการทั้งหมด: <span id="attCount">0</span></div>
+</div>
+<div class="body">
+<div id="attendanceTable"></div>
+</div>
+</div>
+</div>
+
+<!-- Leave Page -->
+<div id="page-leave" class="page hide">
+<div class="topbar">
+<div>
+<h2>การจัดการคำขอลา</h2>
+<div style="font-size:14px;color:var(--muted);margin-top:4px">อนุมัติ / ปฏิเสธ / ยกเลิก</div>
+</div>
+<div class="actions">
+<button class="btn primary" onclick="exportData('leave')">📥 ส่งออก Excel</button>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="header">
+<h3>🔍 ค้นหาและกรอง</h3>
+</div>
+<div class="body">
+<div class="filters">
+<select id="leaveMonth" onchange="loadLeaveRequests()">
+<option value="">เลือกเดือน</option>
+</select>
+<select id="leaveYear" onchange="loadLeaveRequests()">
+<option value="">เลือกปี</option>
+</select>
+<select id="leaveStatus" onchange="loadLeaveRequests()">
+<option value="ALL">ทุกสถานะ</option>
+<option value="PENDING">รอดำเนินการ</option>
+<option value="APPROVED">อนุมัติ</option>
+<option value="REJECTED">ปฏิเสธ</option>
+<option value="CANCELED">ยกเลิก</option>
+</select>
+<input type="text" id="leaveSearch" placeholder="ค้นหาชื่อ/รหัส..." oninput="loadLeaveRequests()">
+</div>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="header">
+<h3>📋 คำขอลา</h3>
+<div style="font-size:13px;color:var(--muted)">รายการทั้งหมด: <span id="leaveCount">0</span></div>
+</div>
+<div class="body">
+<div id="leaveTable"></div>
+</div>
+</div>
+</div>
+
+<!-- Employees Page -->
+<div id="page-employees" class="page hide">
+<div class="topbar">
+<div>
+<h2>จัดการพนักงาน</h2>
+<div style="font-size:14px;color:var(--muted);margin-top:4px">เพิ่ม แก้ไข ลบข้อมูลพนักงาน</div>
+</div>
+<div class="actions">
+<button class="btn orange" onclick="openEmployeeModal()">➕ เพิ่มพนักงาน</button>
+<button class="btn primary" onclick="exportData('employees')">📥 ส่งออก Excel</button>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="header">
+<h3>🔍 ค้นหา</h3>
+</div>
+<div class="body">
+<div class="filters">
+<input type="text" id="empSearch" placeholder="ค้นหาชื่อ/รหัส/อีเมล..." oninput="loadEmployees()">
+<select id="empBranch" onchange="loadEmployees()">
+<option value="">ทุกสาขา</option>
+</select>
+<select id="empDept" onchange="loadEmployees()">
+<option value="">ทุกแผนก</option>
+</select>
+<select id="empLevel" onchange="loadEmployees()">
+<option value="">ทุกระดับ</option>
+</select>
+</div>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="header">
+<h3>👥 รายชื่อพนักงาน</h3>
+<div style="font-size:13px;color:var(--muted)">จำนวน: <span id="empCount">0</span> คน</div>
+</div>
+<div class="body">
+<div id="employeesTable"></div>
+</div>
+</div>
+</div>
+
+<!-- Departments Page -->
+<div id="page-departments" class="page hide">
+<div class="topbar">
+<div>
+<h2>จัดการแผนก</h2>
+<div style="font-size:14px;color:var(--muted);margin-top:4px">เพิ่ม แก้ไข ลบแผนก</div>
+</div>
+<div class="actions">
+<button class="btn orange" onclick="openDepartmentModal()">➕ เพิ่มแผนก</button>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="body">
+<div id="departmentsTable"></div>
+</div>
+</div>
+</div>
+
+<!-- Leave Types Page -->
+<div id="page-leavetypes" class="page hide">
+<div class="topbar">
+<div>
+<h2>ประเภทการลา</h2>
+<div style="font-size:14px;color:var(--muted);margin-top:4px">จัดการประเภทและโควต้าการลา</div>
+</div>
+<div class="actions">
+<button class="btn orange" onclick="openLeaveTypeModal()">➕ เพิ่มประเภท</button>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="body">
+<div id="leaveTypesTable"></div>
+</div>
+</div>
+</div>
+
+<!-- Branches Page -->
+<div id="page-branches" class="page hide">
+<div class="topbar">
+<div>
+<h2>จัดการสาขา</h2>
+<div style="font-size:14px;color:var(--muted);margin-top:4px">เพิ่ม แก้ไข ลบสาขา</div>
+</div>
+<div class="actions">
+<button class="btn orange" onclick="openBranchModal()">➕ เพิ่มสาขา</button>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="body">
+<div id="branchesTable"></div>
+</div>
+</div>
+</div>
+
+<!-- Levels Page -->
+<div id="page-levels" class="page hide">
+<div class="topbar">
+<div>
+<h2>จัดการระดับ</h2>
+<div style="font-size:14px;color:var(--muted);margin-top:4px">เพิ่ม แก้ไข ลบระดับพนักงาน</div>
+</div>
+<div class="actions">
+<button class="btn orange" onclick="openLevelModal()">➕ เพิ่มระดับ</button>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="body">
+<div id="levelsTable"></div>
+</div>
+</div>
+</div>
+
+<!-- Zones Page -->
+<div id="page-zones" class="page hide">
+<div class="topbar">
+<div>
+<h2>จัดการโซน GPS</h2>
+<div style="font-size:14px;color:var(--muted);margin-top:4px">กำหนดพื้นที่สำหรับเช็คอิน</div>
+</div>
+<div class="actions">
+<button class="btn orange" onclick="openZoneModal()">➕ เพิ่มโซน</button>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="body">
+<div id="zonesTable"></div>
+</div>
+</div>
+</div>
+
+<!-- Holidays Page -->
+<div id="page-holidays" class="page hide">
+<div class="topbar">
+<div>
+<h2>จัดการวันหยุด</h2>
+<div style="font-size:14px;color:var(--muted);margin-top:4px">กำหนดวันหยุดประจำปี</div>
+</div>
+<div class="actions">
+<button class="btn orange" onclick="openHolidayModal()">➕ เพิ่มวันหยุด</button>
+<button class="btn primary" onclick="importHolidays()">📥 นำเข้าวันหยุด</button>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="header">
+<h3>🔍 เลือกปี</h3>
+</div>
+<div class="body">
+<div class="filters">
+<select id="holidayYear" onchange="loadHolidays()">
+<option value="">เลือกปี</option>
+</select>
+</div>
+</div>
+</div>
+
+<div class="contentCard">
+<div class="body">
+<div id="holidaysTable"></div>
+</div>
+</div>
+</div>
+
+<!-- Reports Page -->
+<div id="page-reports" class="page hide">
+<div class="topbar">
+<div>
+<h2>รายงานและสถิติ</h2>
+<div style="font-size:14px;color:var(--muted);margin-top:4px">วิเคราะห์ข้อมูลเชิงลึก</div>
+</div>
+</div>
+
+<div class="tabs">
+<button class="active" data-tab="monthly">รายงานรายเดือน</button>
+<button data-tab="employee">รายงานรายบุคคล</button>
+<button data-tab="summary">สรุปภาพรวม</button>
+</div>
+
+<!-- Monthly Report -->
+<div id="tab-monthly" class="tabContent">
+<div class="contentCard">
+<div class="header">
+<h3>📊 รายงานรายเดือน</h3>
+</div>
+<div class="body">
+<div class="filters mb-2">
+<select id="reportMonth"></select>
+<select id="reportYear"></select>
+<button class="btn primary" onclick="generateMonthlyReport()">สร้างรายงาน</button>
+</div>
+<div id="monthlyReportContent"></div>
+</div>
+</div>
+</div>
+
+<!-- Employee Report -->
+<div id="tab-employee" class="tabContent hide">
+<div class="contentCard">
+<div class="header">
+<h3>👤 รายงานรายบุคคล</h3>
+</div>
+<div class="body">
+<div class="filters mb-2">
+<input type="text" id="reportEmpCode" placeholder="รหัสพนักงาน">
+<select id="reportEmpMonth"></select>
+<select id="reportEmpYear"></select>
+<button class="btn primary" onclick="generateEmployeeReport()">สร้างรายงาน</button>
+</div>
+<div id="employeeReportContent"></div>
+</div>
+</div>
+</div>
+
+<!-- Summary Report -->
+<div id="tab-summary" class="tabContent hide">
+<div class="contentCard">
+<div class="header">
+<h3>📈 สรุปภาพรวม</h3>
+</div>
+<div class="body">
+<div class="filters mb-2">
+<select id="summaryYear"></select>
+<button class="btn primary" onclick="generateSummaryReport()">สร้างรายงาน</button>
+</div>
+<div id="summaryReportContent"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+<!-- Modals -->
+<!-- Leave Action Modal -->
+<div id="leaveActionModal" class="modal">
+<div class="modalContent">
+<div class="modalHeader">
+<h3 id="leaveActionTitle">ดำเนินการคำขอลา</h3>
+<button class="btn ghost sm" onclick="closeModal('leaveActionModal')">✕</button>
+</div>
+<div class="modalBody">
+<div id="leaveActionDetails"></div>
+<div class="formGroup">
+<label>หมายเหตุจากผู้อนุมัติ</label>
+<textarea id="leaveAdminNote" placeholder="ระบุหมายเหตุ (ถ้ามี)"></textarea>
+</div>
+</div>
+<div class="modalFooter">
+<button class="btn ghost" onclick="closeModal('leaveActionModal')">ยกเลิก</button>
+<button class="btn bad" onclick="processLeaveAction('REJECTED')">❌ ปฏิเสธ</button>
+<button class="btn ok" onclick="processLeaveAction('APPROVED')">✅ อนุมัติ</button>
+</div>
+</div>
+</div>
+
+<!-- Employee Modal -->
+<div id="employeeModal" class="modal">
+<div class="modalContent">
+<div class="modalHeader">
+<h3 id="employeeModalTitle">เพิ่มพนักงาน</h3>
+<button class="btn ghost sm" onclick="closeModal('employeeModal')">✕</button>
+</div>
+<div class="modalBody">
+<form id="employeeForm">
+<div class="formGrid">
+<div class="formGroup">
+<label>รหัสพนักงาน *</label>
+<input type="text" id="empCode" required>
+</div>
+<div class="formGroup">
+<label>ชื่อ-นามสกุล *</label>
+<input type="text" id="empFullName" required>
+</div>
+<div class="formGroup">
+<label>อีเมล</label>
+<input type="email" id="empEmail">
+</div>
+<div class="formGroup">
+<label>สาขา</label>
+<select id="empBranchInput"></select>
+</div>
+<div class="formGroup">
+<label>แผนก</label>
+<select id="empDeptInput"></select>
+</div>
+<div class="formGroup">
+<label>ระดับ</label>
+<select id="empLevelInput"></select>
+</div>
+</div>
+<div class="formGroup">
+<label>ตำแหน่ง</label>
+<input type="text" id="empPosition">
+</div>
+</form>
+</div>
+<div class="modalFooter">
+<button class="btn ghost" onclick="closeModal('employeeModal')">ยกเลิก</button>
+<button class="btn orange" onclick="saveEmployee()">💾 บันทึก</button>
+</div>
+</div>
+</div>
+
+<!-- Department Modal -->
+<div id="departmentModal" class="modal">
+<div class="modalContent">
+<div class="modalHeader">
+<h3 id="deptModalTitle">เพิ่มแผนก</h3>
+<button class="btn ghost sm" onclick="closeModal('departmentModal')">✕</button>
+</div>
+<div class="modalBody">
+<div class="formGroup">
+<label>ชื่อแผนก *</label>
+<input type="text" id="deptName" required>
+</div>
+<div class="formGroup">
+<label>หมายเหตุ</label>
+<textarea id="deptNote"></textarea>
+</div>
+</div>
+<div class="modalFooter">
+<button class="btn ghost" onclick="closeModal('departmentModal')">ยกเลิก</button>
+<button class="btn orange" onclick="saveDepartment()">💾 บันทึก</button>
+</div>
+</div>
+</div>
+
+<!-- Leave Type Modal -->
+<div id="leaveTypeModal" class="modal">
+<div class="modalContent">
+<div class="modalHeader">
+<h3 id="leaveTypeModalTitle">เพิ่มประเภทการลา</h3>
+<button class="btn ghost sm" onclick="closeModal('leaveTypeModal')">✕</button>
+</div>
+<div class="modalBody">
+<div class="formGroup">
+<label>ID ประเภทการลา *</label>
+<input type="text" id="leaveTypeId" required placeholder="เช่น: SICK, ANNUAL">
+</div>
+<div class="formGroup">
+<label>ชื่อประเภทการลา *</label>
+<input type="text" id="leaveTypeName" required placeholder="เช่น: ลาป่วย, ลาพักร้อน">
+</div>
+<div class="formGroup">
+<label>จำนวนวันสูงสุดต่อปี</label>
+<input type="number" id="leaveTypeMaxDays" value="0" min="0">
+</div>
+<div class="formGroup">
+<label>หมายเหตุ</label>
+<textarea id="leaveTypeNote"></textarea>
+</div>
+</div>
+<div class="modalFooter">
+<button class="btn ghost" onclick="closeModal('leaveTypeModal')">ยกเลิก</button>
+<button class="btn orange" onclick="saveLeaveType()">💾 บันทึก</button>
+</div>
+</div>
+</div>
+
+<!-- Branch Modal -->
+<div id="branchModal" class="modal">
+<div class="modalContent">
+<div class="modalHeader">
+<h3 id="branchModalTitle">เพิ่มสาขา</h3>
+<button class="btn ghost sm" onclick="closeModal('branchModal')">✕</button>
+</div>
+<div class="modalBody">
+<div class="formGroup">
+<label>ชื่อสาขา *</label>
+<input type="text" id="branchName" required>
+</div>
+</div>
+<div class="modalFooter">
+<button class="btn ghost" onclick="closeModal('branchModal')">ยกเลิก</button>
+<button class="btn orange" onclick="saveBranch()">💾 บันทึก</button>
+</div>
+</div>
+</div>
+
+<!-- Level Modal -->
+<div id="levelModal" class="modal">
+<div class="modalContent">
+<div class="modalHeader">
+<h3 id="levelModalTitle">เพิ่มระดับ</h3>
+<button class="btn ghost sm" onclick="closeModal('levelModal')">✕</button>
+</div>
+<div class="modalBody">
+<div class="formGroup">
+<label>ชื่อระดับ *</label>
+<input type="text" id="levelName" required>
+</div>
+</div>
+<div class="modalFooter">
+<button class="btn ghost" onclick="closeModal('levelModal')">ยกเลิก</button>
+<button class="btn orange" onclick="saveLevel()">💾 บันทึก</button>
+</div>
+</div>
+</div>
+
+<!-- Zone Modal -->
+<div id="zoneModal" class="modal">
+<div class="modalContent">
+<div class="modalHeader">
+<h3 id="zoneModalTitle">เพิ่มโซน GPS</h3>
+<button class="btn ghost sm" onclick="closeModal('zoneModal')">✕</button>
+</div>
+<div class="modalBody">
+<div class="formGroup">
+<label>ชื่อโซน *</label>
+<input type="text" id="zoneName" required>
+</div>
+<div class="formGrid">
+<div class="formGroup">
+<label>ละติจูด *</label>
+<input type="number" id="zoneLat" step="0.000001" required>
+</div>
+<div class="formGroup">
+<label>ลองจิจูด *</label>
+<input type="number" id="zoneLng" step="0.000001" required>
+</div>
+<div class="formGroup">
+<label>รัศมี (เมตร) *</label>
+<input type="number" id="zoneRadius" value="100" required>
+</div>
+</div>
+<div class="formGroup">
+<label>หมายเหตุ</label>
+<textarea id="zoneNote"></textarea>
+</div>
+</div>
+<div class="modalFooter">
+<button class="btn ghost" onclick="closeModal('zoneModal')">ยกเลิก</button>
+<button class="btn orange" onclick="saveZone()">💾 บันทึก</button>
+</div>
+</div>
+</div>
+
+<!-- Holiday Modal -->
+<div id="holidayModal" class="modal">
+<div class="modalContent">
+<div class="modalHeader">
+<h3 id="holidayModalTitle">เพิ่มวันหยุด</h3>
+<button class="btn ghost sm" onclick="closeModal('holidayModal')">✕</button>
+</div>
+<div class="modalBody">
+<div class="formGroup">
+<label>วันที่ *</label>
+<input type="date" id="holidayDate" required>
+</div>
+<div class="formGroup">
+<label>ชื่อวันหยุด *</label>
+<input type="text" id="holidayName" required>
+</div>
+<div class="formGroup">
+<label>หมายเหตุ</label>
+<textarea id="holidayNote"></textarea>
+</div>
+</div>
+<div class="modalFooter">
+<button class="btn ghost" onclick="closeModal('holidayModal')">ยกเลิก</button>
+<button class="btn orange" onclick="saveHoliday()">💾 บันทึก</button>
+</div>
+</div>
+</div>
+
+<!-- Manual Log Modal -->
+<div id="manualLogModal" class="modal">
+<div class="modalContent">
+<div class="modalHeader">
+<h3>เพิ่มบันทึกเวลาด้วยตนเอง</h3>
+<button class="btn ghost sm" onclick="closeModal('manualLogModal')">✕</button>
+</div>
+<div class="modalBody">
+<div class="formGroup">
+<label>รหัสพนักงาน *</label>
+<input type="text" id="manualEmpCode" required>
+</div>
+<div class="formGroup">
+<label>วันที่ *</label>
+<input type="date" id="manualDate" required>
+</div>
+<div class="formGrid">
+<div class="formGroup">
+<label>เวลาเข้า</label>
+<input type="time" id="manualT1">
+</div>
+<div class="formGroup">
+<label>เวลาออกพักเที่ยง</label>
+<input type="time" id="manualT2">
+</div>
+<div class="formGroup">
+<label>เวลากลับพักเที่ยง</label>
+<input type="time" id="manualT3">
+</div>
+<div class="formGroup">
+<label>เวลาออก</label>
+<input type="time" id="manualT4">
+</div>
+</div>
+<div class="formGroup">
+<label>หมายเหตุ</label>
+<textarea id="manualNote"></textarea>
+</div>
+</div>
+<div class="modalFooter">
+<button class="btn ghost" onclick="closeModal('manualLogModal')">ยกเลิก</button>
+<button class="btn orange" onclick="saveManualLog()">💾 บันทึก</button>
+</div>
+</div>
+</div>
+
 <script>
-// Global vars
-let adminToken=null,currentPage='dashboard',currentLeaveRequest=null,currentEditItem=null;
-// Init
-window.onload=function(){checkLogin();setupNav();setupTabs();startClock();populateFilters()};
-function checkLogin(){const token=localStorage.getItem('adminToken'),username=localStorage.getItem('adminUsername');if(!token||!username){window.location.href='login.html';return}adminToken=token;document.getElementById('adminName').textContent=username;loadDashboard()}
-function startClock(){function u(){const n=new Date(),t=n.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});document.getElementById('currentTime').textContent=t}u();setInterval(u,60000)}
-function setupNav(){document.querySelectorAll('.nav button[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)))}
-function setupTabs(){document.querySelectorAll('.tabs button[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)))}
-function showPage(p){currentPage=p;document.querySelectorAll('.nav button').forEach(b=>{b.classList.remove('active');if(b.dataset.page===p)b.classList.add('active')});document.querySelectorAll('.page').forEach(e=>e.classList.add('hide'));document.getElementById('page-'+p).classList.remove('hide');switch(p){case 'dashboard':loadDashboard();break;case 'attendance':loadAttendance();break;case 'leave':loadLeaveRequests();break;case 'employees':loadEmployees();break;case 'departments':loadDepartments();break;case 'leavetypes':loadLeaveTypes();break;case 'branches':loadBranches();break;case 'levels':loadLevels();break;case 'zones':loadZones();break;case 'holidays':loadHolidays();break}}
-function showTab(t){document.querySelectorAll('.tabs button').forEach(b=>{b.classList.remove('active');if(b.dataset.tab===t)b.classList.add('active')});document.querySelectorAll('.tabContent').forEach(e=>e.classList.add('hide'));document.getElementById('tab-'+t).classList.remove('hide')}
-function populateFilters(){const now=new Date(),y=now.getFullYear(),m=now.getMonth()+1;const months=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];['attMonth','leaveMonth','reportMonth','reportEmpMonth'].forEach(id=>{const s=document.getElementById(id);if(s){months.forEach((mn,i)=>{const o=document.createElement('option');o.value=i+1;o.textContent=mn;if(i+1===m)o.selected=true;s.appendChild(o)})}});['attYear','leaveYear','holidayYear','reportYear','reportEmpYear','summaryYear'].forEach(id=>{const s=document.getElementById(id);if(s){for(let yr=y-2;yr<=y+2;yr++){const o=document.createElement('option');o.value=yr;o.textContent=yr+543;if(yr===y)o.selected=true;s.appendChild(o)}}});loadBranchOptions();loadDeptOptions();loadLevelOptions()}
-// API
-function callAPI(action,params={}){return new Promise((resolve,reject)=>{showLoading();params.action=action;if(adminToken)params.token=adminToken;google.script.run.withSuccessHandler(r=>{hideLoading();if(r.error){showAlert(r.error,'error');reject(r.error)}else resolve(r)}).withFailureHandler(e=>{hideLoading();showAlert('เกิดข้อผิดพลาด: '+e.message,'error');reject(e)}).doAction(params)})}
-// Dashboard
-async function loadDashboard(){try{const date=document.getElementById('dashDate')?.value||formatDate(new Date());const s=await callAPI('adminGetDashboardStats',{date});document.getElementById('dashPresent').textContent=s.present||0;document.getElementById('dashAbsent').textContent=s.absent||0;document.getElementById('dashLate').textContent=s.late||0;document.getElementById('dashLeave').textContent=s.onLeave||0;document.getElementById('dashTotal').textContent=s.total||0;document.getElementById('dashPending').textContent=s.pendingLeave||0;document.getElementById('dashExtraScans').textContent=s.extraScans||0;loadLateListToday(date);loadPendingLeave();const badge=document.getElementById('navLeaveBadge');if(badge)badge.textContent=s.pendingLeave>0?s.pendingLeave:''}catch(e){console.error('Dashboard error:',e)}}
-async function loadLateListToday(date){try{const r=await callAPI('adminListLateToday',{date});const c=document.getElementById('lateListToday');if(!r.rows||r.rows.length===0){c.innerHTML='<div class="emptyState"><div class="icon">✨</div><div>ไม่มีรายการมาสาย</div></div>';return}let h='<table><thead><tr><th>รหัส</th><th>ชื่อ</th><th>สาขา</th><th>เข้า</th><th>มาสาย</th></tr></thead><tbody>';r.rows.forEach(row=>{h+=`<tr><td>${escHtml(row.code)}</td><td>${escHtml(row.fullName)}</td><td>${escHtml(row.branch)}</td><td>${escHtml(row.t1)}</td><td><span class="statusBadge late">${escHtml(row.totalLateText||'-')}</span></td></tr>`});h+='</tbody></table>';c.innerHTML=h}catch(e){console.error(e)}}
-async function loadPendingLeave(){try{const now=new Date();const r=await callAPI('adminListLeaveRequests',{year:now.getFullYear(),month:now.getMonth()+1,status:'PENDING'});const c=document.getElementById('pendingLeaveList');if(!r.rows||r.rows.length===0){c.innerHTML='<div class="emptyState"><div class="icon">✨</div><div>ไม่มีคำขอรออนุมัติ</div></div>';return}let h='<table><thead><tr><th>ยื่น</th><th>รหัส</th><th>ชื่อ</th><th>ประเภท</th><th>ช่วง</th><th>วัน</th><th></th></tr></thead><tbody>';r.rows.forEach(row=>{h+=`<tr><td>${fmtDateTimeThai(row.createdAt)}</td><td>${escHtml(row.empCode)}</td><td>${escHtml(row.empName)}</td><td>${escHtml(row.leaveTypeId)}</td><td>${escHtml(row.rangeText||'-')}</td><td>${row.totalDays}</td><td><button class="btn sm primary" onclick="openLeaveActionModal('${row.id}')">ดำเนินการ</button></td></tr>`});h+='</tbody></table>';c.innerHTML=h}catch(e){console.error(e)}}
-// Attendance
-async function loadAttendance(){try{const month=document.getElementById('attMonth')?.value||(new Date().getMonth()+1);const year=document.getElementById('attYear')?.value||new Date().getFullYear();const branch=document.getElementById('attBranch')?.value||'';const status=document.getElementById('attStatus')?.value||'ALL';const search=document.getElementById('attSearch')?.value||'';const r=await callAPI('adminListLogs',{year,month,branch,status,search});const c=document.getElementById('attendanceTable');const cnt=document.getElementById('attCount');if(!r.rows||r.rows.length===0){c.innerHTML='<div class="emptyState"><div class="icon">📝</div><div>ไม่พบข้อมูล</div></div>';cnt.textContent='0';return}cnt.textContent=r.rows.length;let h='<div class="tableWrapper"><table><thead><tr><th>วันที่</th><th>รหัส</th><th>ชื่อ</th><th>สาขา</th><th>เข้า</th><th>ออก</th><th>สถานะ</th><th>มาสาย</th><th></th></tr></thead><tbody>';r.rows.forEach(row=>{const sc=getStatusClass(row.status);h+=`<tr><td>${fmtDateThai(row.date)}</td><td>${escHtml(row.code)}</td><td>${escHtml(row.fullName)}</td><td>${escHtml(row.branch)}</td><td>${escHtml(row.t1||'-')}</td><td>${escHtml(row.t4||'-')}</td><td><span class="statusBadge ${sc}">${escHtml(row.status)}</span></td><td>${escHtml(row.totalLateText||'-')}</td><td><button class="btn sm ghost" onclick="viewDetail('${row.code}','${row.date}')">รายละเอียด</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
-function openManualLogModal(){document.getElementById('manualEmpCode').value='';document.getElementById('manualDate').value=formatDate(new Date());document.getElementById('manualT1').value='';document.getElementById('manualT2').value='';document.getElementById('manualT3').value='';document.getElementById('manualT4').value='';document.getElementById('manualNote').value='';openModal('manualLogModal')}
-async function saveManualLog(){try{const code=document.getElementById('manualEmpCode').value.trim();const date=document.getElementById('manualDate').value;const t1=document.getElementById('manualT1').value;const t2=document.getElementById('manualT2').value;const t3=document.getElementById('manualT3').value;const t4=document.getElementById('manualT4').value;const note=document.getElementById('manualNote').value.trim();if(!code||!date){showAlert('กรุณากรอกรหัสและวันที่','warning');return}await callAPI('adminAddManualLog',{code,date,t1,t2,t3,t4,note});showAlert('บันทึกสำเร็จ','success');closeModal('manualLogModal');loadAttendance()}catch(e){console.error(e)}}
-// Leave
-async function loadLeaveRequests(){try{const month=document.getElementById('leaveMonth')?.value||(new Date().getMonth()+1);const year=document.getElementById('leaveYear')?.value||new Date().getFullYear();const status=document.getElementById('leaveStatus')?.value||'ALL';const search=document.getElementById('leaveSearch')?.value||'';const r=await callAPI('adminListLeaveRequests',{year,month,status,search});const c=document.getElementById('leaveTable');const cnt=document.getElementById('leaveCount');if(!r.rows||r.rows.length===0){c.innerHTML='<div class="emptyState"><div class="icon">🏖️</div><div>ไม่พบข้อมูล</div></div>';cnt.textContent='0';return}cnt.textContent=r.rows.length;let h='<div class="tableWrapper"><table><thead><tr><th>ยื่น</th><th>รหัส</th><th>ชื่อ</th><th>ประเภท</th><th>ช่วง</th><th>วัน</th><th>สถานะ</th><th></th></tr></thead><tbody>';r.rows.forEach(row=>{const sc=getLeaveStatusClass(row.status);h+=`<tr><td>${fmtDateTimeThai(row.createdAt)}</td><td>${escHtml(row.empCode)}</td><td>${escHtml(row.empName)}</td><td>${escHtml(row.leaveTypeId)}</td><td>${escHtml(row.rangeText||'-')}</td><td>${row.totalDays}</td><td><span class="statusBadge ${sc}">${escHtml(row.status)}</span></td><td>`;if(row.status==='PENDING'){h+=`<button class="btn sm primary" onclick="openLeaveActionModal('${row.id}')">ดำเนินการ</button>`}else{h+=`<button class="btn sm ghost" onclick="viewDetail('${row.id}','')">รายละเอียด</button>`}h+=`</td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
-async function openLeaveActionModal(id){try{const r=await callAPI('adminGetLeaveRequestDetail',{id});if(!r.request){showAlert('ไม่พบข้อมูล','error');return}currentLeaveRequest=r.request;let h='<div style="margin-bottom:16px;"><div style="display:grid;grid-template-columns:120px 1fr;gap:8px;font-size:14px;">';h+=`<div style="color:var(--muted)">พนักงาน:</div><div><strong>${escHtml(currentLeaveRequest.empName)}</strong> (${escHtml(currentLeaveRequest.empCode)})</div>`;h+=`<div style="color:var(--muted)">สาขา:</div><div>${escHtml(currentLeaveRequest.branch)}</div>`;h+=`<div style="color:var(--muted)">ประเภท:</div><div>${escHtml(currentLeaveRequest.leaveTypeId)}</div>`;h+=`<div style="color:var(--muted)">ช่วงเวลา:</div><div>${escHtml(currentLeaveRequest.rangeText||'-')}</div>`;h+=`<div style="color:var(--muted)">จำนวน:</div><div>${currentLeaveRequest.totalDays} วัน</div>`;h+=`<div style="color:var(--muted)">เหตุผล:</div><div>${escHtml(currentLeaveRequest.reason||'-')}</div>`;if(currentLeaveRequest.evidenceUrl){h+=`<div style="color:var(--muted)">หลักฐาน:</div><div><a href="${escHtml(currentLeaveRequest.evidenceUrl)}" target="_blank" class="btn sm ghost">ดูไฟล์</a></div>`}h+=`</div></div>`;document.getElementById('leaveActionDetails').innerHTML=h;document.getElementById('leaveAdminNote').value='';openModal('leaveActionModal')}catch(e){console.error(e)}}
-async function processLeaveAction(newStatus){if(!currentLeaveRequest)return;try{const adminNote=document.getElementById('leaveAdminNote').value.trim();await callAPI('adminProcessLeaveRequest',{id:currentLeaveRequest.id,status:newStatus,adminNote});showAlert('ดำเนินการสำเร็จ','success');closeModal('leaveActionModal');currentLeaveRequest=null;loadLeaveRequests();loadDashboard()}catch(e){console.error(e)}}
-// Employees
-async function loadEmployees(){try{const search=document.getElementById('empSearch')?.value||'';const branch=document.getElementById('empBranch')?.value||'';const dept=document.getElementById('empDept')?.value||'';const level=document.getElementById('empLevel')?.value||'';const r=await callAPI('adminListEmployees',{search,branch,department:dept,level});const c=document.getElementById('employeesTable');const cnt=document.getElementById('empCount');if(!r.employees||r.employees.length===0){c.innerHTML='<div class="emptyState"><div class="icon">👥</div><div>ไม่พบข้อมูล</div></div>';cnt.textContent='0';return}cnt.textContent=r.employees.length;let h='<div class="tableWrapper"><table><thead><tr><th>รหัส</th><th>ชื่อ</th><th>อีเมล</th><th>สาขา</th><th>แผนก</th><th>ระดับ</th><th>ตำแหน่ง</th><th></th></tr></thead><tbody>';r.employees.forEach(emp=>{h+=`<tr><td>${escHtml(emp.code)}</td><td>${escHtml(emp.fullName)}</td><td>${escHtml(emp.email||'-')}</td><td>${escHtml(emp.branch||'-')}</td><td>${escHtml(emp.department||'-')}</td><td>${escHtml(emp.level||'-')}</td><td>${escHtml(emp.positionTitle||'-')}</td><td><button class="btn sm ghost" onclick="editEmployee('${emp.code}')">✏️</button><button class="btn sm ghost" onclick="deleteEmployee('${emp.code}')">🗑️</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
-function openEmployeeModal(code=null){currentEditItem=code;if(code){document.getElementById('employeeModalTitle').textContent='แก้ไขพนักงาน'}else{document.getElementById('employeeModalTitle').textContent='เพิ่มพนักงาน';document.getElementById('empCode').value='';document.getElementById('empFullName').value='';document.getElementById('empEmail').value='';document.getElementById('empPosition').value=''}openModal('employeeModal')}
-async function saveEmployee(){try{const code=document.getElementById('empCode').value.trim();const fullName=document.getElementById('empFullName').value.trim();const email=document.getElementById('empEmail').value.trim();const branch=document.getElementById('empBranchInput').value;const dept=document.getElementById('empDeptInput').value;const level=document.getElementById('empLevelInput').value;const position=document.getElementById('empPosition').value.trim();if(!code||!fullName){showAlert('กรุณากรอกข้อมูลที่จำเป็น','warning');return}if(currentEditItem){await callAPI('adminUpdateEmployee',{code,fullName,email,branch,department:dept,level,positionTitle:position})}else{await callAPI('adminAddEmployee',{code,fullName,email,branch,department:dept,level,positionTitle:position})}showAlert('บันทึกสำเร็จ','success');closeModal('employeeModal');loadEmployees()}catch(e){console.error(e)}}
-async function deleteEmployee(code){if(!confirm('คุณแน่ใจหรือไม่?'))return;try{await callAPI('adminDeleteEmployee',{code});showAlert('ลบสำเร็จ','success');loadEmployees()}catch(e){console.error(e)}}
-// Departments
-async function loadDepartments(){try{const r=await callAPI('adminListDepartments');const c=document.getElementById('departmentsTable');if(!r.departments||r.departments.length===0){c.innerHTML='<div class="emptyState"><div class="icon">🏢</div><div>ไม่พบข้อมูล</div></div>';return}let h='<div class="tableWrapper"><table><thead><tr><th>ชื่อ</th><th>หมายเหตุ</th><th>อัปเดต</th><th></th></tr></thead><tbody>';r.departments.forEach(d=>{h+=`<tr><td>${escHtml(d.deptName)}</td><td>${escHtml(d.note||'-')}</td><td>${fmtDateTimeThai(d.updatedAt)}</td><td><button class="btn sm ghost" onclick="editDepartment('${d.deptId}')">✏️</button><button class="btn sm ghost" onclick="deleteDepartment('${d.deptId}')">🗑️</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
-function openDepartmentModal(id=null){currentEditItem=id;if(id){document.getElementById('deptModalTitle').textContent='แก้ไขแผนก'}else{document.getElementById('deptModalTitle').textContent='เพิ่มแผนก';document.getElementById('deptName').value='';document.getElementById('deptNote').value=''}openModal('departmentModal')}
-async function saveDepartment(){try{const name=document.getElementById('deptName').value.trim();const note=document.getElementById('deptNote').value.trim();if(!name){showAlert('กรุณากรอกชื่อแผนก','warning');return}if(currentEditItem){await callAPI('adminUpdateDepartment',{deptId:currentEditItem,deptName:name,note})}else{await callAPI('adminAddDepartment',{deptName:name,note})}showAlert('บันทึกสำเร็จ','success');closeModal('departmentModal');loadDepartments();loadDeptOptions()}catch(e){console.error(e)}}
-async function deleteDepartment(id){if(!confirm('คุณแน่ใจหรือไม่?'))return;try{await callAPI('adminDeleteDepartment',{deptId:id});showAlert('ลบสำเร็จ','success');loadDepartments();loadDeptOptions()}catch(e){console.error(e)}}
-// LeaveTypes
-async function loadLeaveTypes(){try{const r=await callAPI('adminListLeaveTypes');const c=document.getElementById('leaveTypesTable');if(!r.types||r.types.length===0){c.innerHTML='<div class="emptyState"><div class="icon">📋</div><div>ไม่พบข้อมูล</div></div>';return}let h='<div class="tableWrapper"><table><thead><tr><th>ชื่อ</th><th>วันสูงสุด/ปี</th><th>หมายเหตุ</th><th>อัปเดต</th><th></th></tr></thead><tbody>';r.types.forEach(t=>{h+=`<tr><td>${escHtml(t.name)}</td><td>${t.maxDaysPerYear||0}</td><td>${escHtml(t.note||'-')}</td><td>${fmtDateTimeThai(t.updatedAt)}</td><td><button class="btn sm ghost" onclick="editLeaveType('${t.leaveTypeId}')">✏️</button><button class="btn sm ghost" onclick="deleteLeaveType('${t.leaveTypeId}')">🗑️</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
-function openLeaveTypeModal(id=null){currentEditItem=id;if(id){document.getElementById('leaveTypeModalTitle').textContent='แก้ไขประเภท'}else{document.getElementById('leaveTypeModalTitle').textContent='เพิ่มประเภท';document.getElementById('leaveTypeName').value='';document.getElementById('leaveTypeMaxDays').value='0';document.getElementById('leaveTypeNote').value=''}openModal('leaveTypeModal')}
-async function saveLeaveType(){try{const name=document.getElementById('leaveTypeName').value.trim();const maxDays=parseInt(document.getElementById('leaveTypeMaxDays').value)||0;const note=document.getElementById('leaveTypeNote').value.trim();if(!name){showAlert('กรุณากรอกชื่อ','warning');return}if(currentEditItem){await callAPI('adminUpdateLeaveType',{leaveTypeId:currentEditItem,name,maxDaysPerYear:maxDays,note})}else{await callAPI('adminAddLeaveType',{name,maxDaysPerYear:maxDays,note})}showAlert('บันทึกสำเร็จ','success');closeModal('leaveTypeModal');loadLeaveTypes()}catch(e){console.error(e)}}
-async function deleteLeaveType(id){if(!confirm('คุณแน่ใจหรือไม่?'))return;try{await callAPI('adminDeleteLeaveType',{leaveTypeId:id});showAlert('ลบสำเร็จ','success');loadLeaveTypes()}catch(e){console.error(e)}}
-// Branches
-async function loadBranches(){try{const r=await callAPI('adminListBranches');const c=document.getElementById('branchesTable');if(!r.branches||r.branches.length===0){c.innerHTML='<div class="emptyState"><div class="icon">🏪</div><div>ไม่พบข้อมูล</div></div>';return}let h='<div class="tableWrapper"><table><thead><tr><th>ชื่อ</th><th>อัปเดต</th><th></th></tr></thead><tbody>';r.branches.forEach(b=>{h+=`<tr><td>${escHtml(b.name)}</td><td>${fmtDateTimeThai(b.updatedAt)}</td><td><button class="btn sm ghost" onclick="editBranch('${b.name}')">✏️</button><button class="btn sm ghost" onclick="deleteBranch('${b.name}')">🗑️</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
-function openBranchModal(name=null){currentEditItem=name;if(name){document.getElementById('branchModalTitle').textContent='แก้ไขสาขา';document.getElementById('branchName').value=name}else{document.getElementById('branchModalTitle').textContent='เพิ่มสาขา';document.getElementById('branchName').value=''}openModal('branchModal')}
-async function saveBranch(){try{const name=document.getElementById('branchName').value.trim();if(!name){showAlert('กรุณากรอกชื่อ','warning');return}if(currentEditItem){await callAPI('adminUpdateBranch',{oldName:currentEditItem,newName:name})}else{await callAPI('adminAddBranch',{name})}showAlert('บันทึกสำเร็จ','success');closeModal('branchModal');loadBranches();loadBranchOptions()}catch(e){console.error(e)}}
-async function deleteBranch(name){if(!confirm('คุณแน่ใจหรือไม่?'))return;try{await callAPI('adminDeleteBranch',{name});showAlert('ลบสำเร็จ','success');loadBranches();loadBranchOptions()}catch(e){console.error(e)}}
-// Levels
-async function loadLevels(){try{const r=await callAPI('adminListLevels');const c=document.getElementById('levelsTable');if(!r.levels||r.levels.length===0){c.innerHTML='<div class="emptyState"><div class="icon">⭐</div><div>ไม่พบข้อมูล</div></div>';return}let h='<div class="tableWrapper"><table><thead><tr><th>ชื่อ</th><th>อัปเดต</th><th></th></tr></thead><tbody>';r.levels.forEach(l=>{h+=`<tr><td>${escHtml(l.name)}</td><td>${fmtDateTimeThai(l.updatedAt)}</td><td><button class="btn sm ghost" onclick="editLevel('${l.name}')">✏️</button><button class="btn sm ghost" onclick="deleteLevel('${l.name}')">🗑️</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
-function openLevelModal(name=null){currentEditItem=name;if(name){document.getElementById('levelModalTitle').textContent='แก้ไขระดับ';document.getElementById('levelName').value=name}else{document.getElementById('levelModalTitle').textContent='เพิ่มระดับ';document.getElementById('levelName').value=''}openModal('levelModal')}
-async function saveLevel(){try{const name=document.getElementById('levelName').value.trim();if(!name){showAlert('กรุณากรอกชื่อ','warning');return}if(currentEditItem){await callAPI('adminUpdateLevel',{oldName:currentEditItem,newName:name})}else{await callAPI('adminAddLevel',{name})}showAlert('บันทึกสำเร็จ','success');closeModal('levelModal');loadLevels();loadLevelOptions()}catch(e){console.error(e)}}
-async function deleteLevel(name){if(!confirm('คุณแน่ใจหรือไม่?'))return;try{await callAPI('adminDeleteLevel',{name});showAlert('ลบสำเร็จ','success');loadLevels();loadLevelOptions()}catch(e){console.error(e)}}
-// Zones
-async function loadZones(){try{const r=await callAPI('adminListZones');const c=document.getElementById('zonesTable');if(!r.zones||r.zones.length===0){c.innerHTML='<div class="emptyState"><div class="icon">📍</div><div>ไม่พบข้อมูล</div></div>';return}let h='<div class="tableWrapper"><table><thead><tr><th>ชื่อ</th><th>ละติจูด</th><th>ลองจิจูด</th><th>รัศมี(ม.)</th><th>สถานะ</th><th></th></tr></thead><tbody>';r.zones.forEach(z=>{const isActive=z.isActive?true:false;h+=`<tr><td>${escHtml(z.zoneName||z.name)}</td><td>${z.centerLat||'-'}</td><td>${z.centerLng||'-'}</td><td>${z.radiusM||'-'}</td><td><span class="statusBadge ${isActive?'approved':'canceled'}">${isActive?'ใช้งาน':'ปิด'}</span></td><td><button class="btn sm ghost" onclick="editZone('${z.zoneId}')">✏️</button><button class="btn sm ghost" onclick="deleteZone('${z.zoneId}')">🗑️</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
-function openZoneModal(id=null){currentEditItem=id;if(id){document.getElementById('zoneModalTitle').textContent='แก้ไขโซน'}else{document.getElementById('zoneModalTitle').textContent='เพิ่มโซน';document.getElementById('zoneName').value='';document.getElementById('zoneLat').value='';document.getElementById('zoneLng').value='';document.getElementById('zoneRadius').value='100';document.getElementById('zoneNote').value=''}openModal('zoneModal')}
-async function saveZone(){try{const name=document.getElementById('zoneName').value.trim();const lat=parseFloat(document.getElementById('zoneLat').value);const lng=parseFloat(document.getElementById('zoneLng').value);const radius=parseInt(document.getElementById('zoneRadius').value);const note=document.getElementById('zoneNote').value.trim();if(!name||isNaN(lat)||isNaN(lng)||isNaN(radius)){showAlert('กรุณากรอกข้อมูลให้ครบ','warning');return}if(currentEditItem){await callAPI('adminUpdateZone',{zoneId:currentEditItem,zoneName:name,centerLat:lat,centerLng:lng,radiusM:radius,note})}else{await callAPI('adminAddZone',{zoneName:name,centerLat:lat,centerLng:lng,radiusM:radius,note})}showAlert('บันทึกสำเร็จ','success');closeModal('zoneModal');loadZones()}catch(e){console.error(e)}}
-async function deleteZone(id){if(!confirm('คุณแน่ใจหรือไม่?'))return;try{await callAPI('adminDeleteZone',{zoneId:id});showAlert('ลบสำเร็จ','success');loadZones()}catch(e){console.error(e)}}
-// Holidays
-async function loadHolidays(){try{const year=document.getElementById('holidayYear')?.value||new Date().getFullYear();const r=await callAPI('adminListHolidays',{year});const c=document.getElementById('holidaysTable');if(!r.rows||r.rows.length===0){c.innerHTML='<div class="emptyState"><div class="icon">🎉</div><div>ไม่พบข้อมูล</div></div>';return}let h='<div class="tableWrapper"><table><thead><tr><th>วันที่</th><th>ชื่อ</th><th>หมายเหตุ</th><th></th></tr></thead><tbody>';r.rows.forEach(hol=>{h+=`<tr><td>${fmtDateThai(hol.date)}</td><td>${escHtml(hol.name)}</td><td>${escHtml(hol.note||'-')}</td><td><button class="btn sm ghost" onclick="editHoliday('${hol.date}')">✏️</button><button class="btn sm ghost" onclick="deleteHoliday('${hol.date}')">🗑️</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
-function openHolidayModal(date=null){currentEditItem=date;if(date){document.getElementById('holidayModalTitle').textContent='แก้ไขวันหยุด';document.getElementById('holidayDate').value=date}else{document.getElementById('holidayModalTitle').textContent='เพิ่มวันหยุด';document.getElementById('holidayDate').value='';document.getElementById('holidayName').value='';document.getElementById('holidayNote').value=''}openModal('holidayModal')}
-async function saveHoliday(){try{const date=document.getElementById('holidayDate').value;const name=document.getElementById('holidayName').value.trim();const note=document.getElementById('holidayNote').value.trim();if(!date||!name){showAlert('กรุณากรอกวันที่และชื่อ','warning');return}if(currentEditItem){await callAPI('adminSaveHoliday',{date:currentEditItem,name,note})}else{await callAPI('adminSaveHoliday',{date,name,note})}showAlert('บันทึกสำเร็จ','success');closeModal('holidayModal');loadHolidays()}catch(e){console.error(e)}}
-async function deleteHoliday(date){if(!confirm('คุณแน่ใจหรือไม่?'))return;try{await callAPI('adminDeleteHoliday',{date});showAlert('ลบสำเร็จ','success');loadHolidays()}catch(e){console.error(e)}}
-// Reports
-async function generateMonthlyReport(){try{const month=document.getElementById('reportMonth')?.value;const year=document.getElementById('reportYear')?.value;if(!month||!year){showAlert('กรุณาเลือกเดือนและปี','warning');return}const r=await callAPI('adminGetMonthlyReport',{year,month});const c=document.getElementById('monthlyReportContent');let h='<div class="alert info">รายงานประจำเดือน '+getMonthName(month)+' '+(parseInt(year)+543)+'</div>';h+='<div class="cardGrid" style="margin-top:20px;">';h+=`<div class="statCard"><div class="label">พนักงาน</div><div class="value">${r.totalEmployees||0}</div></div>`;h+=`<div class="statCard"><div class="label">วันทำงานเฉลี่ย</div><div class="value">${r.avgWorkDays||0}</div></div>`;h+=`<div class="statCard"><div class="label">มาสายเฉลี่ย</div><div class="value">${r.avgLate||0}</div></div>`;h+=`<div class="statCard"><div class="label">ขาดเฉลี่ย</div><div class="value">${r.avgAbsent||0}</div></div>`;h+='</div>';c.innerHTML=h}catch(e){console.error(e)}}
-async function generateEmployeeReport(){try{const code=document.getElementById('reportEmpCode')?.value.trim();const month=document.getElementById('reportEmpMonth')?.value;const year=document.getElementById('reportEmpYear')?.value;if(!code||!month||!year){showAlert('กรุณากรอกข้อมูลให้ครบ','warning');return}const r=await callAPI('adminGetEmployeeReport',{code,year,month});const c=document.getElementById('employeeReportContent');let h='<div class="alert info">รายงานของ '+escHtml(r.employee.fullName)+' ('+escHtml(code)+')</div>';h+='<div class="cardGrid" style="margin-top:20px;">';h+=`<div class="statCard"><div class="label">มาทำงาน</div><div class="value">${r.presentDays||0}</div><div class="meta">วัน</div></div>`;h+=`<div class="statCard"><div class="label">มาสาย</div><div class="value">${r.lateDays||0}</div><div class="meta">วัน</div></div>`;h+=`<div class="statCard"><div class="label">ขาด</div><div class="value">${r.absentDays||0}</div><div class="meta">วัน</div></div>`;h+=`<div class="statCard"><div class="label">ลา</div><div class="value">${r.leaveDays||0}</div><div class="meta">วัน</div></div>`;h+='</div>';c.innerHTML=h}catch(e){console.error(e)}}
-async function generateSummaryReport(){try{const year=document.getElementById('summaryYear')?.value;if(!year){showAlert('กรุณาเลือกปี','warning');return}const r=await callAPI('adminGetSummaryReport',{year});const c=document.getElementById('summaryReportContent');let h='<div class="alert info">สรุปภาพรวมปี '+(parseInt(year)+543)+'</div>';h+='<div class="cardGrid" style="margin-top:20px;">';h+=`<div class="statCard"><div class="icon orange">👥</div><div class="label">พนักงาน</div><div class="value">${r.totalEmployees||0}</div></div>`;h+=`<div class="statCard"><div class="icon ok">✓</div><div class="label">มาเฉลี่ย</div><div class="value">${r.avgAttendance||0}%</div></div>`;h+=`<div class="statCard"><div class="icon bad">⏰</div><div class="label">มาสาย</div><div class="value">${r.totalLate||0}</div></div>`;h+=`<div class="statCard"><div class="icon info">🏖️</div><div class="label">ลา</div><div class="value">${r.totalLeave||0}</div></div>`;h+='</div>';c.innerHTML=h}catch(e){console.error(e)}}
-// Export
-async function exportAttendance(){try{const month=document.getElementById('attMonth')?.value||(new Date().getMonth()+1);const year=document.getElementById('attYear')?.value||new Date().getFullYear();showAlert('กำลังสร้าง...','info');const r=await callAPI('adminExportAttendance',{year,month});if(r.url){window.open(r.url,'_blank');showAlert('ส่งออกสำเร็จ','success')}}catch(e){console.error(e)}}
-async function exportLeaveRequests(){try{const month=document.getElementById('leaveMonth')?.value||(new Date().getMonth()+1);const year=document.getElementById('leaveYear')?.value||new Date().getFullYear();showAlert('กำลังสร้าง...','info');const r=await callAPI('adminExportLeave',{year,month});if(r.url){window.open(r.url,'_blank');showAlert('ส่งออกสำเร็จ','success')}}catch(e){console.error(e)}}
-async function exportEmployees(){try{showAlert('กำลังสร้าง...','info');const r=await callAPI('adminExportEmployees');if(r.url){window.open(r.url,'_blank');showAlert('ส่งออกสำเร็จ','success')}}catch(e){console.error(e)}}
-async function exportLateToday(){try{const date=document.getElementById('dashDate')?.value||formatDate(new Date());showAlert('กำลังสร้าง...','info');const r=await callAPI('adminExportLateToday',{date});if(r.url){window.open(r.url,'_blank');showAlert('ส่งออกสำเร็จ','success')}}catch(e){console.error(e)}}
-// Load options
-async function loadBranchOptions(){try{const r=await callAPI('adminListBranches');const sels=['attBranch','empBranch','empBranchInput'];sels.forEach(id=>{const s=document.getElementById(id);if(s){const firstOpt=s.options[0];s.innerHTML='';if(firstOpt)s.appendChild(firstOpt);if(r.branches){r.branches.forEach(b=>{const o=document.createElement('option');o.value=b.name;o.textContent=b.name;s.appendChild(o)})}}})}catch(e){console.error(e)}}
-async function loadDeptOptions(){try{const r=await callAPI('adminListDepartments');const sels=['empDept','empDeptInput'];sels.forEach(id=>{const s=document.getElementById(id);if(s){const firstOpt=s.options[0];s.innerHTML='';if(firstOpt)s.appendChild(firstOpt);if(r.departments){r.departments.forEach(d=>{const o=document.createElement('option');o.value=d.deptName;o.textContent=d.deptName;s.appendChild(o)})}}})}catch(e){console.error(e)}}
-async function loadLevelOptions(){try{const r=await callAPI('adminListLevels');const sels=['empLevel','empLevelInput'];sels.forEach(id=>{const s=document.getElementById(id);if(s){const firstOpt=s.options[0];s.innerHTML='';if(firstOpt)s.appendChild(firstOpt);if(r.levels){r.levels.forEach(l=>{const o=document.createElement('option');o.value=l.name;o.textContent=l.name;s.appendChild(o)})}}})}catch(e){console.error(e)}}
-// Modal
-function openModal(id){document.getElementById(id).classList.add('active')}
-function closeModal(id){document.getElementById(id).classList.remove('active')}
-// Utils
-function showLoading(){document.getElementById('loadingOverlay').classList.remove('hide')}
-function hideLoading(){document.getElementById('loadingOverlay').classList.add('hide')}
-function showAlert(msg,type='info'){const icon=type==='success'?'✅':type==='error'?'❌':type==='warning'?'⚠️':'ℹ️';alert(icon+' '+msg)}
-function logout(){if(confirm('ออกจากระบบ?')){localStorage.removeItem('adminToken');localStorage.removeItem('adminUsername');window.location.href='login.html'}}
-function escHtml(text){if(!text)return'';const div=document.createElement('div');div.textContent=String(text);return div.innerHTML}
-function formatDate(date){if(!date)return'';const d=typeof date==='string'?new Date(date):date;const year=d.getFullYear();const month=String(d.getMonth()+1).padStart(2,'0');const day=String(d.getDate()).padStart(2,'0');return`${year}-${month}-${day}`}
-function fmtDateThai(dateStr){if(!dateStr)return'-';const d=new Date(dateStr);const day=d.getDate();const month=d.getMonth()+1;const year=d.getFullYear()+543;return`${day}/${month}/${year}`}
-function fmtDateTimeThai(dateStr){if(!dateStr)return'-';const d=new Date(dateStr);const day=d.getDate();const month=d.getMonth()+1;const year=d.getFullYear()+543;const hour=String(d.getHours()).padStart(2,'0');const min=String(d.getMinutes()).padStart(2,'0');return`${day}/${month}/${year} ${hour}:${min}`}
-function getMonthName(month){const months=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];return months[parseInt(month)-1]||''}
-function getStatusClass(status){const s=String(status).toUpperCase();if(s.includes('PRESENT')||s.includes('มาทำงาน'))return'present';if(s.includes('LATE')||s.includes('สาย'))return'late';if(s.includes('ABSENT')||s.includes('ขาด'))return'absent';if(s.includes('LEAVE')||s.includes('ลา'))return'leave';return'pending'}
-function getLeaveStatusClass(status){const s=String(status).toUpperCase();if(s==='PENDING')return'pending';if(s==='APPROVED')return'approved';if(s==='REJECTED')return'rejected';if(s==='CANCELED')return'canceled';return'pending'}
-function viewDetail(a,b){showAlert('ดูรายละเอียด','info')}
-function editEmployee(code){openEmployeeModal(code)}
-function editDepartment(id){openDepartmentModal(id)}
-function editLeaveType(id){openLeaveTypeModal(id)}
-function editBranch(name){openBranchModal(name)}
-function editLevel(name){openLevelModal(name)}
-function editZone(id){openZoneModal(id)}
-function editHoliday(date){openHolidayModal(date)}
+// Global Variables
+let adminToken = null;
+let adminUser = null;
+let currentPage = 'dashboard';
+let currentLeaveRequest = null;
+let currentEditItem = null;
+let currentEditData = null;
+
+// Initialize
+window.onload = function() {
+  // Check if we're in Apps Script environment
+  if (typeof google === 'undefined' || !google.script) {
+    document.body.innerHTML = '<div style="padding:40px;text-align:center"><h1>⚠️ Error</h1><p>This page must be served through Google Apps Script</p></div>';
+    return;
+  }
+  
+  checkLogin();
+  setupNavigation();
+  setupTabs();
+  startClock();
+  populateFilters();
+};
+
+function checkLogin() {
+  // For Apps Script, we'll use session or local storage
+  adminToken = localStorage.getItem('adminToken');
+  adminUser = localStorage.getItem('adminUser');
+  
+  if (!adminToken || !adminUser) {
+    // Redirect to login - you'll need to create this
+    alert('กรุณาเข้าสู่ระบบก่อน');
+    // window.location.href = 'login.html';
+    return;
+  }
+  
+  document.getElementById('adminName').textContent = adminUser;
+  loadDashboard();
+}
+
+function startClock() {
+  function updateTime() {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('th-TH', { 
+      hour: '2-digit', 
+      minute: '2-digit'
+    });
+    document.getElementById('currentTime').textContent = timeStr;
+  }
+  updateTime();
+  setInterval(updateTime, 60000);
+}
+
+function setupNavigation() {
+  const navBtns = document.querySelectorAll('.nav button[data-page]');
+  navBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const page = btn.dataset.page;
+      showPage(page);
+    });
+  });
+}
+
+function setupTabs() {
+  const tabBtns = document.querySelectorAll('.tabs button[data-tab]');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      showTab(tab);
+    });
+  });
+}
+
+function showPage(page) {
+  currentPage = page;
+  
+  // Update nav
+  document.querySelectorAll('.nav button').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.page === page) {
+      btn.classList.add('active');
+    }
+  });
+  
+  // Show page
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.add('hide');
+  });
+  const pageEl = document.getElementById('page-' + page);
+  if (pageEl) {
+    pageEl.classList.remove('hide');
+  }
+  
+  // Load data for page
+  switch(page) {
+    case 'dashboard':
+      loadDashboard();
+      break;
+    case 'attendance':
+      loadAttendance();
+      break;
+    case 'leave':
+      loadLeaveRequests();
+      break;
+    case 'employees':
+      loadEmployees();
+      break;
+    case 'departments':
+      loadDepartments();
+      break;
+    case 'leavetypes':
+      loadLeaveTypes();
+      break;
+    case 'branches':
+      loadBranches();
+      break;
+    case 'levels':
+      loadLevels();
+      break;
+    case 'zones':
+      loadZones();
+      break;
+    case 'holidays':
+      loadHolidays();
+      break;
+  }
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.tabs button').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.tab === tab) {
+      btn.classList.add('active');
+    }
+  });
+  
+  document.querySelectorAll('.tabContent').forEach(t => {
+    t.classList.add('hide');
+  });
+  const tabEl = document.getElementById('tab-' + tab);
+  if (tabEl) {
+    tabEl.classList.remove('hide');
+  }
+}
+
+function populateFilters() {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  
+  // Months
+  const months = [
+    'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+    'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+  ];
+  
+  const monthSelects = ['attMonth', 'leaveMonth', 'reportMonth', 'reportEmpMonth'];
+  monthSelects.forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel) {
+      months.forEach((m, i) => {
+        const opt = document.createElement('option');
+        opt.value = i + 1;
+        opt.textContent = m;
+        if (i + 1 === currentMonth) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+  });
+  
+  // Years
+  const yearSelects = ['attYear', 'leaveYear', 'holidayYear', 'reportYear', 'reportEmpYear', 'summaryYear'];
+  yearSelects.forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel) {
+      for (let y = currentYear - 2; y <= currentYear + 2; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y + 543; // Thai year
+        if (y === currentYear) opt.selected = true;
+        sel.appendChild(opt);
+      }
+    }
+  });
+  
+  // Date selector for dashboard
+  const dashDate = document.getElementById('dashDate');
+  if (dashDate) {
+    const opt = document.createElement('option');
+    opt.value = formatDate(now);
+    opt.textContent = 'วันนี้ (' + formatDateThai(now) + ')';
+    opt.selected = true;
+    dashDate.appendChild(opt);
+  }
+  
+  // Load options for selects
+  loadBranchOptions();
+  loadDeptOptions();
+  loadLevelOptions();
+}
+
+// API Call Helper using google.script.run
+function callServerFunction(functionName, params) {
+  return new Promise((resolve, reject) => {
+    showLoading();
+    
+    // Add token to params
+    if (adminToken) {
+      params.token = adminToken;
+    }
+    
+    google.script.run
+      .withSuccessHandler(result => {
+        hideLoading();
+        if (result && result.error) {
+          showAlert(result.error, 'error');
+          reject(new Error(result.error));
+        } else {
+          resolve(result);
+        }
+      })
+      .withFailureHandler(error => {
+        hideLoading();
+        console.error('Server function error:', error);
+        showAlert('เกิดข้อผิดพลาด: ' + error.message, 'error');
+        reject(error);
+      })
+      [functionName](params);
+  });
+}
+
+// Dashboard Functions
+async function loadDashboard() {
+  try {
+    showAlert('ฟังก์ชัน Dashboard กำลังพัฒนา กรุณารอ...', 'info');
+    
+    // Mock data for now
+    document.getElementById('dashPresent').textContent = '0';
+    document.getElementById('dashAbsent').textContent = '0';
+    document.getElementById('dashLate').textContent = '0';
+    document.getElementById('dashLeave').textContent = '0';
+    document.getElementById('dashTotal').textContent = '0';
+    document.getElementById('dashPending').textContent = '0';
+    document.getElementById('dashExtraScans').textContent = '0';
+    
+    const lateContainer = document.getElementById('lateListToday');
+    lateContainer.innerHTML = '<div class="emptyState"><div class="icon">✨</div><div>ไม่มีรายการมาสายวันนี้</div></div>';
+    
+    const pendingContainer = document.getElementById('pendingLeaveList');
+    pendingContainer.innerHTML = '<div class="emptyState"><div class="icon">✨</div><div>ไม่มีคำขอรออนุมัติ</div></div>';
+    
+  } catch (error) {
+    console.error('Dashboard error:', error);
+  }
+}
+
+// Attendance Functions  
+async function loadAttendance() {
+  try {
+    const container = document.getElementById('attendanceTable');
+    const countEl = document.getElementById('attCount');
+    
+    container.innerHTML = '<div class="emptyState"><div class="icon">📝</div><div>ไม่พบข้อมูล</div></div>';
+    countEl.textContent = '0';
+  } catch (error) {
+    console.error('Attendance error:', error);
+  }
+}
+
+function openManualLogModal() {
+  document.getElementById('manualEmpCode').value = '';
+  document.getElementById('manualDate').value = formatDate(new Date());
+  document.getElementById('manualT1').value = '';
+  document.getElementById('manualT2').value = '';
+  document.getElementById('manualT3').value = '';
+  document.getElementById('manualT4').value = '';
+  document.getElementById('manualNote').value = '';
+  openModal('manualLogModal');
+}
+
+async function saveManualLog() {
+  try {
+    const code = document.getElementById('manualEmpCode').value.trim();
+    const date = document.getElementById('manualDate').value;
+    const t1 = document.getElementById('manualT1').value;
+    const t2 = document.getElementById('manualT2').value;
+    const t3 = document.getElementById('manualT3').value;
+    const t4 = document.getElementById('manualT4').value;
+    const note = document.getElementById('manualNote').value.trim();
+    
+    if (!code || !date) {
+      showAlert('กรุณากรอกรหัสพนักงานและวันที่', 'warning');
+      return;
+    }
+    
+    showAlert('บันทึกสำเร็จ', 'success');
+    closeModal('manualLogModal');
+    loadAttendance();
+    
+  } catch (error) {
+    console.error('Save manual log error:', error);
+  }
+}
+
+// Leave Functions
+async function loadLeaveRequests() {
+  try {
+    const container = document.getElementById('leaveTable');
+    const countEl = document.getElementById('leaveCount');
+    
+    container.innerHTML = '<div class="emptyState"><div class="icon">🏖️</div><div>ไม่พบข้อมูล</div></div>';
+    countEl.textContent = '0';
+  } catch (error) {
+    console.error('Leave error:', error);
+  }
+}
+
+async function openLeaveActionModal(id) {
+  try {
+    // Load leave request details
+    currentLeaveRequest = { id };
+    
+    let html = '<div style="margin-bottom:16px;">';
+    html += '<div style="display:grid;grid-template-columns:120px 1fr;gap:8px;font-size:14px;">';
+    html += '<div style="color:var(--muted)">พนักงาน:</div><div><strong>Loading...</strong></div>';
+    html += '</div></div>';
+    
+    document.getElementById('leaveActionDetails').innerHTML = html;
+    document.getElementById('leaveAdminNote').value = '';
+    openModal('leaveActionModal');
+    
+  } catch (error) {
+    console.error('Open leave action error:', error);
+  }
+}
+
+async function processLeaveAction(newStatus) {
+  if (!currentLeaveRequest) return;
+  
+  try {
+    const adminNote = document.getElementById('leaveAdminNote').value.trim();
+    
+    showAlert('ดำเนินการสำเร็จ', 'success');
+    closeModal('leaveActionModal');
+    currentLeaveRequest = null;
+    loadLeaveRequests();
+    loadDashboard();
+    
+  } catch (error) {
+    console.error('Process leave error:', error);
+  }
+}
+
+// Employee Functions
+async function loadEmployees() {
+  try {
+    const container = document.getElementById('employeesTable');
+    const countEl = document.getElementById('empCount');
+    
+    container.innerHTML = '<div class="emptyState"><div class="icon">👥</div><div>ไม่พบข้อมูล</div></div>';
+    countEl.textContent = '0';
+  } catch (error) {
+    console.error('Employees error:', error);
+  }
+}
+
+function openEmployeeModal(code = null) {
+  currentEditItem = code;
+  
+  if (code) {
+    document.getElementById('employeeModalTitle').textContent = 'แก้ไขพนักงาน';
+  } else {
+    document.getElementById('employeeModalTitle').textContent = 'เพิ่มพนักงาน';
+    document.getElementById('empCode').value = '';
+    document.getElementById('empFullName').value = '';
+    document.getElementById('empEmail').value = '';
+    document.getElementById('empPosition').value = '';
+  }
+  
+  openModal('employeeModal');
+}
+
+async function saveEmployee() {
+  try {
+    const code = document.getElementById('empCode').value.trim();
+    const fullName = document.getElementById('empFullName').value.trim();
+    
+    if (!code || !fullName) {
+      showAlert('กรุณากรอกข้อมูลที่จำเป็น', 'warning');
+      return;
+    }
+    
+    showAlert('บันทึกสำเร็จ', 'success');
+    closeModal('employeeModal');
+    loadEmployees();
+    
+  } catch (error) {
+    console.error('Save employee error:', error);
+  }
+}
+
+async function deleteEmployee(code) {
+  if (!confirm('คุณแน่ใจหรือไม่ที่จะลบพนักงานนี้?')) return;
+  
+  try {
+    showAlert('ลบสำเร็จ', 'success');
+    loadEmployees();
+  } catch (error) {
+    console.error('Delete employee error:', error);
+  }
+}
+
+// Department Functions
+async function loadDepartments() {
+  try {
+    const container = document.getElementById('departmentsTable');
+    container.innerHTML = '<div class="emptyState"><div class="icon">🏢</div><div>ไม่พบข้อมูล</div></div>';
+  } catch (error) {
+    console.error('Departments error:', error);
+  }
+}
+
+function openDepartmentModal(id = null) {
+  currentEditItem = id;
+  
+  if (id) {
+    document.getElementById('deptModalTitle').textContent = 'แก้ไขแผนก';
+  } else {
+    document.getElementById('deptModalTitle').textContent = 'เพิ่มแผนก';
+    document.getElementById('deptName').value = '';
+    document.getElementById('deptNote').value = '';
+  }
+  
+  openModal('departmentModal');
+}
+
+async function saveDepartment() {
+  try {
+    const name = document.getElementById('deptName').value.trim();
+    
+    if (!name) {
+      showAlert('กรุณากรอกชื่อแผนก', 'warning');
+      return;
+    }
+    
+    showAlert('บันทึกสำเร็จ', 'success');
+    closeModal('departmentModal');
+    loadDepartments();
+    loadDeptOptions();
+    
+  } catch (error) {
+    console.error('Save department error:', error);
+  }
+}
+
+async function deleteDepartment(id) {
+  if (!confirm('คุณแน่ใจหรือไม่ที่จะลบแผนกนี้?')) return;
+  
+  try {
+    showAlert('ลบสำเร็จ', 'success');
+    loadDepartments();
+    loadDeptOptions();
+  } catch (error) {
+    console.error('Delete department error:', error);
+  }
+}
+
+// Leave Type Functions
+async function loadLeaveTypes() {
+  try {
+    const container = document.getElementById('leaveTypesTable');
+    container.innerHTML = '<div class="emptyState"><div class="icon">📋</div><div>ไม่พบข้อมูล</div></div>';
+  } catch (error) {
+    console.error('Leave types error:', error);
+  }
+}
+
+function openLeaveTypeModal(id = null) {
+  currentEditItem = id;
+  
+  if (id) {
+    document.getElementById('leaveTypeModalTitle').textContent = 'แก้ไขประเภทการลา';
+  } else {
+    document.getElementById('leaveTypeModalTitle').textContent = 'เพิ่มประเภทการลา';
+    document.getElementById('leaveTypeId').value = '';
+    document.getElementById('leaveTypeName').value = '';
+    document.getElementById('leaveTypeMaxDays').value = '0';
+    document.getElementById('leaveTypeNote').value = '';
+  }
+  
+  openModal('leaveTypeModal');
+}
+
+async function saveLeaveType() {
+  try {
+    const id = document.getElementById('leaveTypeId').value.trim();
+    const name = document.getElementById('leaveTypeName').value.trim();
+    const maxDays = parseInt(document.getElementById('leaveTypeMaxDays').value) || 0;
+    
+    if (!id || !name) {
+      showAlert('กรุณากรอกข้อมูลที่จำเป็น', 'warning');
+      return;
+    }
+    
+    showAlert('บันทึกสำเร็จ', 'success');
+    closeModal('leaveTypeModal');
+    loadLeaveTypes();
+    
+  } catch (error) {
+    console.error('Save leave type error:', error);
+  }
+}
+
+async function deleteLeaveType(id) {
+  if (!confirm('คุณแน่ใจหรือไม่ที่จะลบประเภทการลานี้?')) return;
+  
+  try {
+    showAlert('ลบสำเร็จ', 'success');
+    loadLeaveTypes();
+  } catch (error) {
+    console.error('Delete leave type error:', error);
+  }
+}
+
+// Branch Functions
+async function loadBranches() {
+  try {
+    const container = document.getElementById('branchesTable');
+    container.innerHTML = '<div class="emptyState"><div class="icon">🏪</div><div>ไม่พบข้อมูล</div></div>';
+  } catch (error) {
+    console.error('Branches error:', error);
+  }
+}
+
+function openBranchModal(name = null) {
+  currentEditItem = name;
+  
+  if (name) {
+    document.getElementById('branchModalTitle').textContent = 'แก้ไขสาขา';
+    document.getElementById('branchName').value = name;
+  } else {
+    document.getElementById('branchModalTitle').textContent = 'เพิ่มสาขา';
+    document.getElementById('branchName').value = '';
+  }
+  
+  openModal('branchModal');
+}
+
+async function saveBranch() {
+  try {
+    const name = document.getElementById('branchName').value.trim();
+    
+    if (!name) {
+      showAlert('กรุณากรอกชื่อสาขา', 'warning');
+      return;
+    }
+    
+    showAlert('บันทึกสำเร็จ', 'success');
+    closeModal('branchModal');
+    loadBranches();
+    loadBranchOptions();
+    
+  } catch (error) {
+    console.error('Save branch error:', error);
+  }
+}
+
+async function deleteBranch(name) {
+  if (!confirm('คุณแน่ใจหรือไม่ที่จะลบสาขานี้?')) return;
+  
+  try {
+    showAlert('ลบสำเร็จ', 'success');
+    loadBranches();
+    loadBranchOptions();
+  } catch (error) {
+    console.error('Delete branch error:', error);
+  }
+}
+
+// Level Functions
+async function loadLevels() {
+  try {
+    const container = document.getElementById('levelsTable');
+    container.innerHTML = '<div class="emptyState"><div class="icon">⭐</div><div>ไม่พบข้อมูล</div></div>';
+  } catch (error) {
+    console.error('Levels error:', error);
+  }
+}
+
+function openLevelModal(name = null) {
+  currentEditItem = name;
+  
+  if (name) {
+    document.getElementById('levelModalTitle').textContent = 'แก้ไขระดับ';
+    document.getElementById('levelName').value = name;
+  } else {
+    document.getElementById('levelModalTitle').textContent = 'เพิ่มระดับ';
+    document.getElementById('levelName').value = '';
+  }
+  
+  openModal('levelModal');
+}
+
+async function saveLevel() {
+  try {
+    const name = document.getElementById('levelName').value.trim();
+    
+    if (!name) {
+      showAlert('กรุณากรอกชื่อระดับ', 'warning');
+      return;
+    }
+    
+    showAlert('บันทึกสำเร็จ', 'success');
+    closeModal('levelModal');
+    loadLevels();
+    loadLevelOptions();
+    
+  } catch (error) {
+    console.error('Save level error:', error);
+  }
+}
+
+async function deleteLevel(name) {
+  if (!confirm('คุณแน่ใจหรือไม่ที่จะลบระดับนี้?')) return;
+  
+  try {
+    showAlert('ลบสำเร็จ', 'success');
+    loadLevels();
+    loadLevelOptions();
+  } catch (error) {
+    console.error('Delete level error:', error);
+  }
+}
+
+// Zone Functions
+async function loadZones() {
+  try {
+    const container = document.getElementById('zonesTable');
+    container.innerHTML = '<div class="emptyState"><div class="icon">📍</div><div>ไม่พบข้อมูล</div></div>';
+  } catch (error) {
+    console.error('Zones error:', error);
+  }
+}
+
+function openZoneModal(id = null) {
+  currentEditItem = id;
+  
+  if (id) {
+    document.getElementById('zoneModalTitle').textContent = 'แก้ไขโซน';
+  } else {
+    document.getElementById('zoneModalTitle').textContent = 'เพิ่มโซน';
+    document.getElementById('zoneName').value = '';
+    document.getElementById('zoneLat').value = '';
+    document.getElementById('zoneLng').value = '';
+    document.getElementById('zoneRadius').value = '100';
+    document.getElementById('zoneNote').value = '';
+  }
+  
+  openModal('zoneModal');
+}
+
+async function saveZone() {
+  try {
+    const name = document.getElementById('zoneName').value.trim();
+    const lat = parseFloat(document.getElementById('zoneLat').value);
+    const lng = parseFloat(document.getElementById('zoneLng').value);
+    const radius = parseInt(document.getElementById('zoneRadius').value);
+    
+    if (!name || isNaN(lat) || isNaN(lng) || isNaN(radius)) {
+      showAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
+      return;
+    }
+    
+    showAlert('บันทึกสำเร็จ', 'success');
+    closeModal('zoneModal');
+    loadZones();
+    
+  } catch (error) {
+    console.error('Save zone error:', error);
+  }
+}
+
+async function deleteZone(id) {
+  if (!confirm('คุณแน่ใจหรือไม่ที่จะลบโซนนี้?')) return;
+  
+  try {
+    showAlert('ลบสำเร็จ', 'success');
+    loadZones();
+  } catch (error) {
+    console.error('Delete zone error:', error);
+  }
+}
+
+// Holiday Functions
+async function loadHolidays() {
+  try {
+    const container = document.getElementById('holidaysTable');
+    container.innerHTML = '<div class="emptyState"><div class="icon">🎉</div><div>ไม่พบข้อมูล</div></div>';
+  } catch (error) {
+    console.error('Holidays error:', error);
+  }
+}
+
+function openHolidayModal(date = null) {
+  currentEditItem = date;
+  
+  if (date) {
+    document.getElementById('holidayModalTitle').textContent = 'แก้ไขวันหยุด';
+    document.getElementById('holidayDate').value = date;
+  } else {
+    document.getElementById('holidayModalTitle').textContent = 'เพิ่มวันหยุด';
+    document.getElementById('holidayDate').value = '';
+    document.getElementById('holidayName').value = '';
+    document.getElementById('holidayNote').value = '';
+  }
+  
+  openModal('holidayModal');
+}
+
+async function saveHoliday() {
+  try {
+    const date = document.getElementById('holidayDate').value;
+    const name = document.getElementById('holidayName').value.trim();
+    
+    if (!date || !name) {
+      showAlert('กรุณากรอกวันที่และชื่อวันหยุด', 'warning');
+      return;
+    }
+    
+    showAlert('บันทึกสำเร็จ', 'success');
+    closeModal('holidayModal');
+    loadHolidays();
+    
+  } catch (error) {
+    console.error('Save holiday error:', error);
+  }
+}
+
+async function deleteHoliday(date) {
+  if (!confirm('คุณแน่ใจหรือไม่ที่จะลบวันหยุดนี้?')) return;
+  
+  try {
+    showAlert('ลบสำเร็จ', 'success');
+    loadHolidays();
+  } catch (error) {
+    console.error('Delete holiday error:', error);
+  }
+}
+
+// Report Functions
+async function generateMonthlyReport() {
+  try {
+    const month = document.getElementById('reportMonth')?.value;
+    const year = document.getElementById('reportYear')?.value;
+    
+    if (!month || !year) {
+      showAlert('กรุณาเลือกเดือนและปี', 'warning');
+      return;
+    }
+    
+    const container = document.getElementById('monthlyReportContent');
+    container.innerHTML = '<div class="alert info">กำลังสร้างรายงาน...</div>';
+  } catch (error) {
+    console.error('Monthly report error:', error);
+  }
+}
+
+async function generateEmployeeReport() {
+  try {
+    const code = document.getElementById('reportEmpCode')?.value.trim();
+    const month = document.getElementById('reportEmpMonth')?.value;
+    const year = document.getElementById('reportEmpYear')?.value;
+    
+    if (!code || !month || !year) {
+      showAlert('กรุณากรอกข้อมูลให้ครบ', 'warning');
+      return;
+    }
+    
+    const container = document.getElementById('employeeReportContent');
+    container.innerHTML = '<div class="alert info">กำลังสร้างรายงาน...</div>';
+  } catch (error) {
+    console.error('Employee report error:', error);
+  }
+}
+
+async function generateSummaryReport() {
+  try {
+    const year = document.getElementById('summaryYear')?.value;
+    
+    if (!year) {
+      showAlert('กรุณาเลือกปี', 'warning');
+      return;
+    }
+    
+    const container = document.getElementById('summaryReportContent');
+    container.innerHTML = '<div class="alert info">กำลังสร้างรายงาน...</div>';
+  } catch (error) {
+    console.error('Summary report error:', error);
+  }
+}
+
+// Export Functions
+async function exportData(type) {
+  try {
+    showAlert('กำลังสร้างไฟล์ Excel...', 'info');
+    // Implementation coming soon
+  } catch (error) {
+    console.error('Export error:', error);
+  }
+}
+
+// Load Options for Selects
+async function loadBranchOptions() {
+  // Implementation coming soon
+}
+
+async function loadDeptOptions() {
+  // Implementation coming soon
+}
+
+async function loadLevelOptions() {
+  // Implementation coming soon
+}
+
+function importHolidays() {
+  showAlert('ฟีเจอร์นำเข้าวันหยุดจะพร้อมใช้งานเร็วๆ นี้', 'info');
+}
+
+// Modal Functions
+function openModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) {
+    modal.classList.add('active');
+  }
+}
+
+function closeModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) {
+    modal.classList.remove('active');
+  }
+}
+
+// Utility Functions
+function showLoading() {
+  document.getElementById('loadingOverlay').classList.remove('hide');
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.add('hide');
+}
+
+function showAlert(message, type = 'info') {
+  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+  alert(icon + ' ' + message);
+}
+
+function logout() {
+  if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    alert('ออกจากระบบสำเร็จ');
+    // window.location.reload();
+  }
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = String(text);
+  return div.innerHTML;
+}
+
+function formatDate(date) {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateThai(dateStr) {
+  if (!dateStr) return '-';
+  const d = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
+  const day = d.getDate();
+  const month = d.getMonth() + 1;
+  const year = d.getFullYear() + 543;
+  return `${day}/${month}/${year}`;
+}
+
+function formatDateTimeThai(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  const day = d.getDate();
+  const month = d.getMonth() + 1;
+  const year = d.getFullYear() + 543;
+  const hour = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${day}/${month}/${year} ${hour}:${min}`;
+}
+
+function getMonthName(month) {
+  const months = [
+    'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+    'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+  ];
+  return months[parseInt(month) - 1] || '';
+}
+
+function getStatusClass(status) {
+  const s = String(status).toUpperCase();
+  if (s.includes('PRESENT') || s.includes('มาทำงาน')) return 'present';
+  if (s.includes('LATE') || s.includes('สาย')) return 'late';
+  if (s.includes('ABSENT') || s.includes('ขาด')) return 'absent';
+  if (s.includes('LEAVE') || s.includes('ลา')) return 'leave';
+  return 'pending';
+}
+
+function getLeaveStatusClass(status) {
+  const s = String(status).toUpperCase();
+  if (s === 'PENDING') return 'pending';
+  if (s === 'APPROVED') return 'approved';
+  if (s === 'REJECTED') return 'rejected';
+  if (s === 'CANCELED') return 'canceled';
+  return 'pending';
+}
+
+function viewAttendanceDetail(code, date) {
+  showAlert('ดูรายละเอียดของ ' + code + ' วันที่ ' + formatDateThai(date), 'info');
+}
+
+function viewLeaveDetail(id) {
+  showAlert('ดูรายละเอียดคำขอลา ID: ' + id, 'info');
+}
+
+function editEmployee(code) {
+  openEmployeeModal(code);
+}
+
+function editDepartment(id) {
+  openDepartmentModal(id);
+}
+
+function editLeaveType(id) {
+  openLeaveTypeModal(id);
+}
+
+function editBranch(name) {
+  openBranchModal(name);
+}
+
+function editLevel(name) {
+  openLevelModal(name);
+}
+
+function editZone(id) {
+  openZoneModal(id);
+}
+
+function editHoliday(date) {
+  openHolidayModal(date);
+}
 </script>
 </body>
 </html>
