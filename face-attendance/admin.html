@@ -1,2154 +1,325 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>HRM Admin v2 • Attendance + Leave</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HRM Admin v2</title>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    :root{
-      --bg:#f6f7fb;
-      --card:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --border:#e5e7eb;
-      --shadow:0 10px 25px rgba(15,23,42,.08);
-      --orange:#f97316;      /* accent */
-      --orange2:#fb923c;
-      --ok:#16a34a;
-      --bad:#ef4444;
-      --warn:#f59e0b;
-      --radius:16px;
-      --radius2:22px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family:"Prompt",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans Thai",sans-serif;
-      color:var(--text);
-      background:linear-gradient(180deg,#f8fafc 0%, #f6f7fb 100%);
-    }
-    a{color:inherit}
-    .app{
-      display:grid;
-      grid-template-columns: 280px 1fr;
-      min-height:100vh;
-    }
-    /* Sidebar */
-    .sidebar{
-      position:sticky; top:0;
-      height:100vh;
-      padding:18px 14px;
-      background:rgba(255,255,255,.72);
-      backdrop-filter: blur(10px);
-      border-right:1px solid var(--border);
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
-    .brand{
-      display:flex; align-items:center; gap:12px;
-      padding:14px 14px;
-      border-radius: var(--radius2);
-      background: var(--card);
-      box-shadow: var(--shadow);
-    }
-    .logo{
-      width:44px; height:44px; border-radius:14px;
-      display:grid; place-items:center;
-      background: radial-gradient(circle at 30% 30%, #fff 0%, #fff7ed 40%, #ffedd5 100%);
-      border:1px solid #fed7aa;
-      font-weight:700;
-      color:var(--orange);
-    }
-    .brand h1{font-size:16px; margin:0; line-height:1.1}
-    .brand .sub{font-size:12px; color:var(--muted); margin-top:2px}
-    .sideCard{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius: var(--radius2);
-      box-shadow: var(--shadow);
-      padding:12px;
-    }
-    .kv{display:grid; grid-template-columns: 70px 1fr; gap:6px 10px; font-size:12px}
+    :root{--bg:#f6f7fb;--card:#fff;--text:#0f172a;--muted:#64748b;--border:#e5e7eb;--shadow:0 10px 25px rgba(15,23,42,.08);--orange:#f97316;--ok:#16a34a;--bad:#ef4444;--warn:#f59e0b;--info:#3b82f6;--radius:16px}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Prompt,sans-serif;color:var(--text);background:linear-gradient(180deg,#f8fafc,#f6f7fb)}
+    .app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+    .sidebar{position:sticky;top:0;height:100vh;padding:18px 14px;background:rgba(255,255,255,.72);backdrop-filter:blur(10px);border-right:1px solid var(--border);display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+    .brand{display:flex;align-items:center;gap:12px;padding:14px;border-radius:22px;background:var(--card);box-shadow:var(--shadow)}
+    .logo{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:radial-gradient(circle at 30% 30%,#fff,#fff7ed 40%,#ffedd5);border:1px solid #fed7aa;font-weight:700;color:var(--orange);font-size:20px}
+    .brand h1{font-size:16px}
+    .brand .sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .sideCard{background:var(--card);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);padding:12px}
+    .kv{display:grid;grid-template-columns:70px 1fr;gap:6px 10px;font-size:12px}
     .kv .k{color:var(--muted)}
-    .badge{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:12px;
-      border:1px solid var(--border);
-      background:#fff;
-    }
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;font-size:12px;border:1px solid var(--border);background:#fff}
     .dot{width:8px;height:8px;border-radius:50%}
     .dot.ok{background:var(--ok)}
     .dot.bad{background:var(--bad)}
-    .btnRow{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
-    .btn{
-      border:1px solid var(--border);
-      background:#fff;
-      padding:10px 12px;
-      border-radius:14px;
-      cursor:pointer;
-      font-family:inherit;
-      font-weight:600;
-      font-size:13px;
-      transition:.15s transform,.15s box-shadow,.15s border-color;
-      display:inline-flex; align-items:center; gap:8px;
-    }
-    .btn:hover{transform: translateY(-1px); box-shadow: 0 10px 18px rgba(15,23,42,.08); border-color:#d1d5db}
-    .btn.primary{
-      border-color:#fed7aa;
-      background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%);
-      color:#9a3412;
-    }
-    .btn.orange{
-      border-color:#fdba74;
-      background: linear-gradient(180deg, #fb923c 0%, #f97316 100%);
-      color:white;
-    }
+    .btn{border:1px solid var(--border);background:#fff;padding:10px 14px;border-radius:14px;cursor:pointer;font-family:inherit;font-weight:600;font-size:13px;transition:.15s;display:inline-flex;align-items:center;gap:8px}
+    .btn:hover{transform:translateY(-1px);box-shadow:0 10px 18px rgba(15,23,42,.08)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .btn.primary{border-color:#fed7aa;background:linear-gradient(180deg,#fff7ed,#ffedd5);color:#9a3412}
+    .btn.orange{border-color:#fdba74;background:linear-gradient(180deg,#fb923c,#f97316);color:#fff}
+    .btn.ok{background:linear-gradient(180deg,#86efac,#4ade80);color:#fff}
+    .btn.bad{background:linear-gradient(180deg,#fca5a5,#ef4444);color:#fff}
     .btn.ghost{background:transparent}
-    .nav{
-      margin-top:8px;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      padding:0 6px;
-    }
-    .nav button{
-      width:100%;
-      text-align:left;
-      padding:12px 12px;
-      border-radius:14px;
-      border:1px solid transparent;
-      background:transparent;
-      cursor:pointer;
-      font-family:inherit;
-      font-weight:600;
-      display:flex; align-items:center; justify-content:space-between;
-      color:var(--text);
-    }
-    .nav button .meta{color:var(--muted); font-weight:500; font-size:12px}
-    .nav button.active{
-      background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%);
-      border-color:#fed7aa;
-    }
+    .btn.sm{padding:6px 10px;font-size:12px}
+    .nav{margin-top:8px;display:flex;flex-direction:column;gap:6px;padding:0 6px}
+    .nav button{width:100%;text-align:left;padding:12px;border-radius:14px;border:1px solid transparent;background:transparent;cursor:pointer;font-family:inherit;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+    .nav button.active{background:linear-gradient(180deg,#fff7ed,#ffedd5);border-color:#fed7aa}
     .nav button:hover{background:rgba(15,23,42,.03)}
+    .nav button .meta{color:var(--muted);font-weight:500;font-size:12px}
     .spacer{flex:1}
-    .footerHint{font-size:12px;color:var(--muted); padding:8px 10px}
-    /* Main */
-    .main{
-      padding:22px 22px 80px;
-    }
-    .topbar{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
-    }
-    .pageTitle{
-      display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
-    }
-    .pageTitle h2{margin:0; font-size:22px}
-    .pageTitle .desc{color:var(--muted); font-size:13px}
-    .topActions{display:flex; gap:8px; flex-wrap:wrap}
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:12px;
-    }
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius: var(--radius2);
-      box-shadow: var(--shadow);
-      padding:14px;
-    }
-    .card h3{margin:0 0 8px; font-size:16px}
-    .muted{color:var(--muted)}
-    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-    .field{
-      display:flex; flex-direction:column; gap:6px;
-      min-width:160px;
-    }
-    .field label{font-size:12px; color:var(--muted)}
-    input, select, textarea{
-      font-family:inherit;
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:10px 12px;
-      outline:none;
-      background:white;
-    }
-    textarea{min-height:90px; resize:vertical}
-    input:focus,select:focus,textarea:focus{border-color:#fdba74; box-shadow:0 0 0 4px rgba(249,115,22,.12)}
-    .tableWrap{overflow:auto; border:1px solid var(--border); border-radius:16px}
-    table{border-collapse:separate; border-spacing:0; width:100%; min-width:720px; font-size:13px}
-    th,td{padding:10px 10px; border-bottom:1px solid var(--border); vertical-align:top; background:white}
-    th{position:sticky; top:0; background:#fafafa; z-index:2; text-align:left; font-size:12px; color:#334155}
-    tr:hover td{background:#fffaf5}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px; border-radius:999px;
-      border:1px solid var(--border);
-      font-size:12px;
-      background:white;
-    }
-    .pill.ok{border-color:#bbf7d0; background:#f0fdf4; color:#166534}
-    .pill.bad{border-color:#fecaca; background:#fef2f2; color:#991b1b}
-    .pill.warn{border-color:#fde68a; background:#fffbeb; color:#92400e}
-    /* Loader */
-    .overlay{
-      position:fixed; inset:0;
-      background:rgba(15,23,42,.35);
-      backdrop-filter: blur(4px);
-      display:none;
-      align-items:center; justify-content:center;
-      z-index:1000;
-      padding:18px;
-    }
-    .overlay.show{display:flex}
-    .overlayCard{
-      width:min(520px, 92vw);
-      background:white;
-      border:1px solid var(--border);
-      border-radius:22px;
-      padding:16px;
-      box-shadow: var(--shadow);
-      display:flex; gap:14px; align-items:center;
-    }
-    .spinner{
-      width:44px;height:44px;border-radius:999px;
-      border:5px solid #e5e7eb;
-      border-top-color: var(--orange);
-      animation:spin 1s linear infinite;
-    }
+    .main{padding:22px 22px 80px;overflow-y:auto}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+    .topbar h2{font-size:24px;font-weight:700}
+    .cardGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px}
+    .statCard{background:var(--card);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);padding:20px;transition:.2s}
+    .statCard:hover{transform:translateY(-2px);box-shadow:0 20px 50px rgba(15,23,42,.12)}
+    .statCard .icon{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:24px;margin-bottom:12px}
+    .statCard .icon.orange{background:linear-gradient(135deg,#fff7ed,#ffedd5);color:var(--orange)}
+    .statCard .icon.ok{background:linear-gradient(135deg,#f0fdf4,#dcfce7);color:var(--ok)}
+    .statCard .icon.bad{background:linear-gradient(135deg,#fef2f2,#fee2e2);color:var(--bad)}
+    .statCard .icon.info{background:linear-gradient(135deg,#eff6ff,#dbeafe);color:var(--info)}
+    .statCard .icon.warn{background:linear-gradient(135deg,#fffbeb,#fef3c7);color:var(--warn)}
+    .statCard .icon.purple{background:linear-gradient(135deg,#faf5ff,#f3e8ff);color:#a855f7}
+    .statCard .label{font-size:13px;color:var(--muted);margin-bottom:4px}
+    .statCard .value{font-size:32px;font-weight:700;line-height:1;margin-bottom:8px}
+    .statCard .meta{font-size:12px;color:var(--muted)}
+    .contentCard{background:var(--card);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);margin-bottom:20px}
+    .contentCard .header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .contentCard .header h3{font-size:18px;font-weight:600}
+    .contentCard .body{padding:20px}
+    .filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+    .filters input,.filters select{padding:10px 12px;border:1px solid var(--border);border-radius:12px;font-family:inherit;font-size:14px;background:#fff;min-width:150px}
+    .filters input:focus,.filters select:focus{outline:0;border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.1)}
+    .tableWrapper{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    thead{background:#f9fafb;border-bottom:2px solid var(--border)}
+    th{padding:12px 14px;text-align:left;font-weight:600;white-space:nowrap}
+    td{padding:12px 14px;border-bottom:1px solid var(--border)}
+    tbody tr:hover{background:#f9fafb}
+    tbody tr:last-child td{border-bottom:none}
+    .statusBadge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600}
+    .statusBadge.pending{background:#fef3c7;color:#92400e}
+    .statusBadge.approved{background:#dcfce7;color:#166534}
+    .statusBadge.rejected{background:#fee2e2;color:#991b1b}
+    .statusBadge.canceled{background:#f3f4f6;color:#374151}
+    .statusBadge.present{background:#dcfce7;color:#166534}
+    .statusBadge.absent{background:#fee2e2;color:#991b1b}
+    .statusBadge.late{background:#fed7aa;color:#9a3412}
+    .statusBadge.leave{background:#dbeafe;color:#1e40af}
+    .formGroup{margin-bottom:16px}
+    .formGroup label{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
+    .formGroup input,.formGroup select,.formGroup textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;font-family:inherit;font-size:14px;background:#fff}
+    .formGroup input:focus,.formGroup select:focus,.formGroup textarea:focus{outline:0;border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.1)}
+    .formGroup textarea{resize:vertical;min-height:80px}
+    .formGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+    .modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);z-index:1000;padding:20px;overflow-y:auto}
+    .modal.active{display:flex;align-items:center;justify-content:center}
+    .modalContent{background:var(--card);border-radius:22px;box-shadow:0 20px 50px rgba(15,23,42,.12);width:100%;max-width:600px;max-height:90vh;overflow-y:auto}
+    .modalHeader{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .modalHeader h3{font-size:18px;font-weight:600}
+    .modalBody{padding:20px}
+    .modalFooter{padding:20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+    .loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .overlayMsg .t{font-weight:700}
-    .overlayMsg .s{font-size:12px;color:var(--muted); margin-top:2px}
-    /* Modal */
-    .modalBack{
-      position:fixed; inset:0;
-      background:rgba(15,23,42,.45);
-      display:none;
-      align-items:center; justify-content:center;
-      z-index:1100;
-      padding:18px;
-    }
-    .modalBack.show{display:flex}
-    .modal{
-      width:min(880px, 96vw);
-      max-height: 92vh;
-      overflow:auto;
-      background:white;
-      border:1px solid var(--border);
-      border-radius:22px;
-      box-shadow: var(--shadow);
-      padding:14px;
-    }
-    .modalHeader{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      position:sticky; top:0; background:white; padding:6px 2px 10px; z-index:3;
-      border-bottom:1px solid var(--border);
-    }
-    .modalHeader .title{font-size:16px; font-weight:700}
-    .modalBody{padding:12px 2px}
-    .toastWrap{
-      position:fixed;
-      bottom:16px; right:16px;
-      display:flex; flex-direction:column; gap:10px;
-      z-index:1200;
-      max-width:min(360px, 92vw);
-    }
-    .toast{
-      background:white;
-      border:1px solid var(--border);
-      border-radius:18px;
-      box-shadow: var(--shadow);
-      padding:12px 12px;
-      display:flex; gap:10px; align-items:flex-start;
-    }
-    .toast .icon{
-      width:26px;height:26px;border-radius:10px;
-      display:grid; place-items:center;
-      background:#fff7ed; border:1px solid #fed7aa;
-      color:#9a3412; font-weight:800;
-    }
-    .toast .msg{font-size:13px}
-    .toast .msg .t{font-weight:700}
-    .toast .msg .s{color:var(--muted); font-size:12px; margin-top:2px}
-    /* Mobile */
-    .mobileTop{
-      display:none;
-      position:sticky; top:0; z-index:900;
-      background:rgba(255,255,255,.75);
-      backdrop-filter: blur(10px);
-      border-bottom:1px solid var(--border);
-      padding:10px 12px;
-      align-items:center; justify-content:space-between;
-      gap:10px;
-    }
-    .mobileTop .left{display:flex; align-items:center; gap:10px}
-    .burger{
-      width:42px;height:42px;border-radius:14px;
-      border:1px solid var(--border);
-      background:white;
-      cursor:pointer;
-      font-weight:900;
-    }
-    .mobileTitle{font-weight:800}
-    .drawerBack{
-      position:fixed; inset:0;
-      background:rgba(15,23,42,.45);
-      display:none;
-      z-index:950;
-    }
-    .drawerBack.show{display:block}
-    .drawer{
-      position:fixed; top:0; left:0; bottom:0;
-      width: min(320px, 88vw);
-      background:rgba(255,255,255,.82);
-      backdrop-filter: blur(12px);
-      border-right:1px solid var(--border);
-      padding:16px 12px;
-      transform: translateX(-105%);
-      transition: .2s transform;
-      z-index:960;
-    }
-    .drawer.show{transform: translateX(0)}
-    @media (max-width: 960px){
-      .app{grid-template-columns: 1fr}
-      .sidebar{display:none}
-      .mobileTop{display:flex}
-      .main{padding:14px 12px 90px}
-      table{min-width: 980px}
+    .loadingOverlay{position:fixed;inset:0;background:rgba(255,255,255,.8);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:9999}
+    .loadingOverlay .spinner{width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite}
+    .emptyState{text-align:center;padding:60px 20px;color:var(--muted)}
+    .emptyState .icon{font-size:48px;margin-bottom:12px;opacity:.5}
+    .alert{padding:14px 16px;border-radius:12px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px}
+    .alert.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+    .alert.success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+    .alert.warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+    .alert.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+    .tabs{display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:20px;overflow-x:auto}
+    .tabs button{padding:12px 20px;border:none;background:transparent;font-family:inherit;font-weight:600;font-size:14px;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+    .tabs button:hover{color:var(--text)}
+    .tabs button.active{color:var(--orange);border-bottom-color:var(--orange)}
+    .hide{display:none!important}
+    @media(max-width:768px){
+      .app{grid-template-columns:1fr}
+      .sidebar{position:fixed;left:-280px;width:280px;z-index:100;transition:.3s}
+      .sidebar.active{left:0}
+      .cardGrid,.formGrid{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
-  <div class="mobileTop">
-    <div class="left">
-      <button class="burger" id="btnBurger">≡</button>
-      <div>
-        <div class="mobileTitle" id="mobileTitle">HRM Admin v2</div>
-        <div class="muted" style="font-size:12px" id="mobileSub">Attendance + Leave</div>
-      </div>
-    </div>
-    <button class="btn orange" id="btnQuickLogin">Login</button>
-  </div>
-
-  <div class="drawerBack" id="drawerBack"></div>
-  <aside class="drawer" id="drawer">
-    <div class="brand" style="margin-bottom:10px">
-      <div class="logo">HR</div>
-      <div>
-        <h1>HRM Admin v2</h1>
-        <div class="sub">Attendance + Leave (GS Router)</div>
-      </div>
-    </div>
-    <div class="sideCard">
-      <div class="kv">
-        <div class="k">API</div><div id="kvApi" class="mono muted" style="word-break:break-all">-</div>
-        <div class="k">Token</div><div id="kvToken" class="mono muted">-</div>
-        <div class="k">สถานะ</div><div id="kvStatus"></div>
-      </div>
-      <div class="btnRow">
-        <button class="btn primary" id="btnConfig2">ตั้งค่า URL</button>
-        <button class="btn" id="btnPing2">ทดสอบ</button>
-        <button class="btn orange" id="btnLogin2">Login</button>
-        <button class="btn" id="btnLogout2">Logout</button>
-      </div>
-    </div>
-    <div class="nav" id="nav2"></div>
-    <div class="spacer"></div>
-    <div class="footerHint">Tip: ถ้าข้อมูลไม่ขึ้น ให้ตรวจ URL / Token แล้วกด “ทดสอบ”</div>
-  </aside>
-
+  <div id="loadingOverlay" class="loadingOverlay hide"><div class="spinner"></div></div>
   <div class="app">
     <aside class="sidebar">
-      <div class="brand">
-        <div class="logo">HR</div>
-        <div>
-          <h1>HRM Admin Panel</h1>
-          <div class="sub">v2 • Stable UI • Modular</div>
-        </div>
-      </div>
-
+      <div class="brand"><div class="logo">👤</div><div><h1>HRM Admin v2</h1><div class="sub">การจัดการ</div></div></div>
       <div class="sideCard">
-        <div class="kv">
-          <div class="k">API</div><div id="kvApiDesk" class="mono muted" style="word-break:break-all">-</div>
-          <div class="k">Token</div><div id="kvTokenDesk" class="mono muted">-</div>
-          <div class="k">สถานะ</div><div id="kvStatusDesk"></div>
-        </div>
-        <div class="btnRow">
-          <button class="btn primary" id="btnConfig">ตั้งค่า URL</button>
-          <button class="btn" id="btnPing">ทดสอบ</button>
-          <button class="btn orange" id="btnLogin">Login</button>
-          <button class="btn" id="btnLogout">Logout</button>
-        </div>
+        <div class="kv"><div class="k">ผู้ใช้:</div><div id="adminName">-</div><div class="k">เวลา:</div><div id="currentTime">-</div></div>
+        <div class="badge" style="margin-top:10px"><div class="dot ok"></div><span>ออนไลน์</span></div>
+        <div style="margin-top:10px"><button class="btn ghost" onclick="logout()">ออกจากระบบ</button></div>
       </div>
-
-      <div class="nav" id="nav"></div>
+      <nav class="nav">
+        <button class="active" data-page="dashboard"><span>📊 แดชบอร์ด</span><span class="meta"></span></button>
+        <button data-page="attendance"><span>📝 บันทึกเวลา</span></button>
+        <button data-page="leave"><span>🏖️ คำขอลา</span><span class="meta" id="navLeaveBadge"></span></button>
+        <button data-page="employees"><span>👥 พนักงาน</span></button>
+        <button data-page="departments"><span>🏢 แผนก</span></button>
+        <button data-page="leavetypes"><span>📋 ประเภทการลา</span></button>
+        <button data-page="branches"><span>🏪 สาขา</span></button>
+        <button data-page="levels"><span>⭐ ระดับ</span></button>
+        <button data-page="zones"><span>📍 โซน</span></button>
+        <button data-page="holidays"><span>🎉 วันหยุด</span></button>
+        <button data-page="reports"><span>📈 รายงาน</span></button>
+      </nav>
       <div class="spacer"></div>
-      <div class="footerHint">© HRM v2 • ใช้ action router เดียว • ลดบัคชนกัน</div>
+      <div style="font-size:12px;color:var(--muted);padding:8px 10px">HRM System v2.0<br>© 2026</div>
     </aside>
-
     <main class="main">
-      <div class="topbar">
-        <div class="pageTitle">
-          <h2 id="pageTitle">Dashboard</h2>
-          <div class="desc" id="pageDesc">ภาพรวมวันนี้ / สรุปข้อมูลสำคัญ</div>
+      <div id="page-dashboard" class="page">
+        <div class="topbar"><div><h2>แดชบอร์ด</h2><div style="font-size:14px;color:var(--muted);margin-top:4px">ภาพรวมระบบ / สถานะล่าสุด</div></div><div style="display:flex;gap:8px"><select id="dashDate" class="btn" onchange="loadDashboard()"><option value="">วันนี้</option></select><button class="btn primary" onclick="loadDashboard()">🔄 รีเฟรช</button></div></div>
+        <div class="cardGrid">
+          <div class="statCard"><div class="icon ok">✓</div><div class="label">มาทำงานวันนี้</div><div class="value" id="dashPresent">-</div><div class="meta">จากทั้งหมด <span id="dashTotal">-</span> คน</div></div>
+          <div class="statCard"><div class="icon bad">✗</div><div class="label">ขาดงาน</div><div class="value" id="dashAbsent">-</div><div class="meta">ไม่มีบันทึกเวลา</div></div>
+          <div class="statCard"><div class="icon orange">⏰</div><div class="label">มาสาย</div><div class="value" id="dashLate">-</div><div class="meta">มาหลัง 08:02 น.</div></div>
+          <div class="statCard"><div class="icon info">🏖️</div><div class="label">ลาวันนี้</div><div class="value" id="dashLeave">-</div><div class="meta">มีใบลาอนุมัติ</div></div>
+          <div class="statCard"><div class="icon warn">⏳</div><div class="label">รอดำเนินการ</div><div class="value" id="dashPending">-</div><div class="meta">คำขอลารออนุมัติ</div></div>
+          <div class="statCard"><div class="icon purple">📊</div><div class="label">สแกนเพิ่มเติม</div><div class="value" id="dashExtraScans">-</div><div class="meta">ExtraScans วันนี้</div></div>
         </div>
-        <div class="topActions">
-          <button class="btn" id="btnRefresh">รีเฟรช</button>
-          <button class="btn primary" id="btnInit">โหลดค่าเริ่มต้น</button>
+        <div class="contentCard"><div class="header"><h3>📌 รายการมาสายวันนี้</h3><button class="btn sm primary" onclick="exportLateToday()">📥 ส่งออก</button></div><div class="body"><div id="lateListToday"><div class="emptyState"><div class="icon">⏰</div><div>กำลังโหลด...</div></div></div></div></div>
+        <div class="contentCard"><div class="header"><h3>📋 คำขอลารอดำเนินการ</h3><button class="btn sm primary" onclick="showPage('leave')">ดูทั้งหมด →</button></div><div class="body"><div id="pendingLeaveList"><div class="emptyState"><div class="icon">🏖️</div><div>กำลังโหลด...</div></div></div></div></div>
+      </div>
+      <div id="page-attendance" class="page hide">
+        <div class="topbar"><div><h2>บันทึกเวลาทำงาน</h2></div><div style="display:flex;gap:8px"><button class="btn orange" onclick="openManualLogModal()">➕ เพิ่มบันทึก</button><button class="btn primary" onclick="exportAttendance()">📥 ส่งออก</button></div></div>
+        <div class="contentCard"><div class="header"><h3>🔍 ค้นหาและกรอง</h3></div><div class="body"><div class="filters"><select id="attMonth" onchange="loadAttendance()"></select><select id="attYear" onchange="loadAttendance()"></select><select id="attBranch" onchange="loadAttendance()"><option value="">ทุกสาขา</option></select><select id="attStatus" onchange="loadAttendance()"><option value="ALL">ทุกสถานะ</option><option value="PRESENT">มาทำงาน</option><option value="LATE">มาสาย</option><option value="ABSENT">ขาดงาน</option><option value="LEAVE">ลา</option></select><input type="text" id="attSearch" placeholder="ค้นหา..." oninput="loadAttendance()"></div></div></div>
+        <div class="contentCard"><div class="header"><h3>📊 ตารางบันทึกเวลา</h3><div style="font-size:13px;color:var(--muted)">รายการ: <span id="attCount">0</span></div></div><div class="body"><div id="attendanceTable"></div></div></div>
+      </div>
+      <div id="page-leave" class="page hide">
+        <div class="topbar"><div><h2>คำขอลา</h2></div><div><button class="btn primary" onclick="exportLeaveRequests()">📥 ส่งออก</button></div></div>
+        <div class="contentCard"><div class="header"><h3>🔍 กรอง</h3></div><div class="body"><div class="filters"><select id="leaveMonth" onchange="loadLeaveRequests()"></select><select id="leaveYear" onchange="loadLeaveRequests()"></select><select id="leaveStatus" onchange="loadLeaveRequests()"><option value="ALL">ทุกสถานะ</option><option value="PENDING">รอ</option><option value="APPROVED">อนุมัติ</option><option value="REJECTED">ปฏิเสธ</option><option value="CANCELED">ยกเลิก</option></select><input type="text" id="leaveSearch" placeholder="ค้นหา..." oninput="loadLeaveRequests()"></div></div></div>
+        <div class="contentCard"><div class="header"><h3>📋 คำขอลา</h3><div style="font-size:13px;color:var(--muted)">รายการ: <span id="leaveCount">0</span></div></div><div class="body"><div id="leaveTable"></div></div></div>
+      </div>
+      <div id="page-employees" class="page hide">
+        <div class="topbar"><div><h2>พนักงาน</h2></div><div style="display:flex;gap:8px"><button class="btn orange" onclick="openEmployeeModal()">➕ เพิ่ม</button><button class="btn primary" onclick="exportEmployees()">📥 ส่งออก</button></div></div>
+        <div class="contentCard"><div class="header"><h3>🔍 ค้นหา</h3></div><div class="body"><div class="filters"><input type="text" id="empSearch" placeholder="ค้นหา..." oninput="loadEmployees()"><select id="empBranch" onchange="loadEmployees()"><option value="">ทุกสาขา</option></select><select id="empDept" onchange="loadEmployees()"><option value="">ทุกแผนก</option></select><select id="empLevel" onchange="loadEmployees()"><option value="">ทุกระดับ</option></select></div></div></div>
+        <div class="contentCard"><div class="header"><h3>👥 รายชื่อ</h3><div style="font-size:13px;color:var(--muted)">จำนวน: <span id="empCount">0</span></div></div><div class="body"><div id="employeesTable"></div></div></div>
+      </div>
+      <div id="page-departments" class="page hide">
+        <div class="topbar"><div><h2>แผนก</h2></div><div><button class="btn orange" onclick="openDepartmentModal()">➕ เพิ่ม</button></div></div>
+        <div class="contentCard"><div class="body"><div id="departmentsTable"></div></div></div>
+      </div>
+      <div id="page-leavetypes" class="page hide">
+        <div class="topbar"><div><h2>ประเภทการลา</h2></div><div><button class="btn orange" onclick="openLeaveTypeModal()">➕ เพิ่ม</button></div></div>
+        <div class="contentCard"><div class="body"><div id="leaveTypesTable"></div></div></div>
+      </div>
+      <div id="page-branches" class="page hide">
+        <div class="topbar"><div><h2>สาขา</h2></div><div><button class="btn orange" onclick="openBranchModal()">➕ เพิ่ม</button></div></div>
+        <div class="contentCard"><div class="body"><div id="branchesTable"></div></div></div>
+      </div>
+      <div id="page-levels" class="page hide">
+        <div class="topbar"><div><h2>ระดับ</h2></div><div><button class="btn orange" onclick="openLevelModal()">➕ เพิ่ม</button></div></div>
+        <div class="contentCard"><div class="body"><div id="levelsTable"></div></div></div>
+      </div>
+      <div id="page-zones" class="page hide">
+        <div class="topbar"><div><h2>โซน GPS</h2></div><div><button class="btn orange" onclick="openZoneModal()">➕ เพิ่ม</button></div></div>
+        <div class="contentCard"><div class="body"><div id="zonesTable"></div></div></div>
+      </div>
+      <div id="page-holidays" class="page hide">
+        <div class="topbar"><div><h2>วันหยุด</h2></div><div style="display:flex;gap:8px"><button class="btn orange" onclick="openHolidayModal()">➕ เพิ่ม</button></div></div>
+        <div class="contentCard"><div class="header"><h3>🔍 เลือกปี</h3></div><div class="body"><select id="holidayYear" onchange="loadHolidays()"></select></div></div>
+        <div class="contentCard"><div class="body"><div id="holidaysTable"></div></div></div>
+      </div>
+      <div id="page-reports" class="page hide">
+        <div class="topbar"><div><h2>รายงาน</h2></div></div>
+        <div class="tabs">
+          <button class="active" data-tab="monthly">รายเดือน</button>
+          <button data-tab="employee">รายบุคคล</button>
+          <button data-tab="summary">สรุป</button>
+        </div>
+        <div id="tab-monthly" class="tabContent">
+          <div class="contentCard"><div class="header"><h3>📊 รายงานรายเดือน</h3></div><div class="body"><div class="filters" style="margin-bottom:20px"><select id="reportMonth"></select><select id="reportYear"></select><button class="btn primary" onclick="generateMonthlyReport()">สร้าง</button></div><div id="monthlyReportContent"></div></div></div>
+        </div>
+        <div id="tab-employee" class="tabContent hide">
+          <div class="contentCard"><div class="header"><h3>👤 รายบุคคล</h3></div><div class="body"><div class="filters" style="margin-bottom:20px"><input type="text" id="reportEmpCode" placeholder="รหัส"><select id="reportEmpMonth"></select><select id="reportEmpYear"></select><button class="btn primary" onclick="generateEmployeeReport()">สร้าง</button></div><div id="employeeReportContent"></div></div></div>
+        </div>
+        <div id="tab-summary" class="tabContent hide">
+          <div class="contentCard"><div class="header"><h3>📈 สรุปภาพรวม</h3></div><div class="body"><div class="filters" style="margin-bottom:20px"><select id="summaryYear"></select><button class="btn primary" onclick="generateSummaryReport()">สร้าง</button></div><div id="summaryReportContent"></div></div></div>
         </div>
       </div>
-
-      <div id="pageRoot" class="grid"></div>
     </main>
   </div>
-
-  <!-- Global Loader -->
-  <div class="overlay" id="overlay">
-    <div class="overlayCard">
-      <div class="spinner"></div>
-      <div class="overlayMsg">
-        <div class="t" id="overlayTitle">กำลังโหลด…</div>
-        <div class="s" id="overlaySub">โปรดรอสักครู่</div>
-      </div>
-      <div style="flex:1"></div>
-      <button class="btn" id="btnAbort">หยุด</button>
-    </div>
-  </div>
-
-  <!-- Modal -->
-  <div class="modalBack" id="modalBack">
-    <div class="modal" role="dialog" aria-modal="true">
-      <div class="modalHeader">
-        <div class="title" id="modalTitle">Modal</div>
-        <button class="btn" id="btnModalClose">ปิด</button>
-      </div>
-      <div class="modalBody" id="modalBody"></div>
-    </div>
-  </div>
-
-  <div class="toastWrap" id="toastWrap"></div>
-
+  <!-- Modals -->
+  <div id="leaveActionModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3>ดำเนินการ</h3><button class="btn ghost sm" onclick="closeModal('leaveActionModal')">✕</button></div><div class="modalBody"><div id="leaveActionDetails"></div><div class="formGroup"><label>หมายเหตุ</label><textarea id="leaveAdminNote"></textarea></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('leaveActionModal')">ยกเลิก</button><button class="btn bad" onclick="processLeaveAction('REJECTED')">❌ ปฏิเสธ</button><button class="btn ok" onclick="processLeaveAction('APPROVED')">✅ อนุมัติ</button></div></div></div>
+  <div id="employeeModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3 id="employeeModalTitle">เพิ่มพนักงาน</h3><button class="btn ghost sm" onclick="closeModal('employeeModal')">✕</button></div><div class="modalBody"><div class="formGrid"><div class="formGroup"><label>รหัส *</label><input type="text" id="empCode" required></div><div class="formGroup"><label>ชื่อ-สกุล *</label><input type="text" id="empFullName" required></div><div class="formGroup"><label>อีเมล</label><input type="email" id="empEmail"></div><div class="formGroup"><label>สาขา</label><select id="empBranchInput"></select></div><div class="formGroup"><label>แผนก</label><select id="empDeptInput"></select></div><div class="formGroup"><label>ระดับ</label><select id="empLevelInput"></select></div></div><div class="formGroup"><label>ตำแหน่ง</label><input type="text" id="empPosition"></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('employeeModal')">ยกเลิก</button><button class="btn orange" onclick="saveEmployee()">💾 บันทึก</button></div></div></div>
+  <div id="departmentModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3 id="deptModalTitle">เพิ่มแผนก</h3><button class="btn ghost sm" onclick="closeModal('departmentModal')">✕</button></div><div class="modalBody"><div class="formGroup"><label>ชื่อแผนก *</label><input type="text" id="deptName" required></div><div class="formGroup"><label>หมายเหตุ</label><textarea id="deptNote"></textarea></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('departmentModal')">ยกเลิก</button><button class="btn orange" onclick="saveDepartment()">💾 บันทึก</button></div></div></div>
+  <div id="leaveTypeModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3 id="leaveTypeModalTitle">เพิ่มประเภทการลา</h3><button class="btn ghost sm" onclick="closeModal('leaveTypeModal')">✕</button></div><div class="modalBody"><div class="formGroup"><label>ชื่อ *</label><input type="text" id="leaveTypeName" required></div><div class="formGroup"><label>วันสูงสุด/ปี</label><input type="number" id="leaveTypeMaxDays" value="0"></div><div class="formGroup"><label>หมายเหตุ</label><textarea id="leaveTypeNote"></textarea></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('leaveTypeModal')">ยกเลิก</button><button class="btn orange" onclick="saveLeaveType()">💾 บันทึก</button></div></div></div>
+  <div id="branchModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3 id="branchModalTitle">เพิ่มสาขา</h3><button class="btn ghost sm" onclick="closeModal('branchModal')">✕</button></div><div class="modalBody"><div class="formGroup"><label>ชื่อสาขา *</label><input type="text" id="branchName" required></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('branchModal')">ยกเลิก</button><button class="btn orange" onclick="saveBranch()">💾 บันทึก</button></div></div></div>
+  <div id="levelModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3 id="levelModalTitle">เพิ่มระดับ</h3><button class="btn ghost sm" onclick="closeModal('levelModal')">✕</button></div><div class="modalBody"><div class="formGroup"><label>ชื่อระดับ *</label><input type="text" id="levelName" required></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('levelModal')">ยกเลิก</button><button class="btn orange" onclick="saveLevel()">💾 บันทึก</button></div></div></div>
+  <div id="zoneModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3 id="zoneModalTitle">เพิ่มโซน</h3><button class="btn ghost sm" onclick="closeModal('zoneModal')">✕</button></div><div class="modalBody"><div class="formGroup"><label>ชื่อโซน *</label><input type="text" id="zoneName" required></div><div class="formGrid"><div class="formGroup"><label>ละติจูด *</label><input type="number" id="zoneLat" step="0.000001" required></div><div class="formGroup"><label>ลองจิจูด *</label><input type="number" id="zoneLng" step="0.000001" required></div><div class="formGroup"><label>รัศมี (ม.) *</label><input type="number" id="zoneRadius" value="100" required></div></div><div class="formGroup"><label>หมายเหตุ</label><textarea id="zoneNote"></textarea></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('zoneModal')">ยกเลิก</button><button class="btn orange" onclick="saveZone()">💾 บันทึก</button></div></div></div>
+  <div id="holidayModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3 id="holidayModalTitle">เพิ่มวันหยุด</h3><button class="btn ghost sm" onclick="closeModal('holidayModal')">✕</button></div><div class="modalBody"><div class="formGroup"><label>วันที่ *</label><input type="date" id="holidayDate" required></div><div class="formGroup"><label>ชื่อวันหยุด *</label><input type="text" id="holidayName" required></div><div class="formGroup"><label>หมายเหตุ</label><textarea id="holidayNote"></textarea></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('holidayModal')">ยกเลิก</button><button class="btn orange" onclick="saveHoliday()">💾 บันทึก</button></div></div></div>
+  <div id="manualLogModal" class="modal"><div class="modalContent"><div class="modalHeader"><h3>เพิ่มบันทึกเวลา</h3><button class="btn ghost sm" onclick="closeModal('manualLogModal')">✕</button></div><div class="modalBody"><div class="formGroup"><label>รหัส *</label><input type="text" id="manualEmpCode" required></div><div class="formGroup"><label>วันที่ *</label><input type="date" id="manualDate" required></div><div class="formGrid"><div class="formGroup"><label>เข้า</label><input type="time" id="manualT1"></div><div class="formGroup"><label>ออกพัก</label><input type="time" id="manualT2"></div><div class="formGroup"><label>กลับพัก</label><input type="time" id="manualT3"></div><div class="formGroup"><label>ออก</label><input type="time" id="manualT4"></div></div><div class="formGroup"><label>หมายเหตุ</label><textarea id="manualNote"></textarea></div></div><div class="modalFooter"><button class="btn ghost" onclick="closeModal('manualLogModal')">ยกเลิก</button><button class="btn orange" onclick="saveManualLog()">💾 บันทึก</button></div></div></div>
 <script>
-/* ===========================
-   HRM Admin v2 (single-file, modular JS)
-   - UI: gray/white/orange, responsive PC+Mobile
-   - API: action router, standard unwrap response
-   - Focus: make Admin stable (Summary / Resigned / Full Detail / Leave Approvals / Settings)
-=========================== */
-
-/** ---------- Storage Keys (keep compatible with your system) ---------- */
-const STORAGE = {
-  apiUrl: 'attendance_api_url_v2',
-  token:  'attendance_hr_token_v1',
-  tokenLegacy: 'hr_token_admin_v2'
-};
-
-const PAGES = [
-  { id:'dashboard', title:'Dashboard', desc:'ภาพรวมวันนี้ / สถานะล่าสุด', meta:'วันนี้' },
-  { id:'leave', title:'Leave Approvals', desc:'อนุมัติ/ปฏิเสธ/ยกเลิกใบลา', meta:'Approve' },
-  { id:'employees', title:'Employees', desc:'จัดการพนักงาน (CRUD)', meta:'CRUD' },
-  { id:'resigned', title:'Resigned', desc:'พนักงานลาออก (ย้าย/แก้ไข/ลบ)', meta:'พนักงานลาออก' },
-  { id:'off', title:'Off & Holidays', desc:'วันหยุด/วันหยุดพนักงาน', meta:'ตารางวันหยุด' },
-  { id:'logs', title:'Logs', desc:'ดู Log ตามช่วงเวลา', meta:'ตามช่วง' },
-  { id:'summary', title:'Summary', desc:'สรุปรายเดือนตามปี/เดือน', meta:'ตามเดือน' },
-  { id:'settings', title:'Settings', desc:'สาขา/ระดับ/แผนก/ประเภทลา', meta:'ตั้งค่า' }
-];
-
-/** ---------- Utils ---------- */
-const U = {
-  fmtDate(d){
-    try{
-      const x = (d instanceof Date) ? d : new Date(d);
-      if(isNaN(x.getTime())) return '';
-      const yyyy = x.getFullYear();
-      const mm = String(x.getMonth()+1).padStart(2,'0');
-      const dd = String(x.getDate()).padStart(2,'0');
-      return `${yyyy}-${mm}-${dd}`;
-    }catch(e){ return ''; }
-  },
-  esc(s){ return String(s??'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); },
-  pick(obj, keys){
-    const out={};
-    keys.forEach(k=>{ if(obj && obj[k]!==undefined) out[k]=obj[k]; });
-    return out;
-  },
-  debounce(fn, ms=250){
-    let t=null;
-    return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),ms); };
-  }
-};
-
-/** ---------- UI ---------- */
-const UI = (()=>{
-  const overlay = document.getElementById('overlay');
-  const overlayTitle = document.getElementById('overlayTitle');
-  const overlaySub = document.getElementById('overlaySub');
-  const btnAbort = document.getElementById('btnAbort');
-  const toastWrap = document.getElementById('toastWrap');
-
-  let currentAbort = null;
-
-  function setBusy(on, title='กำลังโหลด…', sub='โปรดรอสักครู่', abortController=null){
-    if(on){
-      overlay.classList.add('show');
-      overlayTitle.textContent = title;
-      overlaySub.textContent = sub;
-      currentAbort = abortController;
-    }else{
-      overlay.classList.remove('show');
-      currentAbort = null;
-    }
-  }
-
-  btnAbort.addEventListener('click', ()=>{
-    try{ currentAbort && currentAbort.abort(); }catch(e){}
-    setBusy(false);
-  });
-
-  function toast(type, title, msg){
-    const el = document.createElement('div');
-    el.className = 'toast';
-    const icon = document.createElement('div');
-    icon.className = 'icon';
-    icon.textContent = type==='ok'?'✓': type==='warn'?'!':'×';
-    if(type==='bad'){ icon.style.background='#fef2f2'; icon.style.borderColor='#fecaca'; icon.style.color='#991b1b'; }
-    if(type==='ok'){ icon.style.background='#f0fdf4'; icon.style.borderColor='#bbf7d0'; icon.style.color='#166534'; }
-    if(type==='warn'){ icon.style.background='#fffbeb'; icon.style.borderColor='#fde68a'; icon.style.color='#92400e'; }
-
-    const body = document.createElement('div');
-    body.className = 'msg';
-    body.innerHTML = `<div class="t">${U.esc(title||'')}</div><div class="s">${U.esc(msg||'')}</div>`;
-    el.append(icon, body);
-    toastWrap.append(el);
-    setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateY(6px)'; el.style.transition='.2s'; }, 3400);
-    setTimeout(()=>{ el.remove(); }, 3800);
-  }
-
-  // Modal
-  const modalBack = document.getElementById('modalBack');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalBody = document.getElementById('modalBody');
-  const btnModalClose = document.getElementById('btnModalClose');
-
-  function openModal(title, html){
-    modalTitle.textContent = title || 'Modal';
-    modalBody.innerHTML = html || '';
-    modalBack.classList.add('show');
-  }
-  function closeModal(){
-    modalBack.classList.remove('show');
-    modalBody.innerHTML = '';
-  }
-  btnModalClose.addEventListener('click', closeModal);
-  modalBack.addEventListener('click', (e)=>{ if(e.target===modalBack) closeModal(); });
-
-  return { setBusy, toast, openModal, closeModal };
-})();
-
-/** ---------- Storage ---------- */
-const Store = (()=>{
-  function getApiUrl(){ return localStorage.getItem(STORAGE.apiUrl) || ''; }
-  function setApiUrl(v){ localStorage.setItem(STORAGE.apiUrl, String(v||'').trim()); renderConn(); }
-
-  function getToken(){
-    return localStorage.getItem(STORAGE.token)
-      || (STORAGE.tokenLegacy ? localStorage.getItem(STORAGE.tokenLegacy) : '')
-      || '';
-  }
-  function setToken(v){
-    if(v){
-      localStorage.setItem(STORAGE.token, v);
-      if(STORAGE.tokenLegacy) localStorage.setItem(STORAGE.tokenLegacy, v);
-    }else{
-      localStorage.removeItem(STORAGE.token);
-      if(STORAGE.tokenLegacy) localStorage.removeItem(STORAGE.tokenLegacy);
-    }
-    renderConn();
-  }
-
-  function maskToken(t){
-    if(!t) return '-';
-    if(t.length<=10) return t;
-    return t.slice(0,6)+'…'+t.slice(-4);
-  }
-
-  function renderConn(){
-    const api = getApiUrl() || '-';
-    const tok = maskToken(getToken());
-
-    const el1 = document.getElementById('kvApiDesk');
-    const el2 = document.getElementById('kvTokenDesk');
-    const el3 = document.getElementById('kvApi');
-    const el4 = document.getElementById('kvToken');
-    [el1,el3].forEach(el=>{ if(el) el.textContent = api; });
-    [el2,el4].forEach(el=>{ if(el) el.textContent = tok; });
-
-    const has = !!getApiUrl();
-    const hasTok = !!getToken();
-    const badge = (ok)=>`<span class="badge"><span class="dot ${ok?'ok':'bad'}"></span>${ok?'พร้อมใช้งาน':'ยังไม่พร้อม'}</span>`;
-    const statusHtml = badge(has && hasTok);
-
-    const sd = document.getElementById('kvStatusDesk');
-    const sm = document.getElementById('kvStatus');
-    if(sd) sd.innerHTML = statusHtml;
-    if(sm) sm.innerHTML = statusHtml;
-  }
-
-  return { getApiUrl, setApiUrl, getToken, setToken, renderConn };
-})();
-
-/** ---------- API ---------- */
-const Api = (()=>{
-  function unwrap(raw){
-    // Standardize wildly different wrappers:
-    // - {ok:true, result:...}
-    // - {success:true, ...}
-    // - {ok:true, result:{ok:true, result:...}}
-    // - direct array/object
-    if(raw && typeof raw === 'object'){
-      if(raw.ok === false) throw new Error(raw.error || raw.message || 'API error');
-      if(raw.success === false) throw new Error(raw.error || raw.message || 'API error');
-
-      // nested result unwrap
-      let x = raw;
-      for(let i=0;i<3;i++){
-        if(x && typeof x === 'object' && 'result' in x && x.result !== undefined){
-          x = x.result;
-          continue;
-        }
-        break;
-      }
-      // sometimes {success:true, token:...} should return itself
-      return x;
-    }
-    return raw;
-  }
-
-  async function post(action, params={}, opts={}){
-    const apiUrl = Store.getApiUrl();
-    if(!apiUrl) throw new Error('ยังไม่ได้ตั้งค่า URL API');
-    const token = Store.getToken();
-    const body = new URLSearchParams();
-    body.set('action', action);
-    if(token) body.set('token', token);
-    Object.keys(params||{}).forEach(k=>{
-      const v = params[k];
-      if(v === undefined) return;
-      if(typeof v === 'object') body.set(k, JSON.stringify(v));
-      else body.set(k, String(v));
-    });
-
-    const controller = opts.signal ? null : new AbortController();
-    const signal = opts.signal || (controller && controller.signal);
-    const timeoutMs = opts.timeoutMs || 25000;
-    let timer = null;
-
-    UI.setBusy(true, 'กำลังโหลด…', action, controller);
-    try{
-      if(controller){
-        timer = setTimeout(()=>controller.abort(), timeoutMs);
-      }
-      const res = await fetch(apiUrl, {
-        method:'POST',
-        body,
-        signal
-      });
-      const text = await res.text();
-      let json;
-      try{ json = JSON.parse(text); }catch(e){
-        throw new Error('ตอบกลับไม่ใช่ JSON: '+text.slice(0,180));
-      }
-      const out = unwrap(json);
-      return out;
-    }catch(err){
-      // AbortError -> show friendly
-      if(String(err?.name||'').toLowerCase().includes('abort')){
-        throw new Error('ยกเลิกการโหลด (Abort)');
-      }
-      throw err;
-    }finally{
-      if(timer) clearTimeout(timer);
-      UI.setBusy(false);
-    }
-  }
-
-  return { post };
-})();
-
-/** ---------- App Data Cache ---------- */
-const App = {
-  cache:{
-    branches:[],
-    levels:[],
-    departments:[],
-    leaveTypes:[]
-  },
-  currentPage:'dashboard'
-};
-
-/** ---------- Nav Rendering ---------- */
-function renderNav(){
-  const nav = document.getElementById('nav');
-  const nav2 = document.getElementById('nav2');
-  const make = (container)=>{
-    container.innerHTML = '';
-    PAGES.forEach(p=>{
-      const b = document.createElement('button');
-      b.dataset.page = p.id;
-      b.innerHTML = `<span>${U.esc(p.title)}</span><span class="meta">${U.esc(p.meta||'')}</span>`;
-      if(p.id === App.currentPage) b.classList.add('active');
-      b.addEventListener('click', ()=>goPage(p.id));
-      container.appendChild(b);
-    });
-  };
-  if(nav) make(nav);
-  if(nav2) make(nav2);
-}
-
-/** ---------- Drawer (mobile) ---------- */
-const Drawer = (()=>{
-  const btnBurger = document.getElementById('btnBurger');
-  const drawer = document.getElementById('drawer');
-  const back = document.getElementById('drawerBack');
-  function open(){
-    back.classList.add('show');
-    drawer.classList.add('show');
-  }
-  function close(){
-    back.classList.remove('show');
-    drawer.classList.remove('show');
-  }
-  btnBurger?.addEventListener('click', open);
-  back?.addEventListener('click', close);
-  return { open, close };
-})();
-
-/** ---------- Config / Login ---------- */
-function openConfig(){
-  const api = Store.getApiUrl();
-  const tok = Store.getToken();
-  UI.openModal('ตั้งค่า API', `
-    <div class="row" style="align-items:flex-end">
-      <div class="field" style="flex:1; min-width:260px">
-        <label>Web App URL (…/exec)</label>
-        <input id="cfgApi" placeholder="https://script.google.com/macros/s/…/exec" value="${U.esc(api)}">
-      </div>
-      <button class="btn primary" id="cfgSave">บันทึก</button>
-    </div>
-    <div style="height:10px"></div>
-    <div class="row" style="align-items:flex-end">
-      <div class="field" style="flex:1; min-width:260px">
-        <label>Admin Token (ถ้าต้องการใส่เอง)</label>
-        <input id="cfgToken" placeholder="เว้นว่างแล้วใช้ Login ก็ได้" value="${U.esc(tok)}">
-      </div>
-      <button class="btn" id="cfgSaveTok">บันทึก Token</button>
-      <button class="btn" id="cfgClearTok">ล้าง Token</button>
-    </div>
-    <div class="muted" style="margin-top:10px;font-size:12px">
-      แนะนำ: ใส่ URL แล้วกด Login เพื่อสร้าง Token อัตโนมัติ (action: <span class="mono">loginAdmin</span>)
-    </div>
-  `);
-  document.getElementById('cfgSave')?.addEventListener('click', ()=>{
-    Store.setApiUrl(document.getElementById('cfgApi').value);
-    UI.toast('ok','บันทึกแล้ว','ตั้งค่า URL เรียบร้อย');
-    UI.closeModal();
-  });
-  document.getElementById('cfgSaveTok')?.addEventListener('click', ()=>{
-    Store.setToken(document.getElementById('cfgToken').value.trim());
-    UI.toast('ok','บันทึกแล้ว','ตั้งค่า Token เรียบร้อย');
-    UI.closeModal();
-  });
-  document.getElementById('cfgClearTok')?.addEventListener('click', ()=>{
-    Store.setToken('');
-    UI.toast('ok','ล้างแล้ว','ล้าง Token เรียบร้อย');
-    UI.closeModal();
-  });
-}
-
-function openLogin(){
-  UI.openModal('เข้าสู่ระบบแอดมิน', `
-    <div class="row">
-      <div class="field" style="flex:1; min-width:220px">
-        <label>Username</label>
-        <input id="lgUser" placeholder="เช่น admin">
-      </div>
-      <div class="field" style="flex:1; min-width:220px">
-        <label>Password</label>
-        <input id="lgPass" type="password" placeholder="••••••••">
-      </div>
-    </div>
-    <div style="height:10px"></div>
-    <div class="row">
-      <button class="btn orange" id="lgGo">Login</button>
-      <button class="btn" id="lgClose">ยกเลิก</button>
-      <div class="muted" style="font-size:12px">จะเรียก action: <span class="mono">loginAdmin</span> แล้วเก็บ token ในเครื่อง</div>
-    </div>
-  `);
-  document.getElementById('lgClose')?.addEventListener('click', UI.closeModal);
-  document.getElementById('lgGo')?.addEventListener('click', async ()=>{
-    try{
-      const username = document.getElementById('lgUser').value.trim();
-      const password = document.getElementById('lgPass').value.trim();
-      const res = await Api.post('loginAdmin', { username, password });
-      const token = res?.token || res?.result?.token;
-      if(!token) throw new Error('Login สำเร็จแต่ไม่พบ token');
-      Store.setToken(token);
-      UI.toast('ok','เข้าสู่ระบบสำเร็จ', res?.message || 'พร้อมใช้งาน');
-      UI.closeModal();
-      await initData(true);
-      await refreshPage();
-    }catch(err){
-      UI.toast('bad','Login ไม่สำเร็จ', err.message || String(err));
-    }
-  });
-}
-
-async function ping(){
-  try{
-    const res = await Api.post('ping', {}, {timeoutMs:12000});
-    UI.toast('ok','เชื่อมต่อได้', typeof res==='string'?res:'พร้อมใช้งาน');
-  }catch(err){
-    UI.toast('bad','เชื่อมต่อไม่ได้', err.message || String(err));
-  }
-}
-
-function logout(){
-  Store.setToken('');
-  UI.toast('ok','Logout','ล้าง Token แล้ว');
-}
-
-/** ---------- Init / Data ---------- */
-async function initData(silent=false){
-  try{
-    // Prefer getInitialData if exists; fallback to getBranchesLevels + getDepartments + getLeaveTypes
-    let init = null;
-    try{
-      init = await Api.post('getInitialData', {});
-    }catch(e){
-      init = null;
-    }
-
-    if(init && typeof init === 'object'){
-      App.cache.branches = init.branches || init.Branches || init.branchList || App.cache.branches;
-      App.cache.levels = init.levels || init.Levels || init.levelList || App.cache.levels;
-      App.cache.departments = init.departments || init.Departments || init.departmentList || App.cache.departments;
-      App.cache.leaveTypes = init.leaveTypes || init.LeaveTypes || init.leaveTypeList || App.cache.leaveTypes;
-    }else{
-      const bl = await Api.post('getBranchesLevels', {});
-      App.cache.branches = bl?.branches || bl?.Branches || [];
-      App.cache.levels = bl?.levels || bl?.Levels || [];
-      try{
-        App.cache.departments = await Api.post('getDepartments', {});
-      }catch(e){ App.cache.departments = []; }
-      try{
-        App.cache.leaveTypes = await Api.post('getLeaveTypes', {});
-      }catch(e){ App.cache.leaveTypes = []; }
-    }
-
-    if(!silent) UI.toast('ok','โหลดค่าเริ่มต้นแล้ว','สาขา/ระดับ/แผนก/ประเภทลา');
-  }catch(err){
-    if(!silent) UI.toast('warn','โหลดค่าเริ่มต้นไม่สำเร็จ', err.message || String(err));
-  }
-}
-
-/** ---------- Page Router ---------- */
-function setHeader(title, desc){
-  document.getElementById('pageTitle').textContent = title || '';
-  document.getElementById('pageDesc').textContent = desc || '';
-  document.getElementById('mobileTitle').textContent = title || 'HRM Admin v2';
-  document.getElementById('mobileSub').textContent = desc || '';
-}
-
-async function goPage(id){
-  App.currentPage = id;
-  renderNav();
-  Drawer.close();
-  await renderPage();
-}
-
-async function refreshPage(){
-  await renderPage(true);
-}
-
-async function renderPage(force=false){
-  const page = PAGES.find(p=>p.id===App.currentPage) || PAGES[0];
-  setHeader(page.title, page.desc);
-  const root = document.getElementById('pageRoot');
-  root.innerHTML = '';
-  try{
-    if(page.id==='dashboard') await PageDashboard(root);
-    else if(page.id==='employees') await PageEmployees(root);
-    else if(page.id==='resigned') await PageResigned(root);
-    else if(page.id==='leave') await PageLeaveApprovals(root);
-    else if(page.id==='logs') await PageLogs(root);
-    else if(page.id==='summary') await PageSummary(root);
-    else if(page.id==='off') await PageOffHolidays(root);
-    else if(page.id==='settings') await PageSettings(root);
-  }catch(err){
-    root.innerHTML = `<div class="card"><h3>เกิดข้อผิดพลาด</h3><div class="muted">${U.esc(err.message||String(err))}</div></div>`;
-  }
-}
-
-/** ---------- Components ---------- */
-function card(title, innerHtml){
-  const el = document.createElement('div');
-  el.className = 'card';
-  el.innerHTML = title ? `<h3>${U.esc(title)}</h3>${innerHtml||''}` : (innerHtml||'');
-  return el;
-}
-
-function renderTable(rows, cols){
-  const keys = cols && cols.length ? cols : (rows[0] ? Object.keys(rows[0]) : []);
-  const th = keys.map(k=>`<th>${U.esc(k)}</th>`).join('');
-  const body = rows.map(r=>`<tr>${keys.map(k=>`<td>${U.esc(r?.[k] ?? '')}</td>`).join('')}</tr>`).join('');
-  return `
-    <div class="tableWrap">
-      <table>
-        <thead><tr>${th}</tr></thead>
-        <tbody>${body || `<tr><td colspan="${keys.length||1}" class="muted">ไม่พบข้อมูล</td></tr>`}</tbody>
-      </table>
-    </div>
-  `;
-}
-
-function statusPill(ok, textOk='พร้อมใช้งาน', textBad='มีปัญหา'){
-  return `<span class="pill ${ok?'ok':'bad'}">${U.esc(ok?textOk:textBad)}</span>`;
-}
-
-/** ---------- Pages ---------- */
-async function PageDashboard(root){
-  const c = card('ภาพรวมวันนี้', `
-    <div class="row">
-      <div class="field">
-        <label>วันที่</label>
-        <input id="dashDate" type="date" value="${U.esc(U.fmtDate(new Date()))}">
-      </div>
-      <button class="btn orange" id="dashLoad">โหลดข้อมูล</button>
-      <div id="dashStatus"></div>
-    </div>
-    <div style="height:10px"></div>
-    <div id="dashTable" class="muted">ยังไม่ได้โหลด</div>
-  `);
-  root.appendChild(c);
-
-  const load = async ()=>{
-    const date = document.getElementById('dashDate').value;
-    const elStatus = document.getElementById('dashStatus');
-    const elTable = document.getElementById('dashTable');
-    elTable.innerHTML = `<div class="muted">กำลังโหลด...</div>`;
-    try{
-      // Prefer getTodaySummary; if date isn't today, fallback to getLogsRange
-      const today = U.fmtDate(new Date());
-      let rows=[];
-      if(date === today){
-        const res = await Api.post('getTodaySummary', {});
-        // try common shapes
-        if(Array.isArray(res)) rows=res;
-        else if(res?.rows) rows=res.rows;
-        else if(res?.result?.rows) rows=res.result.rows;
-        else rows=[];
-      }else{
-        const res = await Api.post('getLogsRange', { startDate: date, endDate: date, search:'' });
-        rows = Array.isArray(res) ? res : (res?.rows || []);
-      }
-      elStatus.innerHTML = statusPill(true, 'โหลดแล้ว', 'ผิดพลาด');
-      elTable.innerHTML = rows.length ? renderTable(rows) : `<div class="muted">ไม่พบข้อมูล</div>`;
-    }catch(err){
-      elStatus.innerHTML = statusPill(false, 'โหลดแล้ว', 'ผิดพลาด');
-      elTable.innerHTML = `<div class="muted">${U.esc(err.message||String(err))}</div>`;
-    }
-  };
-
-  document.getElementById('dashLoad').addEventListener('click', load);
-  await load();
-}
-
-async function PageEmployees(root){
-  const c = card('Employees (CRUD)', `
-    <div class="row">
-      <div class="field" style="min-width:240px;flex:1">
-        <label>ค้นหา (รหัส/ชื่อ/อีเมล)</label>
-        <input id="empSearch" placeholder="เช่น 1011 / สมชาย / gmail">
-      </div>
-      <button class="btn orange" id="empReload">โหลด</button>
-      <button class="btn primary" id="empAdd">เพิ่มพนักงาน</button>
-    </div>
-    <div style="height:10px"></div>
-    <div id="empWrap" class="muted">กำลังโหลด...</div>
-  `);
-  root.appendChild(c);
-
-  let all=[];
-
-  async function load(){
-    const q = document.getElementById('empSearch').value.trim();
-    const res = await Api.post('getEmployees', {});
-    all = Array.isArray(res) ? res : (res?.rows || res?.employees || []);
-    const filtered = !q ? all : all.filter(r=>{
-      const s = `${r.code||''} ${r.fullName||''} ${r.email||''} ${r.branch||''} ${r.level||''} ${r.department||''}`.toLowerCase();
-      return s.includes(q.toLowerCase());
-    });
-    renderList(filtered);
-  }
-
-  function renderList(rows){
-    const cols = ['code','fullName','branch','department','level','email','status'];
-    const html = `
-      <div class="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>code</th><th>fullName</th><th>branch</th><th>department</th><th>level</th><th>email</th><th>status</th><th>actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map(r=>`
-              <tr>
-                <td>${U.esc(r.code||'')}</td>
-                <td>${U.esc(r.fullName||'')}</td>
-                <td>${U.esc(r.branch||'')}</td>
-                <td>${U.esc(r.department||'')}</td>
-                <td>${U.esc(r.level||'')}</td>
-                <td>${U.esc(r.email||'')}</td>
-                <td>${U.esc(r.status||'')}</td>
-                <td>
-                  <button class="btn" data-act="edit" data-code="${U.esc(r.code||'')}">แก้ไข</button>
-                  <button class="btn" data-act="full" data-code="${U.esc(r.code||'')}">Full Detail</button>
-                  <button class="btn" data-act="resign" data-code="${U.esc(r.code||'')}">ลาออก</button>
-                  <button class="btn" data-act="del" data-code="${U.esc(r.code||'')}">ลบ</button>
-                </td>
-              </tr>
-            `).join('') || `<tr><td colspan="8" class="muted">ไม่พบข้อมูล</td></tr>`}
-          </tbody>
-        </table>
-      </div>
-      <div class="muted" style="margin-top:8px;font-size:12px">*เรียก action: getEmployees / saveEmployee / deleteEmployee / adminResignEmployee / adminGetEmployeeCombinedDetail</div>
-    `;
-    document.getElementById('empWrap').innerHTML = html;
-    document.querySelectorAll('#empWrap button[data-act]').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
-        const act = btn.dataset.act;
-        const code = btn.dataset.code;
-        if(act==='edit') openEmployeeForm(rows.find(x=>String(x.code)===String(code))||null);
-        if(act==='full') openFullDetail(code);
-        if(act==='resign') openResign(code);
-        if(act==='del') delEmployee(code);
-      });
-    });
-  }
-
-  function openEmployeeForm(emp){
-    const isNew = !emp;
-    const e = emp || {code:'', fullName:'', branch:'', department:'', level:'', email:'', status:'ACTIVE'};
-    const branchOpts = (App.cache.branches||[]).map(x=>`<option value="${U.esc(x.branch||x.name||x)}">${U.esc(x.branch||x.name||x)}</option>`).join('');
-    const deptOpts = (App.cache.departments||[]).map(x=>`<option value="${U.esc(x.department||x.name||x)}">${U.esc(x.department||x.name||x)}</option>`).join('');
-    const levelOpts = (App.cache.levels||[]).map(x=>`<option value="${U.esc(x.level||x.name||x)}">${U.esc(x.level||x.name||x)}</option>`).join('');
-    UI.openModal(isNew?'เพิ่มพนักงาน':'แก้ไขพนักงาน', `
-      <div class="row">
-        <div class="field" style="min-width:180px">
-          <label>code</label>
-          <input id="fCode" value="${U.esc(e.code)}" ${isNew?'':'readonly'}>
-        </div>
-        <div class="field" style="flex:1; min-width:220px">
-          <label>fullName</label>
-          <input id="fName" value="${U.esc(e.fullName||'')}">
-        </div>
-      </div>
-      <div style="height:10px"></div>
-      <div class="row">
-        <div class="field" style="min-width:220px">
-          <label>branch</label>
-          <input id="fBranch" list="dlBranch" value="${U.esc(e.branch||'')}">
-          <datalist id="dlBranch">${branchOpts}</datalist>
-        </div>
-        <div class="field" style="min-width:220px">
-          <label>department</label>
-          <input id="fDept" list="dlDept" value="${U.esc(e.department||'')}">
-          <datalist id="dlDept">${deptOpts}</datalist>
-        </div>
-        <div class="field" style="min-width:220px">
-          <label>level</label>
-          <input id="fLevel" list="dlLevel" value="${U.esc(e.level||'')}">
-          <datalist id="dlLevel">${levelOpts}</datalist>
-        </div>
-      </div>
-      <div style="height:10px"></div>
-      <div class="row">
-        <div class="field" style="flex:1;min-width:220px">
-          <label>email</label>
-          <input id="fEmail" value="${U.esc(e.email||'')}">
-        </div>
-        <div class="field" style="min-width:200px">
-          <label>status</label>
-          <select id="fStatus">
-            <option value="ACTIVE" ${String(e.status||'').toUpperCase()==='ACTIVE'?'selected':''}>ACTIVE</option>
-            <option value="INACTIVE" ${String(e.status||'').toUpperCase()==='INACTIVE'?'selected':''}>INACTIVE</option>
-          </select>
-        </div>
-      </div>
-      <div style="height:12px"></div>
-      <div class="row">
-        <button class="btn orange" id="fSave">บันทึก</button>
-        <button class="btn" id="fCancel">ยกเลิก</button>
-      </div>
-    `);
-    document.getElementById('fCancel').addEventListener('click', UI.closeModal);
-    document.getElementById('fSave').addEventListener('click', async ()=>{
-      try{
-        const payload = {
-          code: document.getElementById('fCode').value.trim(),
-          fullName: document.getElementById('fName').value.trim(),
-          branch: document.getElementById('fBranch').value.trim(),
-          department: document.getElementById('fDept').value.trim(),
-          level: document.getElementById('fLevel').value.trim(),
-          email: document.getElementById('fEmail').value.trim(),
-          status: document.getElementById('fStatus').value
-        };
-        await Api.post('saveEmployee', payload);
-        UI.toast('ok','บันทึกแล้ว','อัปเดตพนักงานเรียบร้อย');
-        UI.closeModal();
-        await load();
-      }catch(err){
-        UI.toast('bad','บันทึกไม่สำเร็จ', err.message||String(err));
-      }
-    });
-  }
-
-  async function delEmployee(code){
-    if(!confirm('ลบพนักงานรหัส '+code+' ?')) return;
-    try{
-      await Api.post('deleteEmployee', { code });
-      UI.toast('ok','ลบแล้ว','ลบพนักงานเรียบร้อย');
-      await load();
-    }catch(err){
-      UI.toast('bad','ลบไม่สำเร็จ', err.message||String(err));
-    }
-  }
-
-  function openResign(code){
-    const emp = all.find(x=>String(x.code)===String(code));
-    UI.openModal('ย้ายเป็น “พนักงานลาออก”', `
-      <div class="muted">จะย้ายข้อมูลจาก Employees → EmployeesResigned</div>
-      <div style="height:10px"></div>
-      <div class="row">
-        <div class="field" style="min-width:160px">
-          <label>code</label>
-          <input id="rCode" value="${U.esc(code)}" readonly>
-        </div>
-        <div class="field" style="flex:1; min-width:240px">
-          <label>fullName</label>
-          <input value="${U.esc(emp?.fullName||'')}" readonly>
-        </div>
-      </div>
-      <div style="height:10px"></div>
-      <div class="row">
-        <div class="field">
-          <label>ลาออกเมื่อ</label>
-          <input id="rDate" type="date" value="${U.esc(U.fmtDate(new Date()))}">
-        </div>
-        <div class="field" style="flex:1;min-width:260px">
-          <label>หมายเหตุ</label>
-          <input id="rNote" placeholder="ระบุได้ตามต้องการ (ไม่บังคับ)">
-        </div>
-      </div>
-      <div style="height:12px"></div>
-      <div class="row">
-        <button class="btn orange" id="rGo">ย้าย</button>
-        <button class="btn" id="rCancel">ยกเลิก</button>
-      </div>
-    `);
-    document.getElementById('rCancel').addEventListener('click', UI.closeModal);
-    document.getElementById('rGo').addEventListener('click', async ()=>{
-      try{
-        await Api.post('adminResignEmployee', { code, resignedAt: document.getElementById('rDate').value, note: document.getElementById('rNote').value.trim() });
-        UI.toast('ok','ย้ายแล้ว','ย้ายพนักงานไปแท็บ Resigned เรียบร้อย');
-        UI.closeModal();
-        await load();
-      }catch(err){
-        UI.toast('bad','ย้ายไม่สำเร็จ', err.message||String(err));
-      }
-    });
-  }
-
-  async function openFullDetail(code){
-    try{
-      const data = await Api.post('adminGetEmployeeCombinedDetail', { code });
-      const base = data?.employee || data?.base || {};
-      const full = data?.fullDetail || data?.detail || {};
-      // Make editable fields (safe subset)
-      const fields = [
-        ['positionTitle','ตำแหน่ง'],
-        ['note','หมายเหตุ'],
-        ['updatedAt','updatedAt']
-      ];
-      UI.openModal('Employees Full Detail', `
-        <div class="row">
-          <div class="pill">${U.esc(base.code||code)} • ${U.esc(base.fullName||'')}</div>
-          <div class="muted">แก้ไขเฉพาะข้อมูล Full Detail ได้</div>
-        </div>
-        <div style="height:10px"></div>
-        <div class="row">
-          <div class="field" style="flex:1;min-width:260px">
-            <label>positionTitle</label>
-            <input id="fdPos" value="${U.esc(full.positionTitle||'')}">
-          </div>
-        </div>
-        <div style="height:10px"></div>
-        <div class="field">
-          <label>note</label>
-          <textarea id="fdNote">${U.esc(full.note||'')}</textarea>
-        </div>
-        <div style="height:12px"></div>
-        <div class="row">
-          <button class="btn orange" id="fdSave">บันทึก</button>
-          <button class="btn" id="fdDel">ลบ FullDetail</button>
-          <button class="btn" id="fdClose">ปิด</button>
-        </div>
-        <div class="muted" style="margin-top:10px;font-size:12px">*เรียก action: adminSaveEmployeesFullDetail / adminDeleteEmployeesFullDetail</div>
-      `);
-      document.getElementById('fdClose').addEventListener('click', UI.closeModal);
-      document.getElementById('fdSave').addEventListener('click', async ()=>{
-        try{
-          const payload = { code, positionTitle: document.getElementById('fdPos').value.trim(), note: document.getElementById('fdNote').value.trim() };
-          await Api.post('adminSaveEmployeesFullDetail', payload);
-          UI.toast('ok','บันทึกแล้ว','อัปเดต Full Detail เรียบร้อย');
-          UI.closeModal();
-        }catch(err){
-          UI.toast('bad','บันทึกไม่สำเร็จ', err.message||String(err));
-        }
-      });
-      document.getElementById('fdDel').addEventListener('click', async ()=>{
-        if(!confirm('ลบ Full Detail ของ '+code+' ?')) return;
-        try{
-          await Api.post('adminDeleteEmployeesFullDetail', { code });
-          UI.toast('ok','ลบแล้ว','ลบ Full Detail เรียบร้อย');
-          UI.closeModal();
-        }catch(err){
-          UI.toast('bad','ลบไม่สำเร็จ', err.message||String(err));
-        }
-      });
-    }catch(err){
-      UI.toast('bad','เปิด Full Detail ไม่สำเร็จ', err.message||String(err));
-    }
-  }
-
-  document.getElementById('empReload').addEventListener('click', load);
-  document.getElementById('empAdd').addEventListener('click', ()=>openEmployeeForm(null));
-  document.getElementById('empSearch').addEventListener('input', U.debounce(load, 200));
-
-  await load();
-}
-
-async function PageResigned(root){
-  const c = card('Resigned / พนักงานลาออก', `
-    <div class="row">
-      <button class="btn orange" id="rsLoad">โหลด</button>
-      <div class="field" style="flex:1; min-width:260px">
-        <label>ค้นหา (รหัส/ชื่อ)</label>
-        <input id="rsSearch" placeholder="เช่น 1011 / สมชาย">
-      </div>
-      <div class="field" style="min-width:200px">
-        <label>สถานะ</label>
-        <select id="rsStatus">
-          <option value="">ทั้งหมด</option>
-          <option value="RESIGNED">RESIGNED</option>
-          <option value="INACTIVE">INACTIVE</option>
-        </select>
-      </div>
-    </div>
-    <div style="height:10px"></div>
-    <div id="rsWrap" class="muted">กดโหลดเพื่อแสดงข้อมูล</div>
-  `);
-  root.appendChild(c);
-
-  let all=[];
-
-  async function load(){
-    const res = await Api.post('adminGetResignedEmployees', {});
-    all = Array.isArray(res) ? res : (res?.rows || res?.employees || []);
-    render();
-  }
-
-  function render(){
-    const q = document.getElementById('rsSearch').value.trim().toLowerCase();
-    const st = document.getElementById('rsStatus').value;
-    const rows = all.filter(r=>{
-      const s = `${r.code||''} ${r.fullName||''}`.toLowerCase();
-      if(q && !s.includes(q)) return false;
-      if(st && String(r.status||'').toUpperCase()!==st) return false;
-      return true;
-    });
-    const html = `
-      <div class="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>code</th><th>fullName</th><th>branch</th><th>department</th><th>level</th><th>resignedAt</th><th>note</th><th>actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map(r=>`
-              <tr>
-                <td>${U.esc(r.code||'')}</td>
-                <td>${U.esc(r.fullName||'')}</td>
-                <td>${U.esc(r.branch||'')}</td>
-                <td>${U.esc(r.department||'')}</td>
-                <td>${U.esc(r.level||'')}</td>
-                <td>${U.esc(r.resignedAt||r.resignedDate||'')}</td>
-                <td>${U.esc(r.note||'')}</td>
-                <td>
-                  <button class="btn" data-act="edit" data-code="${U.esc(r.code||'')}">แก้ไข</button>
-                  <button class="btn" data-act="del" data-code="${U.esc(r.code||'')}">ลบ</button>
-                </td>
-              </tr>
-            `).join('') || `<tr><td colspan="8" class="muted">ไม่พบข้อมูล</td></tr>`}
-          </tbody>
-        </table>
-      </div>
-      <div class="muted" style="margin-top:8px;font-size:12px">*เรียก action: adminGetResignedEmployees / adminSaveResignedEmployee / adminDeleteResignedEmployee</div>
-    `;
-    document.getElementById('rsWrap').innerHTML = html;
-    document.querySelectorAll('#rsWrap button[data-act]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const act = btn.dataset.act;
-        const code = btn.dataset.code;
-        if(act==='edit') openEdit(code);
-        if(act==='del') delRow(code);
-      });
-    });
-  }
-
-  async function openEdit(code){
-    try{
-      const data = await Api.post('adminGetResignedEmployee', { code });
-      const r = data?.employee || data || {};
-      UI.openModal('แก้ไขพนักงานลาออก', `
-        <div class="row">
-          <div class="field" style="min-width:180px">
-            <label>code</label>
-            <input id="reCode" value="${U.esc(code)}" readonly>
-          </div>
-          <div class="field" style="flex:1; min-width:240px">
-            <label>fullName</label>
-            <input id="reName" value="${U.esc(r.fullName||'')}" readonly>
-          </div>
-        </div>
-        <div style="height:10px"></div>
-        <div class="row">
-          <div class="field">
-            <label>resignedAt</label>
-            <input id="reDate" type="date" value="${U.esc((r.resignedAt||r.resignedDate||'').slice(0,10) || '')}">
-          </div>
-          <div class="field" style="flex:1; min-width:260px">
-            <label>note</label>
-            <input id="reNote" value="${U.esc(r.note||'')}">
-          </div>
-        </div>
-        <div style="height:12px"></div>
-        <div class="row">
-          <button class="btn orange" id="reSave">บันทึก</button>
-          <button class="btn" id="reClose">ปิด</button>
-        </div>
-      `);
-      document.getElementById('reClose').addEventListener('click', UI.closeModal);
-      document.getElementById('reSave').addEventListener('click', async ()=>{
-        try{
-          await Api.post('adminSaveResignedEmployee', { code, resignedAt: document.getElementById('reDate').value, note: document.getElementById('reNote').value.trim() });
-          UI.toast('ok','บันทึกแล้ว','อัปเดตข้อมูลลาออกเรียบร้อย');
-          UI.closeModal();
-          await load();
-        }catch(err){
-          UI.toast('bad','บันทึกไม่สำเร็จ', err.message||String(err));
-        }
-      });
-    }catch(err){
-      UI.toast('bad','เปิดไม่สำเร็จ', err.message||String(err));
-    }
-  }
-
-  async function delRow(code){
-    if(!confirm('ลบรายการลาออกของ '+code+' ?')) return;
-    try{
-      await Api.post('adminDeleteResignedEmployee', { code });
-      UI.toast('ok','ลบแล้ว','ลบรายการลาออกเรียบร้อย');
-      await load();
-    }catch(err){
-      UI.toast('bad','ลบไม่สำเร็จ', err.message||String(err));
-    }
-  }
-
-  document.getElementById('rsLoad').addEventListener('click', load);
-  document.getElementById('rsSearch').addEventListener('input', U.debounce(render, 150));
-  document.getElementById('rsStatus').addEventListener('change', render);
-}
-
-async function PageSummary(root){
-  const now = new Date();
-  const yy = now.getFullYear();
-  const mm = now.getMonth()+1;
-
-  const c = card('Summary สรุปรายเดือน', `
-    <div class="row">
-      <div class="field">
-        <label>ปี</label>
-        <select id="sy"></select>
-      </div>
-      <div class="field">
-        <label>เดือน</label>
-        <select id="sm"></select>
-      </div>
-      <div class="field" style="flex:1; min-width:260px">
-        <label>ค้นหา (รหัส/ชื่อ)</label>
-        <input id="ss" placeholder="เช่น 001 / สมชาย">
-      </div>
-      <button class="btn orange" id="sLoad">โหลด</button>
-    </div>
-    <div style="height:10px"></div>
-    <div id="sWrap" class="muted">กดโหลดเพื่อแสดงข้อมูล</div>
-    <div class="muted" style="margin-top:10px;font-size:12px">*เรียก action: <span class="mono">getSummaryRange</span> (ต้องมี token)</div>
-  `);
-  root.appendChild(c);
-
-  const sy = document.getElementById('sy');
-  const smSel = document.getElementById('sm');
-  for(let y=yy-2; y<=yy+1; y++){
-    const o=document.createElement('option'); o.value=String(y); o.textContent=String(y);
-    if(y===yy) o.selected=true;
-    sy.appendChild(o);
-  }
-  for(let m=1;m<=12;m++){
-    const o=document.createElement('option'); o.value=String(m); o.textContent=String(m).padStart(2,'0');
-    if(m===mm) o.selected=true;
-    smSel.appendChild(o);
-  }
-
-  let lastController=null;
-
-  async function load(){
-    const year = Number(sy.value);
-    const month = Number(smSel.value);
-    const search = document.getElementById('ss').value.trim();
-
-    if(lastController) lastController.abort();
-    lastController = new AbortController();
-
-    const el = document.getElementById('sWrap');
-    el.innerHTML = `<div class="muted">กำลังโหลด...</div>`;
-    try{
-      const res = await Api.post('getSummaryRange', { year, month, search }, { signal:lastController.signal, timeoutMs:30000 });
-      let rows = [];
-      if(Array.isArray(res)) rows = res;
-      else if(res && Array.isArray(res.rows)) rows = res.rows;
-      else if(res && res.result && Array.isArray(res.result.rows)) rows = res.result.rows;
-      // render smart columns
-      if(rows.length){
-        const keys = Object.keys(rows[0]);
-        el.innerHTML = renderTable(rows, keys);
-      }else{
-        el.innerHTML = `<div class="muted">ไม่พบข้อมูล</div>`;
-      }
-    }catch(err){
-      el.innerHTML = `<div class="muted">${U.esc(err.message||String(err))}</div>`;
-    }
-  }
-
-  document.getElementById('sLoad').addEventListener('click', load);
-  await load();
-}
-
-async function PageLogs(root){
-  const now = new Date();
-  const today = U.fmtDate(now);
-
-  const c = card('Logs', `
-    <div class="row">
-      <div class="field">
-        <label>เริ่ม</label>
-        <input id="lgFrom" type="date" value="${U.esc(today)}">
-      </div>
-      <div class="field">
-        <label>ถึง</label>
-        <input id="lgTo" type="date" value="${U.esc(today)}">
-      </div>
-      <div class="field" style="flex:1; min-width:260px">
-        <label>ค้นหา</label>
-        <input id="lgSearch" placeholder="รหัส/ชื่อ/สาขา">
-      </div>
-      <button class="btn orange" id="lgLoad">โหลด</button>
-    </div>
-    <div style="height:10px"></div>
-    <div id="lgWrap" class="muted">กดโหลดเพื่อแสดงข้อมูล</div>
-    <div class="muted" style="margin-top:10px;font-size:12px">*เรียก action: <span class="mono">getLogsRange</span></div>
-  `);
-  root.appendChild(c);
-
-  async function load(){
-    const startDate = document.getElementById('lgFrom').value;
-    const endDate = document.getElementById('lgTo').value;
-    const search = document.getElementById('lgSearch').value.trim();
-    const el = document.getElementById('lgWrap');
-    el.innerHTML = `<div class="muted">กำลังโหลด...</div>`;
-    try{
-      const res = await Api.post('getLogsRange', { startDate, endDate, search }, {timeoutMs:35000});
-      const rows = Array.isArray(res) ? res : (res?.rows||[]);
-      el.innerHTML = rows.length ? renderTable(rows) : `<div class="muted">ไม่พบข้อมูล</div>`;
-    }catch(err){
-      el.innerHTML = `<div class="muted">${U.esc(err.message||String(err))}</div>`;
-    }
-  }
-  document.getElementById('lgLoad').addEventListener('click', load);
-  await load();
-}
-
-async function PageLeaveApprovals(root){
-  const c = card('Leave Approvals', `
-    <div class="row">
-      <div class="field" style="min-width:200px">
-        <label>สถานะ</label>
-        <select id="lvStatus">
-          <option value="">ทั้งหมด</option>
-          <option value="PENDING" selected>PENDING</option>
-          <option value="APPROVED">APPROVED</option>
-          <option value="REJECTED">REJECTED</option>
-          <option value="CANCELED">CANCELED</option>
-        </select>
-      </div>
-      <div class="field" style="flex:1; min-width:260px">
-        <label>ค้นหา</label>
-        <input id="lvSearch" placeholder="รหัส/ชื่อ/ประเภทลา">
-      </div>
-      <button class="btn orange" id="lvLoad">โหลด</button>
-    </div>
-    <div style="height:10px"></div>
-    <div id="lvWrap" class="muted">กดโหลดเพื่อแสดงข้อมูล</div>
-    <div class="muted" style="margin-top:10px;font-size:12px">*เรียก action: adminListLeaveRequests / adminApproveLeave / adminRejectLeave / adminCancelLeave</div>
-  `);
-  root.appendChild(c);
-
-  let all=[];
-
-  async function load(){
-    const status = document.getElementById('lvStatus').value;
-    const search = document.getElementById('lvSearch').value.trim();
-    const res = await Api.post('adminListLeaveRequests', { status, search }, {timeoutMs:35000});
-    all = Array.isArray(res) ? res : (res?.rows||res?.requests||[]);
-    render();
-  }
-
-  function render(){
-    const status = document.getElementById('lvStatus').value;
-    const search = document.getElementById('lvSearch').value.trim().toLowerCase();
-    const rows = all.filter(r=>{
-      if(status && String(r.status||'')!==status) return false;
-      if(search){
-        const s = `${r.requestId||''} ${r.code||''} ${r.empName||r.fullName||''} ${r.leaveTypeId||''} ${r.reason||''}`.toLowerCase();
-        if(!s.includes(search)) return false;
-      }
-      return true;
-    });
-
-    const html = `
-      <div class="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>requestId</th><th>code</th><th>name</th><th>leaveType</th><th>from</th><th>to</th><th>days</th><th>status</th><th>actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map(r=>`
-              <tr>
-                <td>${U.esc(r.requestId||r.id||'')}</td>
-                <td>${U.esc(r.code||r.empCode||'')}</td>
-                <td>${U.esc(r.empName||r.fullName||'')}</td>
-                <td>${U.esc(r.leaveTypeId||r.leaveType||'')}</td>
-                <td>${U.esc(r.startDate||r.dateFrom||'')}</td>
-                <td>${U.esc(r.endDate||r.dateTo||'')}</td>
-                <td>${U.esc(r.totalDays||r.days||'')}</td>
-                <td>${U.esc(r.status||'')}</td>
-                <td>
-                  <button class="btn" data-act="view" data-id="${U.esc(r.requestId||r.id||'')}">ดู</button>
-                  <button class="btn" data-act="ap" data-id="${U.esc(r.requestId||r.id||'')}">อนุมัติ</button>
-                  <button class="btn" data-act="re" data-id="${U.esc(r.requestId||r.id||'')}">ปฏิเสธ</button>
-                  <button class="btn" data-act="ca" data-id="${U.esc(r.requestId||r.id||'')}">ยกเลิก</button>
-                </td>
-              </tr>
-            `).join('') || `<tr><td colspan="9" class="muted">ไม่พบข้อมูล</td></tr>`}
-          </tbody>
-        </table>
-      </div>
-    `;
-    document.getElementById('lvWrap').innerHTML = html;
-    document.querySelectorAll('#lvWrap button[data-act]').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
-        const act = btn.dataset.act;
-        const id = btn.dataset.id;
-        const row = rows.find(x=>(x.requestId||x.id)==id) || all.find(x=>(x.requestId||x.id)==id);
-        if(act==='view') viewLeave(row);
-        if(act==='ap') approve(id);
-        if(act==='re') reject(id);
-        if(act==='ca') cancel(id);
-      });
-    });
-  }
-
-  function viewLeave(r){
-    UI.openModal('รายละเอียดใบลา', `
-      <div class="row">
-        <div class="pill">${U.esc(r.requestId||r.id||'')}</div>
-        <div class="pill">${U.esc(r.status||'')}</div>
-      </div>
-      <div style="height:10px"></div>
-      <div class="tableWrap">
-        <table>
-          <tbody>
-            ${Object.keys(r||{}).map(k=>`<tr><th style="width:220px">${U.esc(k)}</th><td>${U.esc(r[k])}</td></tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-    `);
-  }
-
-  async function approve(requestId){
-    if(!confirm('อนุมัติ '+requestId+' ?')) return;
-    try{
-      await Api.post('adminApproveLeave', { requestId });
-      UI.toast('ok','อนุมัติแล้ว', requestId);
-      await load();
-    }catch(err){ UI.toast('bad','อนุมัติไม่สำเร็จ', err.message||String(err)); }
-  }
-  async function reject(requestId){
-    UI.openModal('ปฏิเสธใบลา', `
-      <div class="muted">ระบุเหตุผล (ถ้ามี)</div>
-      <div style="height:10px"></div>
-      <div class="field">
-        <label>เหตุผล</label>
-        <textarea id="rejNote"></textarea>
-      </div>
-      <div style="height:12px"></div>
-      <div class="row">
-        <button class="btn orange" id="rejGo">ปฏิเสธ</button>
-        <button class="btn" id="rejClose">ยกเลิก</button>
-      </div>
-    `);
-    document.getElementById('rejClose').addEventListener('click', UI.closeModal);
-    document.getElementById('rejGo').addEventListener('click', async ()=>{
-      try{
-        await Api.post('adminRejectLeave', { requestId, adminNote: document.getElementById('rejNote').value.trim() });
-        UI.toast('ok','ปฏิเสธแล้ว', requestId);
-        UI.closeModal();
-        await load();
-      }catch(err){ UI.toast('bad','ปฏิเสธไม่สำเร็จ', err.message||String(err)); }
-    });
-  }
-  async function cancel(requestId){
-    if(!confirm('ยกเลิก '+requestId+' ?')) return;
-    try{
-      await Api.post('adminCancelLeave', { requestId });
-      UI.toast('ok','ยกเลิกแล้ว', requestId);
-      await load();
-    }catch(err){ UI.toast('bad','ยกเลิกไม่สำเร็จ', err.message||String(err)); }
-  }
-
-  document.getElementById('lvLoad').addEventListener('click', load);
-  document.getElementById('lvSearch').addEventListener('input', U.debounce(render, 160));
-  document.getElementById('lvStatus').addEventListener('change', load);
-
-  await load();
-}
-
-async function PageOffHolidays(root){
-  const c = card('Off & Holidays', `
-    <div class="row">
-      <button class="btn orange" id="ohLoad">โหลด</button>
-      <button class="btn primary" id="ohAddHol">เพิ่มวันหยุด</button>
-      <button class="btn primary" id="ohAddOff">เพิ่มวันหยุดพนักงาน</button>
-    </div>
-    <div style="height:10px"></div>
-    <div class="row" style="align-items:flex-start">
-      <div style="flex:1; min-width:320px">
-        <div class="muted" style="margin-bottom:6px">Holidays</div>
-        <div id="holWrap" class="muted">-</div>
-      </div>
-      <div style="flex:1; min-width:320px">
-        <div class="muted" style="margin-bottom:6px">Employee Off Dates</div>
-        <div id="offWrap" class="muted">-</div>
-      </div>
-    </div>
-  `);
-  root.appendChild(c);
-
-  let holidays=[], offDates=[];
-
-  async function load(){
-    holidays = [];
-    offDates = [];
-    try{
-      const h = await Api.post('adminListHolidays', {});
-      holidays = Array.isArray(h) ? h : (h?.rows||[]);
-    }catch(e){ holidays=[]; }
-    try{
-      const o = await Api.post('adminListEmployeeOffDates', {});
-      offDates = Array.isArray(o) ? o : (o?.rows||[]);
-    }catch(e){ offDates=[]; }
-    renderHol();
-    renderOff();
-  }
-
-  function renderHol(){
-    const el = document.getElementById('holWrap');
-    el.innerHTML = `
-      <div class="tableWrap">
-        <table>
-          <thead><tr><th>date</th><th>name</th><th>isHoliday</th><th>note</th><th>actions</th></tr></thead>
-          <tbody>
-            ${holidays.map(r=>`
-              <tr>
-                <td>${U.esc(r.date||'')}</td>
-                <td>${U.esc(r.name||'')}</td>
-                <td>${U.esc(r.isHoliday||'')}</td>
-                <td>${U.esc(r.note||'')}</td>
-                <td>
-                  <button class="btn" data-act="e" data-date="${U.esc(r.date||'')}">แก้ไข</button>
-                  <button class="btn" data-act="d" data-date="${U.esc(r.date||'')}">ลบ</button>
-                </td>
-              </tr>
-            `).join('') || `<tr><td colspan="5" class="muted">ไม่พบข้อมูล</td></tr>`}
-          </tbody>
-        </table>
-      </div>
-    `;
-    el.querySelectorAll('button[data-act]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const act=btn.dataset.act;
-        const date=btn.dataset.date;
-        if(act==='e') openHoliday(date);
-        if(act==='d') delHoliday(date);
-      });
-    });
-  }
-
-  function renderOff(){
-    const el = document.getElementById('offWrap');
-    el.innerHTML = `
-      <div class="tableWrap">
-        <table>
-          <thead><tr><th>date</th><th>code</th><th>name</th><th>note</th><th>actions</th></tr></thead>
-          <tbody>
-            ${offDates.map(r=>`
-              <tr>
-                <td>${U.esc(r.date||'')}</td>
-                <td>${U.esc(r.code||'')}</td>
-                <td>${U.esc(r.fullName||r.empName||'')}</td>
-                <td>${U.esc(r.note||'')}</td>
-                <td>
-                  <button class="btn" data-act="e" data-key="${U.esc((r.date||'')+'|'+(r.code||''))}">แก้ไข</button>
-                  <button class="btn" data-act="d" data-key="${U.esc((r.date||'')+'|'+(r.code||''))}">ลบ</button>
-                </td>
-              </tr>
-            `).join('') || `<tr><td colspan="5" class="muted">ไม่พบข้อมูล</td></tr>`}
-          </tbody>
-        </table>
-      </div>
-    `;
-    el.querySelectorAll('button[data-act]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const act=btn.dataset.act;
-        const key=btn.dataset.key;
-        const [date, code] = key.split('|');
-        if(act==='e') openOffDate(date, code);
-        if(act==='d') delOffDate(date, code);
-      });
-    });
-  }
-
-  function openHoliday(date){
-    const r = holidays.find(x=>String(x.date)===String(date)) || {date:'',name:'',isHoliday:true,note:''};
-    UI.openModal('วันหยุด', `
-      <div class="row">
-        <div class="field">
-          <label>date</label>
-          <input id="hDate" type="date" value="${U.esc(r.date||'')}">
-        </div>
-        <div class="field" style="flex:1;min-width:240px">
-          <label>name</label>
-          <input id="hName" value="${U.esc(r.name||'')}">
-        </div>
-        <div class="field" style="min-width:160px">
-          <label>isHoliday</label>
-          <select id="hIs">
-            <option value="true" ${(String(r.isHoliday).toLowerCase()==='true' || r.isHoliday===true)?'selected':''}>true</option>
-            <option value="false" ${(String(r.isHoliday).toLowerCase()==='false' || r.isHoliday===false)?'selected':''}>false</option>
-          </select>
-        </div>
-      </div>
-      <div style="height:10px"></div>
-      <div class="field">
-        <label>note</label>
-        <input id="hNote" value="${U.esc(r.note||'')}">
-      </div>
-      <div style="height:12px"></div>
-      <div class="row">
-        <button class="btn orange" id="hSave">บันทึก</button>
-        <button class="btn" id="hClose">ปิด</button>
-      </div>
-    `);
-    document.getElementById('hClose').addEventListener('click', UI.closeModal);
-    document.getElementById('hSave').addEventListener('click', async ()=>{
-      try{
-        await Api.post('adminSaveHoliday', { date: document.getElementById('hDate').value, name: document.getElementById('hName').value.trim(), isHoliday: document.getElementById('hIs').value, note: document.getElementById('hNote').value.trim() });
-        UI.toast('ok','บันทึกแล้ว','อัปเดตวันหยุดเรียบร้อย');
-        UI.closeModal();
-        await load();
-      }catch(err){ UI.toast('bad','บันทึกไม่สำเร็จ', err.message||String(err)); }
-    });
-  }
-
-  async function delHoliday(date){
-    if(!confirm('ลบวันหยุด '+date+' ?')) return;
-    try{
-      await Api.post('adminDeleteHoliday', { date });
-      UI.toast('ok','ลบแล้ว','ลบวันหยุดเรียบร้อย');
-      await load();
-    }catch(err){ UI.toast('bad','ลบไม่สำเร็จ', err.message||String(err)); }
-  }
-
-  function openOffDate(date, code){
-    const r = offDates.find(x=>String(x.date)===String(date) && String(x.code)===String(code)) || {date:'',code:'',note:''};
-    UI.openModal('วันหยุดพนักงาน', `
-      <div class="row">
-        <div class="field">
-          <label>date</label>
-          <input id="oDate" type="date" value="${U.esc(r.date||date||'')}">
-        </div>
-        <div class="field">
-          <label>code</label>
-          <input id="oCode" value="${U.esc(r.code||code||'')}">
-        </div>
-        <div class="field" style="flex:1;min-width:240px">
-          <label>note</label>
-          <input id="oNote" value="${U.esc(r.note||'')}">
-        </div>
-      </div>
-      <div style="height:12px"></div>
-      <div class="row">
-        <button class="btn orange" id="oSave">บันทึก</button>
-        <button class="btn" id="oClose">ปิด</button>
-      </div>
-    `);
-    document.getElementById('oClose').addEventListener('click', UI.closeModal);
-    document.getElementById('oSave').addEventListener('click', async ()=>{
-      try{
-        await Api.post('adminSaveEmployeeOffDate', { date: document.getElementById('oDate').value, code: document.getElementById('oCode').value.trim(), note: document.getElementById('oNote').value.trim() });
-        UI.toast('ok','บันทึกแล้ว','อัปเดตวันหยุดพนักงานเรียบร้อย');
-        UI.closeModal();
-        await load();
-      }catch(err){ UI.toast('bad','บันทึกไม่สำเร็จ', err.message||String(err)); }
-    });
-  }
-
-  async function delOffDate(date, code){
-    if(!confirm('ลบวันหยุดพนักงาน '+code+' @ '+date+' ?')) return;
-    try{
-      await Api.post('adminDeleteEmployeeOffDate', { date, code });
-      UI.toast('ok','ลบแล้ว','ลบวันหยุดพนักงานเรียบร้อย');
-      await load();
-    }catch(err){ UI.toast('bad','ลบไม่สำเร็จ', err.message||String(err)); }
-  }
-
-  document.getElementById('ohLoad').addEventListener('click', load);
-  document.getElementById('ohAddHol').addEventListener('click', ()=>openHoliday(''));
-  document.getElementById('ohAddOff').addEventListener('click', ()=>openOffDate('', ''));
-
-  await load();
-}
-
-async function PageSettings(root){
-  const c = card('Settings', `
-    <div class="row">
-      <button class="btn orange" id="stReload">โหลด</button>
-      <button class="btn primary" id="stAddBranch">เพิ่มสาขา</button>
-      <button class="btn primary" id="stAddLevel">เพิ่มระดับ</button>
-      <button class="btn primary" id="stAddDept">เพิ่มแผนก</button>
-      <button class="btn primary" id="stAddLeave">เพิ่มประเภทลา</button>
-    </div>
-    <div style="height:10px"></div>
-    <div class="row" style="align-items:flex-start">
-      <div style="flex:1;min-width:320px">
-        <div class="muted" style="margin-bottom:6px">Branches</div>
-        <div id="stBranches"></div>
-      </div>
-      <div style="flex:1;min-width:320px">
-        <div class="muted" style="margin-bottom:6px">Levels</div>
-        <div id="stLevels"></div>
-      </div>
-    </div>
-    <div style="height:12px"></div>
-    <div class="row" style="align-items:flex-start">
-      <div style="flex:1;min-width:320px">
-        <div class="muted" style="margin-bottom:6px">Departments</div>
-        <div id="stDepts"></div>
-      </div>
-      <div style="flex:1;min-width:320px">
-        <div class="muted" style="margin-bottom:6px">Leave Types</div>
-        <div id="stLeaveTypes"></div>
-      </div>
-    </div>
-  `);
-  root.appendChild(c);
-
-  async function load(){
-    try{
-      const bl = await Api.post('getBranchesLevels', {});
-      App.cache.branches = bl?.branches || [];
-      App.cache.levels = bl?.levels || [];
-    }catch(e){}
-    try{
-      const d = await Api.post('getDepartments', {});
-      App.cache.departments = Array.isArray(d)?d:(d?.rows||[]);
-    }catch(e){}
-    try{
-      const lt = await Api.post('getLeaveTypes', {});
-      App.cache.leaveTypes = Array.isArray(lt)?lt:(lt?.rows||[]);
-    }catch(e){}
-    renderAll();
-    UI.toast('ok','โหลดแล้ว','Settings อัปเดตแล้ว');
-  }
-
-  function renderAll(){
-    document.getElementById('stBranches').innerHTML = renderSimpleList(App.cache.branches, 'branch', 'saveBranch', 'deleteBranch');
-    document.getElementById('stLevels').innerHTML = renderSimpleList(App.cache.levels, 'level', 'saveLevel', 'deleteLevel');
-    document.getElementById('stDepts').innerHTML = renderSimpleList(App.cache.departments, 'department', 'saveDepartment', 'deleteDepartment');
-    document.getElementById('stLeaveTypes').innerHTML = renderLeaveTypes(App.cache.leaveTypes);
-    bindActions();
-  }
-
-  function renderSimpleList(rows, key, saveAction, delAction){
-    const list = (rows||[]).map(r=>{
-      const val = r[key] ?? r.name ?? r[key.toUpperCase()] ?? r;
-      const id = U.esc(val||'');
-      return `<tr>
-        <td>${U.esc(val||'')}</td>
-        <td style="width:200px">
-          <button class="btn" data-save="${saveAction}" data-key="${key}" data-val="${id}">แก้ไข</button>
-          <button class="btn" data-del="${delAction}" data-key="${key}" data-val="${id}">ลบ</button>
-        </td>
-      </tr>`;
-    }).join('') || `<tr><td colspan="2" class="muted">ไม่พบข้อมูล</td></tr>`;
-    return `
-      <div class="tableWrap">
-        <table style="min-width:520px">
-          <thead><tr><th>${U.esc(key)}</th><th>actions</th></tr></thead>
-          <tbody>${list}</tbody>
-        </table>
-      </div>
-      <div class="muted" style="margin-top:6px;font-size:12px">*เรียก action: ${U.esc(saveAction)} / ${U.esc(delAction)}</div>
-    `;
-  }
-
-  function renderLeaveTypes(rows){
-    const list = (rows||[]).map(r=>`
-      <tr>
-        <td>${U.esc(r.leaveTypeId||r.id||'')}</td>
-        <td>${U.esc(r.maxDaysPerYear||'')}</td>
-        <td>${U.esc(r.note||'')}</td>
-        <td style="width:220px">
-          <button class="btn" data-act="ltEdit" data-id="${U.esc(r.leaveTypeId||r.id||'')}">แก้ไข</button>
-          <button class="btn" data-act="ltDel" data-id="${U.esc(r.leaveTypeId||r.id||'')}">ลบ</button>
-        </td>
-      </tr>
-    `).join('') || `<tr><td colspan="4" class="muted">ไม่พบข้อมูล</td></tr>`;
-    return `
-      <div class="tableWrap">
-        <table style="min-width:720px">
-          <thead><tr><th>leaveTypeId</th><th>maxDaysPerYear</th><th>note</th><th>actions</th></tr></thead>
-          <tbody>${list}</tbody>
-        </table>
-      </div>
-      <div class="muted" style="margin-top:6px;font-size:12px">*เรียก action: adminSaveLeaveType / adminDeleteLeaveType</div>
-    `;
-  }
-
-  function bindActions(){
-    root.querySelectorAll('button[data-save]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const action = btn.dataset.save;
-        const key = btn.dataset.key;
-        const oldVal = btn.dataset.val;
-        UI.openModal('แก้ไข '+key, `
-          <div class="field">
-            <label>${U.esc(key)}</label>
-            <input id="svVal" value="${U.esc(oldVal)}">
-          </div>
-          <div style="height:12px"></div>
-          <div class="row">
-            <button class="btn orange" id="svGo">บันทึก</button>
-            <button class="btn" id="svClose">ปิด</button>
-          </div>
-        `);
-        document.getElementById('svClose').addEventListener('click', UI.closeModal);
-        document.getElementById('svGo').addEventListener('click', async ()=>{
-          try{
-            const val = document.getElementById('svVal').value.trim();
-            const payload = {};
-            payload[key] = val;
-            payload['oldValue'] = oldVal;
-            await Api.post(action, payload);
-            UI.toast('ok','บันทึกแล้ว', key);
-            UI.closeModal();
-            await load();
-          }catch(err){ UI.toast('bad','บันทึกไม่สำเร็จ', err.message||String(err)); }
-        });
-      });
-    });
-
-    root.querySelectorAll('button[data-del]').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
-        const action = btn.dataset.del;
-        const key = btn.dataset.key;
-        const val = btn.dataset.val;
-        if(!confirm('ลบ '+key+' = '+val+' ?')) return;
-        try{
-          const payload = {}; payload[key]=val;
-          await Api.post(action, payload);
-          UI.toast('ok','ลบแล้ว', key);
-          await load();
-        }catch(err){ UI.toast('bad','ลบไม่สำเร็จ', err.message||String(err)); }
-      });
-    });
-
-    root.querySelectorAll('button[data-act="ltEdit"]').forEach(btn=>{
-      btn.addEventListener('click', ()=>openLeaveType(btn.dataset.id));
-    });
-    root.querySelectorAll('button[data-act="ltDel"]').forEach(btn=>{
-      btn.addEventListener('click', ()=>delLeaveType(btn.dataset.id));
-    });
-  }
-
-  function openLeaveType(id){
-    const r = (App.cache.leaveTypes||[]).find(x=>(x.leaveTypeId||x.id)==id) || {leaveTypeId:'', maxDaysPerYear:'', note:''};
-    UI.openModal('Leave Type', `
-      <div class="row">
-        <div class="field" style="min-width:240px">
-          <label>leaveTypeId</label>
-          <input id="ltId" value="${U.esc(r.leaveTypeId||r.id||'')}">
-        </div>
-        <div class="field" style="min-width:220px">
-          <label>maxDaysPerYear</label>
-          <input id="ltMax" value="${U.esc(r.maxDaysPerYear||'')}">
-        </div>
-      </div>
-      <div style="height:10px"></div>
-      <div class="field">
-        <label>note</label>
-        <input id="ltNote" value="${U.esc(r.note||'')}">
-      </div>
-      <div style="height:12px"></div>
-      <div class="row">
-        <button class="btn orange" id="ltSave">บันทึก</button>
-        <button class="btn" id="ltClose">ปิด</button>
-      </div>
-    `);
-    document.getElementById('ltClose').addEventListener('click', UI.closeModal);
-    document.getElementById('ltSave').addEventListener('click', async ()=>{
-      try{
-        await Api.post('adminSaveLeaveType', { leaveTypeId: document.getElementById('ltId').value.trim(), maxDaysPerYear: document.getElementById('ltMax').value.trim(), note: document.getElementById('ltNote').value.trim() });
-        UI.toast('ok','บันทึกแล้ว','LeaveType');
-        UI.closeModal();
-        await load();
-      }catch(err){ UI.toast('bad','บันทึกไม่สำเร็จ', err.message||String(err)); }
-    });
-  }
-
-  async function delLeaveType(id){
-    if(!confirm('ลบ LeaveType '+id+' ?')) return;
-    try{
-      await Api.post('adminDeleteLeaveType', { leaveTypeId: id });
-      UI.toast('ok','ลบแล้ว','LeaveType');
-      await load();
-    }catch(err){ UI.toast('bad','ลบไม่สำเร็จ', err.message||String(err)); }
-  }
-
-  document.getElementById('stReload').addEventListener('click', load);
-  document.getElementById('stAddBranch').addEventListener('click', ()=>{
-    UI.openModal('เพิ่มสาขา', `
-      <div class="field"><label>branch</label><input id="ab"></div>
-      <div style="height:12px"></div>
-      <div class="row"><button class="btn orange" id="abGo">บันทึก</button><button class="btn" id="abCl">ปิด</button></div>
-    `);
-    document.getElementById('abCl').addEventListener('click', UI.closeModal);
-    document.getElementById('abGo').addEventListener('click', async ()=>{
-      try{ await Api.post('saveBranch', { branch: document.getElementById('ab').value.trim() }); UI.closeModal(); await load(); }catch(e){ UI.toast('bad','บันทึกไม่สำเร็จ', e.message||String(e)); }
-    });
-  });
-  document.getElementById('stAddLevel').addEventListener('click', ()=>{
-    UI.openModal('เพิ่มระดับ', `
-      <div class="field"><label>level</label><input id="al"></div>
-      <div style="height:12px"></div>
-      <div class="row"><button class="btn orange" id="alGo">บันทึก</button><button class="btn" id="alCl">ปิด</button></div>
-    `);
-    document.getElementById('alCl').addEventListener('click', UI.closeModal);
-    document.getElementById('alGo').addEventListener('click', async ()=>{
-      try{ await Api.post('saveLevel', { level: document.getElementById('al').value.trim() }); UI.closeModal(); await load(); }catch(e){ UI.toast('bad','บันทึกไม่สำเร็จ', e.message||String(e)); }
-    });
-  });
-  document.getElementById('stAddDept').addEventListener('click', ()=>{
-    UI.openModal('เพิ่มแผนก', `
-      <div class="field"><label>department</label><input id="ad"></div>
-      <div style="height:12px"></div>
-      <div class="row"><button class="btn orange" id="adGo">บันทึก</button><button class="btn" id="adCl">ปิด</button></div>
-    `);
-    document.getElementById('adCl').addEventListener('click', UI.closeModal);
-    document.getElementById('adGo').addEventListener('click', async ()=>{
-      try{ await Api.post('saveDepartment', { department: document.getElementById('ad').value.trim() }); UI.closeModal(); await load(); }catch(e){ UI.toast('bad','บันทึกไม่สำเร็จ', e.message||String(e)); }
-    });
-  });
-  document.getElementById('stAddLeave').addEventListener('click', ()=>openLeaveType(''));
-
-  await load();
-}
-
-/** ---------- Wire Buttons ---------- */
-function wireGlobal(){
-  // Desktop
-  document.getElementById('btnConfig').addEventListener('click', openConfig);
-  document.getElementById('btnPing').addEventListener('click', ping);
-  document.getElementById('btnLogin').addEventListener('click', openLogin);
-  document.getElementById('btnLogout').addEventListener('click', logout);
-
-  // Mobile drawer duplicates
-  document.getElementById('btnConfig2').addEventListener('click', openConfig);
-  document.getElementById('btnPing2').addEventListener('click', ping);
-  document.getElementById('btnLogin2').addEventListener('click', openLogin);
-  document.getElementById('btnLogout2').addEventListener('click', logout);
-
-  document.getElementById('btnQuickLogin').addEventListener('click', openLogin);
-
-  document.getElementById('btnInit').addEventListener('click', ()=>initData(false));
-  document.getElementById('btnRefresh').addEventListener('click', refreshPage);
-}
-
-function boot(){
-  Store.renderConn();
-  renderNav();
-  wireGlobal();
-  initData(true);
-  renderPage();
-}
-
-// expose for debug
-window.__HRM_ADMIN_V2__ = { Api, Store, App, goPage };
-
-boot();
+// Global vars
+let adminToken=null,currentPage='dashboard',currentLeaveRequest=null,currentEditItem=null;
+// Init
+window.onload=function(){checkLogin();setupNav();setupTabs();startClock();populateFilters()};
+function checkLogin(){const token=localStorage.getItem('adminToken'),username=localStorage.getItem('adminUsername');if(!token||!username){window.location.href='login.html';return}adminToken=token;document.getElementById('adminName').textContent=username;loadDashboard()}
+function startClock(){function u(){const n=new Date(),t=n.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});document.getElementById('currentTime').textContent=t}u();setInterval(u,60000)}
+function setupNav(){document.querySelectorAll('.nav button[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)))}
+function setupTabs(){document.querySelectorAll('.tabs button[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)))}
+function showPage(p){currentPage=p;document.querySelectorAll('.nav button').forEach(b=>{b.classList.remove('active');if(b.dataset.page===p)b.classList.add('active')});document.querySelectorAll('.page').forEach(e=>e.classList.add('hide'));document.getElementById('page-'+p).classList.remove('hide');switch(p){case 'dashboard':loadDashboard();break;case 'attendance':loadAttendance();break;case 'leave':loadLeaveRequests();break;case 'employees':loadEmployees();break;case 'departments':loadDepartments();break;case 'leavetypes':loadLeaveTypes();break;case 'branches':loadBranches();break;case 'levels':loadLevels();break;case 'zones':loadZones();break;case 'holidays':loadHolidays();break}}
+function showTab(t){document.querySelectorAll('.tabs button').forEach(b=>{b.classList.remove('active');if(b.dataset.tab===t)b.classList.add('active')});document.querySelectorAll('.tabContent').forEach(e=>e.classList.add('hide'));document.getElementById('tab-'+t).classList.remove('hide')}
+function populateFilters(){const now=new Date(),y=now.getFullYear(),m=now.getMonth()+1;const months=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];['attMonth','leaveMonth','reportMonth','reportEmpMonth'].forEach(id=>{const s=document.getElementById(id);if(s){months.forEach((mn,i)=>{const o=document.createElement('option');o.value=i+1;o.textContent=mn;if(i+1===m)o.selected=true;s.appendChild(o)})}});['attYear','leaveYear','holidayYear','reportYear','reportEmpYear','summaryYear'].forEach(id=>{const s=document.getElementById(id);if(s){for(let yr=y-2;yr<=y+2;yr++){const o=document.createElement('option');o.value=yr;o.textContent=yr+543;if(yr===y)o.selected=true;s.appendChild(o)}}});loadBranchOptions();loadDeptOptions();loadLevelOptions()}
+// API
+function callAPI(action,params={}){return new Promise((resolve,reject)=>{showLoading();params.action=action;if(adminToken)params.token=adminToken;google.script.run.withSuccessHandler(r=>{hideLoading();if(r.error){showAlert(r.error,'error');reject(r.error)}else resolve(r)}).withFailureHandler(e=>{hideLoading();showAlert('เกิดข้อผิดพลาด: '+e.message,'error');reject(e)}).doAction(params)})}
+// Dashboard
+async function loadDashboard(){try{const date=document.getElementById('dashDate')?.value||formatDate(new Date());const s=await callAPI('adminGetDashboardStats',{date});document.getElementById('dashPresent').textContent=s.present||0;document.getElementById('dashAbsent').textContent=s.absent||0;document.getElementById('dashLate').textContent=s.late||0;document.getElementById('dashLeave').textContent=s.onLeave||0;document.getElementById('dashTotal').textContent=s.total||0;document.getElementById('dashPending').textContent=s.pendingLeave||0;document.getElementById('dashExtraScans').textContent=s.extraScans||0;loadLateListToday(date);loadPendingLeave();const badge=document.getElementById('navLeaveBadge');if(badge)badge.textContent=s.pendingLeave>0?s.pendingLeave:''}catch(e){console.error('Dashboard error:',e)}}
+async function loadLateListToday(date){try{const r=await callAPI('adminListLateToday',{date});const c=document.getElementById('lateListToday');if(!r.rows||r.rows.length===0){c.innerHTML='<div class="emptyState"><div class="icon">✨</div><div>ไม่มีรายการมาสาย</div></div>';return}let h='<table><thead><tr><th>รหัส</th><th>ชื่อ</th><th>สาขา</th><th>เข้า</th><th>มาสาย</th></tr></thead><tbody>';r.rows.forEach(row=>{h+=`<tr><td>${escHtml(row.code)}</td><td>${escHtml(row.fullName)}</td><td>${escHtml(row.branch)}</td><td>${escHtml(row.t1)}</td><td><span class="statusBadge late">${escHtml(row.totalLateText||'-')}</span></td></tr>`});h+='</tbody></table>';c.innerHTML=h}catch(e){console.error(e)}}
+async function loadPendingLeave(){try{const now=new Date();const r=await callAPI('adminListLeaveRequests',{year:now.getFullYear(),month:now.getMonth()+1,status:'PENDING'});const c=document.getElementById('pendingLeaveList');if(!r.rows||r.rows.length===0){c.innerHTML='<div class="emptyState"><div class="icon">✨</div><div>ไม่มีคำขอรออนุมัติ</div></div>';return}let h='<table><thead><tr><th>ยื่น</th><th>รหัส</th><th>ชื่อ</th><th>ประเภท</th><th>ช่วง</th><th>วัน</th><th></th></tr></thead><tbody>';r.rows.forEach(row=>{h+=`<tr><td>${fmtDateTimeThai(row.createdAt)}</td><td>${escHtml(row.empCode)}</td><td>${escHtml(row.empName)}</td><td>${escHtml(row.leaveTypeId)}</td><td>${escHtml(row.rangeText||'-')}</td><td>${row.totalDays}</td><td><button class="btn sm primary" onclick="openLeaveActionModal('${row.id}')">ดำเนินการ</button></td></tr>`});h+='</tbody></table>';c.innerHTML=h}catch(e){console.error(e)}}
+// Attendance
+async function loadAttendance(){try{const month=document.getElementById('attMonth')?.value||(new Date().getMonth()+1);const year=document.getElementById('attYear')?.value||new Date().getFullYear();const branch=document.getElementById('attBranch')?.value||'';const status=document.getElementById('attStatus')?.value||'ALL';const search=document.getElementById('attSearch')?.value||'';const r=await callAPI('adminListLogs',{year,month,branch,status,search});const c=document.getElementById('attendanceTable');const cnt=document.getElementById('attCount');if(!r.rows||r.rows.length===0){c.innerHTML='<div class="emptyState"><div class="icon">📝</div><div>ไม่พบข้อมูล</div></div>';cnt.textContent='0';return}cnt.textContent=r.rows.length;let h='<div class="tableWrapper"><table><thead><tr><th>วันที่</th><th>รหัส</th><th>ชื่อ</th><th>สาขา</th><th>เข้า</th><th>ออก</th><th>สถานะ</th><th>มาสาย</th><th></th></tr></thead><tbody>';r.rows.forEach(row=>{const sc=getStatusClass(row.status);h+=`<tr><td>${fmtDateThai(row.date)}</td><td>${escHtml(row.code)}</td><td>${escHtml(row.fullName)}</td><td>${escHtml(row.branch)}</td><td>${escHtml(row.t1||'-')}</td><td>${escHtml(row.t4||'-')}</td><td><span class="statusBadge ${sc}">${escHtml(row.status)}</span></td><td>${escHtml(row.totalLateText||'-')}</td><td><button class="btn sm ghost" onclick="viewDetail('${row.code}','${row.date}')">รายละเอียด</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
+function openManualLogModal(){document.getElementById('manualEmpCode').value='';document.getElementById('manualDate').value=formatDate(new Date());document.getElementById('manualT1').value='';document.getElementById('manualT2').value='';document.getElementById('manualT3').value='';document.getElementById('manualT4').value='';document.getElementById('manualNote').value='';openModal('manualLogModal')}
+async function saveManualLog(){try{const code=document.getElementById('manualEmpCode').value.trim();const date=document.getElementById('manualDate').value;const t1=document.getElementById('manualT1').value;const t2=document.getElementById('manualT2').value;const t3=document.getElementById('manualT3').value;const t4=document.getElementById('manualT4').value;const note=document.getElementById('manualNote').value.trim();if(!code||!date){showAlert('กรุณากรอกรหัสและวันที่','warning');return}await callAPI('adminAddManualLog',{code,date,t1,t2,t3,t4,note});showAlert('บันทึกสำเร็จ','success');closeModal('manualLogModal');loadAttendance()}catch(e){console.error(e)}}
+// Leave
+async function loadLeaveRequests(){try{const month=document.getElementById('leaveMonth')?.value||(new Date().getMonth()+1);const year=document.getElementById('leaveYear')?.value||new Date().getFullYear();const status=document.getElementById('leaveStatus')?.value||'ALL';const search=document.getElementById('leaveSearch')?.value||'';const r=await callAPI('adminListLeaveRequests',{year,month,status,search});const c=document.getElementById('leaveTable');const cnt=document.getElementById('leaveCount');if(!r.rows||r.rows.length===0){c.innerHTML='<div class="emptyState"><div class="icon">🏖️</div><div>ไม่พบข้อมูล</div></div>';cnt.textContent='0';return}cnt.textContent=r.rows.length;let h='<div class="tableWrapper"><table><thead><tr><th>ยื่น</th><th>รหัส</th><th>ชื่อ</th><th>ประเภท</th><th>ช่วง</th><th>วัน</th><th>สถานะ</th><th></th></tr></thead><tbody>';r.rows.forEach(row=>{const sc=getLeaveStatusClass(row.status);h+=`<tr><td>${fmtDateTimeThai(row.createdAt)}</td><td>${escHtml(row.empCode)}</td><td>${escHtml(row.empName)}</td><td>${escHtml(row.leaveTypeId)}</td><td>${escHtml(row.rangeText||'-')}</td><td>${row.totalDays}</td><td><span class="statusBadge ${sc}">${escHtml(row.status)}</span></td><td>`;if(row.status==='PENDING'){h+=`<button class="btn sm primary" onclick="openLeaveActionModal('${row.id}')">ดำเนินการ</button>`}else{h+=`<button class="btn sm ghost" onclick="viewDetail('${row.id}','')">รายละเอียด</button>`}h+=`</td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
+async function openLeaveActionModal(id){try{const r=await callAPI('adminGetLeaveRequestDetail',{id});if(!r.request){showAlert('ไม่พบข้อมูล','error');return}currentLeaveRequest=r.request;let h='<div style="margin-bottom:16px;"><div style="display:grid;grid-template-columns:120px 1fr;gap:8px;font-size:14px;">';h+=`<div style="color:var(--muted)">พนักงาน:</div><div><strong>${escHtml(currentLeaveRequest.empName)}</strong> (${escHtml(currentLeaveRequest.empCode)})</div>`;h+=`<div style="color:var(--muted)">สาขา:</div><div>${escHtml(currentLeaveRequest.branch)}</div>`;h+=`<div style="color:var(--muted)">ประเภท:</div><div>${escHtml(currentLeaveRequest.leaveTypeId)}</div>`;h+=`<div style="color:var(--muted)">ช่วงเวลา:</div><div>${escHtml(currentLeaveRequest.rangeText||'-')}</div>`;h+=`<div style="color:var(--muted)">จำนวน:</div><div>${currentLeaveRequest.totalDays} วัน</div>`;h+=`<div style="color:var(--muted)">เหตุผล:</div><div>${escHtml(currentLeaveRequest.reason||'-')}</div>`;if(currentLeaveRequest.evidenceUrl){h+=`<div style="color:var(--muted)">หลักฐาน:</div><div><a href="${escHtml(currentLeaveRequest.evidenceUrl)}" target="_blank" class="btn sm ghost">ดูไฟล์</a></div>`}h+=`</div></div>`;document.getElementById('leaveActionDetails').innerHTML=h;document.getElementById('leaveAdminNote').value='';openModal('leaveActionModal')}catch(e){console.error(e)}}
+async function processLeaveAction(newStatus){if(!currentLeaveRequest)return;try{const adminNote=document.getElementById('leaveAdminNote').value.trim();await callAPI('adminProcessLeaveRequest',{id:currentLeaveRequest.id,status:newStatus,adminNote});showAlert('ดำเนินการสำเร็จ','success');closeModal('leaveActionModal');currentLeaveRequest=null;loadLeaveRequests();loadDashboard()}catch(e){console.error(e)}}
+// Employees
+async function loadEmployees(){try{const search=document.getElementById('empSearch')?.value||'';const branch=document.getElementById('empBranch')?.value||'';const dept=document.getElementById('empDept')?.value||'';const level=document.getElementById('empLevel')?.value||'';const r=await callAPI('adminListEmployees',{search,branch,department:dept,level});const c=document.getElementById('employeesTable');const cnt=document.getElementById('empCount');if(!r.employees||r.employees.length===0){c.innerHTML='<div class="emptyState"><div class="icon">👥</div><div>ไม่พบข้อมูล</div></div>';cnt.textContent='0';return}cnt.textContent=r.employees.length;let h='<div class="tableWrapper"><table><thead><tr><th>รหัส</th><th>ชื่อ</th><th>อีเมล</th><th>สาขา</th><th>แผนก</th><th>ระดับ</th><th>ตำแหน่ง</th><th></th></tr></thead><tbody>';r.employees.forEach(emp=>{h+=`<tr><td>${escHtml(emp.code)}</td><td>${escHtml(emp.fullName)}</td><td>${escHtml(emp.email||'-')}</td><td>${escHtml(emp.branch||'-')}</td><td>${escHtml(emp.department||'-')}</td><td>${escHtml(emp.level||'-')}</td><td>${escHtml(emp.positionTitle||'-')}</td><td><button class="btn sm ghost" onclick="editEmployee('${emp.code}')">✏️</button><button class="btn sm ghost" onclick="deleteEmployee('${emp.code}')">🗑️</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
+function openEmployeeModal(code=null){currentEditItem=code;if(code){document.getElementById('employeeModalTitle').textContent='แก้ไขพนักงาน'}else{document.getElementById('employeeModalTitle').textContent='เพิ่มพนักงาน';document.getElementById('empCode').value='';document.getElementById('empFullName').value='';document.getElementById('empEmail').value='';document.getElementById('empPosition').value=''}openModal('employeeModal')}
+async function saveEmployee(){try{const code=document.getElementById('empCode').value.trim();const fullName=document.getElementById('empFullName').value.trim();const email=document.getElementById('empEmail').value.trim();const branch=document.getElementById('empBranchInput').value;const dept=document.getElementById('empDeptInput').value;const level=document.getElementById('empLevelInput').value;const position=document.getElementById('empPosition').value.trim();if(!code||!fullName){showAlert('กรุณากรอกข้อมูลที่จำเป็น','warning');return}if(currentEditItem){await callAPI('adminUpdateEmployee',{code,fullName,email,branch,department:dept,level,positionTitle:position})}else{await callAPI('adminAddEmployee',{code,fullName,email,branch,department:dept,level,positionTitle:position})}showAlert('บันทึกสำเร็จ','success');closeModal('employeeModal');loadEmployees()}catch(e){console.error(e)}}
+async function deleteEmployee(code){if(!confirm('คุณแน่ใจหรือไม่?'))return;try{await callAPI('adminDeleteEmployee',{code});showAlert('ลบสำเร็จ','success');loadEmployees()}catch(e){console.error(e)}}
+// Departments
+async function loadDepartments(){try{const r=await callAPI('adminListDepartments');const c=document.getElementById('departmentsTable');if(!r.departments||r.departments.length===0){c.innerHTML='<div class="emptyState"><div class="icon">🏢</div><div>ไม่พบข้อมูล</div></div>';return}let h='<div class="tableWrapper"><table><thead><tr><th>ชื่อ</th><th>หมายเหตุ</th><th>อัปเดต</th><th></th></tr></thead><tbody>';r.departments.forEach(d=>{h+=`<tr><td>${escHtml(d.deptName)}</td><td>${escHtml(d.note||'-')}</td><td>${fmtDateTimeThai(d.updatedAt)}</td><td><button class="btn sm ghost" onclick="editDepartment('${d.deptId}')">✏️</button><button class="btn sm ghost" onclick="deleteDepartment('${d.deptId}')">🗑️</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
+function openDepartmentModal(id=null){currentEditItem=id;if(id){document.getElementById('deptModalTitle').textContent='แก้ไขแผนก'}else{document.getElementById('deptModalTitle').textContent='เพิ่มแผนก';document.getElementById('deptName').value='';document.getElementById('deptNote').value=''}openModal('departmentModal')}
+async function saveDepartment(){try{const name=document.getElementById('deptName').value.trim();const note=document.getElementById('deptNote').value.trim();if(!name){showAlert('กรุณากรอกชื่อแผนก','warning');return}if(currentEditItem){await callAPI('adminUpdateDepartment',{deptId:currentEditItem,deptName:name,note})}else{await callAPI('adminAddDepartment',{deptName:name,note})}showAlert('บันทึกสำเร็จ','success');closeModal('departmentModal');loadDepartments();loadDeptOptions()}catch(e){console.error(e)}}
+async function deleteDepartment(id){if(!confirm('คุณแน่ใจหรือไม่?'))return;try{await callAPI('adminDeleteDepartment',{deptId:id});showAlert('ลบสำเร็จ','success');loadDepartments();loadDeptOptions()}catch(e){console.error(e)}}
+// LeaveTypes
+async function loadLeaveTypes(){try{const r=await callAPI('adminListLeaveTypes');const c=document.getElementById('leaveTypesTable');if(!r.types||r.types.length===0){c.innerHTML='<div class="emptyState"><div class="icon">📋</div><div>ไม่พบข้อมูล</div></div>';return}let h='<div class="tableWrapper"><table><thead><tr><th>ชื่อ</th><th>วันสูงสุด/ปี</th><th>หมายเหตุ</th><th>อัปเดต</th><th></th></tr></thead><tbody>';r.types.forEach(t=>{h+=`<tr><td>${escHtml(t.name)}</td><td>${t.maxDaysPerYear||0}</td><td>${escHtml(t.note||'-')}</td><td>${fmtDateTimeThai(t.updatedAt)}</td><td><button class="btn sm ghost" onclick="editLeaveType('${t.leaveTypeId}')">✏️</button><button class="btn sm ghost" onclick="deleteLeaveType('${t.leaveTypeId}')">🗑️</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
+function openLeaveTypeModal(id=null){currentEditItem=id;if(id){document.getElementById('leaveTypeModalTitle').textContent='แก้ไขประเภท'}else{document.getElementById('leaveTypeModalTitle').textContent='เพิ่มประเภท';document.getElementById('leaveTypeName').value='';document.getElementById('leaveTypeMaxDays').value='0';document.getElementById('leaveTypeNote').value=''}openModal('leaveTypeModal')}
+async function saveLeaveType(){try{const name=document.getElementById('leaveTypeName').value.trim();const maxDays=parseInt(document.getElementById('leaveTypeMaxDays').value)||0;const note=document.getElementById('leaveTypeNote').value.trim();if(!name){showAlert('กรุณากรอกชื่อ','warning');return}if(currentEditItem){await callAPI('adminUpdateLeaveType',{leaveTypeId:currentEditItem,name,maxDaysPerYear:maxDays,note})}else{await callAPI('adminAddLeaveType',{name,maxDaysPerYear:maxDays,note})}showAlert('บันทึกสำเร็จ','success');closeModal('leaveTypeModal');loadLeaveTypes()}catch(e){console.error(e)}}
+async function deleteLeaveType(id){if(!confirm('คุณแน่ใจหรือไม่?'))return;try{await callAPI('adminDeleteLeaveType',{leaveTypeId:id});showAlert('ลบสำเร็จ','success');loadLeaveTypes()}catch(e){console.error(e)}}
+// Branches
+async function loadBranches(){try{const r=await callAPI('adminListBranches');const c=document.getElementById('branchesTable');if(!r.branches||r.branches.length===0){c.innerHTML='<div class="emptyState"><div class="icon">🏪</div><div>ไม่พบข้อมูล</div></div>';return}let h='<div class="tableWrapper"><table><thead><tr><th>ชื่อ</th><th>อัปเดต</th><th></th></tr></thead><tbody>';r.branches.forEach(b=>{h+=`<tr><td>${escHtml(b.name)}</td><td>${fmtDateTimeThai(b.updatedAt)}</td><td><button class="btn sm ghost" onclick="editBranch('${b.name}')">✏️</button><button class="btn sm ghost" onclick="deleteBranch('${b.name}')">🗑️</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
+function openBranchModal(name=null){currentEditItem=name;if(name){document.getElementById('branchModalTitle').textContent='แก้ไขสาขา';document.getElementById('branchName').value=name}else{document.getElementById('branchModalTitle').textContent='เพิ่มสาขา';document.getElementById('branchName').value=''}openModal('branchModal')}
+async function saveBranch(){try{const name=document.getElementById('branchName').value.trim();if(!name){showAlert('กรุณากรอกชื่อ','warning');return}if(currentEditItem){await callAPI('adminUpdateBranch',{oldName:currentEditItem,newName:name})}else{await callAPI('adminAddBranch',{name})}showAlert('บันทึกสำเร็จ','success');closeModal('branchModal');loadBranches();loadBranchOptions()}catch(e){console.error(e)}}
+async function deleteBranch(name){if(!confirm('คุณแน่ใจหรือไม่?'))return;try{await callAPI('adminDeleteBranch',{name});showAlert('ลบสำเร็จ','success');loadBranches();loadBranchOptions()}catch(e){console.error(e)}}
+// Levels
+async function loadLevels(){try{const r=await callAPI('adminListLevels');const c=document.getElementById('levelsTable');if(!r.levels||r.levels.length===0){c.innerHTML='<div class="emptyState"><div class="icon">⭐</div><div>ไม่พบข้อมูล</div></div>';return}let h='<div class="tableWrapper"><table><thead><tr><th>ชื่อ</th><th>อัปเดต</th><th></th></tr></thead><tbody>';r.levels.forEach(l=>{h+=`<tr><td>${escHtml(l.name)}</td><td>${fmtDateTimeThai(l.updatedAt)}</td><td><button class="btn sm ghost" onclick="editLevel('${l.name}')">✏️</button><button class="btn sm ghost" onclick="deleteLevel('${l.name}')">🗑️</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
+function openLevelModal(name=null){currentEditItem=name;if(name){document.getElementById('levelModalTitle').textContent='แก้ไขระดับ';document.getElementById('levelName').value=name}else{document.getElementById('levelModalTitle').textContent='เพิ่มระดับ';document.getElementById('levelName').value=''}openModal('levelModal')}
+async function saveLevel(){try{const name=document.getElementById('levelName').value.trim();if(!name){showAlert('กรุณากรอกชื่อ','warning');return}if(currentEditItem){await callAPI('adminUpdateLevel',{oldName:currentEditItem,newName:name})}else{await callAPI('adminAddLevel',{name})}showAlert('บันทึกสำเร็จ','success');closeModal('levelModal');loadLevels();loadLevelOptions()}catch(e){console.error(e)}}
+async function deleteLevel(name){if(!confirm('คุณแน่ใจหรือไม่?'))return;try{await callAPI('adminDeleteLevel',{name});showAlert('ลบสำเร็จ','success');loadLevels();loadLevelOptions()}catch(e){console.error(e)}}
+// Zones
+async function loadZones(){try{const r=await callAPI('adminListZones');const c=document.getElementById('zonesTable');if(!r.zones||r.zones.length===0){c.innerHTML='<div class="emptyState"><div class="icon">📍</div><div>ไม่พบข้อมูล</div></div>';return}let h='<div class="tableWrapper"><table><thead><tr><th>ชื่อ</th><th>ละติจูด</th><th>ลองจิจูด</th><th>รัศมี(ม.)</th><th>สถานะ</th><th></th></tr></thead><tbody>';r.zones.forEach(z=>{const isActive=z.isActive?true:false;h+=`<tr><td>${escHtml(z.zoneName||z.name)}</td><td>${z.centerLat||'-'}</td><td>${z.centerLng||'-'}</td><td>${z.radiusM||'-'}</td><td><span class="statusBadge ${isActive?'approved':'canceled'}">${isActive?'ใช้งาน':'ปิด'}</span></td><td><button class="btn sm ghost" onclick="editZone('${z.zoneId}')">✏️</button><button class="btn sm ghost" onclick="deleteZone('${z.zoneId}')">🗑️</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
+function openZoneModal(id=null){currentEditItem=id;if(id){document.getElementById('zoneModalTitle').textContent='แก้ไขโซน'}else{document.getElementById('zoneModalTitle').textContent='เพิ่มโซน';document.getElementById('zoneName').value='';document.getElementById('zoneLat').value='';document.getElementById('zoneLng').value='';document.getElementById('zoneRadius').value='100';document.getElementById('zoneNote').value=''}openModal('zoneModal')}
+async function saveZone(){try{const name=document.getElementById('zoneName').value.trim();const lat=parseFloat(document.getElementById('zoneLat').value);const lng=parseFloat(document.getElementById('zoneLng').value);const radius=parseInt(document.getElementById('zoneRadius').value);const note=document.getElementById('zoneNote').value.trim();if(!name||isNaN(lat)||isNaN(lng)||isNaN(radius)){showAlert('กรุณากรอกข้อมูลให้ครบ','warning');return}if(currentEditItem){await callAPI('adminUpdateZone',{zoneId:currentEditItem,zoneName:name,centerLat:lat,centerLng:lng,radiusM:radius,note})}else{await callAPI('adminAddZone',{zoneName:name,centerLat:lat,centerLng:lng,radiusM:radius,note})}showAlert('บันทึกสำเร็จ','success');closeModal('zoneModal');loadZones()}catch(e){console.error(e)}}
+async function deleteZone(id){if(!confirm('คุณแน่ใจหรือไม่?'))return;try{await callAPI('adminDeleteZone',{zoneId:id});showAlert('ลบสำเร็จ','success');loadZones()}catch(e){console.error(e)}}
+// Holidays
+async function loadHolidays(){try{const year=document.getElementById('holidayYear')?.value||new Date().getFullYear();const r=await callAPI('adminListHolidays',{year});const c=document.getElementById('holidaysTable');if(!r.rows||r.rows.length===0){c.innerHTML='<div class="emptyState"><div class="icon">🎉</div><div>ไม่พบข้อมูล</div></div>';return}let h='<div class="tableWrapper"><table><thead><tr><th>วันที่</th><th>ชื่อ</th><th>หมายเหตุ</th><th></th></tr></thead><tbody>';r.rows.forEach(hol=>{h+=`<tr><td>${fmtDateThai(hol.date)}</td><td>${escHtml(hol.name)}</td><td>${escHtml(hol.note||'-')}</td><td><button class="btn sm ghost" onclick="editHoliday('${hol.date}')">✏️</button><button class="btn sm ghost" onclick="deleteHoliday('${hol.date}')">🗑️</button></td></tr>`});h+='</tbody></table></div>';c.innerHTML=h}catch(e){console.error(e)}}
+function openHolidayModal(date=null){currentEditItem=date;if(date){document.getElementById('holidayModalTitle').textContent='แก้ไขวันหยุด';document.getElementById('holidayDate').value=date}else{document.getElementById('holidayModalTitle').textContent='เพิ่มวันหยุด';document.getElementById('holidayDate').value='';document.getElementById('holidayName').value='';document.getElementById('holidayNote').value=''}openModal('holidayModal')}
+async function saveHoliday(){try{const date=document.getElementById('holidayDate').value;const name=document.getElementById('holidayName').value.trim();const note=document.getElementById('holidayNote').value.trim();if(!date||!name){showAlert('กรุณากรอกวันที่และชื่อ','warning');return}if(currentEditItem){await callAPI('adminSaveHoliday',{date:currentEditItem,name,note})}else{await callAPI('adminSaveHoliday',{date,name,note})}showAlert('บันทึกสำเร็จ','success');closeModal('holidayModal');loadHolidays()}catch(e){console.error(e)}}
+async function deleteHoliday(date){if(!confirm('คุณแน่ใจหรือไม่?'))return;try{await callAPI('adminDeleteHoliday',{date});showAlert('ลบสำเร็จ','success');loadHolidays()}catch(e){console.error(e)}}
+// Reports
+async function generateMonthlyReport(){try{const month=document.getElementById('reportMonth')?.value;const year=document.getElementById('reportYear')?.value;if(!month||!year){showAlert('กรุณาเลือกเดือนและปี','warning');return}const r=await callAPI('adminGetMonthlyReport',{year,month});const c=document.getElementById('monthlyReportContent');let h='<div class="alert info">รายงานประจำเดือน '+getMonthName(month)+' '+(parseInt(year)+543)+'</div>';h+='<div class="cardGrid" style="margin-top:20px;">';h+=`<div class="statCard"><div class="label">พนักงาน</div><div class="value">${r.totalEmployees||0}</div></div>`;h+=`<div class="statCard"><div class="label">วันทำงานเฉลี่ย</div><div class="value">${r.avgWorkDays||0}</div></div>`;h+=`<div class="statCard"><div class="label">มาสายเฉลี่ย</div><div class="value">${r.avgLate||0}</div></div>`;h+=`<div class="statCard"><div class="label">ขาดเฉลี่ย</div><div class="value">${r.avgAbsent||0}</div></div>`;h+='</div>';c.innerHTML=h}catch(e){console.error(e)}}
+async function generateEmployeeReport(){try{const code=document.getElementById('reportEmpCode')?.value.trim();const month=document.getElementById('reportEmpMonth')?.value;const year=document.getElementById('reportEmpYear')?.value;if(!code||!month||!year){showAlert('กรุณากรอกข้อมูลให้ครบ','warning');return}const r=await callAPI('adminGetEmployeeReport',{code,year,month});const c=document.getElementById('employeeReportContent');let h='<div class="alert info">รายงานของ '+escHtml(r.employee.fullName)+' ('+escHtml(code)+')</div>';h+='<div class="cardGrid" style="margin-top:20px;">';h+=`<div class="statCard"><div class="label">มาทำงาน</div><div class="value">${r.presentDays||0}</div><div class="meta">วัน</div></div>`;h+=`<div class="statCard"><div class="label">มาสาย</div><div class="value">${r.lateDays||0}</div><div class="meta">วัน</div></div>`;h+=`<div class="statCard"><div class="label">ขาด</div><div class="value">${r.absentDays||0}</div><div class="meta">วัน</div></div>`;h+=`<div class="statCard"><div class="label">ลา</div><div class="value">${r.leaveDays||0}</div><div class="meta">วัน</div></div>`;h+='</div>';c.innerHTML=h}catch(e){console.error(e)}}
+async function generateSummaryReport(){try{const year=document.getElementById('summaryYear')?.value;if(!year){showAlert('กรุณาเลือกปี','warning');return}const r=await callAPI('adminGetSummaryReport',{year});const c=document.getElementById('summaryReportContent');let h='<div class="alert info">สรุปภาพรวมปี '+(parseInt(year)+543)+'</div>';h+='<div class="cardGrid" style="margin-top:20px;">';h+=`<div class="statCard"><div class="icon orange">👥</div><div class="label">พนักงาน</div><div class="value">${r.totalEmployees||0}</div></div>`;h+=`<div class="statCard"><div class="icon ok">✓</div><div class="label">มาเฉลี่ย</div><div class="value">${r.avgAttendance||0}%</div></div>`;h+=`<div class="statCard"><div class="icon bad">⏰</div><div class="label">มาสาย</div><div class="value">${r.totalLate||0}</div></div>`;h+=`<div class="statCard"><div class="icon info">🏖️</div><div class="label">ลา</div><div class="value">${r.totalLeave||0}</div></div>`;h+='</div>';c.innerHTML=h}catch(e){console.error(e)}}
+// Export
+async function exportAttendance(){try{const month=document.getElementById('attMonth')?.value||(new Date().getMonth()+1);const year=document.getElementById('attYear')?.value||new Date().getFullYear();showAlert('กำลังสร้าง...','info');const r=await callAPI('adminExportAttendance',{year,month});if(r.url){window.open(r.url,'_blank');showAlert('ส่งออกสำเร็จ','success')}}catch(e){console.error(e)}}
+async function exportLeaveRequests(){try{const month=document.getElementById('leaveMonth')?.value||(new Date().getMonth()+1);const year=document.getElementById('leaveYear')?.value||new Date().getFullYear();showAlert('กำลังสร้าง...','info');const r=await callAPI('adminExportLeave',{year,month});if(r.url){window.open(r.url,'_blank');showAlert('ส่งออกสำเร็จ','success')}}catch(e){console.error(e)}}
+async function exportEmployees(){try{showAlert('กำลังสร้าง...','info');const r=await callAPI('adminExportEmployees');if(r.url){window.open(r.url,'_blank');showAlert('ส่งออกสำเร็จ','success')}}catch(e){console.error(e)}}
+async function exportLateToday(){try{const date=document.getElementById('dashDate')?.value||formatDate(new Date());showAlert('กำลังสร้าง...','info');const r=await callAPI('adminExportLateToday',{date});if(r.url){window.open(r.url,'_blank');showAlert('ส่งออกสำเร็จ','success')}}catch(e){console.error(e)}}
+// Load options
+async function loadBranchOptions(){try{const r=await callAPI('adminListBranches');const sels=['attBranch','empBranch','empBranchInput'];sels.forEach(id=>{const s=document.getElementById(id);if(s){const firstOpt=s.options[0];s.innerHTML='';if(firstOpt)s.appendChild(firstOpt);if(r.branches){r.branches.forEach(b=>{const o=document.createElement('option');o.value=b.name;o.textContent=b.name;s.appendChild(o)})}}})}catch(e){console.error(e)}}
+async function loadDeptOptions(){try{const r=await callAPI('adminListDepartments');const sels=['empDept','empDeptInput'];sels.forEach(id=>{const s=document.getElementById(id);if(s){const firstOpt=s.options[0];s.innerHTML='';if(firstOpt)s.appendChild(firstOpt);if(r.departments){r.departments.forEach(d=>{const o=document.createElement('option');o.value=d.deptName;o.textContent=d.deptName;s.appendChild(o)})}}})}catch(e){console.error(e)}}
+async function loadLevelOptions(){try{const r=await callAPI('adminListLevels');const sels=['empLevel','empLevelInput'];sels.forEach(id=>{const s=document.getElementById(id);if(s){const firstOpt=s.options[0];s.innerHTML='';if(firstOpt)s.appendChild(firstOpt);if(r.levels){r.levels.forEach(l=>{const o=document.createElement('option');o.value=l.name;o.textContent=l.name;s.appendChild(o)})}}})}catch(e){console.error(e)}}
+// Modal
+function openModal(id){document.getElementById(id).classList.add('active')}
+function closeModal(id){document.getElementById(id).classList.remove('active')}
+// Utils
+function showLoading(){document.getElementById('loadingOverlay').classList.remove('hide')}
+function hideLoading(){document.getElementById('loadingOverlay').classList.add('hide')}
+function showAlert(msg,type='info'){const icon=type==='success'?'✅':type==='error'?'❌':type==='warning'?'⚠️':'ℹ️';alert(icon+' '+msg)}
+function logout(){if(confirm('ออกจากระบบ?')){localStorage.removeItem('adminToken');localStorage.removeItem('adminUsername');window.location.href='login.html'}}
+function escHtml(text){if(!text)return'';const div=document.createElement('div');div.textContent=String(text);return div.innerHTML}
+function formatDate(date){if(!date)return'';const d=typeof date==='string'?new Date(date):date;const year=d.getFullYear();const month=String(d.getMonth()+1).padStart(2,'0');const day=String(d.getDate()).padStart(2,'0');return`${year}-${month}-${day}`}
+function fmtDateThai(dateStr){if(!dateStr)return'-';const d=new Date(dateStr);const day=d.getDate();const month=d.getMonth()+1;const year=d.getFullYear()+543;return`${day}/${month}/${year}`}
+function fmtDateTimeThai(dateStr){if(!dateStr)return'-';const d=new Date(dateStr);const day=d.getDate();const month=d.getMonth()+1;const year=d.getFullYear()+543;const hour=String(d.getHours()).padStart(2,'0');const min=String(d.getMinutes()).padStart(2,'0');return`${day}/${month}/${year} ${hour}:${min}`}
+function getMonthName(month){const months=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];return months[parseInt(month)-1]||''}
+function getStatusClass(status){const s=String(status).toUpperCase();if(s.includes('PRESENT')||s.includes('มาทำงาน'))return'present';if(s.includes('LATE')||s.includes('สาย'))return'late';if(s.includes('ABSENT')||s.includes('ขาด'))return'absent';if(s.includes('LEAVE')||s.includes('ลา'))return'leave';return'pending'}
+function getLeaveStatusClass(status){const s=String(status).toUpperCase();if(s==='PENDING')return'pending';if(s==='APPROVED')return'approved';if(s==='REJECTED')return'rejected';if(s==='CANCELED')return'canceled';return'pending'}
+function viewDetail(a,b){showAlert('ดูรายละเอียด','info')}
+function editEmployee(code){openEmployeeModal(code)}
+function editDepartment(id){openDepartmentModal(id)}
+function editLeaveType(id){openLeaveTypeModal(id)}
+function editBranch(name){openBranchModal(name)}
+function editLevel(name){openLevelModal(name)}
+function editZone(id){openZoneModal(id)}
+function editHoliday(date){openHolidayModal(date)}
 </script>
 </body>
 </html>
