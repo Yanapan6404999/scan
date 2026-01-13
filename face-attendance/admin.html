@@ -1406,8 +1406,16 @@ function setLastUpdated(){
   $("lastUpdated").textContent = `${hh}:${mm}:${ss}`;
 }
 
-function getApiUrl(){ return (localStorage.getItem(LS_API) || "").trim(); }
+function getApiUrl(){ return normalizeApiUrl((localStorage.getItem(LS_API) || "").trim()); }
 function setApiUrl(url){ localStorage.setItem(LS_API, (url||"").trim()); }
+
+function normalizeApiUrl(url){
+  url = (url||"").trim();
+  // Prefer script.googleusercontent.com to reduce redirect/CORS pain when calling from GitHub Pages
+  const m = url.match(/^https:\/\/script\.google\.com\/macros\/s\/([^\/]+)\/exec/i);
+  if (m) return `https://script.googleusercontent.com/macros/s/${m[1]}/exec`;
+  return url;
+}
 
 function getToken(){ return (localStorage.getItem(LS_HR) || "").trim(); }
 
@@ -1474,69 +1482,86 @@ function shouldAskLoginByMessage(msg){
          s.includes("สิทธิ") || s.includes("เข้าสู่ระบบ") || s.includes("ไม่มีสิทธิ");
 }
 
-async function apiCall(action, params={}, opts={}){
-  const apiUrl = (getApiUrl() || "").trim();
-  if(!apiUrl) throw new Error("ยังไม่ได้ตั้งค่า API URL (Apps Script Web App)");
-  const token = getToken();
-  const timeoutMs = Number(opts.timeoutMs || 30000);
+async function apiCall(action, payload, opts){
+  opts = opts || {};
+  const token = opts.token || state.token || "";
+  const timeoutMs = opts.timeoutMs || 60000;
+  const method = (opts.method || (payload ? "POST" : "GET")).toUpperCase();
 
-  // JSONP helper (bypass CORS on GitHub Pages)
-  return new Promise((resolve, reject)=>{
-    const cbName = "jsonp_cb_" + Date.now() + "_" + Math.floor(Math.random()*1e6);
-    let timer = null;
-    let script = null;
+  const apiBase = getApiUrl();
+  if(!apiBase) throw new Error("ยังไม่ได้ตั้งค่า API URL");
 
-    window[cbName] = (data)=>{
-      cleanup();
-      resolve(data);
-    };
+  // Build URL with query params
+  const qs = new URLSearchParams();
+  qs.set("action", action);
+  if(token) qs.set("token", token);
 
-    function cleanup(){
-      if(timer) clearTimeout(timer);
-      if(script && script.parentNode) script.parentNode.removeChild(script);
-      try{ delete window[cbName]; }catch(e){ window[cbName]=undefined; }
-    }
+  // If we must pass payload without POST (fallback/JSONP), pack it
+  const packPayload = (obj) => {
+    try { return btoa(unescape(encodeURIComponent(JSON.stringify(obj||{})))); }
+    catch(e){ return ""; }
+  };
 
-    try{
-      const qs = new URLSearchParams();
-      qs.set("action", action);
-      qs.set("callback", cbName);
-      if(token) qs.set("token", token);
-      if(params && Object.keys(params).length){
-        qs.set("json", JSON.stringify(params));
+  const withTimeout = (promise) => new Promise((resolve, reject)=>{
+    const t = setTimeout(()=>reject(new Error(`API timeout (${timeoutMs} ms): ${action}`)), timeoutMs);
+    promise.then(v=>{clearTimeout(t); resolve(v);}).catch(err=>{clearTimeout(t); reject(err);});
+  });
+
+  const fetchJson = async () => {
+    let url = apiBase + "?" + qs.toString();
+    const headers = { "Content-Type": "text/plain;charset=utf-8" };
+    let body = null;
+
+    if(method === "POST"){
+      // Apps Script can accept raw JSON string via doPost
+      body = JSON.stringify(Object.assign({action, token}, payload||{}));
+      return withTimeout(fetch(url, {method:"POST", headers, body, cache:"no-store"}).then(r=>r.json()));
+    } else {
+      if(payload && Object.keys(payload).length){
+        qs.set("payload", packPayload(payload));
+        url = apiBase + "?" + qs.toString();
       }
-      // cache buster
-      qs.set("_", String(Date.now()));
+      return withTimeout(fetch(url, {method:"GET", cache:"no-store"}).then(r=>r.json()));
+    }
+  };
 
-      const url = apiUrl + (apiUrl.includes("?") ? "&" : "?") + qs.toString();
+  const jsonp = () => {
+    return new Promise((resolve, reject)=>{
+      const cb = "cb_" + action + "_" + Math.random().toString(36).slice(2);
+      const qs2 = new URLSearchParams(qs);
+      qs2.set("callback", cb);
+      if(payload && Object.keys(payload).length){
+        qs2.set("payload", packPayload(payload));
+      }
+      const url = apiBase + "?" + qs2.toString();
 
-      timer = setTimeout(()=>{
-        cleanup();
-        reject(new Error("API timeout ("+timeoutMs+" ms): " + action));
-      }, timeoutMs);
-
-      script = document.createElement("script");
-      script.src = url;
-      script.async = true;
-      script.onerror = ()=>{
-        cleanup();
-        reject(new Error("โหลด JSONP ไม่สำเร็จ: " + action));
+      let done=false;
+      const cleanup = ()=>{
+        if(done) return;
+        done=true;
+        try { delete window[cb]; } catch(e){}
+        script.remove();
       };
-      document.head.appendChild(script);
-    }catch(err){
-      cleanup();
-      reject(err);
-    }
-  }).then(data=>{
-    if(!data){
-      throw new Error("ไม่ได้รับข้อมูลจาก API (อาจเกิดจากสิทธิ์ Web App หรือ Deploy ผิด)");
-    }
-    if(!data.ok){
-      throw new Error(data.error || "API error");
-    }
-    return data;
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = url;
+      window[cb] = (data)=>{ cleanup(); resolve(data); };
+      script.onerror = ()=>{ cleanup(); reject(new Error("โหลด JSONP ไม่สำเร็จ: " + action)); };
+      document.body.appendChild(script);
+      setTimeout(()=>{ if(!done){ cleanup(); reject(new Error(`API timeout (${timeoutMs} ms): ${action}`)); } }, timeoutMs);
+    });
+  };
+
+  // Try fetch first; if blocked by CORS/network in GitHub Pages, fall back to JSONP (GET only)
+  return fetchJson().catch(err=>{
+    const msg = (err && err.message) ? err.message : String(err);
+    const isCorsLike = /Failed to fetch|CORS|NetworkError|TypeError/i.test(msg);
+    const canJsonp = method === "GET" || method === "POST"; // we pack payload into GET-style JSONP anyway
+    if(isCorsLike && canJsonp) return jsonp();
+    throw err;
   });
 }
+
 
 function abortRefresh(){
   if(refreshAbort) refreshAbort.abort();
