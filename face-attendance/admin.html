@@ -1411,9 +1411,18 @@ function setApiUrl(url){ localStorage.setItem(LS_API, (url||"").trim()); }
 
 function normalizeApiUrl(url){
   url = (url||"").trim();
+
+  // Strip hash/query if user pasted a full test URL (e.g. .../exec?action=ping)
+  url = url.split("#")[0];
+  url = url.split("?")[0];
+
+  // Remove trailing slash
+  url = url.replace(/\/+$/, "");
+
   // Prefer script.googleusercontent.com to reduce redirect/CORS pain when calling from GitHub Pages
   const m = url.match(/^https:\/\/script\.google\.com\/macros\/s\/([^\/]+)\/exec/i);
   if (m) return `https://script.googleusercontent.com/macros/s/${m[1]}/exec`;
+
   return url;
 }
 
